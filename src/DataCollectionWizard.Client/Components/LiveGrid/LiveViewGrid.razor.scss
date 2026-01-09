@@ -1,0 +1,138 @@
+﻿@use "./../../Styles/_colours.scss" as col;
+@use 'sass:color';
+
+.live-view-grid {
+    bottom: 0;
+    color: col.$font-dark;
+    left: 0;
+    overflow: auto;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.header-template {
+    > div {
+        border-top: 1px solid col.$content-hover;
+        border-bottom: 1px solid col.$content-hover;
+        padding: 16px 0px 16px var(--width-padding);
+
+        &.publish-target {
+            display: grid;
+            grid-column-gap: 8px;
+            grid-template-columns: 70px auto;
+
+            > span:first-of-type {
+                text-align: center;
+            }
+        }
+    }
+
+    > span {
+        padding: 0px 0px 8px 16px;
+        display: block;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 1em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+table {
+    --width-padding: 8px;
+
+    border: none;
+    width: 100%;
+
+    tbody {
+        > tr:nth-child(even) > td {
+            background-color: color.adjust(col.$background, $lightness: 2%);
+        }
+    }
+
+    td, th {
+        &.device-name {
+            --max-width: 320px;
+
+            background-color: col.$background;
+            left: 0px;
+            min-width: 160px;
+            max-width: var(--max-width);
+            position: sticky;
+        }
+
+        &.device-path {
+            min-width: 190px;
+            max-width: 520px;
+        }
+
+        &.last-updated, &.unit, &.value {
+            min-width: 200px;
+            max-width: 200px;
+        }
+
+        &.spacer {
+            max-width: calc(8px * var(--spacer-width, 0));
+            min-width: calc(8px * var(--spacer-width, 0));
+
+            &.absorbtion {
+                width: 100%;
+            }
+        }
+
+        &.unit {
+            text-align: left;
+        }
+
+        &.value {
+            text-align: right;
+        }
+    }
+
+    td {
+        align-content: start;
+        padding: 11px 0px 11px var(--width-padding);
+
+        &.device-name {
+            display: flex;
+            z-index: 10;
+        }
+
+        &.device-path {
+            .device-path-container {
+                align-items: center;
+                display: flex;
+
+                > span {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+            }
+        }
+
+        &.last-updated, &.unit, &.value {
+            align-content: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+
+    th {
+        align-content: end;
+        background-color: col.$background;
+        font-size: 14px;
+        font-weight: normal;
+        line-height: 1em;
+        position: sticky;
+        top: 0px;
+        z-index: 15;
+
+        &.device-name {
+            z-index: 20;
+        }
+    }
+}

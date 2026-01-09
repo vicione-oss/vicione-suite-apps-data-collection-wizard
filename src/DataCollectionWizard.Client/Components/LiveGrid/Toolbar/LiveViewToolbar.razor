@@ -1,0 +1,28 @@
+﻿@using ViciOne.Ui.Shared.Dx.Components
+
+<div class="toolbar-container">
+    <span class="header">
+        @Localization.LiveViewPage.LiveView
+    </span>
+
+    <div class="searchbox-container">
+        <SearchBox TextChanged="@(e => SearchText = e)" />
+    </div>
+
+    <div class="toolbar">
+        <button @onclick="@(OnTogglePathVisible)"
+                class="@(Service.PathVisible ? "active" : string.Empty)"
+                title="@Localization.LiveViewPage.PathVisible">
+
+            @((MarkupString)RoccoSvgIcons.path)
+        </button>
+
+        <span class="separator"></span>
+
+        <button @onclick="@OnRefresh"
+                title="@Localization.LiveViewPage.Rescan">
+
+            @((MarkupString)RoccoSvgIcons.refresh)
+        </button>
+    </div>
+</div>

@@ -1,0 +1,44 @@
+﻿// TODO: There is some odd behaviour during scss compilation with this file when it is not named
+//       starting with an underscore (_). It gets compiled and copied into wwwroot/css although
+//       only the Components subfolder of the projects root directory should in theory be
+//       eligible for compiling. Naming it starting with the underscore fixes that for now.
+
+//
+// ### theme color ###
+//
+$theme: #000000;
+$theme-inverted: #ffffff;
+//
+// ### primary content colors ###
+//
+$background: #2a2a2a;
+$background-hover: #363636;
+$border: #4d4d4d;
+$content: #555555;
+$content-hover: #666666;
+$content-dark: #3a3a3a;
+$content-dark-hover: #4d4d4d;
+$content-dark-disabled: #595959;
+//
+// ### accent ###
+//
+$accent: #ff9900;
+//
+// ### status colors ###
+//
+$add: #2b8c68;
+$info: #7295c2;
+$warning: #ffce00;
+$error: #e34b35;
+//
+// ### font colors ###
+//
+$font: #dedede;
+$font-dark: #bababa;
+$font-inverted: #000000;
+$font-disabled: #8c8c8c;
+//
+// ### button colors ###
+//
+$button: #222222;
+$button-hover: #2e2e2e;

@@ -1,0 +1,10 @@
+﻿@using Sdk.Client.NavTiles.Components
+
+@inherits NavTileBase
+
+<NavTileStandardContent Headline="Data Collection Wizard"
+                        Subline="@Localization.DataCollectionWizardNavTile.TileSubline"
+                        IconSrc="svg/DataCollectionWizardClientTile.svg"
+                        IconAlt="Data Collection Wizard"
+                        OnContentLoading="@ContentLoading"
+                        OnContentReady="@ContentReady" />

@@ -1,0 +1,309 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="VseName" xml:space="preserve">
+    <value>VSE</value>
+  </data>
+  <data name="AddVseDialogHeader" xml:space="preserve">
+    <value>VSE hinzufügen</value>
+  </data>
+  <data name="AliasDialogHeader" xml:space="preserve">
+    <value>Alias editieren</value>
+  </data>
+  <data name="Collapse" xml:space="preserve">
+    <value>Einklappen</value>
+  </data>
+  <data name="DeleteAllOfflineNodes" xml:space="preserve">
+    <value>Alle offline Knoten löschen</value>
+  </data>
+  <data name="DeleteDialogHeader" xml:space="preserve">
+    <value>Gerät löschen?</value>
+  </data>
+  <data name="DeleteDialogText" xml:space="preserve">
+    <value>Die gelöschten Geräte werden erst nach dem Speichern übernommen.</value>
+  </data>
+  <data name="DeleteOfflineNodes" xml:space="preserve">
+    <value>Offline Knoten löschen</value>
+  </data>
+  <data name="Alias" xml:space="preserve">
+    <value>Alias eingeben</value>
+  </data>
+  <data name="Expand" xml:space="preserve">
+    <value>Ausklappen</value>
+  </data>
+  <data name="InvalidDeviceAddress" xml:space="preserve">
+    <value>Die angegebene Adresse ist ungültig.</value>
+  </data>
+  <data name="Recursive" xml:space="preserve">
+    <value>Rekursiv</value>
+  </data>
+  <data name="Rescan" xml:space="preserve">
+    <value>Neu scannen</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="ShowAll" xml:space="preserve">
+    <value>Alle anzeigen</value>
+  </data>
+  <data name="VseAddress" xml:space="preserve">
+    <value>VSE Adresse</value>
+  </data>
+  <data name="DeviceAddressNotUnique" xml:space="preserve">
+    <value>Ein Gerät mit der angegebenen Adresse existiert bereits.</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>Ausblenden</value>
+  </data>
+  <data name="SetAllDatapointsCompression" xml:space="preserve">
+    <value>Kompressionszeitraum setzen</value>
+  </data>
+  <data name="SetAllDatapointsDisabled" xml:space="preserve">
+    <value>Alle deaktivieren</value>
+  </data>
+  <data name="SetAllDatapointsEnabled" xml:space="preserve">
+    <value>Alle aktivieren</value>
+  </data>
+  <data name="SetDebugRawDataGrid" xml:space="preserve">
+    <value>Debug Rohdaten Intervall</value>
+  </data>
+  <data name="IoLinkMasterName" xml:space="preserve">
+    <value>IO-Link Master</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Data Collection Wizard</value>
+  </data>
+  <data name="AddIoLinkMasterDialogHeader" xml:space="preserve">
+    <value>IO-Link Master hinzufügen</value>
+  </data>
+  <data name="PathVisible" xml:space="preserve">
+    <value>Pfad anzeigen</value>
+  </data>
+  <data name="ShowDebugTooling" xml:space="preserve">
+    <value>Debug Tools anzeigen</value>
+  </data>
+  <data name="AddNewDevice" xml:space="preserve">
+    <value>Gerät hinzufügen</value>
+  </data>
+  <data name="DeleteAllOfflineNodesDialogHeader" xml:space="preserve">
+    <value>Alle offline Knoten löschen?</value>
+  </data>
+  <data name="DeleteAllOfflineNodesDialogText" xml:space="preserve">
+    <value>Möchten Sie wirklich alle aktuellen nicht erreichbaren (offline) Knoten löschen?</value>
+  </data>
+  <data name="Damage" xml:space="preserve">
+    <value>Beschädigung</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="Enabled" xml:space="preserve">
+    <value>Aktiviert</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Fehler</value>
+  </data>
+  <data name="New" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="Path" xml:space="preserve">
+    <value>Pfad</value>
+  </data>
+  <data name="ProcessDataView" xml:space="preserve">
+    <value>Prozessdatenansicht</value>
+  </data>
+  <data name="ProcessValue" xml:space="preserve">
+    <value>Prozesswert</value>
+  </data>
+  <data name="RecordingSettings" xml:space="preserve">
+    <value>Aufnahmeeinstellungen</value>
+  </data>
+  <data name="Scheduler" xml:space="preserve">
+    <value>Zeitplaner</value>
+  </data>
+  <data name="Warning" xml:space="preserve">
+    <value>Warnung</value>
+  </data>
+  <data name="IoLinkMasterAddress" xml:space="preserve">
+    <value>IO-Link Master Adresse</value>
+  </data>
+  <data name="UnsavedChanges" xml:space="preserve">
+    <value>Alle ungespeicherten Änderungen gehen verloren.</value>
+  </data>
+  <data name="DataPointLimitApproaching" xml:space="preserve">
+    <value>Sie erreichen in kürze das empfohlene Limit für aktivierte Datenpunkte ({0} von {1}).</value>
+  </data>
+  <data name="DataPointLimitReached" xml:space="preserve">
+    <value>Sie haben das empfohlene Limit für aktivierte Datenpunkte erreicht ({0} von {1}). Das Aktivieren weiterer Datenpunkte kann zu Systeminstabilität führen.</value>
+  </data>
+  <data name="LogLevel" xml:space="preserve">
+    <value>Log Level</value>
+  </data>
+  <data name="Manual" xml:space="preserve">
+    <value>Manuell</value>
+  </data>
+  <data name="Scan" xml:space="preserve">
+    <value>Scan</value>
+  </data>
+  <data name="SpinnerMessageTriggeringIoLinkScan" xml:space="preserve">
+    <value>Starte IO-Link Master Scan</value>
+  </data>
+  <data name="SpinnerMessageWaitingForScanResult" xml:space="preserve">
+    <value>Warte auf Antwort</value>
+  </data>
+  <data name="SpinnerMessageGeneratingDataflow" xml:space="preserve">
+    <value>Generiere Dataflow</value>
+  </data>
+  <data name="SpinnerMessageTriggeringDeviceScan" xml:space="preserve">
+    <value>Starte DeviceTree Scan</value>
+  </data>
+  <data name="SpinnerMessageDeployingDataflow" xml:space="preserve">
+    <value>Setze Dataflow auf</value>
+  </data>
+  <data name="SpinnerMessageSubscribingResultOutput" xml:space="preserve">
+    <value>Abonniere den Ausgang für das Scanergebnis</value>
+  </data>
+  <data name="IoLinkScanErrorDuringScan" xml:space="preserve">
+    <value>Der IO-Link Master Scan ist fehlgeschlagen:</value>
+  </data>
+  <data name="Devices" xml:space="preserve">
+    <value>Geräte</value>
+  </data>
+  <data name="MoneoDeactivatedTooltip" xml:space="preserve">
+    <value>Die Konfiguration von Prozesswerten wird generell für alle Datenziele unterstützt. Für die moneo|cloud wird diese Funktionalität freigeschaltet, sobald die entsprechenden Features verfügbar sind. In der Zwischenzeit nutzen Sie bitte die Konfigurationsmöglichkeiten direkt in der moneo|cloud.</value>
+  </data>
+  <data name="IoLinkScanNoResult" xml:space="preserve">
+    <value>Es wurden keine IO-Link Master im Netzwerk gefunden...</value>
+  </data>
+  <data name="IoLinkScanFilterNoResult" xml:space="preserve">
+    <value>Der verwendete Filter hat keine Ergebnisse geliefert...</value>
+  </data>
+  <data name="SpinnerMessageAwaitingCurrentDeployments" xml:space="preserve">
+    <value>Warte auf bestehende Deployments</value>
+  </data>
+  <data name="SpinnerMessageCreatingScanEngine" xml:space="preserve">
+    <value>Generiere IO-Link Scan Engine</value>
+  </data>
+  <data name="ClusterOutOfDateDialogHeader" xml:space="preserve">
+    <value>Konfigurationsänderung</value>
+  </data>
+  <data name="ClusterOutOfDateDialogText" xml:space="preserve">
+    <value>Jemand anderes hat eine Konfiguration gespeichert. Wenn Sie die aktuelle Konfiguration speichern, werden alle Änderungen überschrieben, die von dieser anderen Partei vorgenommen wurden. Falls das kein Problem ist, können sie diese Meldung ignorieren, andernfalls schließen Sie bitte den Data Collection Wizard und öffnen ihn erneut, um die aktuellste Konfiguration zu bearbeiten.</value>
+  </data>
+</root>

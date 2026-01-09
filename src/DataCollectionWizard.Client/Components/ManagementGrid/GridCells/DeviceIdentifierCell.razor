@@ -1,0 +1,128 @@
+﻿@using DataCollectionWizard.Client.Extensions
+@using ViciOne.Driver.IoTCore.Contracts.DeviceTree
+@using DataCollectionWizard.Client.Components.Localization
+
+<div class="device-identifier-cell">
+    <div class="device-name-container"
+         title="@(Model.DataNode.Name)">
+
+        @if (Model.DataNode.GetStatus().HasFlag(NodeStatus.Offline))
+        {
+            <span class="status-bar"></span>
+        }
+
+        <span class="device-name">
+            @(Model.DataNode.Name)
+        </span>
+
+        @if (PublishTargets.Any() && Model.DataNode.HasCaptions())
+        {
+            <span class="hidden-caption">
+                <span>@DataCollectionWizardPage.RecordingSettings</span>
+            </span>
+        }
+    </div>
+
+    @if (PublishTargets.Any() && Model.DataNode.HasCaptions())
+    {
+        <div class="captions"
+             style="--caption-count: @(Model.DataNode.CaptionCount())">
+
+            @if (Model.DataNode is IDeviceTreeConfigurableRawDataNode)
+            {
+                <div class="caption configurable-raw-data-node">
+                    <span>@DataCollectionWizardPage.RecordingSettings</span>
+                </div>
+            }
+
+            @if (Model.DataNode is IDeviceTreeSchedulableDataNode && !(Model.DataNode is DeviceTreeBlobData))
+            {
+                <div class="caption schedulable-data-node">
+                    <span>@DataCollectionWizardPage.Scheduler</span>
+                </div>
+            }
+
+            @if (Model.DataNode is IDeviceTreeEventTriggerDataNode triggerNode)
+            {
+                <div class="caption sensors">
+                    @foreach (var trigger in _visibleTriggers)
+                    {
+                        var canGetName = AllNodes.TryGetValue(trigger.ReferenceNodeId, out var node);
+                        var nodeNew = node?.IsNew ?? false;
+                        var nodeOffline = node?.IsOffline ?? false;
+
+                        <TooltipContainer>
+                            <ChildContent>
+                                <div @onpointerenter="@(context.OnPointerEnter)"
+                                     @onpointerleave="@(context.OnPointerLeave)"
+                                     @onpointermove="@(context.OnPointerMove)"
+                                     class="trigger-name">
+
+                                    <span>@(trigger.Name) @(canGetName ? $"[{node!.Name}]" : string.Empty)</span>
+                                    @if (nodeOffline)
+                                    {
+                                        <div class="status-icon error"></div>
+                                    }
+
+                                    @if (nodeNew)
+                                    {
+                                        <div class="status-icon new"></div>
+                                    }
+                                </div>
+                            </ChildContent>
+
+                            <TooltipContent>
+                                <div class="tooltip-container @(nodeNew || nodeOffline ? string.Empty : "no-status")">
+                                    <div class="tooltip-header">
+                                        @(trigger.Name)
+                                    </div>
+
+                                    @if (nodeNew || nodeOffline)
+                                    {
+                                        <div class="device-status">
+                                            @if (nodeOffline)
+                                            {
+                                                <div class="status error">
+                                                    <div class="status-dot"></div>
+                                                    <span>@(DeviceTreeTooltip.DeviceStatusOffline)</span>
+                                                </div>
+                                            }
+
+                                            @if (nodeNew)
+                                            {
+                                                <div class="status info">
+                                                    <div class="status-dot"></div>
+                                                    <span>@(DeviceTreeTooltip.DeviceStatusNewlyCreated)</span>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </TooltipContent>
+                        </TooltipContainer>
+
+                    }
+
+                    @if (!Model.IsExpanded)
+                    {
+                        <button @onclick="@(async () => await SetIsExpandedAsync(true, triggerNode))"
+                                title="@DataCollectionWizardPage.ShowAll">
+
+                            <span>@((MarkupString)SvgIcons.expand)</span>
+                            <span>@DataCollectionWizardPage.ShowAll</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <button @onclick="@(async () => await SetIsExpandedAsync(false, triggerNode))"
+                                title="@DataCollectionWizardPage.Hide">
+
+                            <span>@((MarkupString)SvgIcons.collapse)</span>
+                            <span>@DataCollectionWizardPage.Hide</span>
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

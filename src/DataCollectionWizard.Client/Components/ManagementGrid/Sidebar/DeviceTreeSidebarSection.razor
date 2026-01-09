@@ -1,0 +1,54 @@
+﻿@using DataCollectionWizard.Client.Services
+@using System.Drawing
+@using ViciOne.Ui.Shared.Dx.Components
+
+<div @onclick="@OnContainerClicked"
+     class="device-tree-section-container">
+
+    <SearchBox TextChanged="@OnFilterTextChanged">
+        <SearchBoxButton Action="@(OnAddDeviceClicked)"
+                         Enabled="@(!Service.DisableClusterActions)"
+                         Icon="@(SvgIcons.plus)"
+                         Tooltip="@Localization.DataCollectionWizardPage.AddNewDevice" />
+
+        <SearchBoxButton Action="@(() => OnChangeTreeExpansionClicked(true))"
+                         Enabled="@(Service.TreeBuilder.Selection.SelectedNodes.Any())"
+                         Icon="@(SvgIcons.expand)"
+                         Tooltip="@Localization.DataCollectionWizardPage.Expand" />
+
+        <SearchBoxButton Action="@(() => OnChangeTreeExpansionClicked(false))"
+                         Enabled="@(Service.TreeBuilder.Selection.SelectedNodes.Any())"
+                         Icon="@(SvgIcons.collapse)"
+                         Tooltip="@Localization.DataCollectionWizardPage.Collapse" />
+    </SearchBox>
+    
+    <TreeEditor Builder="@(Service.TreeBuilder)"
+                DisableInboundDragAndDrop="true"
+                DisableInternalDragAndDrop="true"
+                DisableOutboundDragAndDrop="true"
+                ShowGuidelines="true"
+                TemplateMapping="@(DeviceTreeAdapter.TemplateMapping)" />
+</div>
+
+@if (_addDeviceMenuRootPosition != Point.Empty)
+{
+    <div @onpointerleave="@OnAddDeviceMenuPointerLeave"
+         class="add-device-menu"
+         style="--position-x: @(_addDeviceMenuRootPosition.X)px; --position-y: @(_addDeviceMenuRootPosition.Y)px">
+
+        <div @onclick="@OnAddIoLinkMasterClicked"
+             class="menu-entry">
+
+            <div>@((MarkupString)SvgIcons.plus)</div>
+            <div>@Localization.DataCollectionWizardPage.IoLinkMasterName</div>
+        </div>
+
+        <div @onclick="@OnAddVseClicked"
+             class="menu-entry">
+
+            <div>@((MarkupString)SvgIcons.plus)</div>
+            <div>@Localization.DataCollectionWizardPage.VseName</div>
+        </div>
+
+    </div>
+}

@@ -1,0 +1,5 @@
+﻿<div class="uncompressable-cell">
+    <input @onchange="@(e => PoolingEnabledChanged((bool)e.Value!))"
+           checked="@(IsPoolingEnabled())"
+           type="checkbox" />
+</div>

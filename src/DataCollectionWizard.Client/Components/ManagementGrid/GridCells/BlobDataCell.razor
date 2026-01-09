@@ -1,0 +1,34 @@
+﻿@using DataCollectionWizard.Client.Extensions
+@using ViciOne.Driver.IoTCore.Contracts.DeviceTree
+
+<div class="blob-data-cell">
+    <Switch Enabled="@(IsSupportedConnection())"
+            Value="@(IsRecordingEnabled())"
+            ValueChanged="@(SchedulingEnabledChanged)" />
+
+    <ComboBox Enabled="@(IsSupportedConnection())"
+              Items="@(_daysOfWeek)"
+              TextSelector="@(e => e.Text)"
+              TItem="@(ComboBoxOption<DaysOfWeek>)"
+              TValue="@(DaysOfWeek)"
+              Value="@(GetSelectedDaysOfWeek())"
+              ValueChanged="@(OnDaysOfWeekChanged)"
+              ValueSelector="@(e => e.Value)" />
+
+    <ComboBox Enabled="@(IsSupportedConnection())"
+              Items="@(_timesADay)"
+              TextSelector="@(e => e.Text)"
+              TItem="@(ComboBoxOption<int>)"
+              TValue="@(int)"
+              Value="@(GetTimesADay())"
+              ValueChanged="@(OnTimesADayChanged)"
+              ValueSelector="@(e => e.Value)" />
+
+    <button @onclick="@(async () => await DownloadButtonClicked.InvokeAsync((BlobDataNode!, Configuration!)))"
+            class="btn"
+            disabled="@(!IsSupportedConnection())"
+            hidden="@(!IsDownloadButtonSupported())">
+
+        <span class="mdi mdi-download"></span>
+    </button>
+</div>

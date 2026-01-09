@@ -1,0 +1,132 @@
+﻿@use "./../../Styles/colours" as col;
+
+.device-image {
+    grid-area: image;
+
+    > img {
+        border-radius: 8px;
+        height: 150px;
+        width: 150px;
+    }
+}
+
+.device-info {
+    display: grid;
+    grid-area: info;
+    grid-column-gap: 8px;
+    grid-row-gap: 2px;
+    grid-template-columns: repeat(2, max-content);
+
+    &:not(.no-info) {
+        grid-auto-rows: min-content;
+    }
+
+    > div.separator {
+        grid-column: 1 / -1;
+        height: 1px;
+        margin: 2px 4px;
+    }
+
+    > label {
+        text-align: right;
+    }
+
+    > span {
+        max-width: 400px;
+        min-width: 100px;
+        overflow-wrap: anywhere;
+    }
+}
+
+.device-status {
+    grid-area: status;
+
+    > .status {
+        display: grid;
+        grid-column-gap: 4px;
+        grid-template-columns: min-content auto;
+        white-space: nowrap;
+
+        &.error {
+            > .status-dot {
+                background-color: col.$error;
+            }
+        }
+
+        &.info{
+            > .status-dot {
+                background-color: col.$add;
+            }
+        }
+
+        &.warning {
+            > .status-dot {
+                background-color: col.$warning;
+            }
+        }
+
+        > .status-dot {
+            background-color: rebeccapurple;
+            border-radius: 8px;
+            height: 8px;
+            place-self: center;
+            width: 8px;
+        }
+    }
+}
+
+.tooltip-container {
+    background-color: col.$content;
+    border: 1px solid col.$border;
+    border-radius: 8px;
+    display: grid;
+    grid-column-gap: 8px;
+    grid-row-gap: 8px;
+    grid-template-areas:
+        "header header"
+        "image  info"
+        "image  status";
+    grid-template-rows: min-content 1fr min-content;
+    padding: 8px;
+
+    &.no-image {
+        grid-template-areas:
+            "header"
+            "info"
+            "status";
+
+        &.no-info {
+            grid-template-areas:
+                "header"
+                "status";
+            grid-template-rows: repeat(2, min-content);
+
+            &.no-status {
+                grid-template-areas:
+                    "header";
+                grid-template-rows: min-content;
+
+                .tooltip-header {
+                    border: none;
+                    padding: 0px;
+                }
+            }
+        }
+
+        &.no-status {
+            grid-template-areas:
+                "header"
+                "info";
+            grid-template-rows: repeat(2, min-content);
+        }
+    }
+}
+
+.tooltip-header {
+    border-bottom: 1px solid col.$border;
+    font-weight: bold;
+    grid-area: header;
+    padding-bottom: 8px;
+    text-align: center;
+    white-space: nowrap;
+}

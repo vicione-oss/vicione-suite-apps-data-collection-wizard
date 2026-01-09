@@ -1,0 +1,23 @@
+﻿@using DataCollectionWizard.Client.Services
+@using ViciOne.Ui.Shared.Dx.Components
+
+<div class="live-view-section-container">
+    <SearchBox TextChanged="@OnFilterTextChanged">
+        <SearchBoxButton Action="@(() => OnChangeTreeExpansionClicked(true))"
+                         Enabled="@(Service.TreeBuilder.Selection.SelectedNodes.Any())"
+                         Icon="@(SvgIcons.expand)"
+                         Tooltip="@Localization.DataCollectionWizardPage.Expand" />
+
+        <SearchBoxButton Action="@(() => OnChangeTreeExpansionClicked(false))"
+                         Enabled="@(Service.TreeBuilder.Selection.SelectedNodes.Any())"
+                         Icon="@(SvgIcons.collapse)"
+                         Tooltip="@Localization.DataCollectionWizardPage.Collapse" />
+    </SearchBox>
+    
+    <TreeEditor Builder="@(Service.TreeBuilder)"
+                DisableInboundDragAndDrop="true"
+                DisableInternalDragAndDrop="true"
+                DisableOutboundDragAndDrop="true"
+                ShowGuidelines="true"
+                TemplateMapping="@(DeviceTreeAdapter.TemplateMapping)" />
+</div>

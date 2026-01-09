@@ -1,0 +1,45 @@
+﻿@use "./../../../Styles/colours.scss" as col;
+
+@mixin cell-container {
+    align-items: center;
+    display: grid;
+    grid-column-gap: 8px;
+    grid-template-columns: 70px repeat(2, 120px);
+    justify-items: center;
+
+    input, select {
+        background-color: col.$content-dark;
+        border-color: col.$border;
+        border-radius: 4px;
+        border-style: solid;
+        border-width: 1px;
+        color: col.$font;
+        height: 24px;
+        width: 100%;
+
+        &:focus {
+            border-color: col.$accent;
+            outline: unset;
+        }
+
+        &:disabled {
+            opacity: 0.35;
+        }
+    }
+
+    ::deep {
+        &.combo-box {
+            width: 100%;
+
+            > select {
+                width: 100%;
+            }
+        }
+
+        &.spin-edit {
+            > input {
+                width: 100%;
+            }
+        }
+    }
+}

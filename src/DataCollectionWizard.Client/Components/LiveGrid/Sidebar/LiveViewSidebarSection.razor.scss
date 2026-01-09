@@ -1,0 +1,24 @@
+﻿@use "./../../../Styles/colours" as col;
+
+.live-view-section-container {
+    bottom: 0;
+    display: grid;
+    grid-template-rows: min-content auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+
+    ::deep .tree-editor-container {
+        background-color: inherit;
+
+        .tree-node-display-container {
+            height: unset;
+        }
+    }
+
+    ::deep .search-box-container {
+        background-color: inherit;
+        margin: 12px 8px;
+    }
+}

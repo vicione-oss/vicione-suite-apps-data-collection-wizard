@@ -1,0 +1,5 @@
+﻿@use "./grid-cell-base.scss" as base;
+
+.uncompressable-cell {
+    @include base.cell-container;
+}

@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>ViciOne.Suite.DataCollectionWizard.Internal</AssemblyName>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="ViciOne.Cluster.Builder" />
+    <PackageReference Include="ViciOne.Driver.IoTCore.Contracts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ViciOne.Suite.ClusterManagement.Public" />
+    <PackageReference Include="ViciOne.Suite.DataPort.Anna.Contracts" />
+    <PackageReference Include="ViciOne.Suite.Sdk" />
+    <PackageReference Include="ViciOne.Suite.Sdk.Client" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DataCollectionWizard.Client.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DataCollectionWizard.Public\DataCollectionWizard.Public.csproj" />
+  </ItemGroup>
+  
+</Project>

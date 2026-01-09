@@ -1,0 +1,108 @@
+﻿@using DataCollectionWizard.Internal.Contracts
+@using DataCollectionWizard.Internal.Extensions
+@using Microsoft.Extensions.Logging
+@using ViciOne.Ui.Shared.Dx.Components
+
+<div class="toolbar-container">
+    <span class="header">
+        @Localization.DataCollectionWizardPage.ProcessDataView
+    </span>
+
+    <div class="searchbox-container">
+        <SearchBox TextChanged="@(e => SearchText = e)" />
+    </div>
+
+    <div class="toolbar @(_showDebug ? "debug" : string.Empty)">
+        <button @onclick="@(OnSaveButtonClicked)"
+                disabled="@(!Service.DeviceTreeChanged || Service.DisableClusterActions)"
+                title="@(_showDebug ? SaveReasons : Localization.DataCollectionWizardPage.Save)">
+
+            @((MarkupString)RoccoSvgIcons.save)
+        </button>
+
+        <button @onclick="@(OnTogglePathVisible)"
+                class="@(Service.PathVisible ? "active" : string.Empty)"
+                title="@Localization.DataCollectionWizardPage.PathVisible">
+
+            @((MarkupString)RoccoSvgIcons.path)
+        </button>
+
+        <button disabled="@(!Service.HasOfflineNodes)"
+                @onclick="@OnDeleteOfflineNodesClicked"
+                title="@Localization.DataCollectionWizardPage.DeleteAllOfflineNodes">
+
+            <!--Todo: Icon? Papierkorb mit offline symbol drin?-->
+            @((MarkupString)RoccoSvgIcons.delete)
+        </button>
+
+        <span class="separator"></span>
+
+        <button disabled="@Service.DisableClusterActions"
+                title="@Localization.DataCollectionWizardPage.Rescan"
+                @onclick="@OnRebrowseClicked">
+
+            @((MarkupString)RoccoSvgIcons.refresh)
+        </button>
+
+        <button class="debug-button @(_showDebug ? "active" : string.Empty)"
+                title="@Localization.DataCollectionWizardPage.ShowDebugTooling"
+                @onclick="@(() => _showDebug ^= true)">
+
+            @((MarkupString)SvgIcons.bug)
+        </button>
+
+        @if (_showDebug)
+        {
+            <span class="separator"></span>
+
+            <select @onchange="@(e => _debugPoolingGrid = ((string)e.Value!).ToPoolingGrid())">
+                @foreach (var value in Enum.GetValues(typeof(PoolingGrid)).Cast<PoolingGrid>())
+                {
+                    <option selected="@(value == _debugPoolingGrid)">
+                        @(value.PoolingGridToString())
+                    </option>
+                }
+            </select>
+
+            <button @onclick="@(() => SetAllDatapointsCompression(_debugPoolingGrid))"
+                    title="@Localization.DataCollectionWizardPage.SetAllDatapointsCompression">
+
+                @((MarkupString)SvgIcons.check)
+            </button>
+
+            <span class="separator"></span>
+
+            <button @onclick="@(() => SetAllDatapointsEnabled(true))"
+                    title="@Localization.DataCollectionWizardPage.SetAllDatapointsEnabled">
+
+                @((MarkupString)SvgIcons.checkbox_outline)
+            </button>
+
+            <button @onclick="@(() => SetAllDatapointsEnabled(false))"
+                    title="@Localization.DataCollectionWizardPage.SetAllDatapointsDisabled">
+
+                @((MarkupString)SvgIcons.checkbox_blank_outline)
+            </button>
+
+            <span class="separator"></span>
+
+            <button @onclick="@(() => SetDebugRawDataGrid())"
+                    title="@Localization.DataCollectionWizardPage.SetDebugRawDataGrid">
+
+                @((MarkupString)SvgIcons.raw)
+            </button>
+
+            <span class="separator"></span>
+
+            <select @onchange="@(e => Service.LogLevel = StringToLogLevel((string)e.Value!))"
+                    title="@Localization.DataCollectionWizardPage.LogLevel">
+                @foreach (var value in Enum.GetValues(typeof(LogLevel)).Cast<LogLevel>())
+                {
+                    <option selected="@(value == Service.LogLevel)">
+                        @(LogLevelToString(value))
+                    </option>
+                }
+            </select>
+        }
+    </div>
+</div>

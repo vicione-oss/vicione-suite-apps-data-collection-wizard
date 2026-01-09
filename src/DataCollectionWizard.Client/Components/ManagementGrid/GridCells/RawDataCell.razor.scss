@@ -1,0 +1,86 @@
+﻿@use "./grid-cell-base" as base;
+@use "./../../../Styles/colours" as col;
+
+.column {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    padding: 0px;
+
+    &.damage {
+        color: col.$error;
+        grid-column: 1;
+
+        &.disabled {
+            color: col.$content-dark-disabled;
+        }
+    }
+
+    &.delay {
+        grid-column: 3;
+        width: 100%;
+
+        &.header {
+            justify-items: center;
+            line-height: 1em;
+            padding-bottom: 1px;
+            text-align: center;
+        }
+
+        &.disabled {
+            color: col.$content-dark-disabled;
+        }
+    }
+
+    &.enabled {
+        grid-column: 1;
+    }
+
+    &.status {
+        display: grid;
+        font-size: 16px;
+        grid-auto-columns: 32px;
+        grid-column: 2;
+        grid-column-gap: 8px;
+        justify-content: center;
+        line-height: 1em;
+    }
+
+    &.warning {
+        color: col.$warning;
+        grid-column: 2;
+
+        &.disabled {
+            color: col.$content-dark-disabled;
+        }
+    }
+}
+
+.raw-data-cell {
+    @include base.cell-container;
+
+    grid-template-columns: unset;
+    grid-row-gap: 4px;
+    padding-top: 10px;
+}
+
+.row {
+    display: grid;
+    grid-auto-rows: 24px;
+    grid-column-gap: 8px;
+    grid-template-columns: 70px repeat(2, 120px);
+    position: relative;
+
+    &.header {
+        background-color: unset;
+    }
+}
+
+.row-completionist {
+    background-color: inherit;
+    height: 100%;
+    left: calc(-1 * (var(--spacer-width, 0) * 8px + var(--width-padding, 0px)));
+    padding: 0px;
+    position: absolute;
+    width: calc(var(--spacer-width, 0) * 8px + var(--width-padding, 0px));
+}

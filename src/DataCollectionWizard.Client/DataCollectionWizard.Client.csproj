@@ -1,0 +1,156 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <AssemblyName>ViciOne.Suite.DataCollectionWizard.Client</AssemblyName>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+    <CompressionEnabled>false</CompressionEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNetCore.SassCompiler" PrivateAssets="all" />
+    <PackageReference Include="ViciOne.Suite.Sdk.Client" />
+    <PackageReference Include="ViciOne.Ui.Blazor.Components" />
+    <PackageReference Include="ViciOne.Ui.MonochromeIcons.Assets" />
+    <PackageReference Include="ViciOne.Ui.Shared.Dx" />
+    <PackageReference Include="ViciOne.Ui.TreeEditor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ViciOne.Suite.DataCollectionWizard.Client.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+  <!-- Prevent Microsoft.NET.Sdk.Razor from copying unnecessary file -->
+  <ItemGroup>
+    <Content Update="Components\LiveGrid\GridCells\DeviceIdentifierCell.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+    <Content Update="sasscompiler.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+    <Content Update="package*.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Components\Localization\DeviceTreeTooltip.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DeviceTreeTooltip.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Components\Localization\LiveViewPage.Designer.cs">
+      <DependentUpon>LiveViewPage.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Components\Localization\DataCollectionWizardPage.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DataCollectionWizardPage.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Components\NavTiles\Localization\DataCollectionWizardNavTile.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DataCollectionWizardNavTile.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Components\NavTiles\Localization\LiveViewNavTile.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>LiveViewNavTile.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Resources\RoccoSvgIcons.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>RoccoSvgIcons.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Resources\SvgIcons.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SvgIcons.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Services\Localization\DeviceTreeAdapter.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DeviceTreeAdapter.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Components\Localization\DeviceTreeTooltip.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>DeviceTreeTooltip.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Components\Localization\LiveViewPage.resx">
+      <LastGenOutput>LiveViewPage.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Components\Localization\DataCollectionWizardPage.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>DataCollectionWizardPage.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Components\NavTiles\Localization\DataCollectionWizardNavTile.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>DataCollectionWizardNavTile.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Components\NavTiles\Localization\LiveViewNavTile.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>LiveViewNavTile.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\RoccoSvgIcons.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>RoccoSvgIcons.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\SvgIcons.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>SvgIcons.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Services\Localization\DeviceTreeAdapter.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>DeviceTreeAdapter.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Components\DataCollectionWizardPage - Copy.razor.scss" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Components\LiveGrid\DataCollectionWizardGrid.razor.scss" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Components\LiveGrid\GridCells\DeviceIdentifierCell.razor.scss" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DataCollectionWizard.Internal\DataCollectionWizard.Internal.csproj" />
+  </ItemGroup>
+
+  <Target Name="ConfigureMonochromeIcons" BeforeTargets="BeforeMonochromeIconTargets">
+    <ItemGroup>
+      <MonochromeIcon Include="align-bottom" Size="16;24" />
+      <MonochromeIcon Include="align-left" Size="16;24" />
+      <MonochromeIcon Include="align-right" Size="16;24" />
+      <MonochromeIcon Include="align-top" Size="16;24" />
+      <MonochromeIcon Include="align-top-by-lowest-element" Size="16;24" />
+      <MonochromeIcon Include="bug-light" Size="32" />
+      <MonochromeIcon Include="cluster-2" Size="32" />
+      <MonochromeIcon Include="dataflow-solid" Size="24" />
+      <MonochromeIcon Include="data-switch" Size="32" />
+      <MonochromeIcon Include="export" Size="24" />
+      <MonochromeIcon Include="hamburger-menu" Size="24" />
+      <MonochromeIcon Include="import" Size="24" />
+      <MonochromeIcon Include="info-outlined" Size="24" />
+      <MonochromeIcon Include="library" Size="32" />
+      <MonochromeIcon Include="new" Size="24" />
+      <MonochromeIcon Include="new-in-wizard" Size="24" />
+      <MonochromeIcon Include="properties" Size="32" />
+      <MonochromeIcon Include="published-connector-full" Size="32" />
+      <MonochromeIcon Include="save-outline" Size="24" />
+      <MonochromeIcon Include="search-and-tools" Size="32" />
+      <MonochromeIcon Include="test-tube-solid" Size="32" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <MonochromeIconSvgOutputFolder>$(MSBuildProjectDirectory)/wwwroot/icons/monochrome-icons</MonochromeIconSvgOutputFolder>
+      <MonochromeIconScssOutputFolder>$(MSBuildProjectDirectory)/Styles/icons/monochrome-icons</MonochromeIconScssOutputFolder>
+    </PropertyGroup>
+  </Target>
+  
+</Project>

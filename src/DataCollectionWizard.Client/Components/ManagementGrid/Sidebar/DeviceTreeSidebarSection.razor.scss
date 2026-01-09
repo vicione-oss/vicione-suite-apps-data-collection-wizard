@@ -1,0 +1,56 @@
+﻿@use "./../../../Styles/colours" as col;
+
+.add-device-menu {
+    background-color: col.$content-dark;
+    border: 1px solid col.$border;
+    border-radius: 4px;
+    cursor: pointer;
+    left: var(--position-x, 0);
+    padding: 4px;
+    position: fixed;
+    top: var(--position-y, 0);
+    user-select: none;
+    z-index: 10;
+}
+
+.device-tree-section-container {
+    bottom: 0;
+    display: grid;
+    grid-template-rows: min-content auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+
+    ::deep .tree-editor-container {
+        background-color: inherit;
+
+        .tree-node-display-container {
+            height: unset;
+        }
+    }
+
+    ::deep .search-box-container {
+        background-color: inherit;
+        margin: 12px 8px;
+    }
+}
+
+.menu-entry {
+    align-items: center;
+    border-radius: 4px;
+    display: grid;
+    grid-column-gap: 4px;
+    grid-template-columns: 24px auto;
+    padding-right: 4px;
+
+    &:hover {
+        background-color: col.$content-dark-hover;
+    }
+
+    ::deep svg {
+        path {
+            fill: col.$accent;
+        }
+    }
+}

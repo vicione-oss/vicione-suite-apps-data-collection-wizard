@@ -1,0 +1,26 @@
+﻿@using ViciOne.Driver.IoTCore.Contracts.DeviceTree
+@using DataCollectionWizard.Internal.Contracts
+
+<div class="compressable-cell">
+    <Switch Enabled="@(IsSupportedConnection())"
+            Value="@(IsPoolingEnabled())"
+            ValueChanged="@(PoolingEnabledChanged)" />
+
+    <ComboBox Enabled="@(IsSupportedConnection())"
+              Items="@(PoolingGrids)"
+              TextSelector="@(e => e.Text)"
+              TItem="@(ComboBoxOption<PoolingGrid>)"
+              TValue="@(PoolingGrid)"
+              Value="@(GetSelectedPoolingGrid())"
+              ValueChanged="@(PoolingGridChanged)"
+              ValueSelector="@(e => e.Value)" />
+
+    <ComboBox Enabled="@(!IsOnChange() && IsSupportedConnection())"
+              Items="@(PoolingModes)"
+              TextSelector="@(e => e.Text)"
+              TItem="@(ComboBoxOption<PoolingMode>)"
+              TValue="@(PoolingMode)"
+              Value="@(GetSelectedPoolingMode())"
+              ValueChanged="@(PoolingModeChanged)"
+              ValueSelector="@(e => e.Value)" />
+</div>

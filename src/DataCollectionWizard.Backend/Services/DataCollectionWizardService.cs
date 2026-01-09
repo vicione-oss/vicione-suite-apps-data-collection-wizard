@@ -1,0 +1,384 @@
+﻿using System.Text.Json;
+using DataCollectionWizard.Backend.DbContext;
+using DataCollectionWizard.Internal;
+using DataCollectionWizard.Internal.Commands;
+using DataCollectionWizard.Internal.Contracts;
+using DataCollectionWizard.Internal.Events;
+using DataCollectionWizard.Internal.Extensions;
+using DataCollectionWizard.Internal.Requests;
+using DataCollectionWizard.Internal.Services;
+using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
+using DataCollectionWizard.Internal.Services.DesignIds;
+using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Sdk.Backend.Messaging;
+using Sdk.Connections.Contracts;
+using Sdk.Instance;
+using ViciOne.Cluster.Builder;
+using ViciOne.Cluster.Model;
+using ViciOne.Cluster.Model.Extensions;
+using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+
+namespace DataCollectionWizard.Backend.Services;
+
+public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWizardService> logger,
+    DataCollectionWizardState dataCollectionWizardState,
+    ISuiteMediator mediator,
+    IClusterService clusterService,
+    IDataCollectionWizardDbContext dataCollectionWizardDbContext,
+    IInstanceInformationProvider instanceInformationProvider,
+    IEnumerable<IDeviceDataflowGenerator> deviceDataflowGenerators,
+    IEnumerable<ICloudDataflowGenerator> cloudDataflowGenerators,
+    IEnumerable<ICloudFilter> cloudFilters,
+    IConnectionService connectionService)
+    : IDataCollectionWizardService
+{
+    private const int EngineMinCycleTime = 500;
+
+    private const string EngineNameKeyIoLink = "IO-Link";
+    private const string EngineNameKeyVse = "VSE";
+    private const string EngineNamePrefix = "DCW";
+    private const string EngineNameIoLinkScanner = "IO-Link-Scanner";
+
+    public async Task<Cluster?> AddDeviceTreeEnginesAsync(IEnumerable<DeviceEngineInfo> deviceEngineInfos, Guid correlationId, bool allowUseExistingEngine, LogLevel logLevel)
+    {
+        await LoadLatestClusterAsync();
+        var createdEngines = false;
+
+        foreach (var deviceEngineInfo in deviceEngineInfos)
+        {
+            var type = Type.GetType(deviceEngineInfo.Type);
+
+            if (type is null)
+            {
+                throw new ArgumentException($"Cannot find type {type}");
+            }
+
+            var engineName = GetMasterDeviceEngineName(type, deviceEngineInfo.Address);
+            var (engineExist, deviceTreeConnectors) = await DoesEngineAlreadyExistAsync(engineName, deviceEngineInfo.Address);
+
+            if (engineExist && allowUseExistingEngine)
+            {
+                await mediator.Publish(new DeviceTreeEngineAddedEvent
+                {
+                    Address = deviceEngineInfo.Address,
+                    DeviceTreeConnectors = deviceTreeConnectors,
+                    CorrelationId = correlationId
+                });
+
+                continue;
+            }
+
+            createdEngines = true;
+            await AddDeviceRequestEngineAsync(type, dataCollectionWizardState.ClusterBuilder!, deviceEngineInfo.Address, correlationId, logLevel);
+        }
+
+        return createdEngines ? dataCollectionWizardState.ClusterBuilder!.Cluster : null;
+    }
+
+    private async Task AddDeviceRequestEngineAsync(Type type, ClusterBuilder clusterBuilder, Uri address, Guid correlationId, LogLevel logLevel)
+    {
+        IDeviceTreeMasterNode device = type switch
+        {
+            { } deviceTreeVseDeviceType when deviceTreeVseDeviceType == typeof(DeviceTreeVseDevice) => new DeviceTreeVseDevice
+            {
+                Id = "placeholder",
+                MacAddress = "ff:ff:ff:ff:ff",
+                Name = $"VSE-{address}",
+                NameAlias = $"VSE-{address}",
+                Url = address,
+            },
+            { } deviceTreeIoLinkMasterType when deviceTreeIoLinkMasterType == typeof(DeviceTreeIoLinkMaster) => new DeviceTreeIoLinkMaster
+            {
+                Id = "placeholder",
+                MacAddress = "ff:ff:ff:ff:ff",
+                Name = $"IO-Link-{address}",
+                NameAlias = $"IO-Link-{address}",
+                Url = new UriBuilder(address).Uri,
+            },
+            _ => throw new ArgumentException($"Invalid device type encountered, {type} is not currently supported", type.Name),
+        };
+
+        ModifyCluster(clusterBuilder, device, [], out var deviceTreeTrigger, out var deviceTreeOutput, out _, logLevel);
+
+        var deviceConnectorIds = new DeviceConnectorIds
+        {
+            DeviceAddress = address.ToString(),
+            TriggerInput = deviceTreeTrigger,
+            DeviceTreeOutput = deviceTreeOutput
+        };
+
+        await mediator.Send(new UpsertDeviceConnectorIds([deviceConnectorIds]));
+        dataCollectionWizardState.RequestedDevices.Add((address, correlationId));
+        dataCollectionWizardState.DeviceTreeConnectors[address] = deviceConnectorIds;
+    }
+
+    public async Task<Cluster?> AddIoLinkScannerAsync(LogLevel logLevel)
+    {
+        await LoadLatestClusterAsync();
+        var clusterBuilder = dataCollectionWizardState.ClusterBuilder!;
+        var engineHost = GetEngineHost(clusterBuilder);
+
+        if (clusterBuilder is null)
+            throw new InvalidOperationException("Cluster Builder is not initialized.");
+
+        clusterBuilder.Editors.EngineHost.SetElevatedPrivileges(engineHost, true);
+        DataflowGenerator.AddDesigns(clusterBuilder);
+
+        return AddIoLinkScannerEngineIfNecessary(clusterBuilder, engineHost, logLevel)
+            ? clusterBuilder.Cluster
+            : null;
+    }
+
+    private static bool AddIoLinkScannerEngineIfNecessary(ClusterBuilder clusterBuilder, EngineHost engineHost, LogLevel? logLevel = null)
+    {
+        var ioLinkScannerEngine = clusterBuilder.Cluster.GetAllEngines().FirstOrDefault(e => e.Name == EngineNameIoLinkScanner);
+        if (ioLinkScannerEngine is not null)
+            return false;
+
+        var scanDataflow = clusterBuilder.Editors.Cluster.AddDataflow(EngineNameIoLinkScanner, new Version(0, 1));
+        var scanFunctionBlock = clusterBuilder.Editors.Container.AddFunctionBlock(scanDataflow.Root, FunctionBlocks.IoLinkMasterFinder.DesignId);
+
+        var devicesConnector = scanFunctionBlock.GetConnectorByDesignId(FunctionBlocks.IoLinkMasterFinder.Outputs.Devices)!;
+        var triggerConnector = scanFunctionBlock.GetConnectorByDesignId(FunctionBlocks.IoLinkMasterFinder.Inputs.Trigger)!;
+
+        clusterBuilder.Editors.Connector.SetId(devicesConnector, FunctionBlocks.IoLinkMasterFinder.Outputs.DevicesNodeId);
+        clusterBuilder.Editors.Connector.SetId(triggerConnector, FunctionBlocks.IoLinkMasterFinder.Inputs.TriggerNodeId);
+
+        clusterBuilder.Editors.Connector.SetEventEnabled(true, devicesConnector, triggerConnector);
+        clusterBuilder.Editors.Connector.SetMarkAsChangedOnlyIfNotEqual(triggerConnector, false);
+
+        ioLinkScannerEngine = clusterBuilder.Editors.EngineHost.AddEngine(engineHost, EngineNameIoLinkScanner);
+        clusterBuilder.Editors.Engine.SetLogLevel(ioLinkScannerEngine, logLevel ?? LogLevel.Error);
+        clusterBuilder.Editors.Engine.SetMinCycleTime(ioLinkScannerEngine, EngineMinCycleTime);
+        clusterBuilder.Editors.FunctionBlock.AssignEngine(ioLinkScannerEngine, [.. scanDataflow.Root.GetAllNestedFunctionBlocks()]);
+
+        return true;
+    }
+
+    private async Task AddOrUpdateDeviceEngines(ClusterBuilder clusterBuilder, IEnumerable<string> masterNodesToUpdate, IDeviceTreeBase[] deletedNodes,
+        IReadOnlyCollection<Connection> publishTargets, IDeviceTreeMasterNode[] allMasters, LogLevel? logLevel)
+    {
+        var nodesToUpdate = allMasters.IntersectBy(masterNodesToUpdate, n => n.Id);
+        var relevantMasterNodes = nodesToUpdate.Except(deletedNodes)
+                                               .Cast<IDeviceTreeMasterNode>()
+                                               .ToArray();
+
+        foreach (var deviceTreeMasterDevice in relevantMasterNodes)
+        {
+            ModifyCluster(clusterBuilder, deviceTreeMasterDevice, publishTargets, out var deviceTreeTrigger, out var deviceTreeOutput, out var outputMapping, logLevel);
+            var uri = new UriBuilder(deviceTreeMasterDevice.Url).Uri;
+
+            dataCollectionWizardState.DeviceTreeConnectors[uri] = new DeviceConnectorIds
+            {
+                DeviceAddress = deviceTreeMasterDevice.Url.ToString(),
+                DeviceTreeOutput = deviceTreeOutput,
+                TriggerInput = deviceTreeTrigger,
+            };
+
+            await mediator.Send(new UpsertDeviceConnectorIds([new DeviceConnectorIds { DeviceAddress = deviceTreeMasterDevice.Url.ToString(),
+                TriggerInput = deviceTreeTrigger, DeviceTreeOutput = deviceTreeOutput }]));
+
+            await mediator.Send(new UpsertOutputConnectorMapping(outputMapping));
+        }
+    }
+
+    public async Task<Cluster> ApplyDeviceTreeAsync(IEnumerable<string> masterNodesToUpdate,
+                                           IDeviceTreeBase[] deletedNodes,
+                                           DeviceTreeRoot deviceTree, LogLevel? logLevel, CancellationToken cancellationToken)
+    {
+        var connections = await connectionService.GetConnectionsAsync(cancellationToken);
+        var publishTargets = PublishTargetsFilter.GetPublishTargets(connections, cloudFilters);
+        await LoadLatestClusterAsync();
+
+        var allMasters = deviceTree.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>().ToArray();
+
+        RemoveVacantEngines(dataCollectionWizardState, allMasters);
+
+        await RemoveDeletedDeviceEngines(deletedNodes);
+        await AddOrUpdateDeviceEngines(dataCollectionWizardState.ClusterBuilder!, masterNodesToUpdate, deletedNodes, publishTargets, allMasters, logLevel);
+
+        return dataCollectionWizardState.ClusterBuilder!.Cluster;
+    }
+
+    private async Task<(bool result, DeviceConnectorIds deviceTreeConnectors)> DoesEngineAlreadyExistAsync(string engineName, Uri deviceAddress)
+    {
+        var deviceTreeConnectors = new DeviceConnectorIds
+        {
+            DeviceAddress = deviceAddress.ToString(),
+        };
+
+        if (dataCollectionWizardState.ClusterBuilder!.Cluster.Version > dataCollectionWizardState.LatestDeployedClusterVersion)
+            return (false, deviceTreeConnectors);
+
+        if (dataCollectionWizardState.ClusterBuilder!.Cluster.GetAllEngines().All(e => e.Name != engineName))
+            return (false, deviceTreeConnectors);
+
+        var dataflow = dataCollectionWizardState.ClusterBuilder!.Cluster.Dataflows.FirstOrDefault(d => d.Name == engineName);
+
+        if (dataflow is null)
+            return (false, deviceTreeConnectors);
+
+        var deviceConnectorsResponse = await mediator.Request<GetDeviceConnectorsRequest, GetDeviceConnectorsResponse>(new GetDeviceConnectorsRequest(null));
+        deviceTreeConnectors = deviceConnectorsResponse.Ids.FirstOrDefault(i => new UriBuilder(i.DeviceAddress).Uri == deviceAddress) ?? deviceTreeConnectors;
+
+        if (dataflow.Root.GetAllNestedFunctionBlocks()
+            .SelectMany(fb => fb.Inputs)
+            .All(i => i.Id != deviceTreeConnectors.TriggerInput))
+        {
+            return (false, deviceTreeConnectors);
+        }
+
+        if (dataflow.Root.GetAllNestedFunctionBlocks()
+            .SelectMany(fb => fb.Outputs)
+            .All(i => i.Id != deviceTreeConnectors.DeviceTreeOutput))
+        {
+            return (false, deviceTreeConnectors);
+        }
+
+        return (true, deviceTreeConnectors);
+    }
+
+    private static string GetMasterDeviceEngineName(IDeviceTreeMasterNode deviceTreeMaster)
+    {
+        var key = EngineNameKeyIoLink;
+        if (deviceTreeMaster is DeviceTreeVseDevice)
+            key = EngineNameKeyVse;
+
+        return $"{EngineNamePrefix}-{key}-{deviceTreeMaster.Url.DnsSafeHost}:{deviceTreeMaster.Url.Port}";
+    }
+
+    private static string GetMasterDeviceEngineName(Type deviceType, Uri deviceUrl)
+    {
+        var key = deviceType switch
+        {
+            { } deviceTreeVseDeviceType when deviceTreeVseDeviceType == typeof(DeviceTreeVseDevice) => EngineNameKeyVse,
+            { } deviceTreeIoLinkMasterType when deviceTreeIoLinkMasterType == typeof(DeviceTreeIoLinkMaster) => EngineNameKeyIoLink,
+            _ => throw new InvalidOperationException($"Invalid device type encountered, {deviceType} is not currently supported"),
+        };
+
+        return $"{EngineNamePrefix}-{key}-{deviceUrl.DnsSafeHost}";
+    }
+
+    private async Task LoadLatestClusterAsync()
+    {
+        if (dataCollectionWizardState.ClusterBuilder is not null && dataCollectionWizardState.ClusterBuilder.Cluster.Version == dataCollectionWizardState.LatestClusterVersion)
+        {
+            LogSkipClusterLoading(logger, dataCollectionWizardState.ClusterBuilder.Cluster.Version);
+            return;
+        }
+
+        dataCollectionWizardState.MachineIdentifier ??= instanceInformationProvider.Local.SerialNumber;
+        dataCollectionWizardState.ClusterBuilder = await clusterService.LoadLatestClusterBuilder();
+
+        LogLoadedCluster(logger, nameof(LoadLatestClusterAsync), dataCollectionWizardState.ClusterBuilder.Cluster.Version);
+    }
+
+    private void ModifyCluster(ClusterBuilder clusterBuilder, IDeviceTreeMasterNode deviceTreeMasterNode, IReadOnlyCollection<Connection> publishTargets, out Guid deviceTreeTrigger, out Guid deviceTreeOutput, out List<ValueMappingEntry> outputMapping, LogLevel? logLevel)
+    {
+        deviceTreeTrigger = Guid.Empty;
+        deviceTreeOutput = Guid.Empty;
+
+        var engineHost = GetEngineHost(clusterBuilder);
+        var engineName = GetMasterDeviceEngineName(deviceTreeMasterNode);
+        var dataflow = clusterBuilder.Cluster.Dataflows.FirstOrDefault(d => d.Name == engineName);
+        var engine = clusterBuilder.Cluster.GetAllEngines().FirstOrDefault(e => e.Name == engineName) ?? clusterBuilder.Editors.EngineHost.AddEngine(engineHost, engineName);
+
+        clusterBuilder.Editors.Engine.SetMinCycleTime(engine, EngineMinCycleTime);
+        clusterBuilder.Editors.EngineHost.SetElevatedPrivileges(engineHost, true);
+        if(logLevel is not null)
+        {
+            clusterBuilder.Editors.Engine.SetLogLevel(engine, logLevel.Value);
+            clusterBuilder.Editors.EngineHost.SetLogLevel(engineHost, logLevel.Value);
+        }
+
+        if (dataflow is not null)
+            clusterBuilder.Editors.Cluster.RemoveDataflow(dataflow);
+
+        dataflow = clusterBuilder.Editors.Cluster.AddDataflow(engineName, new Version(0, 1));
+
+        var dataflowGenerator = new DataflowGenerator(clusterBuilder, logger, dataCollectionWizardState.MachineIdentifier!, [.. deviceDataflowGenerators], [.. cloudDataflowGenerators], [.. cloudFilters]);
+
+        dataflowGenerator.Generate(deviceTreeMasterNode, publishTargets, dataflow, engine, out deviceTreeTrigger, out deviceTreeOutput, out outputMapping);
+
+        AddIoLinkScannerEngineIfNecessary(clusterBuilder, engineHost);
+    }
+
+    private static EngineHost GetEngineHost(ClusterBuilder clusterBuilder)
+    {
+        var nodeGroup = clusterBuilder.Cluster.NodeGroups.FirstOrDefault() ?? clusterBuilder.Editors.Cluster.AddNodeGroup();
+        var node = nodeGroup.Nodes.FirstOrDefault() ?? clusterBuilder.Editors.NodeGroup.AddNode(nodeGroup);
+        var application = node.Applications.FirstOrDefault() ?? clusterBuilder.Editors.Node.AddApplication(node, ClusterApplicationType.CoreOsStandalone);
+        var engineHost = clusterBuilder.Cluster.GetAllEngineHosts().FirstOrDefault() ?? clusterBuilder.Editors.Application.AddEngineHost(application);
+        return engineHost;
+    }
+
+    private async Task RemoveDeletedDeviceEngines(IDeviceTreeBase[] deletedNodes)
+    {
+        foreach (var deletedNode in deletedNodes)
+        {
+            if (deletedNode is IDeviceTreeMasterNode deletedMasterNode)
+            {
+                RemoveDeletedNodeDataflow(deletedMasterNode);
+            }
+
+            await mediator.Send(new DeleteOutputConnectorMapping([.. deletedNode.GetNodeAndDescendants().Select(n => n.Id)]));
+        }
+    }
+
+    private void RemoveDeletedNodeDataflow(IDeviceTreeMasterNode deletedMasterNode)
+    {
+        var clusterBuilder = dataCollectionWizardState.ClusterBuilder;
+
+        var nodeGroup = clusterBuilder!.Cluster.NodeGroups.FirstOrDefault() ?? clusterBuilder.Editors.Cluster.AddNodeGroup();
+        var node = nodeGroup.Nodes.FirstOrDefault() ?? clusterBuilder.Editors.NodeGroup.AddNode(nodeGroup);
+        var application = node.Applications.FirstOrDefault() ?? clusterBuilder.Editors.Node.AddApplication(node, ClusterApplicationType.CoreOsStandalone);
+        var engineHost = clusterBuilder.Cluster.GetAllEngineHosts().FirstOrDefault() ?? clusterBuilder.Editors.Application.AddEngineHost(application);
+        var engineName = GetMasterDeviceEngineName(deletedMasterNode);
+        var engine = engineHost.Engines.FirstOrDefault(e => e.Name == engineName);
+
+        if (engine is not null)
+        {
+            clusterBuilder.Editors.EngineHost.RemoveEngine(engine);
+            clusterBuilder.Editors.Cluster.RemoveDataflow(clusterBuilder.Cluster.Dataflows.First(d => d.Name == engineName));
+        }
+    }
+
+    private static void RemoveVacantEngines(DataCollectionWizardState dataCollectionWizardState, IDeviceTreeMasterNode[] allMasters)
+    {
+        var existingEngines = dataCollectionWizardState.ClusterBuilder!.Cluster.GetAllEngines().Where(n => n.Name.StartsWith(EngineNamePrefix, StringComparison.Ordinal));
+        var existingDeviceEngineNames = allMasters.Select(GetMasterDeviceEngineName);
+
+        if (dataCollectionWizardState.ClusterBuilder is null)
+        {
+            throw new ArgumentNullException($"{nameof(dataCollectionWizardState)}.{nameof(dataCollectionWizardState.ClusterBuilder)}");
+        }
+
+        foreach (var vacantEngine in existingEngines.ExceptBy(existingDeviceEngineNames, e => e.Name).ToArray())
+        {
+            dataCollectionWizardState.ClusterBuilder.Editors.EngineHost.RemoveEngine(vacantEngine);
+
+            var vacantDataflow = dataCollectionWizardState.ClusterBuilder.Cluster.Dataflows.FirstOrDefault(d => d.Name == vacantEngine.Name);
+
+            if (vacantDataflow is not null)
+            {
+                dataCollectionWizardState.ClusterBuilder.Editors.Cluster.RemoveDataflow(vacantDataflow);
+            }
+        }
+    }
+
+    public async Task<DeviceTreeRoot> RequestDeviceTreeAsync(CancellationToken cancellationToken)
+    {
+        var dbItems = await dataCollectionWizardDbContext.Devices.Select(d => d.DeviceTreeJson).ToArrayAsync(cancellationToken);
+        var tree = new DeviceTreeRoot
+        {
+            Children = [.. dbItems.Select(json => JsonSerializer.Deserialize<DeviceTreeStructureNode>(json, SerializerOptions.DeviceTree)).Select(s => s!.Children.First())]
+        };
+
+        LogReturnsTreeIdDebug(logger, nameof(RequestDeviceTreeAsync), tree.Id);
+
+        return tree;
+    }
+}

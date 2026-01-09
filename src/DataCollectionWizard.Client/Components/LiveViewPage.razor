@@ -1,0 +1,75 @@
+﻿@using DataCollectionWizard.Client.Components.LiveGrid
+@using DataCollectionWizard.Client.Components.LiveGrid.Sidebar
+@using DataCollectionWizard.Client.Components.LiveGrid.Toolbar
+@using DataCollectionWizard.Public
+@using Microsoft.AspNetCore.Authorization
+@using Sdk.Authorization
+@using Sdk.Client.Modules
+@using ViciOne.Ui.Blazor.Components.EditorLayout
+@using ViciOne.Ui.Localization.Resources
+@using ViciOne.Ui.Shared.Dx.Components
+
+@attribute [Authorize]
+@attribute [Route(Constants.LiveViewPageRoute)]
+@attribute [ModuleAuthorize<DataCollectionWizardClientModule>(AccessLevel.Partial)]
+@inherits ModulePageBase<DataCollectionWizardClientModule>
+
+<div class="live-view-page">
+    <CascadingValue IsFixed="true"
+                    Value="@_service">
+
+        <EditorLayout>
+            <Left>
+                <LiveViewSidebar />
+            </Left>
+
+            <Top>
+                <LiveViewToolbar />
+            </Top>
+
+            @* TODO: "Center" is obsolete *@
+            <Center>
+                <LiveViewGrid />
+            </Center>
+        </EditorLayout>
+    </CascadingValue>
+
+    <DxDialog @ref="@_refLatestClusterNotRunningDialog"
+              CloseOnEscape="true"
+              CloseOnOutsideClick="false"
+              Header="@Localization.LiveViewPage.LatestClusterNotRunningDialogHeader"
+              Height="300px"
+              IsTextOnly="true"
+              Width="600px">
+
+        <Body>
+            <p class="dialog-content text-only">@Localization.LiveViewPage.LatestClusterNotRunningDialogText</p>
+        </Body>
+
+        <Footer>
+            <DxDialogFooterButton OnClick="@OnLatestClusterNotRunningDialogOkAsync"
+                                  Text="@CommonVocabulary.Ok" />
+        </Footer>
+    </DxDialog>
+
+    <DxDialog @ref="@_refDataInvalidDialog"
+              CloseOnEscape="true"
+              CloseOnOutsideClick="false"
+              Header="@Localization.LiveViewPage.ClusterOutOfDateDialogHeader"
+              Height="300px"
+              IsTextOnly="true"
+              Width="600px">
+
+        <Body>
+            <p class="dialog-content text-only">@Localization.LiveViewPage.ClusterOutOfDateDialogText</p>
+        </Body>
+
+        <Footer>
+            <DxDialogFooterButton OnClick="@OnDataInvalidDialogOkAsync"
+                                  Text="@CommonVocabulary.Ok" />
+        </Footer>
+    </DxDialog>
+
+    <LoadingSpinner Messages="@(_loadingSpinnerMessages)"
+                    Visible="@(_displayLoadingSpinner)" />
+</div>

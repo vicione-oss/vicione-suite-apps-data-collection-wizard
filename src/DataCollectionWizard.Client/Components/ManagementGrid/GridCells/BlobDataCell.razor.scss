@@ -1,0 +1,9 @@
+﻿@use "./grid-cell-base.scss" as base;
+
+.blob-data-cell {
+    @include base.cell-container;
+
+    > button {
+        padding: 1px 6px;
+    }
+}

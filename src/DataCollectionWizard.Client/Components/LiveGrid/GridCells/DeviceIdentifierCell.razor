@@ -1,0 +1,14 @@
+﻿<div class="device-identifier-cell">
+    <div class="device-name-container"
+         title="@(Model.DataNode.Name)">
+
+        @if (Model.DataNode.GetStatus().HasFlag(NodeStatus.Offline))
+        {
+            <span class="status-bar"></span>
+        }
+
+        <span class="device-name">
+            @(Model.DataNode.Name)
+        </span>
+    </div>
+</div>

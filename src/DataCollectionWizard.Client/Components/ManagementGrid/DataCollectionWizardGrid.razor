@@ -1,0 +1,190 @@
+﻿@using DataCollectionWizard.Client.Components.ManagementGrid.GridCells
+@using DataCollectionWizard.Client.Extensions
+@using DataCollectionWizard.Public.Extensions
+@using ViciOne.Driver.IoTCore.Contracts.DeviceTree
+
+<div @ref="@(_mainContainerRef)"
+     class="data-collection-wizard-grid">
+
+    <table cellpadding="0"
+           cellspacing="0">
+
+        <thead>
+            <tr>
+                @if (Service.PathVisible)
+                {
+                    <th class="device-path">
+                        <div class="header-template">
+                            <span></span>
+                            <div>
+                                <span>@Localization.DataCollectionWizardPage.Path</span>
+                            </div>
+                        </div>
+                    </th>
+
+                    <th class="spacer"
+                        style="--spacer-width: 3;">
+
+                        <!-- spacer column -->
+                        <div class="header-template">
+                            <span></span>
+                            <div>&nbsp;</div>
+                        </div>
+                    </th>
+                }
+
+                <th class="device-name">
+                    <div class="header-template">
+                        <span></span>
+                        <div>
+                            <span>@Localization.DataCollectionWizardPage.ProcessValue</span>
+                        </div>
+                    </div>
+                </th>
+
+                @foreach (var target in PublishTargets)
+                {
+                    <th class="publish-target">
+                        <div class="header-template">
+                            <span>@(target.Name)</span>
+
+                            <div class="publish-target">
+                                <span>
+                                    @Localization.DataCollectionWizardPage.Enabled
+                                </span>
+
+                                <span>
+                                    @Localization.DataCollectionWizardPage.Details
+                                </span>
+                            </div>
+                        </div>
+                    </th>
+
+                    if (PublishTargets.Last() != target)
+                    {
+                        <th class="spacer publish-target">
+                            <!-- spacer column -->
+                            <div class="header-template">
+                                <span></span>
+                                <div>&nbsp;</div>
+                            </div>
+                        </th>
+                    }
+                }
+
+                <th class="spacer absorbtion">
+                    <!-- space absorbtion column -->
+                    <div class="header-template">
+                        <span></span>
+                        <div>&nbsp;</div>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var item in Service.FilteredGridItems)
+            {
+                var spacerWidth = 0;
+
+                <tr>
+                    @if (Service.PathVisible)
+                    {
+                        <td class="device-path"
+                            title="@(item.PathToNode.GetBreadcrumb())">
+
+                            <div class="device-path-container">
+                                <span>@(item.PathToNode.GetBreadcrumb())</span>
+                            </div>
+                        </td>
+
+                        spacerWidth = 3;
+
+                        <td class="spacer"
+                            style="--spacer-width: @(spacerWidth);">
+
+                            <!-- spacer column -->
+                        </td>
+                    }
+
+                    <td class="device-name">
+                        <DeviceIdentifierCell AllNodes="@AllNodes"
+                                              ExpandedChanged="@(RefreshAsync)"
+                                              Model="item"
+                                              PublishTargets="PublishTargets"/>
+                    </td>
+
+                    @foreach (var target in PublishTargets)
+                    {
+                        <td class="publish-target" title="@(IsSupportedConnection(target) ? string.Empty : Localization.DataCollectionWizardPage.MoneoDeactivatedTooltip)">
+                            <div class="publish-target-cell-wrapper @(item.DataNode.HasCaptions() ? "captioned" : string.Empty)"
+                                 style="--caption-count: @(item.DataNode.CaptionCount()); --spacer-width: @(spacerWidth);">
+
+                                @{
+                                    var masterNode = item.PathToNode.ElementAt(1) as IDeviceTreeMasterNode;
+
+                                    if (item.DataNode is IDeviceTreeConfigurableRawDataNode configurableBlobData)
+                                    {
+                                        <ConfigurableRawDataCell ConfigurableRawDataNode="@configurableBlobData"
+                                                                 Configuration="@target"
+                                                                 MaxTimesADay="@RawDataPullingMaxTimesADay"
+                                                                 OnDeviceTreeChanged="@(() => OnDeviceTreeChanged.InvokeAsync(masterNode))" />
+                                    }
+
+                                    if (item.DataNode is IDeviceTreeSchedulableDataNode blobData)
+                                    {
+                                        <BlobDataCell BlobDataNode="@blobData"
+                                                      Configuration="@target"
+                                                      DownloadButtonClicked="@(async args => await OnBlobDataDownloadButtonClick.InvokeAsync(args))"
+                                                      MaxTimesADay="@RawDataPullingMaxTimesADay"
+                                                      OnDeviceTreeChanged="@(() => OnDeviceTreeChanged.InvokeAsync(masterNode))" />
+                                    }
+
+                                    if (item.DataNode is IDeviceTreeEventTriggerDataNode rawData)
+                                    {
+                                        <RawDataCell IsExpanded="@item.IsExpanded"
+                                                     MaxTimesADay="@RawDataPullingMaxTimesADay"
+                                                     OnDeviceTreeChanged="@(() => OnDeviceTreeChanged.InvokeAsync(masterNode))"
+                                                     Configuration="@target"
+                                                     RawDataNode="@rawData" />
+                                    }
+
+                                    if (item.DataNode is IDeviceTreeCompressableDataNode dataNode && dataNode.DataType.SupportedForLogging())
+                                    {
+                                        if (dataNode.DataType.SupportedForCompression())
+                                        {
+                                            <CompressableCell CompressableDataNode="@dataNode"
+                                                              Configuration="@target"
+                                                              OnDeviceTreeChanged="@(() => OnDeviceTreeChanged.InvokeAsync(masterNode))" />
+                                        }
+                                        else
+                                        {
+                                            <UncompressableCell CompressableDataNode="@dataNode"
+                                                                Configuration="@target"
+                                                                OnDeviceTreeChanged="@(() => OnDeviceTreeChanged.InvokeAsync(masterNode))" />
+                                        }
+                                    }
+                                }
+                            </div>
+                        </td>
+
+                        if (PublishTargets.Last() != target)
+                        {
+                            spacerWidth = 10;
+
+                            <td class="spacer"
+                                style="--spacer-width: @(spacerWidth);">
+                                <!-- spacer column -->
+                            </td>
+                        }
+                    }
+                    
+
+                    <td class="spacer absorbtion">
+                        <!-- space absorbtion column -->
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

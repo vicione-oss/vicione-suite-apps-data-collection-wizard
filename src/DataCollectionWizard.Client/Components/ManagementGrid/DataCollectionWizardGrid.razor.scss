@@ -1,0 +1,153 @@
+﻿@use "./../../Styles/colours" as col;
+@use 'sass:color';
+
+.data-collection-wizard-grid {
+    bottom: 0;
+    color: col.$font-dark;
+    left: 0;
+    overflow: auto;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.header-template {
+    > div {
+        border-top: 1px solid col.$content-hover;
+        border-bottom: 1px solid col.$content-hover;
+        padding: 16px 0px 16px var(--width-padding);
+
+        &.publish-target {
+            display: grid;
+            grid-column-gap: 8px;
+            grid-template-columns: 70px auto;
+
+            > span:first-of-type {
+                text-align: center;
+            }
+        }
+    }
+
+    > span {
+        padding: 0px 0px 8px 16px;
+        display: block;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 1em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.publish-target-cell-wrapper {
+    align-content: center;
+    display: grid;
+    height: 100%;
+
+    &.captioned {
+        align-content: start;
+        grid-row-gap: 4px;
+        grid-template-rows: repeat(calc(var(--caption-count, 0) - 1), 24px) auto;
+    }
+}
+
+table {
+    --width-padding: 8px;
+
+    border: none;
+    width: 100%;
+
+    tbody {
+        > tr:nth-child(even) > td {
+            background-color: color.adjust(col.$background, $lightness: 2%);
+
+            ::deep .device-identifier-cell .caption.sensors span:nth-of-type(even) {
+                background-color: col.$background;
+            }
+
+            ::deep .raw-data-cell .row.sensor:nth-of-type(odd) {
+                background-color: col.$background;
+            }
+        }
+
+        > tr:nth-child(odd) > td {
+            ::deep .device-identifier-cell .caption.sensors span:nth-of-type(even) {
+                background-color: color.adjust(col.$background, $lightness: 2%);
+            }
+
+            ::deep .raw-data-cell .row.sensor:nth-of-type(odd) {
+                background-color: color.adjust(col.$background, $lightness: 2%);
+            }
+        }
+    }
+
+    td, th {
+        &.device-name {
+            --max-width: 320px;
+
+            background-color: col.$background;
+            left: 0px;
+            min-width: 160px;
+            max-width: var(--max-width);
+            position: sticky;
+        }
+
+        &.device-path {
+            min-width: 190px;
+            max-width: 520px;
+        }
+
+        &.publish-target {
+            min-width: calc(70px + (2 * 120px) + (2 * 8px) + 8px);
+            max-width: calc(70px + (2 * 120px) + (2 * 8px) + 8px);
+        }
+
+        &.spacer {
+            max-width: calc(8px * var(--spacer-width, 0));
+            min-width: calc(8px * var(--spacer-width, 0));
+
+            &.absorbtion {
+                width: 100%;
+            }
+        }
+    }
+
+    td {
+        align-content: start;
+        padding: 11px 0px 11px var(--width-padding);
+
+        &.device-name {
+            display: flex;
+            z-index: 10;
+        }
+
+        &.device-path {
+            .device-path-container {
+                align-items: center;
+                display: flex;
+
+                > span {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+            }
+        }
+    }
+
+    th {
+        align-content: end;
+        background-color: col.$background;
+        font-size: 14px;
+        font-weight: normal;
+        line-height: 1em;
+        position: sticky;
+        top: 0px;
+        z-index: 15;
+
+        &.device-name {
+            z-index: 20;
+        }
+    }
+}

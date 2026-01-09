@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net9.0": {
+      "ViciOne.CodeAnalysis": {
+        "type": "Direct",
+        "requested": "[1.2.1, )",
+        "resolved": "1.2.1",
+        "contentHash": "QLRj/dBscAqmCoRFL45bjIHfpx5F5sjC5JVo+vOxIHG3rW+jaYDO9TSAcPEABxd+GMl0JkOHDiWdhrgLIG3QjQ=="
+      },
+      "ViciOne.Suite.Sdk.Deployment": {
+        "type": "Direct",
+        "requested": "[1.0.0, )",
+        "resolved": "1.0.0",
+        "contentHash": "GdKkJP9h8H9Hyf/mRoDwZA5w4TELtn/pujq2ewn/4H4EaNIqa0KSLNy1Zctotc5m/hfsQKO0R2pAlMgMYVTiPg=="
+      }
+    },
+    "net9.0/linux-arm64": {},
+    "net9.0/linux-x64": {},
+    "net9.0/win-x64": {}
+  }
+}

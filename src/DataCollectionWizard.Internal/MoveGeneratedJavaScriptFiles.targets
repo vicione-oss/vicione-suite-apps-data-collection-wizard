@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Path>wwwroot\js\</Path>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <TypeScriptFile Include="$(MSBuildProjectDirectory)/**/*.ts"  Exclude="$(MSBuildProjectDirectory)/**/*.d.ts"/>
+    <GeneratedFile Include="@(TypeScriptFile->'%(RelativeDir)%(Filename).js')" />
+    <FileToMove Include="@(GeneratedFile)">
+      <!--https://regex101.com/r/1xMYrs/1-->
+      <DestinationPath>$(Path)$([System.Text.RegularExpressions.Regex]::Replace(%(Filename)%(Extension), '(?&lt;!^)([A-Z])(?![A-Z])', '-$1').ToLower().Replace('.razor', '').Replace('.cs', ''))</DestinationPath>
+    </FileToMove>
+  </ItemGroup>
+
+  <Target Name="DeleteMovedJsFiles" BeforeTargets="Clean">
+    <Delete Files="%(FileToMove.DestinationPath)" />
+  </Target>
+
+  <Target Name="MoveGeneratedJavaScriptFiles" BeforeTargets="GetTypeScriptOutputForPublishing">
+    <Move SourceFiles="%(FileToMove.Identity)" DestinationFiles="%(FileToMove.DestinationPath)" Condition="Exists('%(FileToMove.Identity)')" />
+  </Target>
+
+  <Target Name="EnsureGeneratedFileExistsInStaticWebAssets" Outputs="%(FileToMove.DestinationPath)" BeforeTargets="ResolveProjectStaticWebAssets">
+    <PropertyGroup>
+      <DestinationFile>%(FileToMove.DestinationPath)</DestinationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!--
+          @(Content) is passed to DiscoverStaticWebAssets task in an early stage of the build, way before our generate and move steps will execute.
+          This results in the build system / targets / tasks not knowing about the moved files.
+          We fix this by adding a content item for the moved file.
+
+          An alternative to using a Condition is to use Inputs="%(FileToMove.Identity)" in target tag
+          which would result in a faster build because target would be executed only when %(FileToMove.Identity) changes.
+          For now, it feels more natural to always execute a move to always have a fresh state in $(FileToMove.DestinationPath).
+        -->
+      <Content Include="$(DestinationFile)" Condition="!@(Content->AnyHaveMetadataValue('Identity', $(DestinationFile)))" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="RemoveMovedJsContents" AfterTargets="GetTypeScriptOutputForPublishing">
+    <!--
+      Removes generated scripts from 'Content', that were added in target 'GetTypeScriptOutputForPublishing' and got moved by target 'MoveGeneratedJavaScriptFiles',
+      so that these generated files are not included in NuGet-package and staticwebassets.
+    -->
+    <ItemGroup>
+      <Content Remove="%(GeneratedJavascript.Identity)" />
+    </ItemGroup>
+  </Target>
+</Project>

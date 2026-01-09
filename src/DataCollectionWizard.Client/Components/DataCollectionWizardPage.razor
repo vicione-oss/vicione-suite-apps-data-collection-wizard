@@ -1,0 +1,315 @@
+﻿@using DataCollectionWizard.Client.Components.ManagementGrid.Sidebar
+@using DataCollectionWizard.Client.Components.ManagementGrid.Toolbar
+@using DevExpress.Blazor
+@using DataCollectionWizard.Client.Components.ManagementGrid
+@using DataCollectionWizard.Public
+@using Microsoft.AspNetCore.Components.Routing
+@using Sdk.Authorization
+@using Sdk.Client.Modules
+@using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions
+@using ViciOne.Ui.Blazor.Components.EditorLayout
+@using ViciOne.Ui.Localization.Resources
+@using ViciOne.Ui.Shared.Dx.Components
+
+@attribute [Route(Constants.DataCollectionWizardPageRoute)]
+@attribute [ModuleAuthorize<DataCollectionWizardClientModule>(AccessLevel.Full)]
+@inherits ModulePageBase<DataCollectionWizardClientModule>
+
+<div class="data-collection-wizard-page">
+    <CascadingValue IsFixed="true"
+                    Value="@_service">
+
+        <EditorLayout>
+            <Left>
+                <DataCollectionWizardSidebar />
+            </Left>
+
+            <Top>
+                <DcwToolbar SaveReasons="@_saveReasons"/>
+            </Top>
+            @* TODO: "Center" is obsolete *@
+            <Center>
+                <DataCollectionWizardGrid AllNodes="@(_allNodes)"
+                                          OnDeviceTreeChanged="@(OnDeviceTreeChanged)"
+                                          PublishTargets="@(_publishTargets)"
+                                          RawDataPullingMaxTimesADay="@_rawDataPullingMaxTimesADay" />
+            </Center>
+        </EditorLayout>
+    </CascadingValue>
+
+    <LoadingSpinner Messages="@(_loadingSpinnerMessages)"
+                    Visible="@(_displayLoadingSpinner)" />
+</div>
+
+<NavigationLock ConfirmExternalNavigation="@(_service.DeviceTreeChanged)"
+                OnBeforeInternalNavigation="@ConfirmLeave" />
+
+<DxDialog @ref="@_refDeleteDialog"
+          CloseOnEscape="true"
+          CloseOnOutsideClick="false"
+          Header="@Localization.DataCollectionWizardPage.DeleteDialogHeader"
+          Height="300px"
+          IsTextOnly="true"
+          Width="600px">
+
+    <Body>
+        <p class="dialog-content text-only">@Localization.DataCollectionWizardPage.DeleteDialogText</p>
+    </Body>
+
+    <Footer>
+        <DxDialogFooterButton OnClick="@OnDeleteDialogOkAsync"
+                              Text="@CommonVocabulary.Ok" />
+
+        <DxDialogFooterButton OnClick="@OnDeleteDialogCloseAsync"
+                              Text="@CommonVocabulary.Cancel" />
+    </Footer>
+</DxDialog>
+
+<DxDialog @ref="@_refDeleteAllOfflineDialog"
+          CloseOnEscape="true"
+          CloseOnOutsideClick="false"
+          Header="@Localization.DataCollectionWizardPage.DeleteAllOfflineNodesDialogHeader"
+          Height="300px"
+          IsTextOnly="true"
+          Width="600px">
+
+    <Body>
+        <p class="dialog-content text-only">@Localization.DataCollectionWizardPage.DeleteAllOfflineNodesDialogText</p>
+    </Body>
+
+    <Footer>
+        <DxDialogFooterButton OnClick="@OnDeleteAllOfflineDialogOkAsync"
+                              Text="@CommonVocabulary.Ok" />
+
+        <DxDialogFooterButton OnClick="@OnDeleteAllOfflineDialogCloseAsync"
+                              Text="@CommonVocabulary.Cancel" />
+    </Footer>
+</DxDialog>
+
+<DxDialog @ref="@_refDataInvalidDialog"
+          CloseOnEscape="true"
+          CloseOnOutsideClick="false"
+          Header="@Localization.DataCollectionWizardPage.ClusterOutOfDateDialogHeader"
+          Height="350px"
+          IsTextOnly="true"
+          Width="600px">
+
+    <Body>
+        <p class="dialog-content text-only">@Localization.DataCollectionWizardPage.ClusterOutOfDateDialogText</p>
+    </Body>
+
+    <Footer>
+        <DxDialogFooterButton OnClick="@OnDataInvalidDialogOkAsync"
+                              Text="@CommonVocabulary.Ok" />
+    </Footer>
+</DxDialog>
+
+<DxDialog @ref="@_refAliasDialog"
+          CloseOnEscape="true"
+          CloseOnOutsideClick="false"
+          Header="@Localization.DataCollectionWizardPage.AliasDialogHeader"
+          Height="350px"
+          IsTextOnly="true"
+          Shown="@OnAliasDialogShownAsync"
+          Width="600px">
+
+    <Body>
+        <div class="dialog-content dialog-content-alias">
+            <div class="input">
+                <label>@(Localization.DataCollectionWizardPage.Alias)</label>
+                <DxTextBox @bind-Text="_deviceAlias"
+                           @ref="@_refAliasTextBox"
+                           @onkeydown="OnAliasDialogTextBoxKeyDownAsync"
+                           BindValueMode="BindValueMode.OnInput"
+                           maxlength="64" />
+            </div>
+        </div>
+    </Body>
+
+    <Footer>
+        <DxDialogFooterButton OnClick="@OnAliasDialogOkAsync"
+                              Text="@CommonVocabulary.Ok" />
+
+        <DxDialogFooterButton OnClick="@OnAliasDialogCloseAsync"
+                              Text="@CommonVocabulary.Cancel" />
+    </Footer>
+</DxDialog>
+
+<DxDialog @ref="@_refAddVSEDialog"
+          CloseOnEscape="true"
+          CloseOnOutsideClick="false"
+          Closing="ResetAddVSEDialog"
+          Header="@Localization.DataCollectionWizardPage.AddVseDialogHeader"
+          Height="350px"
+          IsTextOnly="true"
+          Shown="@OnAddVSEDialogShownAsync"
+          Width="600px">
+
+    <Body>
+        <div class="dialog-content dialog-content-vse">
+            <div class="input">
+                <label>@(Localization.DataCollectionWizardPage.VseAddress)</label>
+                <DxTextBox @bind-Text="_newVSEAddress"
+                           @ref="@_refAddVSETextBox"
+                           @onkeydown="OnAddVSETextBoxKeyDownAsync"
+                           BindValueMode="BindValueMode.OnInput" />
+
+                <div class="validation-message-container">
+                    @if (!_isVSEUriValid)
+                    {
+                        <span class="validation-message">
+                            @Localization.DataCollectionWizardPage.InvalidDeviceAddress
+                        </span>
+                    }
+
+                    @if (!_isVSEUriUnique)
+                    {
+                        <span class="validation-message">
+                            @Localization.DataCollectionWizardPage.DeviceAddressNotUnique
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    </Body>
+
+    <Footer>
+        <DxDialogFooterButton OnClick="@OnAddVSEDialogOkAsync"
+                              Text="@CommonVocabulary.Ok"
+                              Enabled="@(!string.IsNullOrWhiteSpace(_newVSEAddress) && _isVSEUriValid && _isVSEUriUnique)" />
+
+        <DxDialogFooterButton OnClick="@OnAddVSEDialogCloseAsync"
+                              Text="@CommonVocabulary.Cancel" />
+    </Footer>
+</DxDialog>
+
+<DxDialog @ref="@_refAddIoLinkMasterDialog"
+          CloseOnEscape="true"
+          CloseOnOutsideClick="false"
+          Closing="ResetAddIoLinkMasterDialog"
+          Header="@Localization.DataCollectionWizardPage.AddIoLinkMasterDialogHeader"
+          Height="@_ioLinkMasterDialogHeight"
+          IsTextOnly="true"
+          Shown="@OnAddIoLinkMasterDialogShownAsync"
+          Width="600px">
+
+    <Body>
+        <div class="dialog-content dialog-content-iolink">
+            <div class="toolbar-container">
+                <div class="tab-control-container">
+                    <DxTabs @bind-ActiveTabIndex="_ioLinkMasterTabIndex">
+                        <DxTab Text="@Localization.DataCollectionWizardPage.Manual" Click="@((i) => SetIoLinkMasterDialogScanHeight(i.TabIndex))" />
+                        <DxTab Text="@Localization.DataCollectionWizardPage.Scan" Click="@((i) => SetIoLinkMasterDialogScanHeight(i.TabIndex))" />
+                    </DxTabs>
+                </div>
+
+                @if (_ioLinkMasterTabIndex == 1)
+                {
+                    <div class="toolbar">
+                        <SearchBox TextChanged="@((e) => SetScannedIoLinkMastersFilter(e))"/>
+
+                        <span class="separator"></span>
+
+                        <button title="@Localization.DataCollectionWizardPage.Rescan"
+                                @onclick="@OnRescanIoLinkDevicesClicked">
+                            @((MarkupString)RoccoSvgIcons.refresh)
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <div class="content-container">
+                @if (_ioLinkMasterTabIndex == 0)
+                {
+                    <div class="input">
+                        <label>@(Localization.DataCollectionWizardPage.IoLinkMasterAddress)</label>
+
+                        <DxTextBox @bind-Text="_newIoLinkMasterAddress"
+                                   @ref="@_refAddIoLinkMasterTextBox"
+                                   @onkeydown="OnAddIoLinkMasterTextBoxKeyDownAsync"
+                                   BindValueMode="BindValueMode.OnInput" />
+
+                        <div class="validation-message-container">
+                            @if (!_isIoLinkMasterUriValid)
+                            {
+                                <span class="validation-message">
+                                    @Localization.DataCollectionWizardPage.InvalidDeviceAddress
+                                </span>
+                            }
+
+                            @if (!_isIoLinkMasterUriUnique)
+                            {
+                                <span class="validation-message">
+                                    @Localization.DataCollectionWizardPage.DeviceAddressNotUnique
+                                </span>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    @if (_scannedIoLinkDevices is null)
+                    {
+                        <LoadingSpinner Messages="@(_loadingSpinnerMessagesScanIoLink)"
+                                        Visible="true" />
+                    }
+                    else
+                    {
+                        <div class="device-list">
+                            @if (_scanIoLinkErrors.Count > 0)
+                            {
+                                <span>@Localization.DataCollectionWizardPage.IoLinkScanErrorDuringScan</span>
+
+                                @foreach (var errorMessage in _scanIoLinkErrors)
+                                {
+                                    <span class="validation-message">@errorMessage</span>
+                                }
+                            }
+                            else if (_scannedIoLinkDevices.Count == 0)
+                            {
+                                <span class="validation-message">@Localization.DataCollectionWizardPage.IoLinkScanNoResult</span>
+                            }
+                            else
+                            {
+                                var filteredDevices = FilterScannedDevices(_scannedIoLinkDevices);
+                                
+                                @if (filteredDevices.Count() == 0)
+                                {
+                                    <span class="validation-message">@Localization.DataCollectionWizardPage.IoLinkScanFilterNoResult</span>
+                                }
+                                else
+                                {
+                                    @foreach (var device in filteredDevices)
+                                    {
+                                        <div class="device-list-entry">
+                                            <input @onchange="@((e) => OnScannedDeviceSelectionChanged((bool)e.Value!, device))"
+                                                   checked="@_selectedIoLinkDevices.Contains(device.Address!.ToString())"
+                                                   type="checkbox" />
+                                            <div class="device-list-entry-name">
+                                                @device.DeviceName
+                                            </div>
+
+                                            <div class="device-list-entry-info">
+                                                @($"{device.Address!.DnsSafeHost}:{device.Address.Port} | {device.MacAddress} | {device.VendorId}-{device.DeviceId}")
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+    </Body>
+
+    <Footer>
+        <DxDialogFooterButton OnClick="@OnAddIoLinkMasterDialogOkAsync"
+                              Enabled="@IsIoLinkMasterDialogOkEnabled()"
+                              Text="@CommonVocabulary.Ok" />
+
+        <DxDialogFooterButton OnClick="@OnAddIoLinkMasterDialogCloseAsync"
+                              Text="@CommonVocabulary.Cancel" />
+    </Footer>
+</DxDialog>

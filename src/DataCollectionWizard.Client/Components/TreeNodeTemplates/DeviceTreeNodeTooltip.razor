@@ -1,0 +1,78 @@
+﻿@using DataCollectionWizard.Client.Components.Localization
+@using ViciOne.Driver.IoTCore.Contracts.DeviceTree
+
+@{
+    var deviceInfo = GetDeviceInfo();
+    var hasInfo = deviceInfo.Count > 0;
+
+    var hasImage = !string.IsNullOrWhiteSpace(_deviceImageDataBase64);
+    var nodeStatus = Device.GetStatus();
+}
+
+<div class="tooltip-container @(hasImage ? string.Empty : "no-image") @(hasInfo ? string.Empty : "no-info") @(nodeStatus == NodeStatus.None ? "no-status" : string.Empty)">
+    <div class="tooltip-header">
+        @(Device.Name)
+    </div>
+
+    @if (hasInfo)
+    {
+        <div class="device-info">
+            @foreach (var info in deviceInfo)
+            {
+                if (info.Key == DeviceInfoSeparatorKey)
+                {
+                    <div class="separator"></div>
+                }
+                else
+                {
+                    <label>@(info.Key)</label>
+                    <span>@(info.Value)</span>
+                }
+            }
+        </div>
+    }
+
+    @if (hasImage)
+    {
+        <div class="device-image">
+            <img src="data:image/jpeg;base64,@(_deviceImageDataBase64)" />
+        </div>
+    }
+
+    @if (nodeStatus != NodeStatus.None)
+    {
+        <div class="device-status">
+            @if (nodeStatus.HasFlag(NodeStatus.Offline))
+            {
+                <div class="status error">
+                    <div class="status-dot"></div>
+                    <span>@(DeviceTreeTooltip.DeviceStatusOffline)</span>
+                </div>
+            }
+
+            @if (nodeStatus.HasFlag(NodeStatus.NotSupported))
+            {
+                <div class="status warning">
+                    <div class="status-dot"></div>
+                    <span>@(DeviceTreeTooltip.DeviceStatusNotSupported)</span>
+                </div>
+            }
+
+            @if (nodeStatus.HasFlag(NodeStatus.Unknown))
+            {
+                <div class="status warning">
+                    <div class="status-dot"></div>
+                    <span>@(DeviceTreeTooltip.DeviceStatusUnknown)</span>
+                </div>
+            }
+
+            @if (nodeStatus.HasFlag(NodeStatus.New))
+            {
+                <div class="status info">
+                    <div class="status-dot"></div>
+                    <span>@(DeviceTreeTooltip.DeviceStatusNewlyCreated)</span>
+                </div>
+            }
+        </div>
+    }
+</div>

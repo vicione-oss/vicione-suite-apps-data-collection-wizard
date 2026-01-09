@@ -1,0 +1,41 @@
+﻿@use "./../Styles/_colours.scss" as col;
+@use "./../Styles/icons/monochrome-icons" with (
+    $svg-base-url: "./icons/monochrome-icons",
+    $base-selector: "::deep"
+);
+
+::deep .loading-spinner {
+    z-index: 100;
+}
+
+.cluster-error {
+    font-size: 18px;
+    margin: 10px;
+}
+
+.live-view-page {
+    bottom: 0;
+    display: grid;
+    grid-template-rows: 50px auto;
+    left: 0;
+    padding-bottom: 8px;
+    position: absolute;
+    right: 0;
+    top: 0;
+
+    ::deep {
+        .editor-layout {
+            position: absolute;
+            width: 100%;
+        }
+
+        .content__center {
+            margin: 16px 40px;
+            position: relative;
+        }
+
+        .content__top {
+            overflow-x: auto;
+        }
+    }
+}

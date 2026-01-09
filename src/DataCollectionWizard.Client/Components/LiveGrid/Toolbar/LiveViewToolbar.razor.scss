@@ -1,0 +1,76 @@
+﻿@use "./../../../Styles/colours" as col;
+
+.header {
+    color: col.$font-dark;
+    font-size: 28px;
+    font-weight: lighter;
+    line-height: 1em;
+    margin-left: 8px;
+    white-space: nowrap;
+}
+
+.searchbox-container {
+    min-width: 200px;
+
+    ::deep .search-box {
+        width: 100%;
+    }
+}
+
+.toolbar {
+    display: grid;
+    grid-column-gap: 4px;
+    grid-template-columns: repeat(3, min-content);
+
+    > button {
+        border-radius: 4px;
+        height: 28px;
+        padding: 0;
+        width: 28px;
+
+        &:disabled {
+            color: col.$content-dark-disabled;
+
+            &:hover {
+                background-color: transparent;
+            }
+
+            ::deep svg path {
+                fill: col.$content-dark-disabled;
+            }
+        }
+
+        &:hover {
+            background-color: col.$background-hover;
+        }
+
+        &.active {
+            ::deep svg path {
+                fill: col.$accent;
+            }
+        }
+
+        ::deep svg {
+            height: 24px;
+            width: 24px;
+
+            path {
+                fill: col.$font;
+            }
+        }
+    }
+
+    > span.separator {
+        background-color: col.$border;
+        margin: 0px 8px;
+        width: 1px;
+    }
+}
+
+.toolbar-container {
+    align-items: center;
+    display: grid;
+    grid-column-gap: 20px;
+    grid-template-columns: 2fr 1fr min-content;
+    margin: 40px;
+}

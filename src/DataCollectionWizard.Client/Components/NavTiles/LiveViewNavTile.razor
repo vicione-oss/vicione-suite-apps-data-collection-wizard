@@ -1,0 +1,10 @@
+﻿@using Sdk.Client.NavTiles.Components
+
+@inherits NavTileBase
+
+<NavTileStandardContent Headline="Live View"
+                        Subline="@Localization.LiveViewNavTile.TileSubline"
+                        IconSrc="svg/LiveViewClientTile.svg"
+                        IconAlt="Live View"
+                        OnContentLoading="@ContentLoading"
+                        OnContentReady="@ContentReady" />

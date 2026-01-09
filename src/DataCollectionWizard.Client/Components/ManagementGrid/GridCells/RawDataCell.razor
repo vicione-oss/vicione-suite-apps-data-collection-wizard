@@ -1,0 +1,54 @@
+﻿<div class="raw-data-cell">
+    <div class="row header">
+        <div class="column status">
+            <span class="column damage mdi mdi-alert-circle @(IsSupportedConnection() ? string.Empty : "disabled")"
+                  title="@Localization.DataCollectionWizardPage.Damage"></span>
+
+            <span class="column warning mdi mdi-alert-outline @(IsSupportedConnection() ? string.Empty : "disabled")"
+                  title="@Localization.DataCollectionWizardPage.Warning"></span>
+        </div>
+
+        <span class="column delay header @(IsSupportedConnection() ? string.Empty : "disabled")">Delay (h)</span>
+    </div>
+
+    @foreach (var sensor in _triggers!)
+    {
+        var triggerConfig = sensor.Triggers.First(t => t.DataGroupIdentifier == Configuration!.Id);
+
+        <div class="row sensor">
+            <div class="column enabled">
+                <Switch Enabled="@(IsSupportedConnection())"
+                        Value="@(triggerConfig.Enabled)"
+                        ValueChanged="@(e => EnabledChanged(e, triggerConfig))" />
+            </div>
+
+            <div class="column status">
+                <div class="column damage">
+                    <Switch Enabled="@(IsSupportedConnection())"
+                            Value="@(triggerConfig.OnDamage)"
+                            ValueChanged="@(e => ErrorChanged(e, triggerConfig))" />
+                </div>
+
+                <div class="column warning">
+                    <Switch Enabled="@(IsSupportedConnection())"
+                            Value="@(triggerConfig.OnWarning)"
+                            ValueChanged="@(e => WarningChanged(e, triggerConfig))" />
+                </div>
+            </div>
+
+            <div class="column delay">
+                <SpinEdit Enabled="@(IsSupportedConnection())"
+                          Interval="1"
+                          Maximum="@(48)"
+                          Minimum="@(1)"
+                          TInterval="@(int)"
+                          TLimit="@(int)"
+                          TValue="@(int)"
+                          Value="@(triggerConfig.Delay)"
+                          ValueChanged="@(e => DelayChanged(e, triggerConfig))" />
+            </div>
+
+            <div class="row-completionist"></div>
+        </div>
+    }
+</div>
