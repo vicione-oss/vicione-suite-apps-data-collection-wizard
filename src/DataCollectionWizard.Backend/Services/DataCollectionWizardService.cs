@@ -41,6 +41,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
     private const string EngineNameKeyVse = "VSE";
     private const string EngineNamePrefix = "DCW";
     private const string EngineNameIoLinkScanner = "IO-Link-Scanner";
+    private const string EngineHostName = "DCW-Host";
 
     public async Task<Cluster?> AddDeviceTreeEnginesAsync(IEnumerable<DeviceEngineInfo> deviceEngineInfos, Guid correlationId, bool allowUseExistingEngine, LogLevel logLevel)
     {
@@ -162,6 +163,12 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
         IReadOnlyCollection<Connection> publishTargets, IDeviceTreeMasterNode[] allMasters, LogLevel? logLevel)
     {
         var nodesToUpdate = allMasters.IntersectBy(masterNodesToUpdate, n => n.Id);
+        
+        if (RemoveLegacyEngines(clusterBuilder))
+        {
+            nodesToUpdate = allMasters;
+        }
+
         var relevantMasterNodes = nodesToUpdate.Except(deletedNodes)
                                                .Cast<IDeviceTreeMasterNode>()
                                                .ToArray();
@@ -288,6 +295,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
 
         clusterBuilder.Editors.Engine.SetMinCycleTime(engine, EngineMinCycleTime);
         clusterBuilder.Editors.EngineHost.SetElevatedPrivileges(engineHost, true);
+
         if (logLevel is not null)
         {
             clusterBuilder.Editors.Engine.SetLogLevel(engine, logLevel.Value);
@@ -306,12 +314,18 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
         AddIoLinkScannerEngineIfNecessary(clusterBuilder, engineHost);
     }
 
-    private static EngineHost GetEngineHost(ClusterBuilder clusterBuilder)
+    private EngineHost GetEngineHost(ClusterBuilder clusterBuilder)
     {
         var nodeGroup = clusterBuilder.Cluster.NodeGroups.FirstOrDefault() ?? clusterBuilder.Editors.Cluster.AddNodeGroup();
         var node = nodeGroup.Nodes.FirstOrDefault() ?? clusterBuilder.Editors.NodeGroup.AddNode(nodeGroup);
         var application = node.Applications.FirstOrDefault() ?? clusterBuilder.Editors.Node.AddApplication(node, ClusterApplicationType.CoreOsStandalone);
-        var engineHost = clusterBuilder.Cluster.GetAllEngineHosts().FirstOrDefault() ?? clusterBuilder.Editors.Application.AddEngineHost(application);
+        var engineHost = clusterBuilder.Cluster.GetAllEngineHosts().FirstOrDefault(e => e.Name == EngineHostName);
+
+        if (engineHost is null)
+        {
+            engineHost = clusterBuilder.Editors.Application.AddEngineHost(application, EngineHostName);
+        }
+
         return engineHost;
     }
 
@@ -332,18 +346,70 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
     {
         var clusterBuilder = dataCollectionWizardState.ClusterBuilder;
 
-        var nodeGroup = clusterBuilder!.Cluster.NodeGroups.FirstOrDefault() ?? clusterBuilder.Editors.Cluster.AddNodeGroup();
-        var node = nodeGroup.Nodes.FirstOrDefault() ?? clusterBuilder.Editors.NodeGroup.AddNode(nodeGroup);
-        var application = node.Applications.FirstOrDefault() ?? clusterBuilder.Editors.Node.AddApplication(node, ClusterApplicationType.CoreOsStandalone);
-        var engineHost = clusterBuilder.Cluster.GetAllEngineHosts().FirstOrDefault() ?? clusterBuilder.Editors.Application.AddEngineHost(application);
+        var nodeGroup = clusterBuilder!.Cluster.NodeGroups.FirstOrDefault();
+
+        if (nodeGroup is null)
+            return;
+
+        var node = nodeGroup.Nodes.FirstOrDefault();
+
+        if (node is null)
+            return;
+
+        var application = node.Applications.FirstOrDefault();
+
+        if (application is null)
+            return;
+
+        var engineHost = clusterBuilder.Cluster.GetAllEngineHosts().FirstOrDefault(e => e.Name == EngineHostName);
+
+        if (engineHost is null)
+            return;
+
         var engineName = GetMasterDeviceEngineName(deletedMasterNode);
         var engine = engineHost.Engines.FirstOrDefault(e => e.Name == engineName);
 
-        if (engine is not null)
+        if (engine is null)
+            return;
+
+        clusterBuilder.Editors.EngineHost.RemoveEngine(engine);
+        clusterBuilder.Editors.Cluster.RemoveDataflow(clusterBuilder.Cluster.Dataflows.First(d => d.Name == engineName));
+    }
+
+    /// <summary>
+    /// Removes engines that do not use the seperate enginehost
+    /// </summary>
+    /// <param name="clusterBuilder"></param>
+    /// <returns>true if legacy engines have been removed</returns>
+    private static bool RemoveLegacyEngines(ClusterBuilder clusterBuilder)
+    {
+        var engineHosts = clusterBuilder.Cluster.GetAllEngineHosts().Where(e => e.Name != EngineHostName);
+        var legacyEngines = engineHosts.SelectMany(h => h.Engines).Where(e => e.Name == EngineNameIoLinkScanner || e.Name.StartsWith(EngineNamePrefix, StringComparison.Ordinal)).ToArray();
+        var enginesDataflows = clusterBuilder.Cluster.Dataflows.Select(d => (d.Root.GetAllNestedFunctionBlocks().Select(f => f.Engine).ToList(), d))
+                                                               .SelectMany(d => d.Item1.Select(i =>(i, d.d)))
+                                                               .GroupBy(i => i.i)
+                                                               .Where(i => i.Key is not null)
+                                                               .ToDictionary(i => i.Key!, i => i.Select(d => d.d).ToList());
+
+        if (legacyEngines.Length == 0)
         {
-            clusterBuilder.Editors.EngineHost.RemoveEngine(engine);
-            clusterBuilder.Editors.Cluster.RemoveDataflow(clusterBuilder.Cluster.Dataflows.First(d => d.Name == engineName));
+            return false;
         }
+
+        foreach (var legacyEngine in legacyEngines)
+        {
+            clusterBuilder.Editors.EngineHost.RemoveEngine(legacyEngine);
+
+            if (enginesDataflows.TryGetValue(legacyEngine, out var dataflows))
+            {
+                foreach (var dataflow in dataflows)
+                {
+                    clusterBuilder.Editors.Cluster.RemoveDataflow(dataflow);
+                }
+            }
+        }
+
+        return true;
     }
 
     private static void RemoveVacantEngines(DataCollectionWizardState dataCollectionWizardState, IDeviceTreeMasterNode[] allMasters)
