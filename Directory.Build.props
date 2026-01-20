@@ -25,7 +25,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Description>-</Description>
         <Product>ViciOne</Product>
-        <Company>ifm software</Company>
+        <Company>ifm software gmbh</Company>
         <Year>$([System.DateTime]::Now.Year)</Year>
         <Copyright>Copyright © $(Company) $(Year)</Copyright>
         <NeutralLanguage>en</NeutralLanguage>
@@ -39,14 +39,20 @@
         <RestoreLockedMode Condition="'$(CI)' == 'true'">true</RestoreLockedMode>
         <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
         <DisableImplicitLibraryPacksFolder>true</DisableImplicitLibraryPacksFolder>
+        <NuGetAuditMode>all</NuGetAuditMode>
     </PropertyGroup>
 
     <!-- NuGet packages -->
     <PropertyGroup>
         <!-- https://docs.microsoft.com/de-de/nuget/reference/msbuild-targets -->
-        <PackageProjectUrl>https://gitlab.i40.ifm-datalink.net/acx/vo-suite/modules/device-mgmt</PackageProjectUrl>
+        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+        <PackageProjectUrl>https://gitlab.com/vicione-oss/vicione/suite-apps/data-collection-wizard</PackageProjectUrl>
         <Authors>$(Company)</Authors>
     </PropertyGroup>
+    
+    <ItemGroup>
+        <None Include="$(MsBuildThisFileDirectory)\LICENSE.txt" Pack="true" PackagePath="" />
+    </ItemGroup>
 
     <!-- Don't publish test projects -->
     <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('Tests')) Or $(MSBuildProjectDirectory.Contains('tests'))">
