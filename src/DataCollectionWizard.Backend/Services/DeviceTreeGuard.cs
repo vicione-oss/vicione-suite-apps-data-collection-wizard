@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Concurrent;
+using System.Text.Json;
 using ClusterManagement.Public.DataflowEvents;
 using DataCollectionWizard.Internal;
 using DataCollectionWizard.Internal.Events;
@@ -16,13 +17,16 @@ namespace DataCollectionWizard.Backend.Services;
 public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
 {
     private DeviceTreeRoot? _deviceTree;
-    private readonly Dictionary<Uri, (Guid deviceTreeTrigger, Guid deviceTreeOutput)> _deviceTreeConnectors = [];
+    private readonly ConcurrentDictionary<Uri, (Guid deviceTreeTrigger, Guid deviceTreeOutput)> _deviceTreeConnectors = [];
     private readonly AsyncServiceScope _eventBrokerScope;
     private readonly List<string> _lastOfflineNodes = [];
+    private readonly Lock _lastOfflineNodesLock = new();
     private readonly ILogger<DeviceTreeGuard> _logger;
     private readonly IServiceProvider _serviceProvider;
-    private readonly Dictionary<string, IAsyncDisposable> _subscriptionHandles = [];
+    private readonly ConcurrentDictionary<string, IAsyncDisposable> _subscriptionHandles = [];
     private IDeviceTreeBase[] _untrackedNodes = [];
+    private readonly Lock _untrackedNodesLock = new();
+
 
     public DeviceTreeGuard(IServiceProvider serviceProvider, ILogger<DeviceTreeGuard> logger)
     {
@@ -92,39 +96,55 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
         var masterNodeDescendants = masterNode.GetNodeAndDescendants().ToArray();
         var nodeAndDescendants = currentDevice.GetNodeAndDescendants().ToArray();
         var untrackedNodes = masterNodeDescendants.ExceptBy(nodeAndDescendants.Select(n => n.Id), n => n.Id).ToArray();
-        var lastUntrackedNodes = _untrackedNodes;
-        _untrackedNodes = untrackedNodes;
+        IDeviceTreeBase[] lastUntrackedNodes = [];
+
+        lock (_untrackedNodesLock)
+        {
+            lastUntrackedNodes = _untrackedNodes.ToArray();
+            _untrackedNodes = untrackedNodes;
+        }
 
         if (masterNode.IsOffline)
         {
             var allOfflineNodes = currentDevice.GetNodeAndDescendants().Union(lastUntrackedNodes).ToArray();
             LogTriggeringNodesOfflineMasterOffline(_logger, allOfflineNodes.Length);
             await mediator.Publish(new NodesOfflineEvent(allOfflineNodes));
-            _lastOfflineNodes.AddRange(allOfflineNodes.Select(n => n.Id));
+
+            lock (_lastOfflineNodesLock)
+            {
+                _lastOfflineNodes.AddRange(allOfflineNodes.Select(n => n.Id));
+            }
+
             return;
         }
 
         DeviceTreeBuilder.UpdateOnlineStatus(DeviceTreeBuilder.CorrelateParsedDevices(currentDevice, [masterNode]));
 
-        var newOnlineNodes = nodeAndDescendants.Union(lastUntrackedNodes)
+        IDeviceTreeBase[] newOnlineNodes = [];
+        IDeviceTreeBase[] newOfflineNodes = [];
+
+        lock (_lastOfflineNodesLock)
+        {
+            newOnlineNodes = nodeAndDescendants.Union(lastUntrackedNodes)
                                                .Where(n => !n.IsOffline)
                                                .Where(n => _lastOfflineNodes.Contains(n.Id))
                                                .Union(untrackedNodes.ExceptBy(lastUntrackedNodes.Select(n => n.Id), n => n.Id)
                                                                     .ExceptBy(nodeAndDescendants.Where(n => !n.IsOffline).Select(n => n.Id), n => n.Id))
                                                .ToArray();
 
-        var newOfflineNodes = nodeAndDescendants.Union(lastUntrackedNodes)
+            newOfflineNodes = nodeAndDescendants.Union(lastUntrackedNodes)
                                                 .Where(n => n.IsOffline)
                                                 .Where(n => !_lastOfflineNodes.Contains(n.Id))
                                                 .Union(lastUntrackedNodes.ExceptBy(untrackedNodes.Select(n => n.Id), n => n.Id)
-                                                                         .ExceptBy(nodeAndDescendants.Select(n => n.Id), n => n.Id))
+                                                                            .ExceptBy(nodeAndDescendants.Select(n => n.Id), n => n.Id))
                                                 .ToArray();
 
-        _lastOfflineNodes.AddRange(newOfflineNodes.Select(n => n.Id));
+            _lastOfflineNodes.AddRange(newOfflineNodes.Select(n => n.Id));
 
-        foreach (var newOnlineNode in newOnlineNodes)
-        {
-            _lastOfflineNodes.Remove(newOnlineNode.Id);
+            foreach (var newOnlineNode in newOnlineNodes)
+            {
+                _lastOfflineNodes.Remove(newOnlineNode.Id);
+            }
         }
 
         if (newOfflineNodes.Length > 0)
