@@ -24,7 +24,7 @@ public sealed class ClusterServiceState : IAsyncDisposable
         }
 
         taskCompletionSource.TrySetResult(errorInfo);
-        if(IssuedTicket is not null && IssuedTicket.Value.CorrelationId == correlationId.Value)
+        if (IssuedTicket is not null && IssuedTicket.Value.CorrelationId == correlationId.Value)
             DiscardUpdateRequest(IssuedTicket.Value.Id);
         return true;
     }
@@ -77,7 +77,7 @@ public sealed class ClusterServiceState : IAsyncDisposable
 
     private void TimerOnElapsed(object? sender, ElapsedEventArgs e)
     {
-        if(IssuedTicket is not null)
+        if (IssuedTicket is not null)
             DiscardUpdateRequest(IssuedTicket.Value.Id);
     }
 }

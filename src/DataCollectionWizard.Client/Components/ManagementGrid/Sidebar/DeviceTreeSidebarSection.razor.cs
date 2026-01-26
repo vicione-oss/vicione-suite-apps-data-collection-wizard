@@ -1,10 +1,11 @@
 ﻿using System.Drawing;
 using DataCollectionWizard.Client.Components.ManagementGrid.Services;
+using DataCollectionWizard.Client.Extensions;
 using DataCollectionWizard.Client.Models.DeviceTree;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Ui.TreeEditor.Builder.Interface;
+using ViciOne.Ui.TreeEditor.Builder.Interface.Nodes;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.Sidebar;
 
@@ -37,18 +38,13 @@ public sealed partial class DeviceTreeSidebarSection : ComponentBase, IDisposabl
 
         bool FilterFunc(ITreeNode node)
         {
-            var filterResult = node.DisplayText.Contains(filterText, StringComparison.InvariantCultureIgnoreCase);
+            if (node is not NodeBase nodeBase)
+                return false;
 
-            if (node is NodeBase nodeBase)
-            {
-                filterResult |= !string.IsNullOrWhiteSpace(nodeBase.Subtitle) && nodeBase.Subtitle.Contains(filterText, StringComparison.InvariantCultureIgnoreCase);
+            var filterResult = nodeBase.GetFilterResult(filterText);
 
-                if (!filterResult && nodeBase.Device is IDeviceTreeDataNode && nodeBase.Parent is not null)
-                {
-                    filterResult = nodeBase.Parent.DisplayText.Contains(filterText, StringComparison.InvariantCultureIgnoreCase);
-                    filterResult |= !string.IsNullOrWhiteSpace(nodeBase.Parent.Subtitle) && nodeBase.Parent.Subtitle.Contains(filterText, StringComparison.InvariantCultureIgnoreCase);
-                }
-            }
+            if (!filterResult && nodeBase.Device is IDeviceTreeDataNode && nodeBase.Parent is not null)
+                filterResult = nodeBase.Parent.GetFilterResult(filterText);
 
             return filterResult;
         }
@@ -74,7 +70,7 @@ public sealed partial class DeviceTreeSidebarSection : ComponentBase, IDisposabl
 
     private void OnChangeTreeExpansionClicked(bool expand)
     {
-        if (!Service.TreeBuilder.Selection.SelectedNodes.Any())
+        if (Service.TreeBuilder.Selection.SelectedNodes.Count == 0)
         {
             if (expand)
                 Service.TreeBuilder.Expansion.ChangeExpansionForLayers(expand);
@@ -123,7 +119,7 @@ public sealed partial class DeviceTreeSidebarSection : ComponentBase, IDisposabl
         base.OnInitialized();
     }
 
-    private async void OnTreeSelectionChangedAsync(ITreeNode node)
+    private async void OnTreeSelectionChangedAsync(ITreeNode node, bool selected)
         => await InvokeAsync(StateHasChanged);
 
     private void ServicePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

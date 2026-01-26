@@ -141,7 +141,7 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
 
         builder.Editors.Setting.SetFunctionBlockSetting(subscriber, FunctionBlocks.IoLinkDeviceTreeSubscriber.Settings.Url, address);
         builder.Editors.Setting.SetFunctionBlockSetting(subscriber, FunctionBlocks.IoLinkDeviceTreeSubscriber.Settings.IoddDirectory, ioddStore.IoddDirectory);
-        builder.Editors.Setting.SetFunctionBlockSetting(subscriber, FunctionBlocks.IoLinkDeviceTreeSubscriber.Settings.IoddAutoDownload, ioddStore.AutoDownloadIodds);
+        builder.Editors.Setting.SetFunctionBlockSetting(subscriber, FunctionBlocks.IoLinkDeviceTreeSubscriber.Settings.IoddAutoDownload, ioddStore.GetAutoDownloadIodds());
 
         var triggerInput = subscriber.GetInputByDesignId(FunctionBlocks.IoLinkDeviceTreeSubscriber.Inputs.Trigger);
         var deviceTreeOutput = subscriber.GetOutputByDesignId(FunctionBlocks.IoLinkDeviceTreeSubscriber.Outputs.DeviceTree);

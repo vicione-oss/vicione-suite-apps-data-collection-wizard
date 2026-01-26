@@ -7,16 +7,16 @@ using DataCollectionWizard.Internal.Services;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
 using ViciOne.Ui.TreeEditor.Builder.Interface;
+using ViciOne.Ui.TreeEditor.Builder.Interface.Enums;
+using ViciOne.Ui.TreeEditor.Builder.Interface.Icons;
 using ViciOne.Ui.TreeEditor.Builder.Interface.NodeActions;
-using ViciOne.Ui.TreeEditor.Builder.Models;
-using ViciOne.Ui.TreeEditor.Builder.Models.Icons;
+using ViciOne.Ui.TreeEditor.Builder.Interface.Nodes;
 
 namespace DataCollectionWizard.Client.Services;
 
-internal sealed partial class DeviceTreeAdapter : TreeAdapter, IDisposable
+internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
 {
     private readonly List<string> _expandedNodes = [];
-    private readonly bool _isLiveView;
     private Root? _rootNode;
     private readonly Lock _setTreeLock = new();
 
@@ -26,12 +26,6 @@ internal sealed partial class DeviceTreeAdapter : TreeAdapter, IDisposable
     public event Action<NodeBase, NodeBase?>? NodeDeleted;
     public event Action<NodeBase>? NodeEdited;
     public event Action? SelectionChanged;
-
-    public DeviceTreeAdapter(bool isLiveView)
-    {
-        _isLiveView = isLiveView;
-        _selectionChangedTimer.Elapsed += OnSelectionChangedTimerElapsed;
-    }
 
     public override bool CanSelectNode(ITreeNode node, IEnumerable<ITreeNode> currentSelection, bool willDeselectOthers)
         => node is not Root;
@@ -53,60 +47,58 @@ internal sealed partial class DeviceTreeAdapter : TreeAdapter, IDisposable
         return enabledCompressableDataNodes + enabledSchedulableDataNodes + enabledEventTriggers;
     }
 
-    public void CoupleTreeBuilderEvents()
+    public override void Dismantle()
     {
-        // builder is available after the adapter was passed to TreeBuilder.SetAdapter method
-        Builder.Selection.SelectionChanged += OnSelectionChanged;
-        Builder.Expansion.ExpansionChanged += OnExpansionChanged;
-    }
-
-    public void Dispose()
-    {
-        Builder.Selection.SelectionChanged -= OnSelectionChanged;
         Builder.Expansion.ExpansionChanged -= OnExpansionChanged;
-
-        _selectionChangedTimer.Elapsed -= OnSelectionChangedTimerElapsed;
-        _selectionChangedTimer.Dispose();
+        Builder.Selection.SelectionChanged -= OnSelectionChanged;
     }
 
-    public override IEnumerable<NodeActionButton> GetActions(ITreeNode node)
+    private void OnSelectionChanged(ITreeNode node, bool selected)
     {
-        if (_isLiveView || node is not NodeBase baseNode)
+        if (node is not NodeBase)
+            return;
+
+        SelectionChanged?.Invoke();
+    }
+
+    public override IEnumerable<INodeAction> GetActions(ITreeNode node)
+    {
+        if (isLiveView || node is not NodeBase baseNode)
             return [];
 
-        var result = new List<NodeActionButton>();
+        var result = new List<INodeAction>();
 
         if (DeviceTreeNodeActionProvider.IsConfigurable(baseNode.Device))
         {
-            result.Add(new()
+            result.Add(new NodeButton()
             {
-                Action = _ => Console.Out.WriteLine($"[configure] action invoked for [{baseNode.DisplayText}]"),
+                Action = (_, _) => Console.Out.WriteLine($"[configure] action invoked for [{baseNode.DisplayText}]"),
                 Description = Localization.DeviceTreeAdapter.ConfigureNode,
-                Icon = SvgIcons.cog_outline,
+                Icon = new SvgIcon(SvgIcons.cog_outline),
                 Index = 0,
             });
         }
 
         if (DeviceTreeNodeActionProvider.IsEditable(baseNode.Device))
         {
-            result.Add(new()
+            result.Add(new NodeButton()
             {
-                Action = args =>
+                Action = (s, args) =>
                 {
                     var nodeBase = (NodeBase)args.Node;
                     NodeEdited?.Invoke(nodeBase);
                 },
                 Description = Localization.DeviceTreeAdapter.EditAlias,
-                Icon = RoccoSvgIcons.edit,
+                Icon = new SvgIcon(RoccoSvgIcons.edit),
                 Index = 0,
             });
         }
 
         if (DeviceTreeNodeActionProvider.IsDeletable(baseNode.Device))
         {
-            result.Add(new()
+            result.Add(new NodeButton()
             {
-                Action = args =>
+                Action = (s, args) =>
                 {
                     var nodeBase = (NodeBase)args.Node;
 
@@ -118,7 +110,7 @@ internal sealed partial class DeviceTreeAdapter : TreeAdapter, IDisposable
                     NodeDeleted?.Invoke(nodeBase, nodeBase.Parent);
                 },
                 Description = baseNode.Device is IDeviceTreeMasterNode ? Localization.DeviceTreeAdapter.DeleteDevice : Localization.DeviceTreeAdapter.DeleteNode,
-                Icon = RoccoSvgIcons.delete,
+                Icon = new SvgIcon(RoccoSvgIcons.delete),
                 Index = 1,
             });
         }
@@ -132,6 +124,14 @@ internal sealed partial class DeviceTreeAdapter : TreeAdapter, IDisposable
             return [];
 
         return baseNode.Children;
+    }
+
+    public override string GetDisplayText(ITreeNode node)
+    {
+        if (node is not NodeBase baseNode)
+            return string.Empty;
+
+        return baseNode.DisplayText;
     }
 
     public override IEnumerable<IIcon> GetIcons(ITreeNode node)
@@ -172,7 +172,7 @@ internal sealed partial class DeviceTreeAdapter : TreeAdapter, IDisposable
     public IEnumerable<IDeviceTreeDataNode> GetRelevantDataNodes()
     {
         var selectedNodesAndDescendants = new List<NodeBase>();
-        foreach (var selectedNode in _selected.ToArray())
+        foreach (var selectedNode in Builder.Selection.SelectedNodes.OfType<NodeBase>().ToArray())
             selectedNodesAndDescendants.AddRange(selectedNode.GetNodeAndDescendants());
 
         var filteredNodes = Builder.Filter.Apply(selectedNodesAndDescendants.Distinct()).OfType<NodeBase>();
@@ -207,19 +207,24 @@ internal sealed partial class DeviceTreeAdapter : TreeAdapter, IDisposable
             => new[] { node }.Concat(node.Children.SelectMany(child => GetNodeAndDescendants(child)));
     }
 
+    public override bool IsExpanded(ITreeNode node)
+        => (node as NodeBase)?.Expanded ?? false;
+
+
     private bool IsRelevantChild(IDeviceTreeBase node)
-         => _isLiveView
+         => isLiveView
              ? node.Visible && node.GetNodeAndDescendants().OfType<IDeviceTreeLiveDataNode>().Any(n => n.Visible)
              : node.Visible;
 
-    private void OnExpansionChanged(ITreeNode node)
+    private void OnExpansionChanged(ITreeNode node, bool expanded)
     {
         if (node is not NodeBase baseNode)
             return;
 
+        baseNode.Expanded = expanded;
         var pathToNode = GetPathToNode(baseNode);
 
-        if (node.Expanded)
+        if (baseNode.Expanded)
             _expandedNodes.Add(pathToNode);
         else
             _expandedNodes.Remove(pathToNode);
@@ -233,10 +238,6 @@ internal sealed partial class DeviceTreeAdapter : TreeAdapter, IDisposable
         // remove node from device tree
         parentNode.Device.Children.Remove(node.Device);
 
-        // remove from selection
-        var nodes = node.GetNodeAndDescendants().ToArray();
-        _selected.RemoveAll(n => nodes.Contains(n));
-
         // remove node from TreeEditor tree
         var siblings = parentNode.Children.ToList();
         siblings.Remove(node);
@@ -249,28 +250,46 @@ internal sealed partial class DeviceTreeAdapter : TreeAdapter, IDisposable
     {
         var nodesToExpandTo = new List<NodeBase>();
         var selectedNodeIds = Builder.Selection.SelectedNodes.OfType<NodeBase>().Select(n => n.Device.Id).ToArray();
+        var rootNodeReused = _rootNode is not null;
 
         lock (_setTreeLock)
         {
-            _selected.Clear();
-
-            _rootNode = new Root
+            if (_rootNode is null)
             {
-                Device = root,
-                DisplayText = DeviceTreeNodeNameProvider.GetTreeDisplayText(root),
-                Expanded = true,
-                IsLiveView = _isLiveView,
-                Parent = null,
-                Status = root.GetStatus(),
-                Subtitle = DeviceTreeNodeSubTitleProvider.GetSubTitle(root),
-            };
+                _rootNode = new Root()
+                {
+                    Device = root,
+                    Expanded = true,
+                    Id = new StringTreeNodeIdentifier() { Value = root.Id, },
+                    IsLiveView = isLiveView,
+                    Parent = null,
+                    DisplayText = DeviceTreeNodeNameProvider.GetTreeDisplayText(root),
+                };
+            }
+            else
+            {
+                _rootNode.Device = root;
+                _rootNode.DisplayText = DeviceTreeNodeNameProvider.GetTreeDisplayText(_rootNode.Device);
+            }
 
-            var children = ResolveChildrenRecursive(root, _rootNode).ToArray();
+            _rootNode.Status = _rootNode.Device.GetStatus();
+            _rootNode.Subtitle = DeviceTreeNodeSubTitleProvider.GetSubTitle(_rootNode.Device);
+
+            var children = ResolveChildrenRecursive(_rootNode.Device, _rootNode).ToArray();
             _rootNode.Children = children;
             _rootNode.HasChildren = children.Length > 0;
         }
 
-        Builder.Notifications.NotifyRootNodesChanged();
+        if (rootNodeReused)
+        {
+            Builder.Notifications.NotifyNodeChanged(_rootNode);
+            Builder.Notifications.NotifyChildrenChanged(_rootNode);
+            Builder.Helper.RequestNodeRefresh(_rootNode);
+        }
+        else
+        {
+            Builder.Notifications.NotifyRootNodesChanged();
+        }
 
         foreach (var node in nodesToExpandTo)
             Builder.Expansion.ExpandToNode(node);
@@ -286,31 +305,52 @@ internal sealed partial class DeviceTreeAdapter : TreeAdapter, IDisposable
         IEnumerable<NodeBase> ResolveChildrenRecursive(IDeviceTreeBase device, NodeBase parent, bool expandToOfflineNodes = false)
         {
             var result = new List<NodeBase>();
-            foreach (var child in device.Children.Where(IsRelevantChild))
+            foreach (var childDevice in device.Children.Where(IsRelevantChild))
             {
-                var node = new Node
+                // check and possibly re-use existing child node
+                var childNode = parent.Children.FirstOrDefault(c => ((StringTreeNodeIdentifier)c.Id).Equals(childDevice.Id));
+                var childNodeReused = childNode is not null;
+
+                if (childNode is null)
                 {
-                    Device = child,
-                    DisplayText = DeviceTreeNodeNameProvider.GetTreeDisplayText(child),
-                    IsLiveView = _isLiveView,
-                    Parent = parent,
-                    Status = child.GetStatus(),
-                    Subtitle = DeviceTreeNodeSubTitleProvider.GetSubTitle(child),
-                };
+                    childNode = new Node
+                    {
+                        Device = childDevice,
+                        DisplayText = DeviceTreeNodeNameProvider.GetTreeDisplayText(childDevice),
+                        Id = new StringTreeNodeIdentifier() { Value = childDevice.Id, },
+                        IsLiveView = isLiveView,
+                        Parent = parent,
+                    };
+                }
+                else
+                {
+                    childNode.Device = childDevice;
+                    childNode.DisplayText = DeviceTreeNodeNameProvider.GetTreeDisplayText(childNode.Device);
+                }
 
-                if (child is IDeviceTreeMasterNode)
-                    expandToOfflineNodes = !node.Status.HasFlag(NodeStatus.Offline);
+                childNode.Status = childNode.Device.GetStatus();
+                childNode.Subtitle = DeviceTreeNodeSubTitleProvider.GetSubTitle(childNode.Device);
 
-                if (expandToOfflineNodes && child is IDeviceTreeDataNode && node.Status.HasFlag(NodeStatus.Offline))
-                    nodesToExpandTo.Add(node);
+                if (childNode.Device is IDeviceTreeMasterNode)
+                    expandToOfflineNodes = !childNode.Status.HasFlag(NodeStatus.Offline);
 
-                node.Expanded = _expandedNodes.Contains(GetPathToNode(node));
+                if (expandToOfflineNodes && childNode.Device is IDeviceTreeDataNode && childNode.Status.HasFlag(NodeStatus.Offline))
+                    nodesToExpandTo.Add(childNode);
 
-                var children = ResolveChildrenRecursive(child, node, expandToOfflineNodes).ToArray();
-                node.Children = children;
-                node.HasChildren = children.Length > 0;
+                childNode.Expanded = _expandedNodes.Contains(GetPathToNode(childNode));
 
-                result.Add(node);
+                var children = ResolveChildrenRecursive(childNode.Device, childNode, expandToOfflineNodes).ToArray();
+                childNode.Children = children;
+                childNode.HasChildren = children.Length > 0;
+
+                result.Add(childNode);
+
+                if (childNodeReused)
+                {
+                    Builder.Notifications.NotifyNodeChanged(childNode);
+                    Builder.Notifications.NotifyChildrenChanged(childNode);
+                    Builder.Helper.RequestNodeRefresh(childNode);
+                }
             }
             return result;
         }
@@ -340,6 +380,20 @@ internal sealed partial class DeviceTreeAdapter : TreeAdapter, IDisposable
     {
         foreach (var child in treeNodes.Where(node => node.Children.Count > 0))
             child.Children.Sort(DeviceTreeBaseComparer.Default);
+    }
+
+    public override void Setup()
+    {
+        Builder.Selection.SelectionChanged += OnSelectionChanged;
+        Builder.Expansion.ExpansionChanged += OnExpansionChanged;
+
+        // apply default settings
+        Builder.Settings.ActionsAlignment = ActionAlignment.ByMax;
+        Builder.Settings.ActionsVisibility = ActionVisibility.Hover;
+
+        Builder.DragAndDrop.EnableInbound = false;
+        Builder.DragAndDrop.EnableInternal = false;
+        Builder.DragAndDrop.EnableOutbound = false;
     }
 
     internal static Type? TemplateMapping(ITreeNode node, TemplateType templateType)

@@ -288,7 +288,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
 
         clusterBuilder.Editors.Engine.SetMinCycleTime(engine, EngineMinCycleTime);
         clusterBuilder.Editors.EngineHost.SetElevatedPrivileges(engineHost, true);
-        if(logLevel is not null)
+        if (logLevel is not null)
         {
             clusterBuilder.Editors.Engine.SetLogLevel(engine, logLevel.Value);
             clusterBuilder.Editors.EngineHost.SetLogLevel(engineHost, logLevel.Value);

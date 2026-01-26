@@ -1,5 +1,4 @@
-﻿using System.Timers;
-using ClusterManagement.Public;
+﻿using ClusterManagement.Public;
 using ClusterManagement.Public.Commands;
 using ClusterManagement.Public.Designs;
 using ClusterManagement.Public.Requests;
@@ -23,7 +22,7 @@ public sealed partial class ClusterService(
 
     public async Task<Guid> RequestUpdateAsync(CancellationToken cancellationToken, Guid? correlationId = null, TimeSpan? validity = null)
     {
-        if(validity > s_maxTicketValidity)
+        if (validity > s_maxTicketValidity)
             throw new ArgumentOutOfRangeException(nameof(validity));
 
         await state.Semaphore.WaitAsync(cancellationToken);

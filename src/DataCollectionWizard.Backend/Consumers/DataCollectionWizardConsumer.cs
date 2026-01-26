@@ -121,7 +121,7 @@ public sealed partial class DataCollectionWizardConsumer(DataCollectionWizardSta
 
     [LoggerMessage(LogLevel.Debug, "DCW received cluster not deleted")]
     static partial void LogDcwReceivedClusterNotDeleted(ILogger<DataCollectionWizardConsumer> logger);
-    
+
     [LoggerMessage(LogLevel.Debug, "Attempt to update cluster {ClusterVersion}({ClusterId}) was rejected")]
     static partial void LogClusterUpdateRejected(ILogger<DataCollectionWizardConsumer> logger, Version? ClusterVersion, Guid? ClusterId);
 }

@@ -1,6 +1,6 @@
 ﻿using DataCollectionWizard.Client.Resources;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Ui.TreeEditor.Builder.Models.Icons;
+using ViciOne.Ui.TreeEditor.Builder.Interface.Icons;
 
 namespace DataCollectionWizard.Client.Services;
 
