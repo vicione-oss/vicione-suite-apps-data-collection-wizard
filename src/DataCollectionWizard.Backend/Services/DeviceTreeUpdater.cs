@@ -59,7 +59,7 @@ public sealed partial class DeviceTreeUpdater(
                 {
                     await mediator.Send(command, ct);
 
-                    if(await WaitForCommandCompletion(taskCompletionSource, ct) is { } error)
+                    if (await WaitForCommandCompletion(taskCompletionSource, ct) is { } error)
                     {
                         await mediator.Publish(new DeviceTreeApplicationEvent(error) { CorrelationId = correlationId }, ct);
                         return;

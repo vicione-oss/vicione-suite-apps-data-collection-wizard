@@ -2,105 +2,18 @@
 @using ViciOne.Ui.TreeEditor.Builder.Interface.NodeActions
 @using ViciOne.Ui.TreeEditor.Components
 @using ViciOne.Ui.TreeEditor.Templates
+@using ViciOne.Ui.TreeEditor.Templates.Fragments.Node
 
-@inherits NodeTemplateBase
+@inherits NodeTemplate
 
 <TooltipContainer>
     <ChildContent>
-        <div @ondragend="@(OnNodeDragEnd)"
-             @ondragstart="@(OnNodeDragStart)"
-             @onpointerenter="@(() => context.OnPointerEnter())"
-             @onpointerleave="@(() => context.OnPointerLeave())"
-             @onpointermove="@((e) => context.OnPointerMove(e))"
-             class="tree-node @(_treeNodeCssClasses)"
-             draggable="@(DeviceNode.Selected ? "true" : "false")"
-             style="@(_treeNodeCssStyles)">
+        <div @onpointerenter="@(context.OnPointerEnter)"
+             @onpointerleave="@(context.OnPointerLeave)"
+             @onpointermove="@(context.OnPointerMove)"
+             class="node-template-container">
 
-            @{ var hasAdditionalStatus = DeviceNode.Status > 0; }
-
-            <div @onpointerenter:stopPropagation
-                 @onpointerleave:stopPropagation
-                 @onpointermove:stopPropagation
-                 class="icon-container @(hasAdditionalStatus ? "display-status" : string.Empty)"
-                 style="--icon-count: @(Node.Icons.Count());">
-
-                @{
-                    var iconCount = 0;
-                    foreach (var icon in Node.Icons)
-                    {
-                        <div class="icon"
-                             style="--icon-index: @(++iconCount)">
-
-                            @((MarkupString)icon.MarkupString)
-                        </div>
-                    }
-                }
-
-                @if (hasAdditionalStatus)
-                {
-                    <div class="status-icon-container">
-                        @if (DeviceNode.HasError())
-                        {
-                            <div class="status-icon error"></div>
-                        }
-
-                        @if (DeviceNode.HasWarning())
-                        {
-                            <div class="status-icon warning"></div>
-                        }
-
-                        @if (DeviceNode.IsNew())
-                        {
-                            <div class="status-icon new"></div>
-                        }
-                    </div>
-                }
-            </div>
-
-            @{ var hasSubtitle = !string.IsNullOrEmpty(DeviceNode.Subtitle); }
-            <div class="node-text @(hasSubtitle ? "with-subtitle" : string.Empty)">
-                <span>@(DeviceNode.DisplayText)</span>
-
-                @if (hasSubtitle)
-                {
-                    <span class ="subtitle">
-                        @(DeviceNode.Subtitle)
-                    </span>
-                }
-            </div>
-
-            @if (RenderActionButtons())
-            {
-                // currently only two buttons are supported
-                var maxDisplayedButtons = 2;
-
-                <div @onpointerenter:stopPropagation
-                     @onpointerleave:stopPropagation
-                     @onpointermove:stopPropagation
-                     class="action-button-container @(_actionButtonContainerCssClasses)"
-                     style="--button-count: @(maxDisplayedButtons);">
-
-                    @{
-                        var buttonCount = 0;
-                        foreach (var action in Node.Actions.OfType<NodeActionButton>())
-                        {
-                            <button @onclick="@(e => OnNodeActionButtonClicked(action, e))"
-                                    @onclick:stopPropagation
-                                    @ondblclick:stopPropagation
-                                    @onmousedown:stopPropagation
-                                    disabled="@(!action.EnabledFunc(Node.TreeNode))"
-                                    style="--button-index: @(action.Index + 1);"
-                                    title="@(action.Description)">
-
-                                @((MarkupString)action.Icon)
-                            </button>
-
-                            if (++buttonCount == maxDisplayedButtons)
-                                break;
-                        }
-                    }
-                </div>
-            }
+            @base.Fragment(_contentFragment)
         </div>
     </ChildContent>
 
@@ -109,3 +22,64 @@
     </TooltipContent>
 </TooltipContainer>
 
+@code {
+    private RenderFragment _contentFragment => __builder =>
+    {
+        var hasAdditionalStatus = DeviceNode.Status > 0;
+        var hasSubtitle = !string.IsNullOrEmpty(DeviceNode.Subtitle);
+
+        <div @onpointerenter:stopPropagation
+             @onpointerleave:stopPropagation
+             @onpointermove:stopPropagation
+             class="icon-container @(hasAdditionalStatus ? "display-status" : string.Empty)"
+             style="--icon-count: @(Node.Icons.Count());">
+
+            @{
+                var iconCount = 0;
+                foreach (var icon in Node.Icons)
+                {
+                    <div class="icon"
+                         style="--icon-index: @(++iconCount)">
+
+                        @((MarkupString)icon.MarkupString)
+                    </div>
+                }
+            }
+
+            @if (hasAdditionalStatus)
+            {
+                <div class="status-icon-container">
+                    @if (DeviceNode.HasError())
+                    {
+                        <div class="status-icon error"></div>
+                    }
+
+                    @if (DeviceNode.HasWarning())
+                    {
+                        <div class="status-icon warning"></div>
+                    }
+
+                    @if (DeviceNode.IsNew())
+                    {
+                        <div class="status-icon new"></div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="node-text @(hasSubtitle ? "with-subtitle" : string.Empty)">
+            <span>@(DeviceNode.DisplayText)</span>
+
+            @if (hasSubtitle)
+            {
+                <span class="subtitle">
+                    @(DeviceNode.Subtitle)
+                </span>
+            }
+        </div>
+
+        @(ActionButton.Fragment(_actionButtonContainerParameters!))
+
+        @(DropArea.Fragment(_dropAreaParameters!))
+    };
+}

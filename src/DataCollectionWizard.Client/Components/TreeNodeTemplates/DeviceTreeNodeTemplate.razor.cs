@@ -1,144 +1,84 @@
 ﻿using DataCollectionWizard.Client.Models.DeviceTree;
 using Microsoft.AspNetCore.Components.Web;
-using ViciOne.Ui.TreeEditor.Builder.Interface;
-using ViciOne.Ui.TreeEditor.Builder.Interface.NodeActions;
-using ViciOne.Ui.TreeEditor.Builder.Models;
+using ViciOne.Ui.TreeEditor.Builder.Interface.Enums;
 using ViciOne.Ui.TreeEditor.Templates;
+using ViciOne.Ui.TreeEditor.Templates.Fragments.Node;
 
 namespace DataCollectionWizard.Client.Components.TreeNodeTemplates;
 
-public sealed partial class DeviceTreeNodeTemplate : NodeTemplateBase, IDisposable
+public sealed partial class DeviceTreeNodeTemplate : NodeTemplate
 {
-    private string _actionButtonContainerCssClasses = string.Empty;
-    private MoveTarget _currentlyOverDropZone;
-    private bool _shouldRender;
-    private string _treeNodeCssClasses = string.Empty;
-    private string _treeNodeCssStyles = string.Empty;
+    private ActionButtonParameters? _actionButtonContainerParameters;
+    private DropAreaParameters? _dropAreaParameters;
 
+    // cast should always work because template will only be applied when cast is possible
     private NodeBase DeviceNode
-        => (NodeBase)Node.TreeNode; // cast should always work because template will only be applied when cast is possible
+        => (NodeBase)Node.TreeNode;
 
-    private void CalculateActionButtonContainerCssClasses()
+    protected override void Calculate()
     {
-        var cssClasses = new List<string>();
+        // reset internal drop zone state on refresh if drop got disabled
+        if (_dropAreaParameters is not null && !Node.DropZoneActive)
+            _dropAreaParameters.CurrentlyOverDropZone = DropZone.None;
 
-        if (Builder.Settings.ActionsVisibility.HasFlag(ActionVisibility.Always))
-        {
-            cssClasses.Add("visible");
-        }
-        else
-        {
-            if (Builder.Settings.ActionsVisibility.HasFlag(ActionVisibility.Hover))
-                cssClasses.Add("visible-on-hover");
-
-            if (Node.TreeNode.Selected && Builder.Selection.SelectedNodes.Count() == 1)
-                cssClasses.Add("visible");
-        }
-
-        _actionButtonContainerCssClasses = cssClasses.Count > 0
-            ? string.Join(' ', cssClasses)
-            : string.Empty;
+        _actionButtonContainerParameters?.CalculateCss();
     }
 
-    private async void CalculateAllAsync()
+    protected override void Dispose(bool disposing)
     {
-        CalculateTreeNodeCssClasses();
-        CalculateActionButtonContainerCssClasses();
-        await RefreshAsync();
-    }
+        base.Dispose(disposing);
 
-    private void CalculateTreeNodeCssClasses()
-    {
-        var cssClasses = new List<string>();
-
-        if (Builder.Settings.ActionsVisibility.HasFlag(ActionVisibility.Hover))
-            cssClasses.Add("actions-visible-on-hover");
-
-        if (Builder.DragAndDrop.DraggingNode is not null && Node.TreeNode.Selected)
-            cssClasses.Add("dragging");
-
-        if (Builder.DragAndDrop.DraggingNode == Node.TreeNode)
-            cssClasses.Add("origin");
-
-        if (_currentlyOverDropZone != MoveTarget.None)
+        if (_dropAreaParameters is not null)
         {
-            cssClasses.Add("drop-zone");
-#pragma warning disable CA1308 // Normalize strings to uppercase - useless because it is needed for css
-            cssClasses.Add(_currentlyOverDropZone.ToString().ToLowerInvariant());
-#pragma warning restore CA1308 // Normalize strings to uppercase
-            cssClasses.Add(Node.ValidDropZones.HasFlag(_currentlyOverDropZone) ? "valid" : "invalid");
+            _dropAreaParameters.CalculateAllRequested -= CalculateAll;
+            _dropAreaParameters.RefreshRequested -= Refresh;
         }
 
-        if (Node.TreeNode.Selected)
-            cssClasses.Add("selected");
-
-        if (!string.IsNullOrWhiteSpace(DeviceNode.Subtitle))
-            cssClasses.Add("has-subtitle");
-
-        cssClasses.AddRange(Builder.Adapter.GetCssClasses(Node.TreeNode, TemplateType.Node));
-
-        _treeNodeCssStyles = string.Join(' ', Builder.Adapter.GetCssStyles(Node.TreeNode, TemplateType.Node).Select(st => $"{st.Property}:{st.Value};"));
-        _treeNodeCssClasses = cssClasses.Count > 0
-            ? string.Join(' ', cssClasses)
-            : string.Empty;
+        Node.DragAndDropStateChanged -= OnDragAndDropStateChangedAsync;
     }
 
-    public void Dispose()
+    private async void OnDragAndDropStateChangedAsync()
     {
-        Node.DragAndDropStateChanged -= DragAndDropStateChangedAsync;
-        Node.Refresh -= CalculateAllAsync;
-    }
-
-    private async void DragAndDropStateChangedAsync()
-    {
-        if (!Node.DropZoneActive)
-            _currentlyOverDropZone = MoveTarget.None;
+        if (_dropAreaParameters is not null && !Node.DropZoneActive)
+            _dropAreaParameters.CurrentlyOverDropZone = DropZone.None;
 
         await RefreshAsync();
     }
 
     protected override void OnInitialized()
     {
-        Node.DragAndDropStateChanged += DragAndDropStateChangedAsync;
-        Node.Refresh += CalculateAllAsync;
+        // this is important because the base class overrides this itself too
+        base.OnInitialized();
 
-        CalculateAllAsync();
+        _actionButtonContainerParameters = new() { Builder = Builder, Node = Node, };
+        _actionButtonContainerParameters.CalculateCss();
+
+        _dropAreaParameters = new() { Builder = Builder, Node = Node, };
+        _dropAreaParameters.CalculateAllRequested += CalculateAll;
+        _dropAreaParameters.RefreshRequested += Refresh;
+
+        Node.DragAndDropStateChanged += OnDragAndDropStateChangedAsync;
     }
 
-    private void OnNodeActionButtonClicked(INodeAction action, MouseEventArgs e)
+    protected override void OnPointerEnter(PointerEventArgs e)
     {
-        if (!action.EnabledFunc(Node.TreeNode))
+        if (!Builder.Settings.ActionsVisibility.HasFlag(ActionVisibility.Hover) || _actionButtonContainerParameters is null)
             return;
 
-        action.Action.Invoke(new(Node.TreeNode, action, Builder, e));
+        _actionButtonContainerParameters.Hovering = true;
+
+        CalculateAll();
+        Refresh();
     }
 
-    private void OnNodeDragEnd(DragEventArgs e)
-        => Builder.DragAndDrop.EndNodeDrag(true);
-
-    private void OnNodeDragStart(DragEventArgs e)
-        => Builder.DragAndDrop.StartNodeDrag(Node.TreeNode);
-
-    private async Task RefreshAsync()
+    protected override void OnPointerLeave(PointerEventArgs e)
     {
-        _shouldRender = true;
-        await InvokeAsync(StateHasChanged);
-    }
+        if (!Builder.Settings.ActionsVisibility.HasFlag(ActionVisibility.Hover) || _actionButtonContainerParameters is null)
+            return;
 
-    private bool RenderActionButtons()
-        => (Builder.Settings.ActionsVisibility.HasFlag(ActionVisibility.Always)
-            || Builder.Settings.ActionsVisibility.HasFlag(ActionVisibility.Hover)
-            || (Node.TreeNode.Selected && Builder.Selection.SelectedNodes.Count() == 1))
-            && Node.Actions.Any();
+        _actionButtonContainerParameters.Hovering = false;
 
-    protected override bool ShouldRender()
-    {
-        if (_shouldRender)
-        {
-            _shouldRender = false;
-            return true;
-        }
-
-        return false;
+        CalculateAll();
+        Refresh();
     }
 }

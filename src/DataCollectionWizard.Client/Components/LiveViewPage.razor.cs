@@ -82,7 +82,6 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         _service.PropertyChanged -= OnServicePropertyChangedAsync;
         _service.RebrowseRequested -= OnRebrowse;
 
-        _adapter.Dispose();
         _cancelSubscribing.Dispose();
 
         DataCollectionWizardService.NodesOnline -= NodesOnline;
@@ -164,7 +163,6 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         _displayLoadingSpinner = true;
 
         _service.TreeBuilder.SetAdapter(_adapter);
-        _adapter.CoupleTreeBuilderEvents();
 
         _service.PropertyChanged += OnServicePropertyChangedAsync;
         _service.RebrowseRequested += OnRebrowse;

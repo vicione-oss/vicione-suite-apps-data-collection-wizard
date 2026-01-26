@@ -38,7 +38,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
     private readonly ILogger<DataCollectionWizardService> _logger;
     private readonly Dictionary<Guid, List<(Func<IDeviceTreeMasterNode?, bool, Uri, Task> callBack, Type deviceType, Uri address)>> _newDeviceEngineRequests = [];
     private readonly SemaphoreSlim _requestDevicesSemaphore = new(1, 1);
-    private readonly AutoDisposeList<IDisposable> _autoDisposeList = new();
+    private readonly AutoDisposeList<IDisposable> _autoDisposeList = [];
     private readonly ManualResetEvent _ioLinkScannerEngineAdded = new(false);
     private readonly ManualResetEvent _deploymentResetEvent = new(false);
     private bool _deploymentInProgress;
@@ -92,8 +92,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
     public Task Consume(ClientContext<DeviceTreeEngineAddedEvent> context, CancellationToken cancellationToken)
     {
-        if (context.CorrelationId is null
-            || !_newDeviceEngineRequests.TryGetValue(context.CorrelationId.Value, out var callBackTuples))
+        if (context.CorrelationId is null || !_newDeviceEngineRequests.TryGetValue(context.CorrelationId.Value, out var callBackTuples))
             return Task.CompletedTask;
 
         var deviceTreeConnectors = context.Message.DeviceTreeConnectors;
@@ -244,7 +243,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
     [LoggerMessage(LogLevel.Debug, "Triggering IO-Link master scan.")]
     public static partial void LogTriggeringIoLinkMasterScan(ILogger logger);
-    
+
     [LoggerMessage(LogLevel.Warning, "Failed to apply device tree: timeout while waiting for ticket")]
     partial void LogFailedToApplyDeviceTreeTimeoutWhileWaitingForTicket();
 
@@ -680,8 +679,8 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
     }
 
     public Task Consume(ClientContext<NodesOnlineEvent> context, CancellationToken cancellationToken)
-        => NodesOnline?.Invoke(context.Message.OnlineNodes.Select(n => n.Id).ToArray()) ?? Task.CompletedTask;
+        => NodesOnline?.Invoke([.. context.Message.OnlineNodes.Select(n => n.Id)]) ?? Task.CompletedTask;
 
     public Task Consume(ClientContext<NodesOfflineEvent> context, CancellationToken cancellationToken)
-        => NodesOffline?.Invoke(context.Message.OfflineNodes.Select(n => n.Id).ToArray()) ?? Task.CompletedTask;
+        => NodesOffline?.Invoke([.. context.Message.OfflineNodes.Select(n => n.Id)]) ?? Task.CompletedTask;
 }

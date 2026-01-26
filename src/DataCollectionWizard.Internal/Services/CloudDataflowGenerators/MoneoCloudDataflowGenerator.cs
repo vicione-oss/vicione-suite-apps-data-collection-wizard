@@ -62,7 +62,7 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
         return result;
     }
 
-    private static void GenerateProcessData(ClusterBuilder builder, Dataflow dataflow, uint engineCycleInterval, 
+    private static void GenerateProcessData(ClusterBuilder builder, Dataflow dataflow, uint engineCycleInterval,
                                             List<ProcessDataConfiguration> loggedProcessDataNodes, Dictionary<string, PoolingModesCloudInput> result,
                                             string deviceId, DataPortTreeNode deviceIdNode, Container cloudContainer,
                                             Dictionary<string, DataOutputInfo> dataOutputs)

@@ -8,6 +8,10 @@ internal static class NodeBaseExtensions
     public static IEnumerable<NodeBase> GetNodeAndDescendants(this NodeBase node)
         => new[] { node }.Concat(node.Children.SelectMany(child => child.GetNodeAndDescendants()));
 
+    public static bool GetFilterResult(this NodeBase node, string filterText)
+        => node.DisplayText.Contains(filterText, StringComparison.InvariantCultureIgnoreCase)
+        || (!string.IsNullOrWhiteSpace(node.Subtitle) && node.Subtitle.Contains(filterText, StringComparison.InvariantCultureIgnoreCase));
+
     public static bool HasError(this NodeBase node)
         => node.Status.HasFlag(NodeStatus.Offline);
 

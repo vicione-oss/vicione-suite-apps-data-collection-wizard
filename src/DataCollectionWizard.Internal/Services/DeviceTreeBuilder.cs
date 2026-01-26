@@ -1,5 +1,4 @@
 ﻿using DataCollectionWizard.Internal.Extensions;
-using DataCollectionWizard.Public.Extensions;
 using Sdk.Connections.Contracts;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Comparer;

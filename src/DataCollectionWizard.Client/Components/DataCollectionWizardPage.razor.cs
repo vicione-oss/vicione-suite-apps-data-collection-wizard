@@ -27,7 +27,6 @@ using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Factories;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Models;
 using ViciOne.Ui.Shared.Dx.Components;
-using ViciOne.Ui.TreeEditor.Builder.Models;
 
 namespace DataCollectionWizard.Client.Components;
 
@@ -163,7 +162,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private List<DcpDevice>? _scannedIoLinkDevices;
     private readonly List<string> _selectedIoLinkDevices = [];
     private DeviceTreeRoot? _tree;
-    private readonly Lock _treeLock = new Lock();
+    private readonly Lock _treeLock = new();
     private string _ioLinkMasterDialogHeight = IoLinkMasterDialogHeightNormal;
     private int _ioLinkMasterTabIndex;
     private CancellationTokenSource _dcwScanTokenSource = new();
@@ -337,7 +336,6 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _adapter.NodeEdited -= OnAdapterNodeEdited;
         _adapter.SelectionChanged -= OnTreeSelectionChangedAsync;
 
-        _adapter.Dispose();
         _dcwScanTokenSource.Dispose();
 
         DataCollectionWizardService.NodesOnline -= NodesOnline;
@@ -802,8 +800,6 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _displayLoadingSpinner = true;
 
         _service.TreeBuilder.SetAdapter(_adapter);
-        _service.TreeBuilder.Settings.ActionsVisibility = ActionVisibility.Hover;
-        _adapter.CoupleTreeBuilderEvents();
 
         _service.AddNewIoLinkMasterRequested += OnAddIoLinkMasterRequestedAsync;
         _service.AddNewVseRequested += OnAddVSERequestedAsync;
@@ -1147,9 +1143,9 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                     var masterNodes = _tree.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>().ToArray();
                     var missingEngineDeviceAddresses = receivedDevices.Where(s => !s.success).Select(a => a.address).ToArray();
 
-                    mastersWithNewNodes = masterNodes.Where(n => n.GetNodeAndDescendants().Any(c => c.IsNew)).ToArray();
-                    mastersWithMissingEngines = masterNodes.Where(m => missingEngineDeviceAddresses.Contains(new UriBuilder(m.Url).Uri)).ToArray();
-                    mastersWithNewUnits = masterNodes.Where(m => HasChangedUnits(m, oldStructureUnits)).ToArray();
+                    mastersWithNewNodes = [.. masterNodes.Where(n => n.GetNodeAndDescendants().Any(c => c.IsNew))];
+                    mastersWithMissingEngines = [.. masterNodes.Where(m => missingEngineDeviceAddresses.Contains(new UriBuilder(m.Url).Uri))];
+                    mastersWithNewUnits = [.. masterNodes.Where(m => HasChangedUnits(m, oldStructureUnits))];
 
                     mastersThatNeedToBeUpdated = [.. mastersWithNewNodes.Union(mastersWithMissingEngines)
                                                                         .Union(mastersWithNewUnits)
