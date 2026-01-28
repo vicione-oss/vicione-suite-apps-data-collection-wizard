@@ -383,9 +383,16 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
     private async Task InitDcw()
     {
-        await DataCollectionWizardService.WaitForCurrentDeployment(new TimeSpan(0, 1, 0));
-        await DataCollectionWizardService.AddIoLinkScannerDataflow(_service.LogLevel);
-        await UpdateDeviceTreeAsync(false, false);
+        try
+        {
+            await DataCollectionWizardService.WaitForCurrentDeployment(new TimeSpan(0, 1, 0));
+            await DataCollectionWizardService.AddIoLinkScannerDataflow(_service.LogLevel);
+            await UpdateDeviceTreeAsync(false, false);
+        }
+        catch (Exception ex)
+        {
+            LogInitDcwError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace);
+        }
     }
 
     private bool IsIoLinkMasterDialogOkEnabled()
@@ -868,7 +875,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
         if (deviceAddress is null)
         {
-            //Todo: log warning
+            LogMissingAddressSelectedWarning(Logger);
             return;
         }
 
