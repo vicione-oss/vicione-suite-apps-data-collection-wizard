@@ -1,5 +1,4 @@
 ﻿using AwesomeAssertions;
-using Bunit;
 using ClusterManagement.Public;
 using ClusterManagement.Public.Iodds;
 using DataCollectionWizard.Internal.Services;
@@ -9,6 +8,7 @@ using NSubstitute;
 using Sdk.Connections.Contracts;
 using Sdk.Connections.Extensions;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using TestContext = Bunit.TestContext;
 
 namespace DataCollectionWizard.Client.Tests.Vse;
 

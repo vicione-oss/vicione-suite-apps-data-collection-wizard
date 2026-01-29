@@ -3,6 +3,7 @@ using DevExpress.Blazor.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Sdk.Testing.Client;
+using TestContext = Bunit.TestContext;
 
 namespace DataCollectionWizard.Client.Tests.Extensions;
 
