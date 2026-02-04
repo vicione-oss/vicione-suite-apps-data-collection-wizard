@@ -1,7 +1,7 @@
 {
   "version": 2,
   "dependencies": {
-    "net9.0": {
+    "net10.0": {
       "ViciOne.CodeAnalysis": {
         "type": "Direct",
         "requested": "[1.2.1, )",
@@ -15,8 +15,8 @@
         "contentHash": "PWE3yTiTqHpJIHX4oqNWUhW2StSJ0G1OW5Ap7Qc5T2NJOQ/ah+4IEeXndj+Vrn4NlvVCES7fS6uvnDmmNvprfw=="
       }
     },
-    "net9.0/linux-arm64": {},
-    "net9.0/linux-x64": {},
-    "net9.0/win-x64": {}
+    "net10.0/linux-arm64": {},
+    "net10.0/linux-x64": {},
+    "net10.0/win-x64": {}
   }
 }
