@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.2 - Unreleased
+
+## Fix
+
+- Devicetree could not be updated correctly when connections change
+
 ## 1.4.1 - 2025-11-19
 
 ### Fix
