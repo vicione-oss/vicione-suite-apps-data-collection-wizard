@@ -27,7 +27,7 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
     {
         _state = state;
         _serviceScope = serviceProvider.CreateScope();
-        _cloudFilters = cloudFilters;
+        _cloudFilters = cloudFilters.ToArray();
         _logger = logger;
 
         _state.Timer.Interval = 500;
