@@ -1,4 +1,4 @@
-﻿using ClusterManagement.Public.Events;
+﻿using ClusterManagement.Public.Iodds.Events;
 using DataCollectionWizard.Public.Services;
 using MassTransit;
 using Microsoft.Extensions.Logging;

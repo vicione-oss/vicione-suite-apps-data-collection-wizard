@@ -27,9 +27,9 @@
       },
       "ViciOne.Suite.ClusterManagement.Public": {
         "type": "Direct",
-        "requested": "[1.3.0, )",
-        "resolved": "1.3.0",
-        "contentHash": "HZHl36ZoELdFmgKQRMcD8idMsJRycpvdo75nHWWLW42ovyNShZMI3MhbDG/aS5PCDJqDCAyU8ucRl1u1FtEi2g==",
+        "requested": "[1.4.0-ci2319077177, )",
+        "resolved": "1.4.0-ci2319077177",
+        "contentHash": "71pcOuFS0fJb6+MYHw0p+xlR+lR5Xa1rt60EswbkUYaUsrJsof+Y1N48b095pIIi4gR4XGLeKWJDV4yxRk0dFw==",
         "dependencies": {
           "ViciOne.Cluster.Builder": "0.11.0",
           "ViciOne.Suite.Sdk": "1.1.0"

@@ -1342,7 +1342,7 @@
       "ViciOne.Suite.DataCollectionWizard.Client": {
         "type": "Project",
         "dependencies": {
-          "ViciOne.Suite.DataCollectionWizard.Internal": "[1.4.1, )",
+          "ViciOne.Suite.DataCollectionWizard.Internal": "[1.4.2, )",
           "ViciOne.Suite.Sdk.Client": "[1.1.0, )",
           "ViciOne.Ui.MonochromeIcons.Assets": "[3.10.0, )",
           "ViciOne.Ui.Shared.Dx": "[0.16.2, )",
@@ -1354,8 +1354,8 @@
         "dependencies": {
           "ViciOne.Cluster.Builder": "[0.11.0, )",
           "ViciOne.Driver.IoTCore.Contracts": "[1.21.0, )",
-          "ViciOne.Suite.ClusterManagement.Public": "[1.3.0, )",
-          "ViciOne.Suite.DataCollectionWizard.Public": "[1.4.1, )",
+          "ViciOne.Suite.ClusterManagement.Public": "[1.4.0-ci2319077177, )",
+          "ViciOne.Suite.DataCollectionWizard.Public": "[1.4.2, )",
           "ViciOne.Suite.DataPort.Anna.Contracts": "[0.38.0, )",
           "ViciOne.Suite.Sdk": "[1.1.0, )",
           "ViciOne.Suite.Sdk.Client": "[1.1.0, )"
@@ -1397,9 +1397,9 @@
       },
       "ViciOne.Suite.ClusterManagement.Public": {
         "type": "CentralTransitive",
-        "requested": "[1.3.0, )",
-        "resolved": "1.3.0",
-        "contentHash": "HZHl36ZoELdFmgKQRMcD8idMsJRycpvdo75nHWWLW42ovyNShZMI3MhbDG/aS5PCDJqDCAyU8ucRl1u1FtEi2g==",
+        "requested": "[1.4.0-ci2319077177, )",
+        "resolved": "1.4.0-ci2319077177",
+        "contentHash": "71pcOuFS0fJb6+MYHw0p+xlR+lR5Xa1rt60EswbkUYaUsrJsof+Y1N48b095pIIi4gR4XGLeKWJDV4yxRk0dFw==",
         "dependencies": {
           "ViciOne.Cluster.Builder": "0.11.0",
           "ViciOne.Suite.Sdk": "1.1.0"
