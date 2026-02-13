@@ -3,6 +3,7 @@ using System.Timers;
 using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using DataCollectionWizard.Public.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sdk.Connections.Events;
 using Sdk.Messaging;
@@ -11,24 +12,22 @@ using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
 
 namespace DataCollectionWizard.Backend.Services;
 
-public interface IConnectionChangedProcessor
-{
-    void Enqueue(ConnectionChanged connectionChanged);
-}
-
-public sealed partial class ConnectionChangedProcessor : IConnectionChangedProcessor, IDisposable
+public sealed partial class ConnectionChangedProcessor : IConnectionChangedProcessor
 {
     private readonly ILogger<ConnectionChangedProcessor> _logger;
     private readonly ConcurrentQueue<ConnectionChanged> _queuedEvents = [];
     private readonly ConnectionChangedProcessorState _state;
-    private readonly IDeviceTreeUpdater _deviceTreeUpdater;
+#pragma warning disable CA2213 // Disposable fields should be disposed
+    // Scope is beeing disposed when timer elapses
+    private readonly IServiceScope _serviceScope;
+#pragma warning restore CA2213 // Disposable fields should be disposed
     private readonly IEnumerable<ICloudFilter> _cloudFilters;
 
-    public ConnectionChangedProcessor(ConnectionChangedProcessorState state, IDeviceTreeUpdater deviceTreeUpdater, IEnumerable<ICloudFilter> cloudFilters, ILogger<ConnectionChangedProcessor> logger)
+    public ConnectionChangedProcessor(ConnectionChangedProcessorState state, IServiceProvider serviceProvider, IEnumerable<ICloudFilter> cloudFilters, ILogger<ConnectionChangedProcessor> logger)
     {
         _state = state;
-        _deviceTreeUpdater = deviceTreeUpdater;
-        _cloudFilters = cloudFilters;
+        _serviceScope = serviceProvider.CreateScope();
+        _cloudFilters = cloudFilters.ToArray();
         _logger = logger;
 
         _state.Timer.Interval = 500;
@@ -54,6 +53,11 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
             {
                 LogErrorAfterConnectionChange(_logger, ex.GetType(), ex.Message, ex.StackTrace);
             }
+            finally
+            {
+                _serviceScope.Dispose();
+                _state.Timer.Elapsed -= OnTimerElapsed;
+            }
         });
 
     private async Task OnTimerElapsedAsync()
@@ -64,11 +68,14 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
         using var cts = new CancellationTokenSource();
         cts.CancelAfter(TimeSpan.FromSeconds(30));
 
-        var ticket = await _deviceTreeUpdater.RequestUpdateAsync(cts.Token);
-        var deviceTree = await _deviceTreeUpdater.LoadDeviceTree();
+        var deviceTreeUpdater = _serviceScope.ServiceProvider.GetRequiredService<IDeviceTreeUpdater>();
+
+        var ticket = await deviceTreeUpdater.RequestUpdateAsync(cts.Token);
+        var deviceTree = await deviceTreeUpdater.LoadDeviceTree();
 
         var relevantDevices = new List<string>();
         var saveTree = false;
+
         foreach (var changedEvent in events)
         {
             var cloudConnections = _cloudFilters
@@ -83,30 +90,31 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
             {
                 foreach (var dataNode in deviceTree.GetNodeAndDescendants().OfType<IDeviceTreeDataNode>())
                     dataNode.AddConfigurations(cloudConnections);
-                saveTree = true;
-            }
 
-            if (changedEvent.Action == CrudAction.Deleted)
+                saveTree = true;
+                relevantDevices.AddRange(deviceTree.Children.OfType<IDeviceTreeMasterNode>()
+                                                            .Select(m => m.Id));
+            }
+            else if (changedEvent.Action == CrudAction.Deleted)
             {
                 var publishTargetsIds = cloudConnections.Select(t => t.Id).ToArray();
+
                 foreach (var dataNode in deviceTree.GetNodeAndDescendants().OfType<IDeviceTreeDataNode>())
                     dataNode.RemoveConfigurations(publishTargetsIds);
-                saveTree = true;
-            }
 
-            relevantDevices.AddRange(deviceTree.Children
-                .OfType<IDeviceTreeMasterNode>()
-                .Where(m => IsRelevantMasterNode(m, changedEvent.Connection.Id))
-                .Select(m => m.Id));
+                saveTree = true;
+
+                relevantDevices.AddRange(deviceTree.Children.OfType<IDeviceTreeMasterNode>()
+                                                            .Where(m => IsRelevantMasterNode(m, changedEvent.Connection.Id))
+                                                            .Select(m => m.Id));
+            }
         }
 
         if (relevantDevices.Count == 0)
             return;
 
-        await _deviceTreeUpdater.UpdateDeviceTreeAsync(ticket, deviceTree, [], relevantDevices, saveTree: saveTree);
+        await deviceTreeUpdater.UpdateDeviceTreeAsync(ticket, deviceTree, [], relevantDevices.Distinct(), saveTree: saveTree);
     }
-
-    public void Dispose() => _state.Timer.Elapsed -= OnTimerElapsed;
 
     private static bool IsRelevantMasterNode(IDeviceTreeMasterNode masterNode, Guid connectionId)
     {
