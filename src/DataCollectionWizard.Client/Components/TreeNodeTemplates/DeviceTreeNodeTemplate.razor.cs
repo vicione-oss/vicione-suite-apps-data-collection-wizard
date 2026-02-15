@@ -1,6 +1,7 @@
 ﻿using DataCollectionWizard.Client.Models.DeviceTree;
 using Microsoft.AspNetCore.Components.Web;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Enums;
+using ViciOne.Ui.TreeEditor.Builder.Interface.NodeActions;
 using ViciOne.Ui.TreeEditor.Templates;
 using ViciOne.Ui.TreeEditor.Templates.Fragments.Node;
 
@@ -22,6 +23,20 @@ public sealed partial class DeviceTreeNodeTemplate : NodeTemplate
             _dropAreaParameters.CurrentlyOverDropZone = DropZone.None;
 
         _actionButtonContainerParameters?.CalculateCss();
+    }
+
+    protected override void CalculateCss(out IEnumerable<string> cssClasses, out IEnumerable<(string Property, string Value)> cssStyles)
+    {
+        var resCssClasses = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(DeviceNode.Subtitle))
+            resCssClasses.Add("has-subtitle");
+
+        if (Node.Actions.OfType<IVisibleNodeAction>().Count() > 0)
+            resCssClasses.Add("has-buttons");
+
+        cssClasses = resCssClasses;
+        cssStyles = [];
     }
 
     protected override void Dispose(bool disposing)
