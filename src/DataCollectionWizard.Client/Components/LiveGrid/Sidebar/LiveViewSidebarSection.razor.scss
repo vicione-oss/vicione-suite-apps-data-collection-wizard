@@ -12,6 +12,11 @@
     ::deep .tree-editor-container {
         background-color: inherit;
 
+        .expand-button .icon, .guideline {
+            // necessary because bootstrap breaks the layout otherwise
+            box-sizing: unset;
+        }
+
         .tree-node-display-container {
             height: unset;
         }
