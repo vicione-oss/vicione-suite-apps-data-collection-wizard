@@ -415,3 +415,6 @@ tests/ComponentTest/Test.Client/wwwroot/*
 
 # shared folder
 shared/
+
+# Files unpacked by target 'ConfigureDesignTargets'
+**/Styles/design

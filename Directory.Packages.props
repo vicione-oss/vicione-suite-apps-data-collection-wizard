@@ -11,7 +11,7 @@
     <PackageVersion Include="ViciOne.Core.Dataflow.DataModel.Generation" Version="0.51.0" />
     <PackageVersion Include="ViciOne.Cluster.Builder" Version="0.11.0" />
     <PackageVersion Include="ViciOne.Driver.IoTCore.Contracts" Version="1.21.0" />
-    <PackageVersion Include="ViciOne.Suite.ClusterManagement.Public" Version="1.4.0-ci2319077177" />
+    <PackageVersion Include="ViciOne.Suite.ClusterManagement.Public" Version="1.4.0" />
     <PackageVersion Include="ViciOne.Suite.DataPort.Anna.Contracts" Version="0.38.0" />
     <PackageVersion Include="ViciOne.Suite.Sdk" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="ViciOne.Suite.Sdk.Backend" Version="$(ViciOneSuiteSdkVersion)" />
@@ -19,6 +19,7 @@
     <PackageVersion Include="ViciOne.Suite.Sdk.Client" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="ViciOne.Ui.Blazor.Components" Version="4.2.0" />
     <PackageVersion Include="ViciOne.Ui.MonochromeIcons.Assets" Version="3.10.0" />
+    <PackageVersion Include="ViciOne.Ui.Design" Version="1.1.1" />
     <PackageVersion Include="ViciOne.Ui.Shared.Dx" Version="0.16.2" />
     <PackageVersion Include="ViciOne.Ui.TreeEditor" Version="0.12.0" />
     <!--Used for tests only:-->
