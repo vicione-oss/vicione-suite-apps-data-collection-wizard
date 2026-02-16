@@ -4,13 +4,21 @@
 
 ## Fix
 
-- Devicetree could not be updated correctly when connections change
+- DeviceTree could not be updated correctly when connections change
+
+### Dependencies
+
+- `ViciOne.Suite.ClusterManagement.Public` package, update version to `1.4.0`
 
 ## 1.4.1 - 2025-11-19
 
 ### Fix
 
 - Save button does not work if no changes to the tree are made
+
+### Dependencies
+
+- `ViciOne.Suite.ClusterManagement.Public` package, update version to `1.3.0`
 
 ## 1.4.0 - 2025-11-17
 

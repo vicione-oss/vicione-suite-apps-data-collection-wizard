@@ -10,6 +10,10 @@
   <ItemGroup>
     <PackageReference Include="AspNetCore.SassCompiler" PrivateAssets="all" />
     <PackageReference Include="ViciOne.Suite.Sdk.Client" />
+    <PackageReference Include="ViciOne.Ui.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
     <PackageReference Include="ViciOne.Ui.MonochromeIcons.Assets" />
     <PackageReference Include="ViciOne.Ui.Shared.Dx" />
     <PackageReference Include="ViciOne.Ui.TreeEditor" />
@@ -151,5 +155,10 @@
       <MonochromeIconScssOutputFolder>$(MSBuildProjectDirectory)/Styles/icons/monochrome-icons</MonochromeIconScssOutputFolder>
     </PropertyGroup>
   </Target>
-  
+
+  <Target Name="ConfigureDesignTargets" BeforeTargets="BeforeDesignTargets">
+    <PropertyGroup>
+      <ColorsScssOutputFolder>$(MSBuildProjectDirectory)/Styles/design/colors</ColorsScssOutputFolder>
+    </PropertyGroup>
+  </Target>
 </Project>
