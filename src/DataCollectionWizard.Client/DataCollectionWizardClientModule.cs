@@ -8,7 +8,7 @@ namespace DataCollectionWizard.Client;
 
 public sealed class DataCollectionWizardClientModule : ClientModule
 {
-    public override Action<IServiceCollection, HostingModel> ConfigureServices => (services, _) =>
+    public override Action<IServiceCollection>? Configure => (services) =>
     {
         services.AddScoped<IDataCollectionWizardService, DataCollectionWizardService>();
         services.AddScoped<IClusterService, ClusterService>();

@@ -14,7 +14,7 @@ public class LiveViewNavTileTests
     public void NavTile_should_render()
     {
         // Arrange
-        using var ctx = new TestContext();
+        using var ctx = new BunitContext();
         var state = new NavTileState();
         ctx.SetupSuiteServices(c =>
         {
@@ -23,7 +23,7 @@ public class LiveViewNavTileTests
         });
 
         // Act
-        var page = ctx.RenderComponent<LiveViewNavTile>(p =>
+        var page = ctx.Render<LiveViewNavTile>(p =>
         {
             p.Add(k => k.State, state);
         });
@@ -36,7 +36,7 @@ public class LiveViewNavTileTests
     public void State_should__be_enabled_if_devices_are_available()
     {
         // Arrange
-        using var ctx = new TestContext();
+        using var ctx = new BunitContext();
         var state = new NavTileState();
 
         ctx.SetupSuiteServices(c =>
@@ -46,7 +46,7 @@ public class LiveViewNavTileTests
         });
 
         // Act
-        ctx.RenderComponent<LiveViewNavTile>(p =>
+        ctx.Render<LiveViewNavTile>(p =>
         {
             p.Add(k => k.State, state);
         });
@@ -59,7 +59,7 @@ public class LiveViewNavTileTests
     public void State_should_be_disabled_if_no_devices_are_available()
     {
         // Arrange
-        using var ctx = new TestContext();
+        using var ctx = new BunitContext();
         var state = new NavTileState();
 
         ctx.SetupSuiteServices(c =>
@@ -69,7 +69,7 @@ public class LiveViewNavTileTests
         });
 
         // Act
-        var page = ctx.RenderComponent<LiveViewNavTile>(p =>
+        var page = ctx.Render<LiveViewNavTile>(p =>
         {
             p.Add(k => k.State, state);
         });

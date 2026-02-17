@@ -18,7 +18,7 @@ public class DataCollectionWizardPageTests
     public void Init_module_should_register_and_configure_services()
     {
         // Arrange
-        using var ctx = new TestContext();
+        using var ctx = new BunitContext();
 
         ctx.SetupSuiteServicesWithBlazorDx(setup =>
         {
@@ -38,7 +38,7 @@ public class DataCollectionWizardPageTests
         ctx.Services.AddScoped(_ => Substitute.For<IEventBroker>());
 
         // Act
-        var page = ctx.RenderComponent<DataCollectionWizardPage>();
+        var page = ctx.Render<DataCollectionWizardPage>();
 
         // Assert
         Assert.NotNull(page);

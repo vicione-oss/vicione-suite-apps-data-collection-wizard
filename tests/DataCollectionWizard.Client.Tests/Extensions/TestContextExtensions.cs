@@ -8,7 +8,7 @@ namespace DataCollectionWizard.Client.Tests.Extensions;
 
 public static class TestContextExtensions
 {
-    public static TestContext SetupSuiteServicesWithBlazorDx(this TestContext ctx, Action<ClientServiceConfigurator>? setup = null)
+    public static BunitContext SetupSuiteServicesWithBlazorDx(this BunitContext ctx, Action<ClientServiceConfigurator>? setup = null)
     {
         ctx.SetupSuiteServices(setup);
 

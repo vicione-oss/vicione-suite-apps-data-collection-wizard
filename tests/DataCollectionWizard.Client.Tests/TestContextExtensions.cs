@@ -8,7 +8,7 @@ namespace DataCollectionWizard.Client.Tests;
 
 public static class TestContextExtensions
 {
-    public static ClusterBuilder SetupVseClusterBuilder(this TestContext ctx, string assemblyPath,
+    public static ClusterBuilder SetupVseClusterBuilder(this BunitContext ctx, string assemblyPath,
         Guid instanceId, Action<IDependencyResolver>? resolver = null)
     {
         var resolverService = Substitute.For<IDependencyResolver>();

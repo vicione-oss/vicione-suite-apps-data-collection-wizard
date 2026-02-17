@@ -1179,7 +1179,7 @@ public class VseGeneratorTests
     public void Builder_should_create_engine()
     {
         // Arrange
-        using var ctx = new TestContext();
+        using var ctx = new BunitContext();
         var instanceId = Guid.NewGuid();
         using var builder = ctx.SetupVseClusterBuilder(FunctionBlockDirectory, instanceId);
 
@@ -1214,7 +1214,7 @@ public class VseGeneratorTests
     public void Builder_should_provide_function_block_designs()
     {
         // Arrange
-        using var ctx = new TestContext();
+        using var ctx = new BunitContext();
         var instanceId = Guid.NewGuid();
         using var builder = ctx.SetupVseClusterBuilder(FunctionBlockDirectory, instanceId);
 
@@ -1238,7 +1238,7 @@ public class VseGeneratorTests
     public void Builder_with_vse_support_can_be_created()
     {
         // Arrange
-        using var ctx = new TestContext();
+        using var ctx = new BunitContext();
         var instanceId = Guid.NewGuid();
 
         // Act
@@ -1255,7 +1255,7 @@ public class VseGeneratorTests
     public void Generates_basic_dataflow()
     {
         // Arrange
-        using var ctx = new TestContext();
+        using var ctx = new BunitContext();
         using var builder = ctx.SetupVseClusterBuilder(FunctionBlockDirectory, Guid.NewGuid());
 
         var ioddProvider = Substitute.For<IIoddStore>();
@@ -1293,7 +1293,7 @@ public class VseGeneratorTests
     public void Generates_basic_empty_dataflow()
     {
         // Arrange
-        using var ctx = new TestContext();
+        using var ctx = new BunitContext();
         using var builder = ctx.SetupVseClusterBuilder(FunctionBlockDirectory, Guid.NewGuid());
 
         var ioddProvider = Substitute.For<IIoddStore>();

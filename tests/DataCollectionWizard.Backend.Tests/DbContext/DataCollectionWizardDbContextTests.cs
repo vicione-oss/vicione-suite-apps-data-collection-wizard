@@ -69,10 +69,10 @@ public class DataCollectionWizardDbContextTests : TestWithDbContextSqlite<DataCo
 
             var dbModel = CreateDbModel("Address");
             dbContext.Devices.Add(dbModel);
-            await dbContext.Instance.SaveChangesAsync();
+            await dbContext.Instance.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
-            var entity = await dbContext.Devices.FirstOrDefaultAsync(k => k.DeviceAddress == dbModel.DeviceAddress);
+            var entity = await dbContext.Devices.FirstOrDefaultAsync(k => k.DeviceAddress == dbModel.DeviceAddress, TestContext.Current.CancellationToken);
 
             // Assert
             entity.Should().NotBeNull();
@@ -139,11 +139,14 @@ public class DataCollectionWizardDbContextTests : TestWithDbContextSqlite<DataCo
 
             var dbModel = CreateDbModel("Address");
             dbContext.DeviceConnectorIds.Add(dbModel);
-            await dbContext.Instance.SaveChangesAsync();
+            await dbContext.Instance.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             var entity = await dbContext.DeviceConnectorIds
-                .FirstOrDefaultAsync(k => k.DeviceAddress == dbModel.DeviceAddress && k.DeviceTreeOutput == dbModel.DeviceTreeOutput && k.TriggerInput == dbModel.TriggerInput);
+                .FirstOrDefaultAsync(
+                    k => k.DeviceAddress == dbModel.DeviceAddress && k.DeviceTreeOutput == dbModel.DeviceTreeOutput && k.TriggerInput == dbModel.TriggerInput,
+                    TestContext.Current.CancellationToken
+                );
 
             // Assert
             entity.Should().NotBeNull();
