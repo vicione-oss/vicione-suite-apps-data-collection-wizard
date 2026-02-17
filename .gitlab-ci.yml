@@ -5,7 +5,7 @@ include:
 variables:
   PROJECT_NAME: DataCollectionWizard
   MODULE_FULLNAME: ViciOne.Suite.DataCollectionWizard
-  IMAGE_NAME: mcr.microsoft.com/dotnet/sdk:9.0-bookworm-slim
+  IMAGE_NAME: mcr.microsoft.com/dotnet/sdk:10.0
   TEST_FILTER: "Category!=System"
 
 default:
