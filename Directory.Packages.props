@@ -22,7 +22,7 @@
     <PackageVersion Include="ViciOne.Ui.MonochromeIcons.Assets" Version="4.3.0" />
     <PackageVersion Include="ViciOne.Ui.Design" Version="2.0.3" />
     <PackageVersion Include="ViciOne.Ui.Shared.Dx" Version="0.19.1" />
-    <PackageVersion Include="ViciOne.Ui.TreeEditor" Version="0.12.0" />
+    <PackageVersion Include="ViciOne.Ui.TreeEditor" Version="2.0.0" />
     <!--Used for tests only:-->
     <PackageVersion Include="ViciOne.Suite.Sdk.Testing" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
