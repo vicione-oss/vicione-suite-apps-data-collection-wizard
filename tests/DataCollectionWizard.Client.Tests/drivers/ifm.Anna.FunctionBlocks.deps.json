@@ -1,0 +1,164 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v9.0/win-x64",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v9.0": {},
+    ".NETCoreApp,Version=v9.0/win-x64": {
+      "ifm.Anna.FunctionBlocks/0.38.0": {
+        "dependencies": {
+          "ACX.ViciOne.Data.Driver.CloudDataAdapter.Contracts": "4.4.0",
+          "ViciOne.Core.Runtime": "0.51.0",
+          "ViciOne.Core.Runtime.Analyzers": "0.4.0",
+          "ViciOne.Driver.IoTCore.Contracts": "1.19.0",
+          "ViciOne.Suite.DataPort.Anna.Contracts": "0.38.0",
+          "ViciOne.Suite.DataPort.Anna.Contracts.Reference": "0.38.0.0"
+        },
+        "runtime": {
+          "ifm.Anna.FunctionBlocks.dll": {}
+        }
+      },
+      "ACX.ViciOne.Data.Driver.CloudDataAdapter.Contracts/4.4.0": {
+        "runtime": {
+          "lib/netstandard2.0/ACX.ViciOne.Data.Driver.CloudDataAdapter.Contracts.dll": {
+            "assemblyVersion": "4.4.0.0",
+            "fileVersion": "4.4.0.0"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.7": {
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.725.31616"
+          }
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/9.0.7": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7"
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.725.31616"
+          }
+        }
+      },
+      "ViciOne.Core.Contracts/0.51.0": {
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "9.0.7"
+        },
+        "runtime": {
+          "lib/net9.0/ViciOne.Core.Contracts.dll": {
+            "assemblyVersion": "0.51.0.0",
+            "fileVersion": "0.51.0.0"
+          }
+        }
+      },
+      "ViciOne.Core.Runtime/0.51.0": {
+        "dependencies": {
+          "ViciOne.Core.Contracts": "0.51.0"
+        },
+        "runtime": {
+          "lib/net9.0/ViciOne.Core.Runtime.dll": {
+            "assemblyVersion": "0.51.0.0",
+            "fileVersion": "0.51.0.0"
+          }
+        }
+      },
+      "ViciOne.Core.Runtime.Analyzers/0.4.0": {},
+      "ViciOne.Driver.IoTCore.Contracts/1.19.0": {
+        "runtime": {
+          "lib/net9.0/ViciOne.Driver.IoTCore.Contracts.dll": {
+            "assemblyVersion": "1.19.0.0",
+            "fileVersion": "1.19.0.0"
+          }
+        }
+      },
+      "ViciOne.Suite.DataPort.Anna.Contracts/0.38.0": {
+        "runtime": {
+          "ViciOne.Suite.DataPort.Anna.Contracts.dll": {
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "ViciOne.Suite.DataPort.Anna.Contracts.Reference/0.38.0.0": {
+        "runtime": {
+          "ViciOne.Suite.DataPort.Anna.Contracts.dll": {
+            "assemblyVersion": "0.38.0.0",
+            "fileVersion": "0.38.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "ifm.Anna.FunctionBlocks/0.38.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ACX.ViciOne.Data.Driver.CloudDataAdapter.Contracts/4.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-dpwq6W8YiS4tQnfmQgeUWS76GI+FqXMyFE4dA8Pxn5XV9rNVEaazaK1P2C5DsEwsI01YarOzu7qMVb+vTVTw1g==",
+      "path": "acx.vicione.data.driver.clouddataadapter.contracts/4.4.0",
+      "hashPath": "acx.vicione.data.driver.clouddataadapter.contracts.4.4.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.7": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-iPK1FxbGFr2Xb+4Y+dTYI8Gupu9pOi8I3JPuPsrogUmEhe2hzZ9LpCmolMEBhVDo2ikcSr7G5zYiwaapHSQTew==",
+      "path": "microsoft.extensions.dependencyinjection.abstractions/9.0.7",
+      "hashPath": "microsoft.extensions.dependencyinjection.abstractions.9.0.7.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Logging.Abstractions/9.0.7": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-sMM6NEAdUTE/elJ2wqjOi0iBWqZmSyaTByLF9e8XHv6DRJFFnOe0N+s8Uc6C91E4SboQCfLswaBIZ+9ZXA98AA==",
+      "path": "microsoft.extensions.logging.abstractions/9.0.7",
+      "hashPath": "microsoft.extensions.logging.abstractions.9.0.7.nupkg.sha512"
+    },
+    "ViciOne.Core.Contracts/0.51.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3uyq+x3QvdmzgGgep1Z8rUKv+s8fh/Em5RQL3hOquk+WDi9/Y48s7TuErEnPkAAzJN7zaK8NE/dIe4Qxi47U1A==",
+      "path": "vicione.core.contracts/0.51.0",
+      "hashPath": "vicione.core.contracts.0.51.0.nupkg.sha512"
+    },
+    "ViciOne.Core.Runtime/0.51.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Fx/lbcNJBM1fFWhHQse0FBJEca7b+wrY52HyR6xNASAol7adkITrXkPD1g8k+7zUoVff/fXlcdb33Z6+ytzloQ==",
+      "path": "vicione.core.runtime/0.51.0",
+      "hashPath": "vicione.core.runtime.0.51.0.nupkg.sha512"
+    },
+    "ViciOne.Core.Runtime.Analyzers/0.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Gj7dBI5A8ik64Hxn0h7+A3JlaNIOjLl1qzpo6UmDC6+t0GS4K3nHc17B+RYW8YG9XXS/pgRFF+bC9TsHWTFD8A==",
+      "path": "vicione.core.runtime.analyzers/0.4.0",
+      "hashPath": "vicione.core.runtime.analyzers.0.4.0.nupkg.sha512"
+    },
+    "ViciOne.Driver.IoTCore.Contracts/1.19.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-U4zMlb0ED2FoeYp/pmFyOPVHpEYchEA/PInVOVj2E3UHDx0M7Q2RtPHOTLOru9WJKJVwfM6y0Ybv9ziDJOOmHQ==",
+      "path": "vicione.driver.iotcore.contracts/1.19.0",
+      "hashPath": "vicione.driver.iotcore.contracts.1.19.0.nupkg.sha512"
+    },
+    "ViciOne.Suite.DataPort.Anna.Contracts/0.38.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ViciOne.Suite.DataPort.Anna.Contracts.Reference/0.38.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

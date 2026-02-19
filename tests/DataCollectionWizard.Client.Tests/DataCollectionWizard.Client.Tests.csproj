@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AssemblyName>ViciOne.Suite.DataCollectionWizard.Client.Tests</AssemblyName>
@@ -34,6 +34,10 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="drivers\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

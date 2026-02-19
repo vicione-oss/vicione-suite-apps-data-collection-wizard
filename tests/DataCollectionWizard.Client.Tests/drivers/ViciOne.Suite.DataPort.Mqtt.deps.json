@@ -1,0 +1,158 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v9.0/win-x64",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v9.0": {},
+    ".NETCoreApp,Version=v9.0/win-x64": {
+      "ViciOne.Suite.DataPort.Mqtt/0.29.0": {
+        "dependencies": {
+          "MQTTnet.Extensions": "0.21.0",
+          "ViciOne.Suite.DataPort": "0.29.0",
+          "ViciOne.Suite.DataPort.Reference": "0.29.0.0"
+        },
+        "runtime": {
+          "ViciOne.Suite.DataPort.Mqtt.dll": {}
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.10": {
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.1025.47515"
+          }
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/9.0.10": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.10"
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.1025.47515"
+          }
+        }
+      },
+      "MQTTnet/4.3.7.1207": {
+        "runtime": {
+          "lib/net7.0/MQTTnet.dll": {
+            "assemblyVersion": "4.3.7.1207",
+            "fileVersion": "4.3.7.1207"
+          }
+        }
+      },
+      "MQTTnet.Extensions/0.21.0": {
+        "dependencies": {
+          "MQTTnet": "4.3.7.1207",
+          "Microsoft.Extensions.Logging.Abstractions": "9.0.10"
+        },
+        "runtime": {
+          "lib/net9.0/MQTTnet.Extensions.dll": {
+            "assemblyVersion": "0.21.0.0",
+            "fileVersion": "0.21.0.0"
+          }
+        }
+      },
+      "ViciOne.ManagedEngine.Contracts/0.62.0": {
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "9.0.10",
+          "ViciOne.ManagedEngine.Serialization": "0.62.0"
+        },
+        "runtime": {
+          "lib/net9.0/ViciOne.ManagedEngine.Contracts.dll": {
+            "assemblyVersion": "0.62.0.0",
+            "fileVersion": "0.62.0.0"
+          }
+        }
+      },
+      "ViciOne.ManagedEngine.Serialization/0.62.0": {
+        "runtime": {
+          "lib/net9.0/ViciOne.ManagedEngine.Serialization.dll": {
+            "assemblyVersion": "0.62.0.0",
+            "fileVersion": "0.62.0.0"
+          }
+        }
+      },
+      "ViciOne.Suite.DataPort/0.29.0": {
+        "dependencies": {
+          "ViciOne.ManagedEngine.Contracts": "0.62.0"
+        },
+        "runtime": {
+          "ViciOne.Suite.DataPort.dll": {
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "ViciOne.Suite.DataPort.Reference/0.29.0.0": {
+        "runtime": {
+          "ViciOne.Suite.DataPort.dll": {
+            "assemblyVersion": "0.29.0.0",
+            "fileVersion": "0.29.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "ViciOne.Suite.DataPort.Mqtt/0.29.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Extensions.DependencyInjection.Abstractions/9.0.10": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-r9waLiOPe9ZF1PvzUT+RDoHvpMmY8MW+lb4lqjYGObwKpnyPMLI3odVvlmshwuZcdoHynsGWOrCPA0hxZ63lIA==",
+      "path": "microsoft.extensions.dependencyinjection.abstractions/9.0.10",
+      "hashPath": "microsoft.extensions.dependencyinjection.abstractions.9.0.10.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Logging.Abstractions/9.0.10": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-MFUPv/nN1rAQ19w43smm6bbf0JDYN/1HEPHoiMYY50pvDMFpglzWAuoTavByDmZq7UuhjaxwrET3joU69ZHoHQ==",
+      "path": "microsoft.extensions.logging.abstractions/9.0.10",
+      "hashPath": "microsoft.extensions.logging.abstractions.9.0.10.nupkg.sha512"
+    },
+    "MQTTnet/4.3.7.1207": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ah7aHXoedWp5m5a4zy2u4phOEVj0QFYzOb5tFKQeV8RRBrxp+1QREF4ymZuG8D+hzB2dhtrrG81WxTFv0PzOeQ==",
+      "path": "mqttnet/4.3.7.1207",
+      "hashPath": "mqttnet.4.3.7.1207.nupkg.sha512"
+    },
+    "MQTTnet.Extensions/0.21.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-XpuIVR0sTqtndsgwhFNJAIalViJRqGXpgu/bABPTgy2+OAAYi/WLMjAG29m/PhLXwCAlZ/GP2KyvReUt1mX5/A==",
+      "path": "mqttnet.extensions/0.21.0",
+      "hashPath": "mqttnet.extensions.0.21.0.nupkg.sha512"
+    },
+    "ViciOne.ManagedEngine.Contracts/0.62.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-gQchAPV1gMu1AOsAdvmU2MRTYGjscDspRob2M3TDjC5B3+B6TtK3vZqQsllFvFzZUy+j9gLEpRa1jOd775SWTw==",
+      "path": "vicione.managedengine.contracts/0.62.0",
+      "hashPath": "vicione.managedengine.contracts.0.62.0.nupkg.sha512"
+    },
+    "ViciOne.ManagedEngine.Serialization/0.62.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Becr8T3e9gRnxqYZNnV8jjnPcsk49SmKvGypkKyQDbWp430vH5mYMy51Fdl+Ebtzyx+kDA1QP8UTaftGFLBjzQ==",
+      "path": "vicione.managedengine.serialization/0.62.0",
+      "hashPath": "vicione.managedengine.serialization.0.62.0.nupkg.sha512"
+    },
+    "ViciOne.Suite.DataPort/0.29.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ViciOne.Suite.DataPort.Reference/0.29.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
