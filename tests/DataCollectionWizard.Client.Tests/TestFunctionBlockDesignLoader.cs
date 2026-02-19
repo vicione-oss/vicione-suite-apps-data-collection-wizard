@@ -30,7 +30,7 @@ public static class TestFunctionBlockDesignLoader
 
             return [.. FunctionBlockDesignGenerator.GenerateFunctionBlockDesigns(functionBlockDesignInfos, poolingFactory)];
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             return [];
         }

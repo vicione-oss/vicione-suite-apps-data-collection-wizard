@@ -20,6 +20,13 @@ public static class TestContextExtensions
 
         var builder = new ClusterBuilder(resolverService);
 
+        resolverService.ResolveDataPortDesignDependency(Arg.Any<string>())
+            .Returns(new ClusterDependency
+            {
+                Name = "Dataport",
+                Version = new Version(0, 0, 1)
+            });
+
         foreach (var pair in functionBlockDesigns)
         {
             resolverService

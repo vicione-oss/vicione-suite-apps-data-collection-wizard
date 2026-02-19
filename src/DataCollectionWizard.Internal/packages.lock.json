@@ -21,9 +21,9 @@
       },
       "ViciOne.Driver.IoTCore.Contracts": {
         "type": "Direct",
-        "requested": "[1.21.0, )",
-        "resolved": "1.21.0",
-        "contentHash": "CoVcmC26njAHfYjIxe1wQgdiNUlyXC/R58yC5MENbuP3fGZoAGLlWxPjFahRbum3liQ9UHGRBFkzt8Q/XM8npQ=="
+        "requested": "[2.0.0-ci2336879852, )",
+        "resolved": "2.0.0-ci2336879852",
+        "contentHash": "qOF4D6nITHCSd36AamymdDWhG89fKKfhl2+eDEjhCrzsCwBw9iN/Hzg+QTv4cjY7SWERWhQZZRjsuIxGmvd4qg=="
       },
       "ViciOne.Suite.ClusterManagement.Public": {
         "type": "Direct",
@@ -237,7 +237,7 @@
       "ViciOne.Suite.DataCollectionWizard.Public": {
         "type": "Project",
         "dependencies": {
-          "ViciOne.Driver.IoTCore.Contracts": "[1.21.0, )",
+          "ViciOne.Driver.IoTCore.Contracts": "[2.0.0-ci2336879852, )",
           "ViciOne.Suite.Sdk": "[2.0.0-ci2328417675, )"
         }
       }
