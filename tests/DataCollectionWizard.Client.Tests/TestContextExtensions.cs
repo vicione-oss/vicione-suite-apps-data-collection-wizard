@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Bunit;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Builder.Abstractions;
 using ViciOne.Cluster.Model;
-using TestContext = Bunit.TestContext;
 
 namespace DataCollectionWizard.Client.Tests;
 

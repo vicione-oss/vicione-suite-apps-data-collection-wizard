@@ -15,6 +15,7 @@ namespace DataCollectionWizard.Backend.Services;
 public sealed partial class ConnectionChangedProcessor : IConnectionChangedProcessor
 {
     private readonly ILogger<ConnectionChangedProcessor> _logger;
+    private readonly Lock _queuedEventsLock = new();
     private readonly ConcurrentQueue<ConnectionChanged> _queuedEvents = [];
     private readonly ConnectionChangedProcessorState _state;
 #pragma warning disable CA2213 // Disposable fields should be disposed
@@ -38,7 +39,12 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
     public void Enqueue(ConnectionChanged connectionChanged)
     {
         _state.Timer.Stop();
-        _queuedEvents.Enqueue(connectionChanged);
+
+        lock (_queuedEventsLock)
+        {
+            _queuedEvents.Enqueue(connectionChanged);
+        }
+
         _state.Timer.Start();
     }
 
@@ -62,8 +68,13 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
 
     private async Task OnTimerElapsedAsync()
     {
-        var events = _queuedEvents.ToArray();
-        _queuedEvents.Clear();
+        ConnectionChanged[] events;
+
+        lock (_queuedEventsLock)
+        {
+            events = _queuedEvents.ToArray();
+            _queuedEvents.Clear();
+        }
 
         using var cts = new CancellationTokenSource();
         cts.CancelAfter(TimeSpan.FromSeconds(30));
