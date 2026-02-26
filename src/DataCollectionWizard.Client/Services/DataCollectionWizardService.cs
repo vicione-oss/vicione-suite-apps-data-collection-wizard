@@ -7,6 +7,7 @@ using DataCollectionWizard.Internal.Commands;
 using DataCollectionWizard.Internal.Contracts;
 using DataCollectionWizard.Internal.Events;
 using DataCollectionWizard.Internal.Requests;
+using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Public.Events;
 using DataCollectionWizard.Public.Services;
@@ -367,6 +368,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
                 if (!triggerSubscriber || skippedRetainedMessageAlready)
                 {
+                    DeviceTreeBuilder.RemoveEmptyStructureNodes(device);
                     await callback(device, true, deviceAddress);
                 }
             });
