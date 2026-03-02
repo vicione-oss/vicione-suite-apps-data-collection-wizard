@@ -24,11 +24,10 @@
 }
 
 .status-bar {
-    align-self: anchor-center;
     background-color: col.$error;
-    height: 1.5em;
-    left: 2px;
+    height: 70%;
+    left: 1px;
     position: absolute;
-    top: 0px;
+    top: 15px;
     width: 2px;
 }
