@@ -22,7 +22,7 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
     private readonly IServiceScope _serviceScope;
 #pragma warning restore CA2213 // Disposable fields should be disposed
     private readonly IEnumerable<ICloudFilter> _cloudFilters;
-
+        
     public ConnectionChangedProcessor(ConnectionChangedProcessorState state, IServiceProvider serviceProvider, IEnumerable<ICloudFilter> cloudFilters, ILogger<ConnectionChangedProcessor> logger)
     {
         _state = state;
@@ -86,7 +86,7 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
             if (cloudConnections.Length == 0)
                 continue;
 
-            if (changedEvent.Action == CrudAction.Created)
+            if (changedEvent.Action == CrudAction.Created || changedEvent.Action == CrudAction.Updated)
             {
                 foreach (var dataNode in deviceTree.GetNodeAndDescendants().OfType<IDeviceTreeDataNode>())
                     dataNode.AddConfigurations(cloudConnections);
