@@ -11,7 +11,7 @@ public class DataCollectionWizardState
 
     public ClusterBuilder? ClusterBuilder { get { lock (_clusterBuilderLockObject) { return _clusterBuilder; } } set { lock (_clusterBuilderLockObject) { _clusterBuilder = value; } } }
     public (Guid trackingId, Func<Task> callback) DeployTrackingInfo { get; set; }
-    public Dictionary<Uri, DeviceConnectorIds> DeviceTreeConnectors { get; } = [];
+    public ConcurrentDictionary<Uri, DeviceConnectorIds> DeviceTreeConnectors { get; } = [];
     public Version? LatestClusterVersion { get; set; }
     public Version LatestDeployedClusterVersion { get; set; } = new();
     public string? MachineIdentifier { get; set; }

@@ -16,6 +16,7 @@ namespace DataCollectionWizard.Backend.Services;
 
 public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
 {
+    private readonly Lock _deviceTreeLock = new();
     private DeviceTreeRoot? _deviceTree;
     private readonly ConcurrentDictionary<Uri, (Guid deviceTreeTrigger, Guid deviceTreeOutput)> _deviceTreeConnectors = [];
     private readonly AsyncServiceScope _eventBrokerScope;
@@ -83,7 +84,12 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
             return;
         }
 
-        var currentDevice = _deviceTree?.Children.FirstOrDefault(c => c.Id == masterNode.Id);
+        IDeviceTreeBase? currentDevice;
+
+        lock (_deviceTreeLock)
+        {
+            currentDevice = _deviceTree?.Children.FirstOrDefault(c => c.Id == masterNode.Id);
+        }
 
         if (currentDevice is null)
         {
@@ -175,13 +181,26 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
     {
         using var scope = _serviceProvider.CreateScope();
         var dataCollectionWizardService = scope.ServiceProvider.GetRequiredService<IDataCollectionWizardService>();
-        _deviceTree = await dataCollectionWizardService.RequestDeviceTreeAsync(CancellationToken.None);
+
+        var tree = await dataCollectionWizardService.RequestDeviceTreeAsync(CancellationToken.None);
+
+        lock (_deviceTreeLock)
+        {
+            _deviceTree = tree;
+        }
     }
 
     private async Task UpdateSubscriptionsAsync()
     {
         LogUpdatingDeviceTreeGuardSubscriptions(_logger);
-        var masterDevices = _deviceTree!.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>().ToList();
+
+        List<IDeviceTreeMasterNode>? masterDevices;
+
+        lock (_deviceTreeLock)
+        {
+            masterDevices = _deviceTree!.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>().ToList();
+        }
+
         var eventBroker = _eventBrokerScope.ServiceProvider.GetRequiredService<IEventBroker>();
 
         foreach (var masterDevice in masterDevices)
@@ -222,7 +241,13 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
 
     public async Task OnDeviceTreeApplication()
     {
-        var currentDeviceTree = _deviceTree;
+        DeviceTreeRoot? currentDeviceTree;
+
+        lock (_deviceTreeLock)
+        {
+            currentDeviceTree = _deviceTree;
+        }
+
         await RequestDeviceTree();
         await UpdateSubscriptionsAsync();
         DeviceTreeBuilder.UpdateOnlineStatus(DeviceTreeBuilder.CorrelateParsedDevices(currentDeviceTree!, _deviceTree!.Children));
