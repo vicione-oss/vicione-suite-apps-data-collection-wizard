@@ -12,7 +12,7 @@
     <PackageVersion Include="ViciOne.Core.Dataflow.DataModel.Generation" Version="0.51.0" />
     <PackageVersion Include="ViciOne.Cluster.Builder" Version="0.11.0" />
     <PackageVersion Include="ViciOne.Driver.IoTCore.Contracts" Version="2.0.0-ci2336879852" />
-    <PackageVersion Include="ViciOne.Suite.ClusterManagement.Public" Version="2.0.0-ci2363735219" />
+    <PackageVersion Include="ViciOne.Suite.ClusterManagement.Public" Version="2.0.0-ci2363805922" />
     <PackageVersion Include="ViciOne.Suite.DataPort.Anna.Contracts" Version="0.38.0" />
     <PackageVersion Include="ViciOne.Suite.Sdk" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="ViciOne.Suite.Sdk.Backend" Version="$(ViciOneSuiteSdkVersion)" />
@@ -31,7 +31,6 @@
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="NSubstitute.Analyzers.CSharp" Version="1.0.17" />
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
-    <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
 </Project>
