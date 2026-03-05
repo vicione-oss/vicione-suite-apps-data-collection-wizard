@@ -46,9 +46,9 @@ public class GetDevicesConsumerTests : TestWithDbContextSqlite<DataCollectionWiz
         var deviceTreeJson = FakeDeviceTreeFactory.CreateDeviceTree().SerializeToJson();
         var request = new GetDevicesRequest();
 
-        tester.Services.GetRequiredService<IDataCollectionWizardDbContext>()
-            .SeedDeviceTree(deviceAddress1, deviceTreeJson)
-            .SeedDeviceTree(deviceAddress2, deviceTreeJson);
+        var context = tester.Services.GetRequiredService<IDataCollectionWizardDbContext>();
+        await context.SeedDeviceTree(deviceAddress1, deviceTreeJson);
+        await context.SeedDeviceTree(deviceAddress2, deviceTreeJson);
 
         // Act
         var response = await tester.TestRequest<GetDevicesResponse, GetDevicesRequest>(request);
