@@ -14,7 +14,7 @@ public sealed class DataCollectionWizardModuleInitializer : IModuleInitializer
     {
         var dbContext = scopedServices.GetRequiredService<IDataCollectionWizardDbContext>();
 
-        await dbContext.Instance.Database.MigrateAsync(stoppingToken);
+        await dbContext.Database.MigrateAsync(stoppingToken);
     }
 
     public async Task OnInitialized(IServiceProvider scopedServices, CancellationToken stoppingToken = default)

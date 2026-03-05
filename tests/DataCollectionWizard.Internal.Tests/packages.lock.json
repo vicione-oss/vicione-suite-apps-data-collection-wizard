@@ -362,17 +362,17 @@
         "dependencies": {
           "ViciOne.Cluster.Builder": "[0.11.0, )",
           "ViciOne.Driver.IoTCore.Contracts": "[2.0.0-ci2336879852, )",
-          "ViciOne.Suite.ClusterManagement.Public": "[2.0.0-ci2328716283, )",
-          "ViciOne.Suite.DataCollectionWizard.Public": "[1.4.2, )",
+          "ViciOne.Suite.ClusterManagement.Public": "[2.0.0-ci2363735219, )",
+          "ViciOne.Suite.DataCollectionWizard.Public": "[2.0.0, )",
           "ViciOne.Suite.DataPort.Anna.Contracts": "[0.38.0, )",
-          "ViciOne.Suite.Sdk": "[2.0.0-ci2328417675, )"
+          "ViciOne.Suite.Sdk": "[2.0.0-ci2363355084, )"
         }
       },
       "ViciOne.Suite.DataCollectionWizard.Public": {
         "type": "Project",
         "dependencies": {
           "ViciOne.Driver.IoTCore.Contracts": "[2.0.0-ci2336879852, )",
-          "ViciOne.Suite.Sdk": "[2.0.0-ci2328417675, )"
+          "ViciOne.Suite.Sdk": "[2.0.0-ci2363355084, )"
         }
       },
       "ViciOne.Cluster.Builder": {
@@ -394,12 +394,12 @@
       },
       "ViciOne.Suite.ClusterManagement.Public": {
         "type": "CentralTransitive",
-        "requested": "[2.0.0-ci2328716283, )",
-        "resolved": "2.0.0-ci2328716283",
-        "contentHash": "f79xZOT28k9bg1blt3FHiyZ0JYYrUxcYRYAJ3SukWFVH3m2mBY7ZS5ta0rjIQ7QYJ5lmySFeZ7FTF45tbZ5thA==",
+        "requested": "[2.0.0-ci2363735219, )",
+        "resolved": "2.0.0-ci2363735219",
+        "contentHash": "9TpDFs7/3O8Bfql6eZvi3QswcAfDFwEuQk4BL211kC6JMPnCNVnL2e2DGtVJqH6Hlk63QzOR+8iWigtWHPmgmg==",
         "dependencies": {
           "ViciOne.Cluster.Builder": "0.11.0",
-          "ViciOne.Suite.Sdk": "2.0.0-ci2328417675"
+          "ViciOne.Suite.Sdk": "2.0.0-ci2363355084"
         }
       },
       "ViciOne.Suite.DataPort.Anna.Contracts": {
@@ -410,9 +410,9 @@
       },
       "ViciOne.Suite.Sdk": {
         "type": "CentralTransitive",
-        "requested": "[2.0.0-ci2328417675, )",
-        "resolved": "2.0.0-ci2328417675",
-        "contentHash": "DNpI2sgkRJUMwQPZiO98nZTJXoUQ6CkWZT5fEmx15Ppk6Wnus6yU5A/aXpJMSrdMt5VP3/GJfqqMTR8B/YZgZg==",
+        "requested": "[2.0.0-ci2363355084, )",
+        "resolved": "2.0.0-ci2363355084",
+        "contentHash": "JvEM+OnS0kRqmm2x90OZB0dnRmUXGbtf9q2gIJUOnrGoG97KhnQX6nIh8WyBZDzxqnCYN2OzDuZfydWFPNTaCw==",
         "dependencies": {
           "MassTransit.Abstractions": "8.5.8",
           "Microsoft.AspNetCore.Authorization": "10.0.3",

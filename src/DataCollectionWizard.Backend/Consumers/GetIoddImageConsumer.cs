@@ -2,6 +2,7 @@
 using ClusterManagement.Public.Iodds;
 using DataCollectionWizard.Internal.Requests;
 using MassTransit;
+using Sdk.Backend.Messaging;
 using Sdk.Messaging;
 
 namespace DataCollectionWizard.Backend.Consumers;

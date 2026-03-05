@@ -12,7 +12,7 @@ internal static class TestExtensions
             context.DeviceConnectorIds.Add(deviceConnectorId);
         }
 
-        context.Instance.SaveChanges();
+        context.SaveChanges();
     }
 
     public static DeviceConnectorIds SeedDeviceConnectorIds(this IDataCollectionWizardDbContext context, string deviceAddress, Guid? treeOutput = null, Guid? triggerInput = null)
@@ -25,7 +25,7 @@ internal static class TestExtensions
         };
 
         context.DeviceConnectorIds.Add(dbItem);
-        context.Instance.SaveChanges();
+        context.SaveChanges();
 
         return dbItem;
     }
@@ -33,7 +33,7 @@ internal static class TestExtensions
     public static IDataCollectionWizardDbContext SeedDeviceTree(this IDataCollectionWizardDbContext context, string deviceAddress, string deviceTreeJson)
     {
         context.Devices.Add(new DeviceTreeDbModel { DeviceAddress = deviceAddress, DeviceTreeJson = deviceTreeJson });
-        context.Instance.SaveChanges();
+        context.SaveChanges();
 
         return context;
     }

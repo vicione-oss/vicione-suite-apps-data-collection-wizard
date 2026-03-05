@@ -35,7 +35,7 @@ public sealed partial class DeleteOutputConnectorMappingConsumer(IDataCollection
 
         try
         {
-            var dbChanges = await dbContext.Instance.SaveChangesAsync(context.CancellationToken);
+            var dbChanges = await dbContext.SaveChangesAsync(context.CancellationToken);
             await context.Publish(new OutputConnectorMappingChangedEvent(dbChanges > 0 ? changes : [])).ConfigureAwait(false);
         }
         catch (DbUpdateException e)

@@ -4,6 +4,7 @@ using DataCollectionWizard.Public;
 using DataCollectionWizard.Public.Requests;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using Sdk.Backend.Messaging;
 using Sdk.Messaging;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 

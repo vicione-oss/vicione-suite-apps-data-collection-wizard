@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.0 unreleased
+
+### Dependencies
+
+- `AspNetCore.SassCompiler` packages, update version to `1.97.1`
+- `ViciOne.Suite.ClusterManagement.Public` package, update version to `2.0.0-ci13354605206`
+- `ViciOne.Suite.Sdk` packages, update version to `2.0.0-ci2363355084`
+- `ViciOne.Ui.MonochromeIcons.Assets` packages, update version to `4.3.0`
+
 ## 1.4.2 - 2026-02-21
 
 ## Fix

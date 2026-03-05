@@ -44,7 +44,7 @@ public sealed partial class UpsertDeviceConnectorIdsConsumer(IDataCollectionWiza
 
         try
         {
-            var dbChanges = await dbContext.Instance.SaveChangesAsync(context.CancellationToken);
+            var dbChanges = await dbContext.SaveChangesAsync(context.CancellationToken);
 
             await context.Publish(new DeviceConnectorIdsChangedEvent(dbChanges > 0 ? changes : [])).ConfigureAwait(false);
         }

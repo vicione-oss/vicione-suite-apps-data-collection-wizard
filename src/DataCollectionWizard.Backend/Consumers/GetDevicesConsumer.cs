@@ -3,6 +3,7 @@ using DataCollectionWizard.Internal.Requests;
 using DataCollectionWizard.Public;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Sdk.Backend.Messaging;
 using Sdk.Messaging;
 
 namespace DataCollectionWizard.Backend.Consumers;

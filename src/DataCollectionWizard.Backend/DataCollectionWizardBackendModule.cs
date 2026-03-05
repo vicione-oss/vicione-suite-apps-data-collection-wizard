@@ -16,7 +16,7 @@ public sealed class DataCollectionWizardBackendModule : BackendModule
 
     public override void ConfigureServices(IServiceCollection services, IConfiguration config, IMvcBuilder builder)
     {
-        services.AddDynamicDbContext<IDataCollectionWizardDbContext, DataCollectionWizardAttributeDbContextSqlite, DataCollectionWizardAttributeDbContextPostgres>(
+        services.AddModuleDbContext<IDataCollectionWizardDbContext, DataCollectionWizardAttributeDbContextSqlite, DataCollectionWizardAttributeDbContextPostgres>(
             this, DataCollectionWizardAttributeDbContext.DbSchemaName, enableSynchronization: false);
 
         services.AddSingleton<ClusterServiceState>();

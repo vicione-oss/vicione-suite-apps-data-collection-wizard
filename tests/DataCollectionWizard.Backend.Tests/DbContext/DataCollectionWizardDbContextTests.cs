@@ -35,7 +35,7 @@ public class DataCollectionWizardDbContextTests : TestWithDbContextSqlite<DataCo
             dbContext.Devices.Add(dbModel);
 
             // Assert
-            dbContext.Instance.SaveChanges().Should().Be(1);
+            dbContext.SaveChanges().Should().Be(1);
         }
 
         [Fact]
@@ -49,13 +49,13 @@ public class DataCollectionWizardDbContextTests : TestWithDbContextSqlite<DataCo
 
             var dbModel = CreateDbModel("Address");
             dbContext.Devices.Add(dbModel);
-            dbContext.Instance.SaveChanges();
+            dbContext.SaveChanges();
 
             // Act
             dbContext.Devices.Remove(dbModel);
 
             // Assert
-            dbContext.Instance.SaveChanges().Should().Be(1);
+            dbContext.SaveChanges().Should().Be(1);
         }
 
         [Fact]
@@ -69,7 +69,7 @@ public class DataCollectionWizardDbContextTests : TestWithDbContextSqlite<DataCo
 
             var dbModel = CreateDbModel("Address");
             dbContext.Devices.Add(dbModel);
-            await dbContext.Instance.SaveChangesAsync(TestContext.Current.CancellationToken);
+            await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             var entity = await dbContext.Devices.FirstOrDefaultAsync(k => k.DeviceAddress == dbModel.DeviceAddress, TestContext.Current.CancellationToken);
@@ -104,7 +104,7 @@ public class DataCollectionWizardDbContextTests : TestWithDbContextSqlite<DataCo
             dbContext.DeviceConnectorIds.Add(dbModel);
 
             // Assert
-            dbContext.Instance.SaveChanges().Should().Be(1);
+            dbContext.SaveChanges().Should().Be(1);
         }
 
 
@@ -119,13 +119,13 @@ public class DataCollectionWizardDbContextTests : TestWithDbContextSqlite<DataCo
 
             var dbModel = CreateDbModel("Address");
             dbContext.DeviceConnectorIds.Add(dbModel);
-            dbContext.Instance.SaveChanges();
+            dbContext.SaveChanges();
 
             // Act
             dbContext.DeviceConnectorIds.Remove(dbModel);
 
             // Assert
-            dbContext.Instance.SaveChanges().Should().Be(1);
+            dbContext.SaveChanges().Should().Be(1);
         }
 
         [Fact]
@@ -139,7 +139,7 @@ public class DataCollectionWizardDbContextTests : TestWithDbContextSqlite<DataCo
 
             var dbModel = CreateDbModel("Address");
             dbContext.DeviceConnectorIds.Add(dbModel);
-            await dbContext.Instance.SaveChangesAsync(TestContext.Current.CancellationToken);
+            await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             var entity = await dbContext.DeviceConnectorIds
