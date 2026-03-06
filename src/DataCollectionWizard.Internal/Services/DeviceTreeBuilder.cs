@@ -155,6 +155,7 @@ public static class DeviceTreeBuilder
         UpdateStructureUnits(persistentParsedDeviceData);
         UpdateRawDataIdices(persistentParsedDeviceData);
         UpdateApplicationSpecificTag(persistentParsedDeviceData);
+        RemoveEmptyStructureNodes(persistentParsedDeviceData, persistedDeviceTree);
     }
 
     private static void UpdateApplicationSpecificTag(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> persistedDevicesParsedDevicess)
@@ -247,6 +248,25 @@ public static class DeviceTreeBuilder
             newRawDataConfigs.CopyTo(node.RawDataConfigurations);
         }
     }
+
+    private static void RemoveEmptyStructureNodes(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> nodes, IDeviceTreeBase current)
+    {
+        for (var i = current.Children.Count - 1; i >= 0; i--)
+        {
+            var child = current.Children[i];
+
+            RemoveEmptyStructureNodes(nodes, child);
+
+            if (child is DeviceTreeStructureNode && child.Children.Count == 0)
+            {
+                nodes.Remove(child);
+                current.Children.RemoveAt(i);
+            }
+        }
+    }
+
+    public static void RemoveEmptyStructureNodes(IDeviceTreeBase deviceTree)
+        => RemoveEmptyStructureNodes(deviceTree.GetNodeAndDescendants().ToDictionary(n => n, n => (IDeviceTreeBase?)null), deviceTree);
 
     public static void RemoveEventTriggers(DeviceTreeRoot tree, IDeviceTreeBase deletingNode)
     {
