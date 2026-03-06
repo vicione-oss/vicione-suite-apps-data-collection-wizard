@@ -13,7 +13,6 @@
     <PackageReference Include="ViciOne.Suite.ClusterManagement.Public" />
     <PackageReference Include="ViciOne.Suite.DataPort.Anna.Contracts" />
     <PackageReference Include="ViciOne.Suite.Sdk" />
-    <PackageReference Include="ViciOne.Suite.Sdk.Client" />
   </ItemGroup>
 
   <ItemGroup>

@@ -67,57 +67,6 @@
           "Microsoft.Extensions.Options": "9.0.11"
         }
       },
-      "Microsoft.AspNetCore.Components": {
-        "type": "Transitive",
-        "resolved": "9.0.11",
-        "contentHash": "HIMOsBnuhcTNWBnCyugRHVgrh4iYfIM2Hl+8+8SQ6wrEIk+I2fUKa8USwV8XaMvZsjyJD7fPHaldAPoR9BNAVA==",
-        "dependencies": {
-          "Microsoft.AspNetCore.Authorization": "9.0.11",
-          "Microsoft.AspNetCore.Components.Analyzers": "9.0.11"
-        }
-      },
-      "Microsoft.AspNetCore.Components.Analyzers": {
-        "type": "Transitive",
-        "resolved": "9.0.11",
-        "contentHash": "7345cqEUev15rfdBeoBmYtUFrdHyYP/FVUbva3Q66eFTT0UuaykqWPtHmnv8R8GJZ9xntMxKhmqhySZTnth7sQ=="
-      },
-      "Microsoft.AspNetCore.Components.Authorization": {
-        "type": "Transitive",
-        "resolved": "9.0.11",
-        "contentHash": "I3qPe8hIEkDRDiG+nW1CV8yfIK0uQjQbwv66jcdEig2u4jHJYcKJo6Y8FMBvkzOBZqAlsunix7Q3emUDCrI7Mw==",
-        "dependencies": {
-          "Microsoft.AspNetCore.Authorization": "9.0.11",
-          "Microsoft.AspNetCore.Components": "9.0.11"
-        }
-      },
-      "Microsoft.AspNetCore.Components.Forms": {
-        "type": "Transitive",
-        "resolved": "9.0.11",
-        "contentHash": "emoJb7TUrOy27stNXcXv+WsyItn0Qhe4gMcZHtfIfcnErRjN2YOotCAKWezBeKvYWqaV28qsDpjxvjjcANxZGw==",
-        "dependencies": {
-          "Microsoft.AspNetCore.Components": "9.0.11"
-        }
-      },
-      "Microsoft.AspNetCore.Components.QuickGrid": {
-        "type": "Transitive",
-        "resolved": "9.0.11",
-        "contentHash": "iN7YwgDY1okGrxErOoDe2hqzss0X1Hl5W+VV9Wq+PqUqfyvUxH3eRr5giCI4xCRBhzhBJBvq6HfCbyuaoejCrA==",
-        "dependencies": {
-          "Microsoft.AspNetCore.Components.Web": "9.0.11"
-        }
-      },
-      "Microsoft.AspNetCore.Components.Web": {
-        "type": "Transitive",
-        "resolved": "9.0.11",
-        "contentHash": "wU9oVKqHfP4euIpRiRHLVkmhjFXctOvRDHOMUdBRnUErUua+fE6KsIRuBvUKla6tIql9sS58wbETZnjZpnX0lw==",
-        "dependencies": {
-          "Microsoft.AspNetCore.Components": "9.0.11",
-          "Microsoft.AspNetCore.Components.Forms": "9.0.11",
-          "Microsoft.Extensions.DependencyInjection": "9.0.11",
-          "Microsoft.Extensions.Primitives": "9.0.11",
-          "Microsoft.JSInterop": "9.0.11"
-        }
-      },
       "Microsoft.AspNetCore.Metadata": {
         "type": "Transitive",
         "resolved": "9.0.11",
@@ -128,14 +77,6 @@
         "resolved": "18.0.1",
         "contentHash": "O+utSr97NAJowIQT/OVp3Lh9QgW/wALVTP4RG1m2AfFP4IyJmJz0ZBmFJUsRQiAPgq6IRC0t8AAzsiPIsaUDEA=="
       },
-      "Microsoft.Extensions.DependencyInjection": {
-        "type": "Transitive",
-        "resolved": "9.0.11",
-        "contentHash": "UquyDzvz0EneIQrrU67GJkIgynS+VD7t+RDtNv6VgKMOFrLBjldn6hzlXppGGecFMvAkMTqn4T8RYvzw7j7fQA==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.11"
-        }
-      },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "Transitive",
         "resolved": "9.0.11",
@@ -145,22 +86,6 @@
         "type": "Transitive",
         "resolved": "9.0.11",
         "contentHash": "WVhhxc6gaEfAge3yqNBtbuOaDpFTu+C7vztG9j/6EOwZ4qBx8YGNgz7Zvdcfm06PvihbDae1ZKiZA3JbNqQGRQ=="
-      },
-      "Microsoft.Extensions.Localization": {
-        "type": "Transitive",
-        "resolved": "9.0.11",
-        "contentHash": "13P2jr8YUmNlxu860OJtEWX9SO2ajRubLItQcT4Os/dUlJ1WklkIFvMglBlbzo5J+xQTAAfMhLhN0/SUSowIQw==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.11",
-          "Microsoft.Extensions.Localization.Abstractions": "9.0.11",
-          "Microsoft.Extensions.Logging.Abstractions": "9.0.11",
-          "Microsoft.Extensions.Options": "9.0.11"
-        }
-      },
-      "Microsoft.Extensions.Localization.Abstractions": {
-        "type": "Transitive",
-        "resolved": "9.0.11",
-        "contentHash": "mPGUbBmnWCBFY5JaPzEoJmoxRM2LXZG0RKDt3TReavM8gz6p+JhulIGsoFKi/N8AWPj0judhk1sbG0wmUQvQFA=="
       },
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "Transitive",
@@ -183,11 +108,6 @@
         "type": "Transitive",
         "resolved": "9.0.11",
         "contentHash": "rtUNSIhbQTv8iSBTFvtg2b/ZUkoqC9qAH9DdC2hr+xPpoZrxiCITci9UR/ELUGUGnGUrF8Xye+tGVRhCxE+4LA=="
-      },
-      "Microsoft.JSInterop": {
-        "type": "Transitive",
-        "resolved": "9.0.11",
-        "contentHash": "5w/W57cXjt8Ugp5COQCsv1R/wt7KzZXjbTqK4AFvgsxqmv1DFJ6OzagzJmwgp6unczFuff6t8wNi+URePV6PYQ=="
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Transitive",
@@ -239,11 +159,6 @@
         "resolved": "1.4.0",
         "contentHash": "yZU6IkrxQHRm2Q2XPmEDMAAk+A5aRkVAt+arC9TxXgkRnxmsSrsTBTRw/TevnE/IzMI60EzezFGPxYMo/arQ7g=="
       },
-      "ViciOne.CodeAnalysis.MustCallBase.Attributes": {
-        "type": "Transitive",
-        "resolved": "1.4.0",
-        "contentHash": "fT/z/qW0GSDnIxbjS1HGIuaQndyKPw1+J5WeWj02dCdel95bvW1vx9dUpPMVkBx0G0/LTZ5PWFvN92N4WBW7Sg=="
-      },
       "ViciOne.Core.Contracts": {
         "type": "Transitive",
         "resolved": "0.51.0",
@@ -290,25 +205,6 @@
           "Newtonsoft.Json": "13.0.3"
         }
       },
-      "ViciOne.Ui.Localization": {
-        "type": "Transitive",
-        "resolved": "2.35.0",
-        "contentHash": "qjYFLTHX3yfx0VQEfFRmBCpVW8oXEY7OiYZ9qt3zAu9ghhQ37HBl9iSP+GjmYmcM4jZBqRiejKLMUG8/bktpkQ=="
-      },
-      "ViciOne.Ui.MonochromeIcons.Components": {
-        "type": "Transitive",
-        "resolved": "3.10.0",
-        "contentHash": "cjnqko4pVZTe5YBVpsCFPFUjhhS4bBUamZ0MmWZf9Jmj5bEGX4RRKDbEtIrvdNdmi2eSVCJDuM2QklPDdXgwXg==",
-        "dependencies": {
-          "Microsoft.AspNetCore.Components.Web": "9.0.10",
-          "ViciOne.Ui.MonochromeIcons.Core": "3.10.0"
-        }
-      },
-      "ViciOne.Ui.MonochromeIcons.Core": {
-        "type": "Transitive",
-        "resolved": "3.10.0",
-        "contentHash": "Wh9qp6+R/ude81wI2LOjqptq3Zw2nZ83vWPyPGrFrhX6kp69F0Bk3+z+AwZdaN148FsQpdh3Iy6SxZS4WzRddA=="
-      },
       "xunit.analyzers": {
         "type": "Transitive",
         "resolved": "1.18.0",
@@ -352,8 +248,7 @@
           "ViciOne.Suite.ClusterManagement.Public": "[1.4.0, )",
           "ViciOne.Suite.DataCollectionWizard.Public": "[1.4.2, )",
           "ViciOne.Suite.DataPort.Anna.Contracts": "[0.38.0, )",
-          "ViciOne.Suite.Sdk": "[1.1.0, )",
-          "ViciOne.Suite.Sdk.Client": "[1.1.0, )"
+          "ViciOne.Suite.Sdk": "[1.1.0, )"
         }
       },
       "ViciOne.Suite.DataCollectionWizard.Public": {
@@ -406,34 +301,6 @@
           "Microsoft.AspNetCore.Authorization": "9.0.11",
           "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions": "9.0.11",
           "ViciOne.CodeAnalysis.MustCallBase": "1.4.0"
-        }
-      },
-      "ViciOne.Suite.Sdk.Client": {
-        "type": "CentralTransitive",
-        "requested": "[1.1.0, )",
-        "resolved": "1.1.0",
-        "contentHash": "mK9LZjvAsrfL5JF3HB8Td5g+NOMwLQNLhkEOaCgQOWPYPs8bcFnXxfgwPvIZWrrD7frPQke3x6YVNq9Tk2VneQ==",
-        "dependencies": {
-          "Microsoft.AspNetCore.Components.Authorization": "9.0.11",
-          "Microsoft.AspNetCore.Components.Web": "9.0.11",
-          "Microsoft.Extensions.Localization": "9.0.11",
-          "ViciOne.CodeAnalysis.MustCallBase.Attributes": "1.4.0",
-          "ViciOne.Suite.Sdk": "1.1.0",
-          "ViciOne.Ui.Blazor.Components": "4.2.0",
-          "ViciOne.Ui.Localization": "2.35.0",
-          "ViciOne.Ui.MonochromeIcons.Components": "3.10.0"
-        }
-      },
-      "ViciOne.Ui.Blazor.Components": {
-        "type": "CentralTransitive",
-        "requested": "[4.2.0, )",
-        "resolved": "4.2.0",
-        "contentHash": "bBvRNt87IP1C/3L6U7S3XWZxMld1PcccP9GbpjK32Ua3e8+uC6plL2zfVEfnYq1vQz3CMDt4O/9n6SXdNhH6JQ==",
-        "dependencies": {
-          "Microsoft.AspNetCore.Components.QuickGrid": "9.0.11",
-          "Microsoft.AspNetCore.Components.Web": "9.0.11",
-          "ViciOne.Ui.Localization": "2.31.0",
-          "ViciOne.Ui.MonochromeIcons.Components": "3.7.0"
         }
       },
       "xunit.abstractions": {

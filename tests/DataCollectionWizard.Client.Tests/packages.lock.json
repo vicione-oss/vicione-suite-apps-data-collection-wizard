@@ -1357,8 +1357,7 @@
           "ViciOne.Suite.ClusterManagement.Public": "[1.4.0, )",
           "ViciOne.Suite.DataCollectionWizard.Public": "[1.4.2, )",
           "ViciOne.Suite.DataPort.Anna.Contracts": "[0.38.0, )",
-          "ViciOne.Suite.Sdk": "[1.1.0, )",
-          "ViciOne.Suite.Sdk.Client": "[1.1.0, )"
+          "ViciOne.Suite.Sdk": "[1.1.0, )"
         }
       },
       "ViciOne.Suite.DataCollectionWizard.Public": {

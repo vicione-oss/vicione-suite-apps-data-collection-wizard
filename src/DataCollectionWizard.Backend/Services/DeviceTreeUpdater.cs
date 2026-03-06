@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Sdk.Backend.Messaging;
 using Sdk.Messaging;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Ui.Localization.Resources;
 
 namespace DataCollectionWizard.Backend.Services;
 
@@ -108,7 +107,7 @@ public sealed partial class DeviceTreeUpdater(
         }
         catch (TimeoutException)
         {
-            return new ErrorInfo(0, CommonPhrases.TheOperationHasTimedOut);
+            return new ErrorInfo(0, "timeout");
         }
     }
 
