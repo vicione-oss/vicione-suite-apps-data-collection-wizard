@@ -1068,7 +1068,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         => _rawDataPullingMaxTimesADay = 24 * 60 / 5;
 
     private void SetGridItems()
-    {
+    { 
         _service.GridItems = [.. _adapter.GetRelevantDataNodes()
             .Where(dn => dn.Visible && dn.DataType.SupportedForLogging())
             .Select(DataNodeToGridModel)
