@@ -1,10 +1,8 @@
 ﻿using System.Drawing;
 using DataCollectionWizard.Client.Components.ManagementGrid.Services;
 using DataCollectionWizard.Client.Extensions;
-using DataCollectionWizard.Client.Models.DeviceTree;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Nodes;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.Sidebar;
@@ -30,25 +28,7 @@ public sealed partial class DeviceTreeSidebarSection : ComponentBase, IDisposabl
     }
 
     private void OnFilterTextChanged(string filterText)
-    {
-        if (string.IsNullOrWhiteSpace(filterText))
-            Service.TreeBuilder.Filter.SetFilter([]);
-        else
-            Service.TreeBuilder.Filter.SetFilter([FilterFunc]);
-
-        bool FilterFunc(ITreeNode node)
-        {
-            if (node is not NodeBase nodeBase)
-                return false;
-
-            var filterResult = nodeBase.GetFilterResult(filterText);
-
-            if (!filterResult && nodeBase.Device is IDeviceTreeDataNode && nodeBase.Parent is not null)
-                filterResult = nodeBase.Parent.GetFilterResult(filterText);
-
-            return filterResult;
-        }
-    }
+        => Service.TreeBuilder.ApplyFilter(filterText);
 
     private void OnAddDeviceClicked()
         => _displayAddDeviceMenu = true;
@@ -69,36 +49,7 @@ public sealed partial class DeviceTreeSidebarSection : ComponentBase, IDisposabl
     }
 
     private void OnChangeTreeExpansionClicked(bool expand)
-    {
-        if (Service.TreeBuilder.Selection.SelectedNodes.Count == 0)
-        {
-            if (expand)
-                Service.TreeBuilder.Expansion.ChangeExpansionForLayers(expand);
-            else
-                Service.TreeBuilder.Expansion.ChangeExpansionForLayers(expand, 1);
-
-            return;
-        }
-
-        foreach (var selectedNode in Service.TreeBuilder.Selection.SelectedNodes)
-        {
-            if (selectedNode is not NodeBase nodeBase)
-                continue;
-
-            ExpandChildrenRecursive(nodeBase);
-        }
-
-        void ExpandChildrenRecursive(NodeBase node)
-        {
-            Service.TreeBuilder.Expansion.ChangeExpansion(node, expand);
-
-            foreach (var child in node.Children)
-            {
-                Service.TreeBuilder.Expansion.ChangeExpansion(child, expand);
-                ExpandChildrenRecursive(child);
-            }
-        }
-    }
+        => Service.TreeBuilder.ChangeExpansion(expand);
 
     private void OnContainerClicked(MouseEventArgs e)
     {
