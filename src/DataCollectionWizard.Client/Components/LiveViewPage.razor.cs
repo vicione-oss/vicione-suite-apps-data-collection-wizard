@@ -8,6 +8,7 @@ using DataCollectionWizard.Client.Components.LiveGrid.Services;
 using DataCollectionWizard.Client.Extensions;
 using DataCollectionWizard.Client.Services;
 using DataCollectionWizard.Internal.Services;
+using DataCollectionWizard.Public.Extensions;
 using Microsoft.AspNetCore.Components;
 using Sdk.Client.Modules;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
@@ -64,7 +65,8 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
     private LiveGridRowModel[] CalculateGridItems(List<IDeviceTreeLiveDataNode> nodes)
     {
-        return [.. nodes
+        return [.. _adapter.GetRelevantDataNodes()
+            .Where(n => n.Visible && n.DataType.SupportedForLiveView())
             .Select(DataNodeToGridModel)
             .Distinct()];
 

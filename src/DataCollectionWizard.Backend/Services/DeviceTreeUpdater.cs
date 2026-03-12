@@ -114,5 +114,3 @@ public sealed partial class DeviceTreeUpdater(
     [LoggerMessage(LogLevel.Error, "Failed to apply DeviceTree: {message} {stackTrace}")]
     public static partial void LogApplicationFailedError(ILogger logger, string message, string stackTrace);
 }
-
-
