@@ -5,9 +5,10 @@
 ### Dependencies
 
 - `AspNetCore.SassCompiler` packages, update version to `1.97.1`
-- `ViciOne.Suite.ClusterManagement.Public` package, update version to `2.0.0-ci13354605206`
-- `ViciOne.Suite.Sdk` packages, update version to `2.0.0-ci2363355084`
-- `ViciOne.Ui.MonochromeIcons.Assets` packages, update version to `4.3.0`
+- `ViciOne.Suite.ClusterManagement.Public` package, update version to `2.0.0-ci2381022984`
+- `ViciOne.Suite.Sdk` packages, update version to `2.0.0-ci2377740620`
+- `ViciOne.Ui.Blazor.Components` package, update version to `5.5.0`
+- `ViciOne.Ui.MonochromeIcons.Assets` packages, update version to `4.4.0`
 - `ViciOne.Ui.TreeEditor` package, update version to `2.0.0`
 
 ## 1.4.2 - 2026-02-21
