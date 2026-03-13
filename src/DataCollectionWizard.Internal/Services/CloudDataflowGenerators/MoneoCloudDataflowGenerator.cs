@@ -22,12 +22,11 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
 
     public string Name => "moneo";
 
-    private static FunctionBlock AddDataFormatterFb(ClusterBuilder builder, Dataflow dataflow, ContainerSizeManager containerSizeManager, string fbName, string thingId, string processId, uint compressionTime, uint engineCycleInterval)
+    private static FunctionBlock AddDataFormatterFb(ClusterBuilder builder, Dataflow dataflow, DeviceContainerManager deviceContainerManager, string fbName,
+        string thingId, string processId, uint compressionTime, uint engineCycleInterval, IDeviceTreeBase node)
     {
-        containerSizeManager.PreAddElement();
-
-        var dataFormatterFb = builder.Editors.Container.AddFunctionBlock(dataflow, FunctionBlocks.DataFormatter.DesignId, fbName,
-            containerSizeManager.GetCurrentContainer(), new Point(0, containerSizeManager.GetCurrentYPosition()));
+        var dataFormatterFb = builder.Editors.Container.AddSubFunctionBlock(dataflow, FunctionBlocks.DataFormatter.DesignId, fbName,
+            deviceContainerManager.GetParentContainer(node), 0, FunctionBlocks.DefaultVerticalSeparation);
 
         var cycleFrequency = compressionTime / engineCycleInterval;
         builder.Editors.FunctionBlock.SetRunMode(dataFormatterFb, FunctionBlockRunMode.Cyclic);
@@ -55,33 +54,28 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
     {
         var result = new Dictionary<string, PoolingModesCloudInput>();
 
+        var deviceContainerManager = new DeviceContainerManager(deviceTreeMaster, cloudContainer, builder);
+
         var stringOutput = GetConstantStringOutput(builder, dataflow, cloudContainer);
         GenerateDataPort(connection, deviceTreeMaster, builder, dataflow, stringOutput, out var deviceId, out var deviceIdNode);
-        GenerateProcessData(builder, dataflow, engineCycleInterval, loggedProcessDataNodes, result, deviceId, deviceIdNode, cloudContainer, dataOutputs);
+        GenerateProcessData(builder, dataflow, engineCycleInterval, loggedProcessDataNodes, result, deviceId, deviceIdNode, deviceContainerManager, dataOutputs);
 
         return result;
     }
 
     private static void GenerateProcessData(ClusterBuilder builder, Dataflow dataflow, uint engineCycleInterval,
                                             List<ProcessDataConfiguration> loggedProcessDataNodes, Dictionary<string, PoolingModesCloudInput> result,
-                                            string deviceId, DataPortTreeNode deviceIdNode, Container cloudContainer,
+                                            string deviceId, DataPortTreeNode deviceIdNode, DeviceContainerManager containerManager,
                                             Dictionary<string, DataOutputInfo> dataOutputs)
     {
-        var containerSizeManager = new ContainerSizeManager
-        {
-            ChildContainerPrefix = $"ProcessData Publisher",
-            ItemHeight = FunctionBlocks.DefaultVerticalSeparation + 30,
-        };
-
-        containerSizeManager.CreateNewContainer += name => builder.Editors.Container.AddSubContainer(dataflow, name, cloudContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
-
         foreach (var currentProcessDataNode in loggedProcessDataNodes)
         {
             var compressionTime = (uint)currentProcessDataNode.Configuration.CompressionTime;
             var processId = MoneoUtils.GenerateDataSourceId(currentProcessDataNode.Node.Id);
             var processDataIdNode = CreateMoneoDataPortTreeNode(builder, deviceIdNode, processId);
 
-            var dataFormatterFb = AddDataFormatterFb(builder, dataflow, containerSizeManager, GetDataFormatterFbName(currentProcessDataNode.Node.Id), deviceId, processId, compressionTime, engineCycleInterval);
+            var dataFormatterFb = AddDataFormatterFb(builder, dataflow, containerManager, GetDataFormatterFbName(currentProcessDataNode.Node.Id), deviceId,
+                processId, compressionTime, engineCycleInterval, currentProcessDataNode.Node);
             ConnectDataFormatterToMoneoConnectDataPort(builder, dataFormatterFb, processDataIdNode);
 
             if (dataOutputs.TryGetValue(currentProcessDataNode.Node.Id, out var dataOutputInfo))
