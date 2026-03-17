@@ -116,10 +116,10 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
         var deviceContainerManager = new DeviceContainerManager(device, processDataContainer, builder);
         deviceContainerManager.AddNameGeneration<DeviceTreeIoLinkMasterPort>(p => $"Port {p.SubIndex:00}");
 
-    var relevantNodesTuples = GetDataNodesRecursively((DeviceTreeIoLinkMaster)device)
-                                .Where(n => !n.IOLinkDevice?.IsUnknown ?? false)
-                                .Where(n => enabledDataIds[n.Node.Id])
-                                .ToArray();
+        var relevantNodesTuples = GetDataNodesRecursively((DeviceTreeIoLinkMaster)device)
+                                    .Where(n => !n.IOLinkDevice?.IsUnknown ?? false)
+                                    .Where(n => enabledDataIds[n.Node.Id])
+                                    .ToArray();
 
         // Kinder von Sensoren ohne IODD werden ignoriert, um den IoTCore zu entlasten
         foreach (var (ioLinkDevice, node, ioLinkPort) in relevantNodesTuples)

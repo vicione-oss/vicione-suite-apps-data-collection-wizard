@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using DataCollectionWizard.Internal.Extensions;
+﻿using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using Sdk.Connections.Contracts;

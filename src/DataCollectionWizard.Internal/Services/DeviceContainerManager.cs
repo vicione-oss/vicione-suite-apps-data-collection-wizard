@@ -5,13 +5,13 @@ using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
 
 namespace DataCollectionWizard.Internal.Services;
 
-public class DeviceContainerManager
+internal sealed class DeviceContainerManager
 {
+    private readonly ClusterBuilder _clusterBuilder;
+    private readonly Dictionary<Type, Func<IDeviceTreeBase, string>> _nameGenerators = [];
+    private readonly Dictionary<string, Container> _nodesContainers = [];
     private readonly Dictionary<string, IDeviceTreeBase?> _nodesParents;
     private readonly Container _parentContainer;
-    private readonly ClusterBuilder _clusterBuilder;
-    private readonly Dictionary<string, Container> _nodesContainers = new();
-    private readonly Dictionary<Type, Func<IDeviceTreeBase, string>> _nameGenerators = new();
 
     public DeviceContainerManager(IDeviceTreeMasterNode device, Container container, ClusterBuilder builder)
     {
@@ -21,14 +21,15 @@ public class DeviceContainerManager
         _clusterBuilder = builder;
     }
 
+    public void AddNameGeneration<T>(Func<T, string> getName)
+        => _nameGenerators.Add(typeof(T), node => getName((T)node));
+
     private Container GetNodeContainer(IDeviceTreeBase node)
     {
-
         if (_nodesContainers.TryGetValue(node.Id, out var cachedContainer))
             return cachedContainer;
 
         var parentNode = _nodesParents[node.Id];
-
         if (parentNode is null)
             return _parentContainer;
 
@@ -47,15 +48,9 @@ public class DeviceContainerManager
     public Container GetParentContainer(IDeviceTreeBase node)
     {
         var parentNode = _nodesParents[node.Id];
-
         if (parentNode is null)
             return _parentContainer;
 
         return GetNodeContainer(parentNode);
-    }
-
-    public void AddNameGeneration<T>(Func<T, string> getName)
-    {
-        _nameGenerators.Add(typeof(T), (IDeviceTreeBase node) => getName((T)node));
     }
 }
