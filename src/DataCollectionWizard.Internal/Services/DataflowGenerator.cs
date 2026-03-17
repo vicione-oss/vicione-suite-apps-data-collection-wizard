@@ -448,7 +448,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
             foreach (var cloudConnection in cloudConnections)
             {
                 var allNodes = master.GetNodeAndDescendants().ToArray();
-                var container = builder.Editors.Container.AddSubContainer(dataflow, $"{cloudDataflowGenerator.Name} {cloudConnection.Name ?? cloudConnection.Id.ToString()}", cloudsContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
+                var container = builder.Editors.Container.AddSubContainer(dataflow, $"{cloudConnection.Name ?? cloudConnection.Id.ToString()}", cloudsContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
 
                 var loggedRawDataNodes = GetLoggedRawDataNodes(allNodes, cloudConnection);
                 var loggedProcessDataNodes = GetLoggedProcessDataNodes(allNodes, cloudConnection);

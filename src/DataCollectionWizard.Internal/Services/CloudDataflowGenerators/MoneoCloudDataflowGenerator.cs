@@ -74,7 +74,7 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
             var processId = MoneoUtils.GenerateDataSourceId(currentProcessDataNode.Node.Id);
             var processDataIdNode = CreateMoneoDataPortTreeNode(builder, deviceIdNode, processId);
 
-            var dataFormatterFb = AddDataFormatterFb(builder, dataflow, containerManager, GetDataFormatterFbName(currentProcessDataNode.Node.Id), deviceId,
+            var dataFormatterFb = AddDataFormatterFb(builder, dataflow, containerManager, currentProcessDataNode.Node.Name, deviceId,
                 processId, compressionTime, engineCycleInterval, currentProcessDataNode.Node);
             ConnectDataFormatterToMoneoConnectDataPort(builder, dataFormatterFb, processDataIdNode);
 
@@ -166,7 +166,4 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
 
         return constantStringFb.GetOutputByDesignId(FunctionBlocks.ConstantString.Outputs.Value);
     }
-
-    private static string GetDataFormatterFbName(string id)
-        => string.Join(' ', id.Split('/').TakeLast(3));
 }
