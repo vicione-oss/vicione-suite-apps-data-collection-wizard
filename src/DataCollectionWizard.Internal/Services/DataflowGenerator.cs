@@ -92,8 +92,8 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         }
     }
 
-    private static string GetCompressorFbName(string suffix, CompressorConfiguration configuration)
-        => $"{suffix}-{configuration.PoolingMode}-{configuration.CompressionTime}";
+    private static string GetCompressorFbName(IDeviceTreeBase node, CompressorConfiguration configuration)
+        => $"{node.Name}-{configuration.PoolingMode}-{configuration.CompressionTime}";
 
     private static Dictionary<ConnectorOutput, IEnumerable<IGrouping<EventTrigger, ErrorStateGuardTuple>>> GetErrorStateGuardGrouping(IEnumerable<ErrorStateGuardTuple> eventTriggerTuples)
         => eventTriggerTuples
@@ -384,7 +384,6 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         var enabledConfigs = activePublishTargets.Select(c => c.Id).ToArray();
 
         InitContainerSizeManagers(dataflow,
-                    out var compressorContainerManager,
                     out var dataFormatterContainerManager);
 
         var masterUrl = new UriBuilder(master.Url).Uri;
@@ -405,7 +404,9 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
         var cloudInputs = GenerateClouds(master, engine, dataflow, activePublishTargets, generateDataflowResult);
 
-        GenerateProcessDataLogging(dataflow, nodeAndDescendants, parents, compressorFbs, enabledConfigs, compressorContainerManager, generateDataflowResult, cloudInputs, connectionNames);
+        var compressorContainer = builder.Editors.Container.AddContainer(dataflow.Root, ContainerNameCompressors, null, new Point { X = FunctionBlocks.DefaultHorizontalSeparation });
+
+        GenerateProcessDataLogging(dataflow, nodeAndDescendants, master, compressorContainer, parents, compressorFbs, enabledConfigs, generateDataflowResult, cloudInputs, connectionNames);
         GenerateSchedulableBlobLogging(dataflow, nodeAndDescendants, schedulerFbs, enabledConfigs, cloudInputs, connectionNames, generateDataflowResult);
         GenerateEventTriggerBlobLogging(dataflow, nodeAndDescendants, enabledConfigs, cloudInputs, connectionNames, generateDataflowResult);
 
@@ -542,14 +543,15 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         }
     }
 
-    private void GenerateProcessDataLogging(Dataflow dataflow, IDeviceTreeBase[] nodeAndDescendants,
+    private void GenerateProcessDataLogging(Dataflow dataflow, IDeviceTreeBase[] nodeAndDescendants, IDeviceTreeMasterNode deviceNode, Container compressorsContainer,
         Dictionary<IDeviceTreeBase, IDeviceTreeBase> parents,
         Dictionary<string, FunctionBlock> compressorFbs, Guid[] enabledConfigs,
-        ContainerSizeManager compressorContainerManager,
         DeviceDataflowGeneratorResult generateDataflowResult,
         Dictionary<Guid, Dictionary<string, PoolingModesCloudInput>> cloudInputs,
         Dictionary<Guid, string> connectionNames)
     {
+        var compressorContainerManager = new DeviceContainerManager(deviceNode, compressorsContainer, builder);
+ 
         foreach (var compressableDataNode in nodeAndDescendants.OfType<IDeviceTreeCompressableDataNode>())
         {
             if (!compressableDataNode.DataType.SupportedForLogging())
@@ -568,10 +570,10 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
                 {
                     if (configuration.CompressionTime > 0)
                     {
-                        var compressorName = GetCompressorFbName(dataOutput.Suffix, configuration);
+                        var compressorName = GetCompressorFbName(compressableDataNode, configuration);
                         var parent = parents[compressableDataNode];
 
-                        if (!GetOrAddCompressorFb(dataflow, compressorName, configuration, compressorContainerManager, compressorFbs, out var compressorFb))
+                        if (!GetOrAddCompressorFb(dataflow, compressorName, configuration, compressableDataNode, compressorContainerManager, compressorFbs, out var compressorFb))
                             ConnectSubscriberToCompressor(dataflow, dataOutput, compressorFb, convertedOutputs);
 
                         ConnectProcessDataToCloud(dataflow, compressableDataNode, configuration, dataOutput, minMaxTrackerFbs, compressorFb, parent, generateDataflowResult, cloudInputs, connectionNames);
@@ -656,15 +658,14 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
             return result;
         });
 
-    private bool GetOrAddCompressorFb(Dataflow dataflow, string fbName, CompressorConfiguration configuration,
-        ContainerSizeManager compressorContainerManager, Dictionary<string, FunctionBlock> compressorFbs, out FunctionBlock compressorFb)
+    private bool GetOrAddCompressorFb(Dataflow dataflow, string fbName, CompressorConfiguration configuration, IDeviceTreeBase node,
+        DeviceContainerManager compressorContainerManager, Dictionary<string, FunctionBlock> compressorFbs, out FunctionBlock compressorFb)
     {
         if (compressorFbs.TryGetValue(fbName, out compressorFb!))
             return true;
 
-        compressorContainerManager.PreAddElement();
-        var compressorContainer = compressorContainerManager.GetCurrentContainer();
-        compressorFb = builder.Editors.Container.AddFunctionBlock(dataflow, FunctionBlocks.IntervalStatistic.DesignId, fbName, compressorContainer, new Point(0, compressorContainerManager.GetCurrentYPosition()));
+        var compressorContainer = compressorContainerManager.GetParentContainer(node);
+        compressorFb = builder.Editors.Container.AddSubFunctionBlock(dataflow, FunctionBlocks.IntervalStatistic.DesignId, fbName, compressorContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
 
         builder.Editors.Setting.SetFunctionBlockSetting(compressorFb, FunctionBlocks.IntervalStatistic.Settings.CompressionTime, configuration.CompressionTime);
 
@@ -715,20 +716,8 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
     }
 
     private void InitContainerSizeManagers(Dataflow dataflow,
-        out ContainerSizeManager compressorContainerManager,
         out ContainerSizeManager dataFormatterContainerManager)
     {
-        compressorContainerManager = new ContainerSizeManager
-        {
-            ChildContainerPrefix = ChildContainerNamePrefixCompressor,
-            ContainerSize = ContainerSize,
-            ItemHeight = FunctionBlocks.DefaultVerticalSeparation + 150,
-        };
-
-        Container? compressorContainer = null;
-        compressorContainerManager.CreatingFirstContainer += () => compressorContainer = builder.Editors.Container.AddContainer(dataflow.Root, ContainerNameCompressors, null, new Point { X = FunctionBlocks.DefaultHorizontalSeparation });
-        compressorContainerManager.CreateNewContainer += name => builder.Editors.Container.AddSubContainer(dataflow, name, compressorContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
-
         dataFormatterContainerManager = new ContainerSizeManager
         {
             ChildContainerPrefix = ChildContainerNamePrefixFormatter,
