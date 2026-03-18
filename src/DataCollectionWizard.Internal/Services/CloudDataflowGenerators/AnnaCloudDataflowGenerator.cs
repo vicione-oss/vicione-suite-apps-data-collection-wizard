@@ -19,14 +19,13 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
 
     public string Name => "ANNA";
 
-    private static FunctionBlock AddAnnaObjectDataFb(ClusterBuilder builder, Dataflow dataflow, string datapointIdentifier, string suffix,
+    private static FunctionBlock AddAnnaObjectDataFb(ClusterBuilder builder, Dataflow dataflow, string datapointIdentifier, string name,
                                               CompressorConfiguration configuration, DeviceContainerManager containerManager,
-                                              string connectionName, bool insertRefValue, bool insertRotSpeed, IDeviceTreeBase node)
+                                              bool insertRefValue, bool insertRotSpeed, IDeviceTreeBase node)
     {
         var parentContainer = containerManager.GetParentContainer(node);
 
-        var fbName = $"{connectionName} {suffix}";
-        var objectDataFb = builder.Editors.Container.AddSubFunctionBlock(dataflow, FunctionBlocks.AnnaObjectData.DesignId, fbName, parentContainer, 0, FunctionBlocks.DefaultVerticalSeparation + 20);
+        var objectDataFb = builder.Editors.Container.AddSubFunctionBlock(dataflow, FunctionBlocks.AnnaObjectData.DesignId, name, parentContainer, 0, FunctionBlocks.DefaultVerticalSeparation + 20);
         var poolingMode = configuration.PoolingMode;
         var isOnChange = configuration.CompressionTime == -1;
         var isMinMaxAvg = configuration.PoolingMode == PoolingMode.MinMaxAvg;
@@ -133,7 +132,7 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
             var insertRotSpeedAndRefValue = rotationalFrequencyOutputs.TryGetValue(dataNode.Node.Id, out _);
 
             var annaObjectDataFb = AddAnnaObjectDataFb(builder, dataflow, dataOutputInfo.DataPointIdentifiers[connection.Id], suffix, dataNode.Configuration, deviceContainerManager,
-                    connection.Name ?? "unknown", insertRotSpeedAndRefValue, insertRotSpeedAndRefValue, dataNode.Node);
+                    insertRotSpeedAndRefValue, insertRotSpeedAndRefValue, dataNode.Node);
             builder.Editors.DataPortTreeNode.AssignConnector(objectDataTreeNode, annaObjectDataFb.GetOutputByDesignId(FunctionBlocks.AnnaObjectData.Outputs.Value));
 
             result[dataNode.Node.Id] = new PoolingModesCloudInput()
