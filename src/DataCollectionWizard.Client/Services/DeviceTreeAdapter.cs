@@ -246,7 +246,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
         Builder.Notifications.NotifyChildrenChanged(parentNode);
     }
 
-    internal void SetDeviceTree(DeviceTreeRoot root)
+    internal void SetDeviceTree(DeviceTreeRoot root, bool expandOfflineNodes)
     {
         var nodesToExpandTo = new List<NodeBase>();
         var selectedNodeIds = Builder.Selection.SelectedNodes.OfType<NodeBase>().Select(n => n.Device.Id).ToArray();
@@ -275,7 +275,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
             _rootNode.Status = _rootNode.Device.GetStatus();
             _rootNode.Subtitle = DeviceTreeNodeSubTitleProvider.GetSubTitle(_rootNode.Device);
 
-            var children = ResolveChildrenRecursive(_rootNode.Device, _rootNode).ToArray();
+            var children = ResolveChildrenRecursive(_rootNode.Device, _rootNode, expandOfflineNodes).ToArray();
             _rootNode.Children = children;
             _rootNode.HasChildren = children.Length > 0;
         }
@@ -302,7 +302,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
             SelectNode(selectedNodeId, nodeAndDescendants);
         }
 
-        IEnumerable<NodeBase> ResolveChildrenRecursive(IDeviceTreeBase device, NodeBase parent, bool expandToOfflineNodes = false)
+        IEnumerable<NodeBase> ResolveChildrenRecursive(IDeviceTreeBase device, NodeBase parent, bool expandAnyOfflineNodes, bool expandToOfflineNodes = false)
         {
             var result = new List<NodeBase>();
             foreach (var childDevice in device.Children.Where(IsRelevantChild))
@@ -332,14 +332,14 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                 childNode.Subtitle = DeviceTreeNodeSubTitleProvider.GetSubTitle(childNode.Device);
 
                 if (childNode.Device is IDeviceTreeMasterNode)
-                    expandToOfflineNodes = !childNode.Status.HasFlag(NodeStatus.Offline);
+                    expandToOfflineNodes = !childNode.Status.HasFlag(NodeStatus.Offline) && expandAnyOfflineNodes;
 
                 if (expandToOfflineNodes && childNode.Device is IDeviceTreeDataNode && childNode.Status.HasFlag(NodeStatus.Offline))
                     nodesToExpandTo.Add(childNode);
 
                 childNode.Expanded = _expandedNodes.Contains(GetPathToNode(childNode));
 
-                var children = ResolveChildrenRecursive(childNode.Device, childNode, expandToOfflineNodes).ToArray();
+                var children = ResolveChildrenRecursive(childNode.Device, childNode, expandAnyOfflineNodes, expandToOfflineNodes).ToArray();
                 childNode.Children = children;
                 childNode.HasChildren = children.Length > 0;
 

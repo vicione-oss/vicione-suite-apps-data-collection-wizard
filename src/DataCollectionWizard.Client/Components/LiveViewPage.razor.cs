@@ -117,7 +117,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
             return;
 
         SetNodesIsOffline(arg, true);
-        SetTree(_tree);
+        SetTree(_tree, true);
         await InvokeAsync(StateHasChanged);
     }
 
@@ -127,7 +127,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
             return;
 
         SetNodesIsOffline(arg, false);
-        SetTree(_tree);
+        SetTree(_tree, false);
         await InvokeAsync(StateHasChanged);
     }
 
@@ -150,7 +150,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
                 await DataCollectionWizardService.WaitForCurrentDeployment(new TimeSpan(0, 1, 0));
 
                 if (deviceTreeChanged)
-                    SetTree(await DataCollectionWizardService.RequestDeviceTreeAsync());
+                    SetTree(await DataCollectionWizardService.RequestDeviceTreeAsync(), false);
 
                 await UpdateDeviceTreeAsync();
             }
@@ -169,7 +169,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         _service.PropertyChanged += OnServicePropertyChangedAsync;
         _service.RebrowseRequested += OnRebrowse;
 
-        SetTree(await DataCollectionWizardService.RequestDeviceTreeAsync());
+        SetTree(await DataCollectionWizardService.RequestDeviceTreeAsync(), false);
 
         _adapter.SelectionChanged += OnTreeSelectionChangedAsync;
         _adapter.Builder.Expansion.ChangeExpansionForLayers(true, 0, 0);
@@ -262,13 +262,13 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         }
     }
 
-    private void SetTree(DeviceTreeRoot root)
+    private void SetTree(DeviceTreeRoot root, bool expandToOfflineNodes)
     {
         root.Name = Localization.DataCollectionWizardPage.Devices;
 
         DeviceTreeAdapter.SortNodeChildren(root.GetNodeAndDescendants());
         _tree = root;
-        _adapter.SetDeviceTree(_tree);
+        _adapter.SetDeviceTree(_tree, expandToOfflineNodes);
         _nodePaths = _tree.GetNodePaths();
     }
 
@@ -367,7 +367,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
                 RemoveNewNodesRecursively(_tree);
 
-                SetTree(_tree);
+                SetTree(_tree, true);
                 _adapter.Builder.Expansion.ChangeExpansionForLayers(true, 0, 0);
 
                 _displayLoadingSpinner = false;
