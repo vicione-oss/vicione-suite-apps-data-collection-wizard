@@ -7,6 +7,7 @@ namespace DataCollectionWizard.Internal.Services;
 
 internal sealed class DeviceContainerManager
 {
+    private const string InvalidNodeArgumentExceptionMessage = "Node has to be a sub node of this managers device at the moment of its creation.";
     private readonly ClusterBuilder _clusterBuilder;
     private readonly Dictionary<Type, Func<IDeviceTreeBase, string>> _nameGenerators = [];
     private readonly Dictionary<string, Container> _nodesContainers = [];
@@ -29,7 +30,9 @@ internal sealed class DeviceContainerManager
         if (_nodesContainers.TryGetValue(node.Id, out var cachedContainer))
             return cachedContainer;
 
-        var parentNode = _nodesParents[node.Id];
+        if (!_nodesParents.TryGetValue(node.Id, out var parentNode))
+            throw new ArgumentException(InvalidNodeArgumentExceptionMessage, nameof(node));
+
         if (parentNode is null)
             return _parentContainer;
 
@@ -47,7 +50,9 @@ internal sealed class DeviceContainerManager
 
     public Container GetParentContainer(IDeviceTreeBase node)
     {
-        var parentNode = _nodesParents[node.Id];
+        if (!_nodesParents.TryGetValue(node.Id, out var parentNode))
+            throw new ArgumentException(InvalidNodeArgumentExceptionMessage, nameof(node));
+
         if (parentNode is null)
             return _parentContainer;
 
