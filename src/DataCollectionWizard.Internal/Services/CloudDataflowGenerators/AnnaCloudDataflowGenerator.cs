@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using DataCollectionWizard.Internal.Extensions;
+﻿using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using Sdk.Connections.Contracts;
@@ -20,15 +19,13 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
 
     public string Name => "ANNA";
 
-    private static FunctionBlock AddAnnaObjectDataFb(ClusterBuilder builder, Dataflow dataflow, string datapointIdentifier, string suffix,
-                                              CompressorConfiguration configuration, ContainerSizeManager containerManager,
-                                              string connectionName, bool insertRefValue, bool insertRotSpeed)
+    private static FunctionBlock AddAnnaObjectDataFb(ClusterBuilder builder, Dataflow dataflow, string datapointIdentifier, string name,
+                                              CompressorConfiguration configuration, DeviceContainerManager containerManager,
+                                              bool insertRefValue, bool insertRotSpeed, IDeviceTreeBase node)
     {
-        containerManager.PreAddElement();
-        var parentContainer = containerManager.GetCurrentContainer();
+        var parentContainer = containerManager.GetParentContainer(node);
 
-        var fbName = $"{connectionName} {suffix}";
-        var objectDataFb = builder.Editors.Container.AddFunctionBlock(dataflow, FunctionBlocks.AnnaObjectData.DesignId, fbName, parentContainer, new Point(0, containerManager.GetCurrentYPosition()));
+        var objectDataFb = builder.Editors.Container.AddSubFunctionBlock(dataflow, FunctionBlocks.AnnaObjectData.DesignId, name, parentContainer, 0, FunctionBlocks.DefaultVerticalSeparation + 20);
         var poolingMode = configuration.PoolingMode;
         var isOnChange = configuration.CompressionTime == -1;
         var isMinMaxAvg = configuration.PoolingMode == PoolingMode.MinMaxAvg;
@@ -88,7 +85,7 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
         }
 
         GenerateDataPort(connection, deviceTreeMaster, builder, dataflow, machineIdentifier, out var objectDataNode, out var rawDataNode);
-        GenerateObjectData(connection, builder, dataflow, loggedProcessDataNodes, dataOutputs, rotationalFrequencyOutputs, result, objectDataNode, cloudContainer);
+        GenerateObjectData(connection, builder, dataflow, loggedProcessDataNodes, dataOutputs, rotationalFrequencyOutputs, result, objectDataNode, cloudContainer, deviceTreeMaster);
         GenerateRawData(connection, builder, dataflow, loggedRawDataNodes, cloudContainer, rotationalFrequencyOutputs, rawDataNode, result);
 
         return result;
@@ -119,15 +116,9 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
                                     Dictionary<string, DataOutputInfo> dataOutputs,
                                     Dictionary<string, RotationalFrequencyOutputs> rotationalFrequencyOutputs,
                                     Dictionary<string, PoolingModesCloudInput> result,
-                                    DataPortTreeNode objectDataTreeNode, Container cloudContainer)
+                                    DataPortTreeNode objectDataTreeNode, Container cloudContainer, IDeviceTreeMasterNode deviceTreeMaster)
     {
-        var containerSizeManager = new ContainerSizeManager
-        {
-            ChildContainerPrefix = $"ProcessData Publisher",
-            ItemHeight = FunctionBlocks.DefaultVerticalSeparation + 30,
-        };
-
-        containerSizeManager.CreateNewContainer += name => builder.Editors.Container.AddSubContainer(dataflow, name, cloudContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
+        var deviceContainerManager = new DeviceContainerManager(deviceTreeMaster, cloudContainer, builder);
 
         foreach (var dataNode in loggedProcessDataNodes)
         {
@@ -140,7 +131,8 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
 
             var insertRotSpeedAndRefValue = rotationalFrequencyOutputs.TryGetValue(dataNode.Node.Id, out _);
 
-            var annaObjectDataFb = AddAnnaObjectDataFb(builder, dataflow, dataOutputInfo.DataPointIdentifiers[connection.Id], suffix, dataNode.Configuration, containerSizeManager, connection.Name ?? "unknown", insertRotSpeedAndRefValue, insertRotSpeedAndRefValue);
+            var annaObjectDataFb = AddAnnaObjectDataFb(builder, dataflow, dataOutputInfo.DataPointIdentifiers[connection.Id], suffix, dataNode.Configuration, deviceContainerManager,
+                    insertRotSpeedAndRefValue, insertRotSpeedAndRefValue, dataNode.Node);
             builder.Editors.DataPortTreeNode.AssignConnector(objectDataTreeNode, annaObjectDataFb.GetOutputByDesignId(FunctionBlocks.AnnaObjectData.Outputs.Value));
 
             result[dataNode.Node.Id] = new PoolingModesCloudInput()

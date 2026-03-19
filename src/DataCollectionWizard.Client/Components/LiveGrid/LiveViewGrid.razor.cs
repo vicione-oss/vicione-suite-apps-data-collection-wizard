@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace DataCollectionWizard.Client.Components.LiveGrid;
+
 public sealed partial class LiveViewGrid : ComponentBase, IDisposable, IAsyncDisposable
 {
     private IJSObjectReference? _jsModule;

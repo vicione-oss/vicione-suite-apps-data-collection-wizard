@@ -67,7 +67,7 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
     }
 
     private void GenerateBlobData(ClusterBuilder builder, Dataflow dataflow, Dictionary<Guid, string> cloudNames, DeviceDataflowGeneratorResult result,
-        DeviceTreeIoLinkMaster ioLinkMaster, Container processDataContainer, Dictionary<int, Dictionary<string, Container>> portDeviceContainers, BlobLoggingConfiguration[] blobLoggingConfigurations)
+        DeviceTreeIoLinkMaster ioLinkMaster, BlobLoggingConfiguration[] blobLoggingConfigurations, DeviceContainerManager containerManager)
     {
         var allNodes = ioLinkMaster.GetNodeAndDescendants().ToArray();
         var portNodes = allNodes.OfType<DeviceTreeIoLinkMasterPort>().ToArray();
@@ -91,7 +91,7 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
 
             foreach (var configuration in nodeBlobLoggingConfigurations.GroupBy(c => c.DataGroupIdentifier))
             {
-                var container = GetOrAddProcessDataContainer(builder, dataflow, processDataContainer, portDeviceContainers, ioLinkPort.SubIndex, device.Name);
+                var container = containerManager.GetParentContainer(nodeBlobLoggingConfigurations.Key);
                 var fbName = GetBlobDataName(nodeBlobLoggingConfigurations.Key.Name, cloudNames[configuration.Key]);
                 var blobFb = AddBlobDataFb(builder, dataflow, device, ioLinkMaster, ioLinkPort, fbName, container);
 
@@ -113,23 +113,24 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
         var result = new DeviceDataflowGeneratorResult();
         var ioLinkMaster = (DeviceTreeIoLinkMaster)device;
         var processDataContainer = builder.Editors.Container.AddContainer(dataflow.Root, ContainerNameProcessData);
-        var portDeviceContainers = new Dictionary<int, Dictionary<string, Container>>();
+        var deviceContainerManager = new DeviceContainerManager(device, processDataContainer, builder);
+        deviceContainerManager.AddNameGeneration<DeviceTreeIoLinkMasterPort>(p => $"Port {p.SubIndex:00}");
 
         var relevantNodesTuples = GetDataNodesRecursively((DeviceTreeIoLinkMaster)device)
-                                .Where(n => !n.IOLinkDevice?.IsUnknown ?? false)
-                                .Where(n => enabledDataIds[n.Node.Id])
-                                .ToArray();
+                                    .Where(n => !n.IOLinkDevice?.IsUnknown ?? false)
+                                    .Where(n => enabledDataIds[n.Node.Id])
+                                    .ToArray();
 
         // Kinder von Sensoren ohne IODD werden ignoriert, um den IoTCore zu entlasten
         foreach (var (ioLinkDevice, node, ioLinkPort) in relevantNodesTuples)
         {
             if (node is DeviceTreeProcessData processData)
             {
-                GenerateProcessData(builder, dataflow, result, ioLinkMaster, ioLinkDevice, node, ioLinkPort, processData, processDataContainer, portDeviceContainers);
+                GenerateProcessData(builder, dataflow, result, ioLinkMaster, ioLinkDevice, node, ioLinkPort, processData, deviceContainerManager);
             }
         }
 
-        GenerateBlobData(builder, dataflow, cloudNames, result, ioLinkMaster, processDataContainer, portDeviceContainers, blobLoggingConfigurations);
+        GenerateBlobData(builder, dataflow, cloudNames, result, ioLinkMaster, blobLoggingConfigurations, deviceContainerManager);
 
         return result;
     }
@@ -159,10 +160,10 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
     }
 
     private static void GenerateProcessData(ClusterBuilder builder, Dataflow dataflow, DeviceDataflowGeneratorResult result, DeviceTreeIoLinkMaster ioLinkMaster, DeviceTreeDevice device,
-        IDeviceTreeDataNode node, DeviceTreeIoLinkMasterPort ioLinkPort, DeviceTreeProcessData processData, Container processDataContainer, Dictionary<int, Dictionary<string, Container>> portDeviceContainers)
+        IDeviceTreeDataNode node, DeviceTreeIoLinkMasterPort ioLinkPort, DeviceTreeProcessData processData, DeviceContainerManager containerManager)
     {
         var processDataName = GetSuffixProcessDataName(processData);
-        var parentContainer = GetOrAddProcessDataContainer(builder, dataflow, processDataContainer, portDeviceContainers, ioLinkPort.SubIndex, device.Name);
+        var parentContainer = containerManager.GetParentContainer(processData);
         _ = AddProcessDataFb(builder, dataflow, processData, device, ioLinkMaster, ioLinkPort.SubIndex, processDataName, parentContainer,
             out var unitOutput, out var valueOutputUi, out var valueOutputLogging, out var availableOutput);
 
@@ -221,31 +222,6 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
                 yield return current;
         }
     }
-
-    private static Container GetOrAddProcessDataContainer(ClusterBuilder builder, Dataflow dataflow, Container processDataContainer, Dictionary<int, Dictionary<string, Container>> portDeviceContainers, int port, string device)
-    {
-        Container? portContainer = null;
-
-        if (!portDeviceContainers.TryGetValue(port, out var deviceContainers))
-        {
-            deviceContainers = [];
-            portDeviceContainers[port] = deviceContainers;
-            portContainer = builder.Editors.Container.AddSubContainer(dataflow, GetPortContainerName(port), processDataContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
-        }
-
-        if (!deviceContainers.TryGetValue(device, out var deviceContainer))
-        {
-            portContainer ??= processDataContainer.Containers.FirstOrDefault(c => c.Name == GetPortContainerName(port));
-
-            deviceContainer = builder.Editors.Container.AddSubContainer(dataflow, device, portContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
-            deviceContainers[device] = deviceContainer;
-        }
-
-        return deviceContainer;
-    }
-
-    private static string GetPortContainerName(int port)
-        => $"Port {port:00}";
 
     private static IoTSubscriberDesignTuple GetRequiredIoTSubscriberDesignIds(DeviceTreeProcessData processData)
     {

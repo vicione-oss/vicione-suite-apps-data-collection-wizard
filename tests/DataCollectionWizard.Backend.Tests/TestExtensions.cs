@@ -2,6 +2,7 @@
 using DataCollectionWizard.Internal.Contracts;
 
 namespace DataCollectionWizard.Backend.Tests;
+
 internal static class TestExtensions
 {
     public static void SeedDeviceConnectorIds(this IDataCollectionWizardDbContext context, params DeviceConnectorIds[] deviceConnectorIds)

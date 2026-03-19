@@ -22,7 +22,7 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
     private readonly IServiceScope _serviceScope;
 #pragma warning restore CA2213 // Disposable fields should be disposed
     private readonly IEnumerable<ICloudFilter> _cloudFilters;
-        
+
     public ConnectionChangedProcessor(ConnectionChangedProcessorState state, IServiceProvider serviceProvider, IEnumerable<ICloudFilter> cloudFilters, ILogger<ConnectionChangedProcessor> logger)
     {
         _state = state;
