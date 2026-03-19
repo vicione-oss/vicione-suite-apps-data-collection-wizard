@@ -227,7 +227,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             _tree.Children.Add(device);
         }
 
-        SetTree(_tree);
+        SetTree(_tree, false);
 
         // select newly added node
         _service.TreeBuilder.Selection.ChangeSelection(
@@ -399,7 +399,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         InvokeAsync(StateHasChanged);
     }
 
-    private void SetTree(DeviceTreeRoot root)
+    private void SetTree(DeviceTreeRoot root, bool expandToOfflineNodes)
     {
         root.Name = Localization.DataCollectionWizardPage.Devices;
 
@@ -412,7 +412,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             _tree = root;
             _allNodes = _tree.GetNodeAndDescendants().ToDictionary(n => n.Id, n => n);
 
-            _adapter.SetDeviceTree(_tree);
+            _adapter.SetDeviceTree(_tree, expandToOfflineNodes);
             _nodePaths = GetNodePaths([_tree]);
             _service.HasOfflineNodes = _tree.GetNodeAndDescendants().Any(n => n.IsOffline && n is not IDeviceTreeMasterNode);
         }
@@ -441,7 +441,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             return;
 
         SetNodesIsOffline(arg, true);
-        SetTree(_tree);
+        SetTree(_tree, true);
         await InvokeAsync(StateHasChanged);
     }
 
@@ -451,7 +451,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             return;
 
         SetNodesIsOffline(arg, false);
-        SetTree(_tree);
+        SetTree(_tree, false);
         await InvokeAsync(StateHasChanged);
     }
 
@@ -747,7 +747,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             }
         }
 
-        SetTree(_tree);
+        SetTree(_tree, false);
         _service.DeviceTreeChanged = true;
 
         await _refDeleteAllOfflineDialog!.CloseAsync();
@@ -812,7 +812,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _service.SetDebugRawDataRequested += SetDebugRawDataGrid;
         FillPublishTargets();
 
-        SetTree(await DataCollectionWizardService.RequestDeviceTreeAsync());
+        SetTree(await DataCollectionWizardService.RequestDeviceTreeAsync(), false);
         _adapter.NodeDeleted += OnAdapterNodeDeleted;
         _adapter.NodeEdited += OnAdapterNodeEdited;
 
@@ -954,7 +954,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
                         if (isNewUpdated)
                         {
-                            SetTree(_tree);
+                            SetTree(_tree, false);
                         }
                     }
 
@@ -1137,7 +1137,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
                     DeviceTreeBuilder.ExtendCurrentDeviceTree(_tree, [.. receivedDevices.Select(d => d.device).Where(d => d is not null && !d.IsOffline).Cast<IDeviceTreeBase>()], _publishTargets, retainNewFlags);
 
-                    SetTree(_tree);
+                    SetTree(_tree, true);
                     _adapter.Builder.Expansion.ChangeExpansionForLayers(true, 0, 0);
 
                     var masterNodes = _tree.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>().ToArray();
