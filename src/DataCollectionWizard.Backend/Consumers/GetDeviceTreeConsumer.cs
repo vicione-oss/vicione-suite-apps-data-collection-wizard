@@ -2,7 +2,6 @@
 using DataCollectionWizard.Backend.Services;
 using DataCollectionWizard.Public;
 using DataCollectionWizard.Public.Requests;
-using MassTransit;
 using Microsoft.Extensions.Logging;
 using Sdk.Backend.Messaging;
 using Sdk.Messaging;
@@ -12,17 +11,17 @@ namespace DataCollectionWizard.Backend.Consumers;
 
 public sealed class GetDeviceTreeConsumer(IDataCollectionWizardService dataCollectionWizard, ILogger<GetDeviceTreeConsumer> logger) : RequestConsumer<GetDeviceTree, GetDeviceTreeResponse>
 {
-    protected override Task<GetDeviceTreeResponse> HandleException(ConsumeContext<GetDeviceTree> context, Exception e)
+    public override Task<GetDeviceTreeResponse> HandleException(GetDeviceTree message, Exception e, CancellationToken cancellationToken)
         => Task.FromResult(new GetDeviceTreeResponse
         {
             DeviceTree = new DeviceTreeRoot { IsOffline = true },
             RequestError = new ErrorInfo(ErrorCodes.GetDeviceTreeFailed, e.Message),
         });
 
-    protected override async Task<GetDeviceTreeResponse> Respond(ConsumeContext<GetDeviceTree> context)
+    public override async Task<GetDeviceTreeResponse> Respond(GetDeviceTree message, CancellationToken cancellationToken)
     {
         // keep fake for test purposes
-        if (context.Message.FakeData)
+        if (message.FakeData)
         {
             logger.LogDebug("Respond with fake DeviceTree");
 
@@ -35,7 +34,7 @@ public sealed class GetDeviceTreeConsumer(IDataCollectionWizardService dataColle
             };
         }
 
-        var tree = await dataCollectionWizard.RequestDeviceTreeAsync(context.CancellationToken);
+        var tree = await dataCollectionWizard.RequestDeviceTreeAsync(cancellationToken);
         logger.LogDebug("Respond with DeviceTree from database with {Count} children", tree.Children.Count);
 
         return new GetDeviceTreeResponse
