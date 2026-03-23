@@ -35,13 +35,12 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
     IConnectionService connectionService)
     : IDataCollectionWizardService
 {
+    private const string EngineHostName = "DCW-Host";
     private const int EngineMinCycleTime = 500;
-
+    private const string EngineNameIoLinkScanner = "IO-Link-Scanner";
     private const string EngineNameKeyIoLink = "IO-Link";
     private const string EngineNameKeyVse = "VSE";
     private const string EngineNamePrefix = "DCW";
-    private const string EngineNameIoLinkScanner = "IO-Link-Scanner";
-    private const string EngineHostName = "DCW-Host";
 
     public async Task<Cluster?> AddDeviceTreeEnginesAsync(IEnumerable<DeviceEngineInfo> deviceEngineInfos, Guid correlationId, bool allowUseExistingEngine, LogLevel logLevel)
     {
@@ -51,11 +50,8 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
         foreach (var deviceEngineInfo in deviceEngineInfos)
         {
             var type = Type.GetType(deviceEngineInfo.Type);
-
             if (type is null)
-            {
                 throw new ArgumentException($"Cannot find type {type}");
-            }
 
             var engineName = GetMasterDeviceEngineName(type, deviceEngineInfo.Address);
             var (engineExist, deviceTreeConnectors) = await DoesEngineAlreadyExistAsync(engineName, deviceEngineInfo.Address);
@@ -119,11 +115,9 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
     public async Task<Cluster?> AddIoLinkScannerAsync(LogLevel logLevel)
     {
         await LoadLatestClusterAsync();
-        var clusterBuilder = dataCollectionWizardState.ClusterBuilder!;
-        var engineHost = GetEngineHost(clusterBuilder);
+        var clusterBuilder = dataCollectionWizardState.ClusterBuilder ?? throw new InvalidOperationException("Cluster Builder is not initialized.");
 
-        if (clusterBuilder is null)
-            throw new InvalidOperationException("Cluster Builder is not initialized.");
+        var engineHost = GetEngineHost(clusterBuilder);
 
         clusterBuilder.Editors.EngineHost.SetElevatedPrivileges(engineHost, true);
         DataflowGenerator.AddDesigns(clusterBuilder);
@@ -163,7 +157,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
         IReadOnlyCollection<Connection> publishTargets, IDeviceTreeMasterNode[] allMasters, LogLevel? logLevel)
     {
         var nodesToUpdate = allMasters.IntersectBy(masterNodesToUpdate, n => n.Id);
-        
+
         if (RemoveLegacyEngines(clusterBuilder))
         {
             nodesToUpdate = allMasters;
@@ -212,19 +206,20 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
 
     private async Task<(bool result, DeviceConnectorIds deviceTreeConnectors)> DoesEngineAlreadyExistAsync(string engineName, Uri deviceAddress)
     {
+        var clusterBuilder = dataCollectionWizardState.ClusterBuilder ?? throw new InvalidOperationException("Cluster Builder is not initialized.");
+
         var deviceTreeConnectors = new DeviceConnectorIds
         {
             DeviceAddress = deviceAddress.ToString(),
         };
 
-        if (dataCollectionWizardState.ClusterBuilder!.Cluster.Version > dataCollectionWizardState.LatestDeployedClusterVersion)
+        if (clusterBuilder.Cluster.Version > dataCollectionWizardState.LatestDeployedClusterVersion)
             return (false, deviceTreeConnectors);
 
-        if (dataCollectionWizardState.ClusterBuilder!.Cluster.GetAllEngines().All(e => e.Name != engineName))
+        if (clusterBuilder.Cluster.GetAllEngines().All(e => e.Name != engineName))
             return (false, deviceTreeConnectors);
 
-        var dataflow = dataCollectionWizardState.ClusterBuilder!.Cluster.Dataflows.FirstOrDefault(d => d.Name == engineName);
-
+        var dataflow = clusterBuilder.Cluster.Dataflows.FirstOrDefault(d => d.Name == engineName);
         if (dataflow is null)
             return (false, deviceTreeConnectors);
 
@@ -271,7 +266,8 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
 
     private async Task LoadLatestClusterAsync()
     {
-        if (dataCollectionWizardState.ClusterBuilder is not null && dataCollectionWizardState.ClusterBuilder.Cluster.Version == dataCollectionWizardState.LatestClusterVersion)
+        if (dataCollectionWizardState.ClusterBuilder is not null &&
+            dataCollectionWizardState.ClusterBuilder.Cluster.Version == dataCollectionWizardState.LatestClusterVersion)
         {
             LogSkipClusterLoading(logger, dataCollectionWizardState.ClusterBuilder.Cluster.Version);
             return;
@@ -314,17 +310,15 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
         AddIoLinkScannerEngineIfNecessary(clusterBuilder, engineHost);
     }
 
-    private EngineHost GetEngineHost(ClusterBuilder clusterBuilder)
+    private static EngineHost GetEngineHost(ClusterBuilder clusterBuilder)
     {
         var nodeGroup = clusterBuilder.Cluster.NodeGroups.FirstOrDefault() ?? clusterBuilder.Editors.Cluster.AddNodeGroup();
         var node = nodeGroup.Nodes.FirstOrDefault() ?? clusterBuilder.Editors.NodeGroup.AddNode(nodeGroup);
         var application = node.Applications.FirstOrDefault() ?? clusterBuilder.Editors.Node.AddApplication(node, ClusterApplicationType.CoreOsStandalone);
-        var engineHost = clusterBuilder.Cluster.GetAllEngineHosts().FirstOrDefault(e => e.Name == EngineHostName);
 
+        var engineHost = clusterBuilder.Cluster.GetAllEngineHosts().FirstOrDefault(e => e.Name == EngineHostName);
         if (engineHost is null)
-        {
             engineHost = clusterBuilder.Editors.Application.AddEngineHost(application, EngineHostName);
-        }
 
         return engineHost;
     }
@@ -334,9 +328,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
         foreach (var deletedNode in deletedNodes)
         {
             if (deletedNode is IDeviceTreeMasterNode deletedMasterNode)
-            {
                 RemoveDeletedNodeDataflow(deletedMasterNode);
-            }
 
             await mediator.Send(new DeleteOutputConnectorMapping([.. deletedNode.GetNodeAndDescendants().Select(n => n.Id)]));
         }
@@ -344,31 +336,26 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
 
     private void RemoveDeletedNodeDataflow(IDeviceTreeMasterNode deletedMasterNode)
     {
-        var clusterBuilder = dataCollectionWizardState.ClusterBuilder;
+        var clusterBuilder = dataCollectionWizardState.ClusterBuilder ?? throw new InvalidOperationException("Cluster Builder is not initialized.");
 
-        var nodeGroup = clusterBuilder!.Cluster.NodeGroups.FirstOrDefault();
-
+        var nodeGroup = clusterBuilder.Cluster.NodeGroups.FirstOrDefault();
         if (nodeGroup is null)
             return;
 
         var node = nodeGroup.Nodes.FirstOrDefault();
-
         if (node is null)
             return;
 
         var application = node.Applications.FirstOrDefault();
-
         if (application is null)
             return;
 
         var engineHost = clusterBuilder.Cluster.GetAllEngineHosts().FirstOrDefault(e => e.Name == EngineHostName);
-
         if (engineHost is null)
             return;
 
         var engineName = GetMasterDeviceEngineName(deletedMasterNode);
         var engine = engineHost.Engines.FirstOrDefault(e => e.Name == engineName);
-
         if (engine is null)
             return;
 
@@ -385,16 +372,14 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
     {
         var engineHosts = clusterBuilder.Cluster.GetAllEngineHosts().Where(e => e.Name != EngineHostName);
         var legacyEngines = engineHosts.SelectMany(h => h.Engines).Where(e => e.Name == EngineNameIoLinkScanner || e.Name.StartsWith(EngineNamePrefix, StringComparison.Ordinal)).ToArray();
-        var enginesDataflows = clusterBuilder.Cluster.Dataflows.Select(d => (d.Root.GetAllNestedFunctionBlocks().Select(f => f.Engine).ToList(), d))
-                                                               .SelectMany(d => d.Item1.Select(i =>(i, d.d)))
-                                                               .GroupBy(i => i.i)
-                                                               .Where(i => i.Key is not null)
-                                                               .ToDictionary(i => i.Key!, i => i.Select(d => d.d).ToList());
-
         if (legacyEngines.Length == 0)
-        {
             return false;
-        }
+
+        var enginesDataflows = clusterBuilder.Cluster.Dataflows.Select(d => (d.Root.GetAllNestedFunctionBlocks().Select(f => f.Engine).ToList(), d))
+                                                       .SelectMany(d => d.Item1.Select(i => (i, d.d)))
+                                                       .GroupBy(i => i.i)
+                                                       .Where(i => i.Key is not null)
+                                                       .ToDictionary(i => i.Key!, i => i.Select(d => d.d).ToList());
 
         foreach (var legacyEngine in legacyEngines)
         {
@@ -414,24 +399,18 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
 
     private static void RemoveVacantEngines(DataCollectionWizardState dataCollectionWizardState, IDeviceTreeMasterNode[] allMasters)
     {
-        var existingEngines = dataCollectionWizardState.ClusterBuilder!.Cluster.GetAllEngines().Where(n => n.Name.StartsWith(EngineNamePrefix, StringComparison.Ordinal));
-        var existingDeviceEngineNames = allMasters.Select(GetMasterDeviceEngineName);
+        var clusterBuilder = dataCollectionWizardState.ClusterBuilder ?? throw new InvalidOperationException("Cluster Builder is not initialized.");
 
-        if (dataCollectionWizardState.ClusterBuilder is null)
-        {
-            throw new ArgumentNullException($"{nameof(dataCollectionWizardState)}.{nameof(dataCollectionWizardState.ClusterBuilder)}");
-        }
+        var existingEngines = clusterBuilder.Cluster.GetAllEngines().Where(n => n.Name.StartsWith(EngineNamePrefix, StringComparison.Ordinal));
+        var existingDeviceEngineNames = allMasters.Select(GetMasterDeviceEngineName);
 
         foreach (var vacantEngine in existingEngines.ExceptBy(existingDeviceEngineNames, e => e.Name).ToArray())
         {
-            dataCollectionWizardState.ClusterBuilder.Editors.EngineHost.RemoveEngine(vacantEngine);
+            clusterBuilder.Editors.EngineHost.RemoveEngine(vacantEngine);
 
-            var vacantDataflow = dataCollectionWizardState.ClusterBuilder.Cluster.Dataflows.FirstOrDefault(d => d.Name == vacantEngine.Name);
-
+            var vacantDataflow = clusterBuilder.Cluster.Dataflows.FirstOrDefault(d => d.Name == vacantEngine.Name);
             if (vacantDataflow is not null)
-            {
-                dataCollectionWizardState.ClusterBuilder.Editors.Cluster.RemoveDataflow(vacantDataflow);
-            }
+                clusterBuilder.Editors.Cluster.RemoveDataflow(vacantDataflow);
         }
     }
 
