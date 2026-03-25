@@ -45,7 +45,7 @@ public sealed partial class ClusterService(
         // needed to resolve the cluster dependencies to fbs, dataports etc.
         var resolver = await designProvider.CreateResolver();
 
-        return new ClusterBuilder(clusterJson, resolver);
+        return new ClusterBuilder(resolver);
     }
 
     public async Task DeployClusterAsync(Guid ticketId,

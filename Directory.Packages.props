@@ -1,7 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <ViciOneSuiteSdkVersion>2.0.0-ci2397913518</ViciOneSuiteSdkVersion>
+    <ViciOneSuiteSdkVersion>2.0.0-ci2403435464</ViciOneSuiteSdkVersion>
   </PropertyGroup>
   <ItemGroup>
     <GlobalPackageReference Include="ViciOne.CodeAnalysis" Version="1.2.1" />
@@ -10,9 +10,9 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.4" />
     <PackageVersion Include="Semver" Version="3.0.0" />
     <PackageVersion Include="ViciOne.Core.Dataflow.DataModel.Generation" Version="0.51.0" />
-    <PackageVersion Include="ViciOne.Cluster.Builder" Version="0.11.0" />
+    <PackageVersion Include="ViciOne.Cluster.Builder" Version="1.0.0" />
     <PackageVersion Include="ViciOne.Driver.IoTCore.Contracts" Version="2.0.0-ci2336879852" />
-    <PackageVersion Include="ViciOne.Suite.ClusterManagement.Public" Version="2.0.0-ci2381022984" />
+    <PackageVersion Include="ViciOne.Suite.ClusterManagement.Public" Version="2.0.0-ci2404472640" />
     <PackageVersion Include="ViciOne.Suite.DataPort.Anna.Contracts" Version="0.38.0" />
     <PackageVersion Include="ViciOne.Suite.Sdk" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="ViciOne.Suite.Sdk.Backend" Version="$(ViciOneSuiteSdkVersion)" />

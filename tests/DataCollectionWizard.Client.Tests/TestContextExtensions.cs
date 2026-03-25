@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using ViciOne.Cluster.Builder;
+using ViciOne.Cluster.Builder.Abstractions;
 using ViciOne.Cluster.Model;
 
 namespace DataCollectionWizard.Client.Tests;
@@ -24,7 +25,7 @@ public static class TestContextExtensions
             .Returns(new ClusterDependency
             {
                 Name = "Dataport",
-                Version = new Version(0, 0, 1)
+                Version = "0.0.1"
             });
 
         foreach (var pair in functionBlockDesigns)
@@ -38,7 +39,7 @@ public static class TestContextExtensions
                 .Returns(new ClusterDependency
                 {
                     Name = "IoT.Core",
-                    Version = new Version(0, 0, 1)
+                    Version = "0.0.1"
                 });
 
             builder.Editors.FunctionBlockDesign.AddFunctionBlockDesign(pair.Key);

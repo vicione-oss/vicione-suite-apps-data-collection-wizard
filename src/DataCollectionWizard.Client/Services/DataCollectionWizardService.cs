@@ -32,6 +32,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
     private const int MaxTimeout = FrontendDeviceTimeout + IoLinkMasterScanTimeout;
 
     private readonly IClusterService _clusterService;
+    //Todo: remove, cannot use this service from client
     private readonly IDeviceTreeUpdater _deviceTreeUpdater;
     private readonly IEventBroker _eventBroker;
     private readonly Dictionary<Uri, (Guid deviceTreeTrigger, Guid deviceTreeOutput)> _deviceTreeConnectors = [];
