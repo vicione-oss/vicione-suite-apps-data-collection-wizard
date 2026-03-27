@@ -21,10 +21,10 @@ public class DataCollectionWizardDbContextTests : TestWithDbContextSqlite<DataCo
             };
 
         [Fact]
-        public void Added_item_should_get_saved()
+        public async Task Added_item_should_get_saved()
         {
             // Arrange
-            using var dbContext = new ServiceCollection()
+            await using var dbContext = new ServiceCollection()
                 .AddScoped(_ => (IDataCollectionWizardDbContext)TestDbContext)
                 .BuildServiceProvider()
                 .GetRequiredService<IDataCollectionWizardDbContext>();
@@ -33,46 +33,48 @@ public class DataCollectionWizardDbContextTests : TestWithDbContextSqlite<DataCo
 
             // Act
             dbContext.Devices.Add(dbModel);
+            var changes = await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Assert
-            dbContext.Instance.SaveChanges().Should().Be(1);
+            changes.Should().Be(1);
         }
 
         [Fact]
-        public void Remove_existing_item_should_get_saved()
+        public async Task Remove_existing_item_should_get_saved()
         {
             // Arrange
-            using var dbContext = new ServiceCollection()
+            await using var dbContext = new ServiceCollection()
                 .AddScoped(_ => (IDataCollectionWizardDbContext)TestDbContext)
                 .BuildServiceProvider()
                 .GetRequiredService<IDataCollectionWizardDbContext>();
 
             var dbModel = CreateDbModel("Address");
             dbContext.Devices.Add(dbModel);
-            dbContext.Instance.SaveChanges();
+            await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             dbContext.Devices.Remove(dbModel);
+            var changes = await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Assert
-            dbContext.Instance.SaveChanges().Should().Be(1);
+            changes.Should().Be(1);
         }
 
         [Fact]
         public async Task Query_existing_should_return_item()
         {
             // Arrange
-            using var dbContext = new ServiceCollection()
+            await using var dbContext = new ServiceCollection()
                 .AddScoped(_ => (IDataCollectionWizardDbContext)TestDbContext)
                 .BuildServiceProvider()
                 .GetRequiredService<IDataCollectionWizardDbContext>();
 
             var dbModel = CreateDbModel("Address");
             dbContext.Devices.Add(dbModel);
-            await dbContext.Instance.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
-            var entity = await dbContext.Devices.FirstOrDefaultAsync(k => k.DeviceAddress == dbModel.DeviceAddress);
+            var entity = await dbContext.Devices.FirstOrDefaultAsync(k => k.DeviceAddress == dbModel.DeviceAddress, TestContext.Current.CancellationToken);
 
             // Assert
             entity.Should().NotBeNull();
@@ -90,7 +92,7 @@ public class DataCollectionWizardDbContextTests : TestWithDbContextSqlite<DataCo
             };
 
         [Fact]
-        public void Added_item_should_get_saved()
+        public async Task Added_item_should_get_saved()
         {
             // Arrange
             using var dbContext = new ServiceCollection()
@@ -102,48 +104,52 @@ public class DataCollectionWizardDbContextTests : TestWithDbContextSqlite<DataCo
 
             // Act
             dbContext.DeviceConnectorIds.Add(dbModel);
+            var changes = await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Assert
-            dbContext.Instance.SaveChanges().Should().Be(1);
+            changes.Should().Be(1);
         }
 
 
         [Fact]
-        public void Remove_existing_item_should_get_saved()
+        public async Task Remove_existing_item_should_get_saved()
         {
             // Arrange
-            using var dbContext = new ServiceCollection()
+            await using var dbContext = new ServiceCollection()
                 .AddScoped(_ => (IDataCollectionWizardDbContext)TestDbContext)
                 .BuildServiceProvider()
                 .GetRequiredService<IDataCollectionWizardDbContext>();
 
             var dbModel = CreateDbModel("Address");
             dbContext.DeviceConnectorIds.Add(dbModel);
-            dbContext.Instance.SaveChanges();
+            await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             dbContext.DeviceConnectorIds.Remove(dbModel);
-
+            var changes = await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
             // Assert
-            dbContext.Instance.SaveChanges().Should().Be(1);
+            changes.Should().Be(1);
         }
 
         [Fact]
         public async Task Query_existing_should_return_item()
         {
             // Arrange
-            using var dbContext = new ServiceCollection()
+            await using var dbContext = new ServiceCollection()
                 .AddScoped(_ => (IDataCollectionWizardDbContext)TestDbContext)
                 .BuildServiceProvider()
                 .GetRequiredService<IDataCollectionWizardDbContext>();
 
             var dbModel = CreateDbModel("Address");
             dbContext.DeviceConnectorIds.Add(dbModel);
-            await dbContext.Instance.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             var entity = await dbContext.DeviceConnectorIds
-                .FirstOrDefaultAsync(k => k.DeviceAddress == dbModel.DeviceAddress && k.DeviceTreeOutput == dbModel.DeviceTreeOutput && k.TriggerInput == dbModel.TriggerInput);
+                .FirstOrDefaultAsync(
+                    k => k.DeviceAddress == dbModel.DeviceAddress && k.DeviceTreeOutput == dbModel.DeviceTreeOutput && k.TriggerInput == dbModel.TriggerInput,
+                    TestContext.Current.CancellationToken
+                );
 
             // Assert
             entity.Should().NotBeNull();

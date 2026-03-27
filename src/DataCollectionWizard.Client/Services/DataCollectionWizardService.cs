@@ -10,6 +10,7 @@ using DataCollectionWizard.Internal.Requests;
 using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Public.Events;
+using DataCollectionWizard.Public.Requests;
 using DataCollectionWizard.Public.Services;
 using Microsoft.Extensions.Logging;
 using Sdk.Client.Infrastructure;
@@ -32,7 +33,6 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
     private const int MaxTimeout = FrontendDeviceTimeout + IoLinkMasterScanTimeout;
 
     private readonly IClusterService _clusterService;
-    private readonly IDeviceTreeUpdater _deviceTreeUpdater;
     private readonly IEventBroker _eventBroker;
     private readonly Dictionary<Uri, (Guid deviceTreeTrigger, Guid deviceTreeOutput)> _deviceTreeConnectors = [];
     private readonly IUiMediator _mediator;
@@ -49,11 +49,10 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
     public event Func<string[], Task>? NodesOffline;
     public event Func<string[], Task>? NodesOnline;
 
-    public DataCollectionWizardService(IUiMediator mediator, IClusterService clusterService, IDeviceTreeUpdater deviceTreeUpdater,
+    public DataCollectionWizardService(IUiMediator mediator, IClusterService clusterService,
         IEventBroker eventBroker, ILogger<DataCollectionWizardService> logger)
     {
         _clusterService = clusterService;
-        _deviceTreeUpdater = deviceTreeUpdater;
         _eventBroker = eventBroker;
         _mediator = mediator;
         _logger = logger;
@@ -399,7 +398,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
     {
         await LoadDeviceConnectorsAsync();
 
-        return await _deviceTreeUpdater.LoadDeviceTree();
+        return (await _mediator.Request<GetDeviceTree, GetDeviceTreeResponse>(new GetDeviceTree())).DeviceTree;
     }
 
     public async Task RequestNewDeviceDeviceTreeAsync(Type deviceType, Uri address, Func<IDeviceTreeMasterNode?, bool, Uri, Task> callBack, bool allowUseExistingEngine, LogLevel logLevel)
@@ -430,10 +429,10 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
         try
         {
-            var ticket = await _deviceTreeUpdater.RequestUpdateAsync(cts.Token);
+            var tokenResponse = await _mediator.Request<GetDeviceTreeUpdateTokenRequest, GetDeviceTreeUpdateTokenResponse>(new GetDeviceTreeUpdateTokenRequest(), cts.Token);
             // TODO: Call "_deviceTreeUpdater.LoadDeviceTree()" and apply the user's changes,
             // instead of saving and possibly overriding changes directly
-            await _deviceTreeUpdater.UpdateDeviceTreeAsync(ticket, deviceTree, deletedNodes, masterNodesToUpdate, logLevel);
+            await _mediator.Send(new UpdateDeviceTree(tokenResponse.Token, deviceTree, deletedNodes, masterNodesToUpdate, logLevel));
         }
         catch (ObjectDisposedException)
         {

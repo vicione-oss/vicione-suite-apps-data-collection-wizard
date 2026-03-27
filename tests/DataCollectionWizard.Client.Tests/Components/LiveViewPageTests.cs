@@ -20,7 +20,7 @@ public class LiveViewPageTests
         var timeProvider = Substitute.For<TimeProvider>();
         timeProvider.LocalTimeZone.Returns(TimeZoneInfo.Utc);
 
-        using var ctx = new TestContext();
+        using var ctx = new BunitContext();
 
         ctx.SetupSuiteServicesWithBlazorDx(setup =>
         {
@@ -41,7 +41,7 @@ public class LiveViewPageTests
         ctx.Services.AddTooltip();
 
         // Act
-        var page = ctx.RenderComponent<LiveViewPage>();
+        var page = ctx.Render<LiveViewPage>();
 
         // Assert
         Assert.NotNull(page);

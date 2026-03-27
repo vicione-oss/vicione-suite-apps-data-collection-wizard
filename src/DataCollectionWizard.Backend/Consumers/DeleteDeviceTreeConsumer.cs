@@ -28,7 +28,7 @@ public sealed partial class DeleteDeviceTreeConsumer(IDataCollectionWizardDbCont
 
         try
         {
-            if (await dbContext.Instance.SaveChangesAsync(context.CancellationToken) > 0)
+            if (await dbContext.SaveChangesAsync(context.CancellationToken) > 0)
             {
                 await context.Publish(new DeviceTreeChangedEvent(CrudAction.Deleted)).ConfigureAwait(false);
             }

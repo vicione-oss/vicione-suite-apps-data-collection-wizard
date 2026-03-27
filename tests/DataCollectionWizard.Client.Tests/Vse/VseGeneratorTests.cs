@@ -14,7 +14,7 @@ namespace DataCollectionWizard.Client.Tests.Vse;
 
 public class VseGeneratorTests
 {
-    private const string FunctionBlockDirectory = "..\\..\\..\\..\\..\\drivers";
+    private const string FunctionBlockDirectory = "drivers";
     private static readonly Guid s_annaDataGroupIdentifier = Guid.Parse("dee8ae99-f34d-486f-8f58-ace8b79c4a47");
 
     private readonly DeviceTreeVseDevice _vse = new()
@@ -368,7 +368,7 @@ public class VseGeneratorTests
                                     }
                                 },
                                 DataType = DataType.Float32T,
-                                Id = "vse@127.0.0.1//Counters/Counter02__!__OB01_ObjectState_02/Value",
+                                Id = "vse@127.0.0.1//Counters/Counter03__!__OB01_ObjectState_02/Value",
                                 Name = "Value",
                                 Visible = true,
                             }
@@ -1179,7 +1179,7 @@ public class VseGeneratorTests
     public void Builder_should_create_engine()
     {
         // Arrange
-        using var ctx = new TestContext();
+        using var ctx = new BunitContext();
         var instanceId = Guid.NewGuid();
         using var builder = ctx.SetupVseClusterBuilder(FunctionBlockDirectory, instanceId);
 
@@ -1214,16 +1214,16 @@ public class VseGeneratorTests
     public void Builder_should_provide_function_block_designs()
     {
         // Arrange
-        using var ctx = new TestContext();
+        using var ctx = new BunitContext();
         var instanceId = Guid.NewGuid();
         using var builder = ctx.SetupVseClusterBuilder(FunctionBlockDirectory, instanceId);
 
         var fbNames = new List<string>
         {
-            "VseObjectSubscriber",
-            "VseCounterSubscriber",
-            "VseAlarmSubscriber",
-            "VseInputSubscriber"
+            "ObjectSubscriber",
+            "CounterSubscriber",
+            "AlarmSubscriber",
+            "InputSubscriber"
         };
 
         // Act + Assert
@@ -1238,7 +1238,7 @@ public class VseGeneratorTests
     public void Builder_with_vse_support_can_be_created()
     {
         // Arrange
-        using var ctx = new TestContext();
+        using var ctx = new BunitContext();
         var instanceId = Guid.NewGuid();
 
         // Act
@@ -1255,7 +1255,7 @@ public class VseGeneratorTests
     public void Generates_basic_dataflow()
     {
         // Arrange
-        using var ctx = new TestContext();
+        using var ctx = new BunitContext();
         using var builder = ctx.SetupVseClusterBuilder(FunctionBlockDirectory, Guid.NewGuid());
 
         var ioddProvider = Substitute.For<IIoddStore>();
@@ -1293,7 +1293,7 @@ public class VseGeneratorTests
     public void Generates_basic_empty_dataflow()
     {
         // Arrange
-        using var ctx = new TestContext();
+        using var ctx = new BunitContext();
         using var builder = ctx.SetupVseClusterBuilder(FunctionBlockDirectory, Guid.NewGuid());
 
         var ioddProvider = Substitute.For<IIoddStore>();

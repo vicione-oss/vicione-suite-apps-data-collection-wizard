@@ -31,7 +31,7 @@ public class DeleteDeviceTreeConsumerTests : TestWithDbContextSqlite<DataCollect
         var deviceTreeJson = FakeDeviceTreeFactory.CreateDeviceTree().SerializeToJson();
         var command = new DeleteDeviceTree(deviceAddress);
 
-        tester.Services.GetRequiredService<IDataCollectionWizardDbContext>()
+        await tester.Services.GetRequiredService<IDataCollectionWizardDbContext>()
             .SeedDeviceTree(deviceAddress, deviceTreeJson);
 
         // Act

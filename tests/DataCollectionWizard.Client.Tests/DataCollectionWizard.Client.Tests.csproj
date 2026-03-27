@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AssemblyName>ViciOne.Suite.DataCollectionWizard.Client.Tests</AssemblyName>
@@ -8,10 +8,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Semver" />
     <PackageReference Include="ViciOne.Core.Dataflow.DataModel.Generation" />
     <PackageReference Include="ViciOne.Suite.Sdk.Testing" />
     <PackageReference Include="ViciOne.Ui.TreeEditor" />
-    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.v3" />
     <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -33,6 +34,10 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="drivers\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

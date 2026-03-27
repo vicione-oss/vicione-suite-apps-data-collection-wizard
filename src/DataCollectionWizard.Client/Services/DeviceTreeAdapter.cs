@@ -394,9 +394,12 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
         Builder.DragAndDrop.EnableInbound = false;
         Builder.DragAndDrop.EnableInternal = false;
         Builder.DragAndDrop.EnableOutbound = false;
+
+        Builder.Guidelines.Show = true;
+        Builder.Template.Mapping = TemplateMapping;
     }
 
-    internal static Type? TemplateMapping(ITreeNode node, TemplateType templateType)
+    private static Type? TemplateMapping(ITreeNode node, TemplateType templateType)
     {
         if (node is not NodeBase)
             return null;

@@ -4,7 +4,7 @@
 
 <NavTileStandardContent Headline="Live View"
                         Subline="@Localization.LiveViewNavTile.TileSubline"
-                        IconSrc="svg/LiveViewClientTile.svg"
                         IconAlt="Live View"
+                        IconUrl="@(new Uri("svg/LiveViewClientTile.svg", UriKind.Relative))"
                         OnContentLoading="@ContentLoading"
                         OnContentReady="@ContentReady" />

@@ -18,7 +18,6 @@ namespace DataCollectionWizard.Internal.Services;
 
 public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger logger, string machineIdentifier, List<IDeviceDataflowGenerator> deviceDataflowGenerators, List<ICloudDataflowGenerator> cloudDataflowGenerators, List<ICloudFilter> cloudFilters) : IDataflowGenerator
 {
-    private const string ChildContainerNamePrefixCompressor = "Compressor";
     private const string ChildContainerNamePrefixFormatter = "Formatter";
     private const string ContainerNameCompressors = "Compressors";
     private const string ContainerNameMoneoConnect = "moneoConnect";

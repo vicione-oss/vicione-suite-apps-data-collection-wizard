@@ -1,23 +1,22 @@
 ﻿using System.Globalization;
 using ClusterManagement.Public.Iodds;
 using DataCollectionWizard.Internal.Requests;
-using MassTransit;
-using Sdk.Messaging;
+using Sdk.Backend.Messaging;
 
 namespace DataCollectionWizard.Backend.Consumers;
 
 public class GetIoddImageConsumer(IIoddStore ioddStore) : RequestConsumer<GetIoddImageRequest, GetIoddImageResponse>
 {
-    protected override Task<GetIoddImageResponse> HandleException(ConsumeContext<GetIoddImageRequest> context, Exception e)
-        => throw new NotImplementedException();
+    public override Task<GetIoddImageResponse> HandleException(GetIoddImageRequest message, Exception e, CancellationToken cancellationToken)
+        => throw e;
 
-    protected override async Task<GetIoddImageResponse> Respond(ConsumeContext<GetIoddImageRequest> context)
+    public override async Task<GetIoddImageResponse> Respond(GetIoddImageRequest message, CancellationToken cancellationToken)
     {
         var ioddImagePath = Path.Combine(
             ioddStore.IoddDirectory,
-            context.Message.VendorId.ToString(CultureInfo.InvariantCulture),
-            context.Message.DeviceId.ToString(CultureInfo.InvariantCulture),
-            context.Message.ImageFileName
+            message.VendorId.ToString(CultureInfo.InvariantCulture),
+            message.DeviceId.ToString(CultureInfo.InvariantCulture),
+            message.ImageFileName
         );
 
         if (!File.Exists(ioddImagePath))
@@ -29,7 +28,7 @@ public class GetIoddImageConsumer(IIoddStore ioddStore) : RequestConsumer<GetIod
             };
         }
 
-        var imageData = await File.ReadAllBytesAsync(ioddImagePath);
+        var imageData = await File.ReadAllBytesAsync(ioddImagePath, cancellationToken);
         var imageDataBase64 = Convert.ToBase64String(imageData);
 
         return new GetIoddImageResponse() { ImageDataBase64 = imageDataBase64, };

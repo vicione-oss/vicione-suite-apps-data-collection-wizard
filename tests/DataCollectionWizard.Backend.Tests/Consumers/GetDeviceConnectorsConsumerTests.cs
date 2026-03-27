@@ -27,9 +27,9 @@ public class GetDeviceConnectorsConsumerTests : TestWithDbContextSqlite<DataColl
         var request = new GetDeviceConnectorsRequest(null);
         var dbContext = tester.Services.GetRequiredService<IDataCollectionWizardDbContext>();
 
-        dbContext.SeedDeviceConnectorIds("deviceAddress1");
-        dbContext.SeedDeviceConnectorIds("deviceAddress2");
-        dbContext.SeedDeviceConnectorIds("deviceAddress3");
+        await dbContext.SeedDeviceConnectorIds("deviceAddress1");
+        await dbContext.SeedDeviceConnectorIds("deviceAddress2");
+        await dbContext.SeedDeviceConnectorIds("deviceAddress3");
 
         // Act
         var response = await tester.TestRequest<GetDeviceConnectorsResponse, GetDeviceConnectorsRequest>(request);
@@ -48,9 +48,9 @@ public class GetDeviceConnectorsConsumerTests : TestWithDbContextSqlite<DataColl
         var dbContext = tester.Services.GetRequiredService<IDataCollectionWizardDbContext>();
         var deviceAddress1 = new UriBuilder("deviceAddress1").Uri.ToString();
 
-        var entry1 = dbContext.SeedDeviceConnectorIds(deviceAddress1);
-        dbContext.SeedDeviceConnectorIds(new UriBuilder("deviceAddress2").Uri.ToString());
-        dbContext.SeedDeviceConnectorIds(deviceAddress1);
+        var entry1 = await dbContext.SeedDeviceConnectorIds(deviceAddress1);
+        await dbContext.SeedDeviceConnectorIds(new UriBuilder("deviceAddress2").Uri.ToString());
+        await dbContext.SeedDeviceConnectorIds(deviceAddress1);
 
         var request = new GetDeviceConnectorsRequest(new UriBuilder(entry1.DeviceAddress).Uri);
 

@@ -48,7 +48,7 @@ public class DeleteDeviceConnectorIdsConsumerTests : TestWithDbContextSqlite<Dat
         await using var tester = new MassTransitTester(_configureServices);
         var command = new DeleteDeviceConnectorIds([_device1ConnectorIds1, _device1ConnectorIds2, _device2ConnectorIds1]);
 
-        tester.Services.GetRequiredService<IDataCollectionWizardDbContext>()
+        await tester.Services.GetRequiredService<IDataCollectionWizardDbContext>()
             .SeedDeviceConnectorIds(_device1ConnectorIds1, _device1ConnectorIds2, _device2ConnectorIds1);
 
         // Act
@@ -80,7 +80,7 @@ public class DeleteDeviceConnectorIdsConsumerTests : TestWithDbContextSqlite<Dat
         await using var tester = new MassTransitTester(_configureServices);
         var command = new DeleteDeviceConnectorIds([_device1ConnectorIds1, _device1ConnectorIds2, _device2ConnectorIds1]);
 
-        tester.Services.GetRequiredService<IDataCollectionWizardDbContext>()
+        await tester.Services.GetRequiredService<IDataCollectionWizardDbContext>()
             .SeedDeviceConnectorIds(_device1ConnectorIds2);
 
         // Act

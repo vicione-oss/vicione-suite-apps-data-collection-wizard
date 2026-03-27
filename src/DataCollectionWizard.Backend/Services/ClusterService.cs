@@ -40,12 +40,12 @@ public sealed partial class ClusterService(
         var clusterVersion = (await QueryVersions()).First();
 
         // maybe that's not useful here because you might want to get the active version but for now...
-        var clusterJson = await Query(clusterVersion.Key, clusterVersion.Value.Max(k => k));
+        var cluster = await Query(clusterVersion.Key, clusterVersion.Value.Max(k => k));
 
         // needed to resolve the cluster dependencies to fbs, dataports etc.
         var resolver = await designProvider.CreateResolver();
 
-        return new ClusterBuilder(clusterJson, resolver);
+        return new ClusterBuilder(cluster, resolver);
     }
 
     public async Task DeployClusterAsync(Guid ticketId,

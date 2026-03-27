@@ -2,35 +2,39 @@
 using DataCollectionWizard.Internal.Contracts;
 using DataCollectionWizard.Internal.Requests;
 using DataCollectionWizard.Public;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Sdk.Backend.Messaging;
 using Sdk.Messaging;
 
 namespace DataCollectionWizard.Backend.Consumers;
 
 public class GetDeviceConnectorsConsumer(IDataCollectionWizardDbContext dbContext) : RequestConsumer<GetDeviceConnectorsRequest, GetDeviceConnectorsResponse>
 {
-    protected override Task<GetDeviceConnectorsResponse> HandleException(ConsumeContext<GetDeviceConnectorsRequest> context, Exception e)
+    public override Task<GetDeviceConnectorsResponse> HandleException(GetDeviceConnectorsRequest message, Exception e, CancellationToken cancellationToken)
         => Task.FromResult(new GetDeviceConnectorsResponse
         {
             Ids = [],
             RequestError = new ErrorInfo(ErrorCodes.GetDeviceConnectorsFailed, e.Message),
         });
 
-    protected override async Task<GetDeviceConnectorsResponse> Respond(ConsumeContext<GetDeviceConnectorsRequest> context)
+    public override async Task<GetDeviceConnectorsResponse> Respond(GetDeviceConnectorsRequest message, CancellationToken cancellationToken)
     {
         List<DeviceConnectorIds> result;
 
-        if (context.Message.DeviceAddress is not null)
+        if (message.DeviceAddress is not null)
         {
             // get items related to one vse
-            result = [.. dbContext.DeviceConnectorIds.AsNoTracking().Where(x => Equals(x.DeviceAddress, context.Message.DeviceAddress.ToString()))];
+            result = await dbContext.DeviceConnectorIds
+                .Where(x => Equals(x.DeviceAddress, message.DeviceAddress.ToString()))
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
         }
         else
         {
             // get all items
-            result = await dbContext.DeviceConnectorIds.AsNoTracking()
-                .ToListAsync();
+            result = await dbContext.DeviceConnectorIds
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
         }
 
         return new GetDeviceConnectorsResponse
