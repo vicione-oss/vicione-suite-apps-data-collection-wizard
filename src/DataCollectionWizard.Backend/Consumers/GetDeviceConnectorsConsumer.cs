@@ -25,8 +25,8 @@ public class GetDeviceConnectorsConsumer(IDataCollectionWizardDbContext dbContex
         {
             // get items related to one vse
             result = await dbContext.DeviceConnectorIds
-                .AsNoTracking()
                 .Where(x => Equals(x.DeviceAddress, message.DeviceAddress.ToString()))
+                .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
         else
