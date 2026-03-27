@@ -10,9 +10,9 @@
       },
       "ViciOne.Driver.IoTCore.Contracts": {
         "type": "Direct",
-        "requested": "[2.0.0-ci2336879852, )",
-        "resolved": "2.0.0-ci2336879852",
-        "contentHash": "qOF4D6nITHCSd36AamymdDWhG89fKKfhl2+eDEjhCrzsCwBw9iN/Hzg+QTv4cjY7SWERWhQZZRjsuIxGmvd4qg=="
+        "requested": "[2.0.0, )",
+        "resolved": "2.0.0",
+        "contentHash": "JiwhLeldrvXxuO8a/wWbgdUY5I7f6rJ3ZzpTKeIEIqHflkcORB4gHjFCTuxolOtq32iT5rKaDC9dFOa7UChDPg=="
       },
       "ViciOne.Suite.Sdk": {
         "type": "Direct",

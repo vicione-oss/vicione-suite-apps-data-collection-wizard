@@ -361,8 +361,8 @@
         "type": "Project",
         "dependencies": {
           "ViciOne.Cluster.Builder": "[1.0.0, )",
-          "ViciOne.Driver.IoTCore.Contracts": "[2.0.0-ci2336879852, )",
-          "ViciOne.Suite.ClusterManagement.Public": "[2.0.0-ci2412790714, )",
+          "ViciOne.Driver.IoTCore.Contracts": "[2.0.0, )",
+          "ViciOne.Suite.ClusterManagement.Public": "[2.0.0-ci2413784478, )",
           "ViciOne.Suite.DataCollectionWizard.Public": "[2.0.0, )",
           "ViciOne.Suite.DataPort.Anna.Contracts": "[0.38.0, )",
           "ViciOne.Suite.Sdk": "[2.0.0-ci2411067321, )"
@@ -371,7 +371,7 @@
       "ViciOne.Suite.DataCollectionWizard.Public": {
         "type": "Project",
         "dependencies": {
-          "ViciOne.Driver.IoTCore.Contracts": "[2.0.0-ci2336879852, )",
+          "ViciOne.Driver.IoTCore.Contracts": "[2.0.0, )",
           "ViciOne.Suite.Sdk": "[2.0.0-ci2411067321, )"
         }
       },
@@ -388,15 +388,15 @@
       },
       "ViciOne.Driver.IoTCore.Contracts": {
         "type": "CentralTransitive",
-        "requested": "[2.0.0-ci2336879852, )",
-        "resolved": "2.0.0-ci2336879852",
-        "contentHash": "qOF4D6nITHCSd36AamymdDWhG89fKKfhl2+eDEjhCrzsCwBw9iN/Hzg+QTv4cjY7SWERWhQZZRjsuIxGmvd4qg=="
+        "requested": "[2.0.0, )",
+        "resolved": "2.0.0",
+        "contentHash": "JiwhLeldrvXxuO8a/wWbgdUY5I7f6rJ3ZzpTKeIEIqHflkcORB4gHjFCTuxolOtq32iT5rKaDC9dFOa7UChDPg=="
       },
       "ViciOne.Suite.ClusterManagement.Public": {
         "type": "CentralTransitive",
-        "requested": "[2.0.0-ci2412790714, )",
-        "resolved": "2.0.0-ci2412790714",
-        "contentHash": "78EV3NTmZx/tT741EDB3I6J0EZaSB/rtFB3GXGeugQ/JgstKfvXZRWkDLiXqx2qCMHFLTq9MxCf34fm3WRU20w==",
+        "requested": "[2.0.0-ci2413784478, )",
+        "resolved": "2.0.0-ci2413784478",
+        "contentHash": "GAgDfitMSlwV/VBvZM5abHknmS9TU9j1z++M6yS3xhG6dk4XFvDB5UOK8oB3+rhZ7cw123HN9/IQv3bE94Tu6A==",
         "dependencies": {
           "ViciOne.Cluster.Builder": "1.0.0",
           "ViciOne.Suite.Sdk": "2.0.0-ci2411067321"

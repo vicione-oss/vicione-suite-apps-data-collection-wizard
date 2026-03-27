@@ -6,5 +6,4 @@ public class GetDeviceTreeUpdateTokenResponse : IResponse
 {
     public ErrorInfo? RequestError { get; init; }
     public Guid Token { get; set; }
-
 }
