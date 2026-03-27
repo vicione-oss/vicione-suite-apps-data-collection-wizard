@@ -4,9 +4,9 @@
     "net10.0": {
       "ViciOne.CodeAnalysis": {
         "type": "Direct",
-        "requested": "[1.2.1, )",
-        "resolved": "1.2.1",
-        "contentHash": "QLRj/dBscAqmCoRFL45bjIHfpx5F5sjC5JVo+vOxIHG3rW+jaYDO9TSAcPEABxd+GMl0JkOHDiWdhrgLIG3QjQ=="
+        "requested": "[1.6.0, )",
+        "resolved": "1.6.0",
+        "contentHash": "fDshyYU+Yz8rVfqXjLYPeELZTlTXz8/T+pJPHeWACsE/CyhcQ3ybo+AzZdIyzjxs9M4tzqK4wil2loy694aMAQ=="
       },
       "ViciOne.Driver.IoTCore.Contracts": {
         "type": "Direct",
@@ -16,9 +16,9 @@
       },
       "ViciOne.Suite.Sdk": {
         "type": "Direct",
-        "requested": "[2.0.0-ci2403435464, )",
-        "resolved": "2.0.0-ci2403435464",
-        "contentHash": "JuW7L1LMr1YmSQoPN7ZNiMmxGHcBJV7jngfXUR7qJHOBkqB/vLlNy9Zy1UE458ldCBymsKCqf5z4jWoRlpwmKw==",
+        "requested": "[2.0.0-ci2411067321, )",
+        "resolved": "2.0.0-ci2411067321",
+        "contentHash": "lQZZd0rHKpvZkcwU/rBC5moqtcH4sBPwf2E32s7fY5UI9WNC98w/0dOLcz5r9SLmjHWUn/UtMZFSJxmMLrjZVQ==",
         "dependencies": {
           "MassTransit.Abstractions": "8.5.8",
           "Microsoft.AspNetCore.Authorization": "10.0.5",

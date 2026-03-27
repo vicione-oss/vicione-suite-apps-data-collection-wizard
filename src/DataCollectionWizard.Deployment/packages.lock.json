@@ -4,15 +4,15 @@
     "net10.0": {
       "ViciOne.CodeAnalysis": {
         "type": "Direct",
-        "requested": "[1.2.1, )",
-        "resolved": "1.2.1",
-        "contentHash": "QLRj/dBscAqmCoRFL45bjIHfpx5F5sjC5JVo+vOxIHG3rW+jaYDO9TSAcPEABxd+GMl0JkOHDiWdhrgLIG3QjQ=="
+        "requested": "[1.6.0, )",
+        "resolved": "1.6.0",
+        "contentHash": "fDshyYU+Yz8rVfqXjLYPeELZTlTXz8/T+pJPHeWACsE/CyhcQ3ybo+AzZdIyzjxs9M4tzqK4wil2loy694aMAQ=="
       },
       "ViciOne.Suite.Sdk.Deployment": {
         "type": "Direct",
-        "requested": "[2.0.0-ci2403435464, )",
-        "resolved": "2.0.0-ci2403435464",
-        "contentHash": "4PNGy8eKD7g8c/BgbRLZP3lBeVQUmxNLMssh7swkpRLLfkbhCc6Zkf3rjU48XJI9o2MthFEiMhTL+HRDInLPaw=="
+        "requested": "[2.0.0-ci2411067321, )",
+        "resolved": "2.0.0-ci2411067321",
+        "contentHash": "OQYDuZT5uENPuZouq4JAfaJM6h8APfKZgtvwQ2wCPNf5o1wek7dM7stcPBS/H5DFDB1t78chOld5NvdD3FiN0w=="
       }
     },
     "net10.0/linux-arm64": {},
