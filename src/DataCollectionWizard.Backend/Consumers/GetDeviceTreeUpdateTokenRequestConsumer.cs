@@ -20,8 +20,8 @@ public class GetDeviceTreeUpdateTokenRequestConsumer(IDeviceTreeUpdater updater)
 
         return new GetDeviceTreeUpdateTokenResponse
         {
-            Token = token,
             RequestError = null,
+            Token = token,
         };
     }
 }

@@ -103,9 +103,9 @@ public static class DeviceTreeBuilder
             {
                 persistetTriggerNode.EventTriggerConfigurations.Add(new EventTriggerConfiguration
                 {
+                    IsSensorConfigured = sensor.IsSensorConfigured,
                     Name = sensor.Name,
                     ReferenceNodeId = sensor.ReferenceNodeId,
-                    IsSensorConfigured = sensor.IsSensorConfigured,
                 });
             }
         }

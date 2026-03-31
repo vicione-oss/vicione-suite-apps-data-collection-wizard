@@ -80,7 +80,9 @@ public class DeviceTreeBuilderTests
                                     {
                                         Id = "TestVse/RawData/RawData1",
                                         Name =  "RawData1",
-                                        Unit = "m/s²",
+                                        RawDataConfigurations = new() {
+                                            { connectionId, new RawDataSettings() }
+                                        },
                                         SchedulerConfigurations =
                                         [
                                             new SchedulerConfiguration()
@@ -88,9 +90,7 @@ public class DeviceTreeBuilderTests
                                                 DataGroupIdentifier = connectionId,
                                             }
                                         ],
-                                        RawDataConfigurations = new() {
-                                            { connectionId, new RawDataSettings() }
-                                        }
+                                        Unit = "m/s²"
                                     }
                                 ],
                                 Id = "TestVse/RawData",
@@ -98,9 +98,9 @@ public class DeviceTreeBuilderTests
                             },
                         ],
                         Id = "TestVse",
-                        Url = new Uri("http://127.0.0.1"),
                         MacAddress = "ab:ab:ab:ab:ab",
-                        Name = "TestVse"
+                        Name = "TestVse",
+                        Url = new Uri("http://127.0.0.1")
                     }
                 ]
             };
@@ -127,9 +127,9 @@ public class DeviceTreeBuilderTests
                         },
                     ],
                     Id = "TestVse",
-                    Url = new Uri("http://127.0.0.1"),
                     MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestVse"
+                    Name = "TestVse",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -166,9 +166,9 @@ public class DeviceTreeBuilderTests
                             },
                         ],
                         Id = "TestVse",
-                        Url = new Uri("http://127.0.0.1"),
                         MacAddress = "ab:ab:ab:ab:ab",
-                        Name = "TestVse"
+                        Name = "TestVse",
+                        Url = new Uri("http://127.0.0.1")
                     }
                 ]
             };
@@ -195,9 +195,9 @@ public class DeviceTreeBuilderTests
                         },
                     ],
                     Id = "TestVse",
-                    Url = new Uri("http://127.0.0.1"),
                     MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestVse"
+                    Name = "TestVse",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -237,9 +237,6 @@ public class DeviceTreeBuilderTests
                                 [
                                     new DeviceTreeDevice
                                     {
-                                        Id = "TestDevice 1",
-                                        IsOffline = true,
-                                        Name =  "TestDevice 1",
                                         Children =[
                                             new DeviceTreeBlobData()
                                             {
@@ -247,17 +244,20 @@ public class DeviceTreeBuilderTests
                                                 Name = "Blob",
                                             }
                                         ],
+                                        Id = "TestDevice 1",
+                                        IsOffline = true,
+                                        Name =  "TestDevice 1",
                                     }
                                 ],
                                 Id = "TestPort 1",
-                                SubIndex = 1,
                                 Name = "TestPort",
+                                SubIndex = 1,
                             },
                         ],
                         Id = "TestMaster",
-                        Url = new Uri("http://127.0.0.1"),
                         MacAddress = "ab:ab:ab:ab:ab",
-                        Name = "TestMaster"
+                        Name = "TestMaster",
+                        Url = new Uri("http://127.0.0.1")
                     }
                 ]
             };
@@ -274,9 +274,6 @@ public class DeviceTreeBuilderTests
                             [
                                 new DeviceTreeDevice
                                 {
-                                    Id = "TestDevice 1",
-                                    IsOffline = true,
-                                    Name =  "TestDevice 1",
                                     Children =[
                                         new DeviceTreeBlobData()
                                         {
@@ -284,17 +281,20 @@ public class DeviceTreeBuilderTests
                                             Name = "Blob",
                                         }
                                     ],
+                                    Id = "TestDevice 1",
+                                    IsOffline = true,
+                                    Name =  "TestDevice 1",
                                 }
                             ],
                             Id = "TestPort 1",
-                            SubIndex = 1,
                             Name = "TestPort",
+                            SubIndex = 1,
                         },
                     ],
                     Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
                     MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster"
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -326,9 +326,6 @@ public class DeviceTreeBuilderTests
                                 [
                                     new DeviceTreeDevice
                                     {
-                                        Id = "TestDevice 1",
-                                        IsOffline = true,
-                                        Name =  "TestDevice 1",
                                         Children =[
                                             new DeviceTreeProcessData()
                                             {
@@ -336,17 +333,20 @@ public class DeviceTreeBuilderTests
                                                 Name = "Data",
                                             }
                                         ],
+                                        Id = "TestDevice 1",
+                                        IsOffline = true,
+                                        Name =  "TestDevice 1",
                                     }
                                 ],
                                 Id = "TestPort 1",
-                                SubIndex = 1,
                                 Name = "TestPort",
+                                SubIndex = 1,
                             },
                         ],
                         Id = "TestMaster",
-                        Url = new Uri("http://127.0.0.1"),
                         MacAddress = "ab:ab:ab:ab:ab",
-                        Name = "TestMaster"
+                        Name = "TestMaster",
+                        Url = new Uri("http://127.0.0.1")
                     }
                 ]
             };
@@ -363,9 +363,6 @@ public class DeviceTreeBuilderTests
                             [
                                 new DeviceTreeDevice
                                 {
-                                    Id = "TestDevice 1",
-                                    IsOffline = true,
-                                    Name =  "TestDevice 1",
                                     Children =[
                                         new DeviceTreeProcessData()
                                         {
@@ -373,17 +370,20 @@ public class DeviceTreeBuilderTests
                                             Name = "Data",
                                         }
                                     ],
+                                    Id = "TestDevice 1",
+                                    IsOffline = true,
+                                    Name =  "TestDevice 1",
                                 }
                             ],
                             Id = "TestPort 1",
-                            SubIndex = 1,
                             Name = "TestPort",
+                            SubIndex = 1,
                         },
                     ],
                     Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
                     MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster"
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -412,22 +412,22 @@ public class DeviceTreeBuilderTests
                         [
                             new DeviceTreeDevice
                             {
-                                Id = "TestDevice 1",
-                                IsOffline = true,
-                                Name =  "TestDevice 1",
                                 Children =[
                                     new DeviceTreeProcessData()
                                     {
                                         Id = "TestDevice1/Data",
-                                        Name = "Data",
                                         IsOffline = true,
+                                        Name = "Data",
                                     }
                                 ],
+                                Id = "TestDevice 1",
+                                IsOffline = true,
+                                Name =  "TestDevice 1",
                             }
                         ],
                         Id = "TestPort 1",
-                        SubIndex = 1,
                         Name = "TestPort",
+                        SubIndex = 1,
                     },
                     new DeviceTreeIoLinkMasterPort
                     {
@@ -435,28 +435,28 @@ public class DeviceTreeBuilderTests
                         [
                             new DeviceTreeDevice
                             {
-                                Id = "TestDevice 2",
-                                IsOffline = false,
-                                Name =  "TestDevice 1",
                                 Children =[
                                     new DeviceTreeProcessData()
                                     {
                                         Id = "TestDevice2/Data",
-                                        Name = "Data",
                                         IsOffline = true,
+                                        Name = "Data",
                                     }
                                 ],
+                                Id = "TestDevice 2",
+                                IsOffline = false,
+                                Name =  "TestDevice 1",
                             }
                         ],
                         Id = "TestPort 2",
-                        SubIndex = 2,
                         Name = "TestPort",
+                        SubIndex = 2,
                     }
                 ],
                 Id = "TestMaster",
-                Url = new Uri("http://127.0.0.1"),
                 MacAddress = "ab:ab:ab:ab:ab",
-                Name = "TestMaster"
+                Name = "TestMaster",
+                Url = new Uri("http://127.0.0.1")
             });
 
             var iotCoreTree = new List<IDeviceTreeBase>
@@ -471,8 +471,6 @@ public class DeviceTreeBuilderTests
                             [
                                 new DeviceTreeDevice
                                 {
-                                    Id = "TestDevice 1 changed",
-                                    Name =  "TestDevice 1",
                                     Children =[
                                         new DeviceTreeProcessData()
                                         {
@@ -480,11 +478,13 @@ public class DeviceTreeBuilderTests
                                             Name = "Data",
                                         }
                                     ],
+                                    Id = "TestDevice 1 changed",
+                                    Name =  "TestDevice 1",
                                 }
                             ],
                             Id = "TestPort 1",
-                            SubIndex = 1,
                             Name = "TestPort",
+                            SubIndex = 1,
                         },
                         new DeviceTreeIoLinkMasterPort
                         {
@@ -492,9 +492,6 @@ public class DeviceTreeBuilderTests
                             [
                                 new DeviceTreeDevice
                                 {
-                                    Id = "TestDevice 2 changed",
-                                    Name =  "TestDevice 2",
-
                                     Children =[
                                         new DeviceTreeProcessData()
                                         {
@@ -502,17 +499,20 @@ public class DeviceTreeBuilderTests
                                             Name = "Data",
                                         }
                                     ],
+                                    Id = "TestDevice 2 changed",
+
+                                    Name =  "TestDevice 2",
                                 }
                             ],
                             Id = "TestPort 2",
-                            SubIndex = 2,
                             Name = "TestPort",
+                            SubIndex = 2,
                         }
                     ],
                     Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
                     MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster"
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -569,9 +569,9 @@ public class DeviceTreeBuilderTests
                     }
                 ],
                 Id = "TestMaster",
-                Url = new Uri("http://127.0.0.1"),
                 MacAddress = "ab:ab:ab:ab:ab",
-                Name = "TestMaster"
+                Name = "TestMaster",
+                Url = new Uri("http://127.0.0.1")
             });
 
             var iotCoreTree = new List<IDeviceTreeBase>
@@ -587,9 +587,9 @@ public class DeviceTreeBuilderTests
                         }
                     ],
                     Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
                     MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster"
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -613,9 +613,9 @@ public class DeviceTreeBuilderTests
                     }
                 ],
                 Id = "TestMaster",
-                Url = new Uri("http://127.0.0.1"),
                 MacAddress = "ab:ab:ab:ab:ab",
-                Name = "TestMaster"
+                Name = "TestMaster",
+                Url = new Uri("http://127.0.0.1")
             });
 
             var iotCoreTree = new List<IDeviceTreeBase>
@@ -641,9 +641,9 @@ public class DeviceTreeBuilderTests
                         }
                     ],
                     Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
                     MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster"
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -678,9 +678,9 @@ public class DeviceTreeBuilderTests
                     }
                 ],
                 Id = "TestMaster",
-                Url = new Uri("http://127.0.0.1"),
                 MacAddress = "ab:ab:ab:ab:ab",
-                Name = "TestMaster"
+                Name = "TestMaster",
+                Url = new Uri("http://127.0.0.1")
             });
 
             var iotCoreTree = new List<IDeviceTreeBase>
@@ -696,9 +696,9 @@ public class DeviceTreeBuilderTests
                         }
                     ],
                     Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
                     MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster"
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -732,9 +732,9 @@ public class DeviceTreeBuilderTests
                     }
                 ],
                 Id = "TestMaster",
-                Url = new Uri("http://127.0.0.1"),
                 MacAddress = "ab:ab:ab:ab:ab",
-                Name = "TestMaster"
+                Name = "TestMaster",
+                Url = new Uri("http://127.0.0.1")
             });
 
             var iotCoreTree = new List<IDeviceTreeBase>
@@ -758,9 +758,9 @@ public class DeviceTreeBuilderTests
                         }
                     ],
                     Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
                     MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster"
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -791,9 +791,9 @@ public class DeviceTreeBuilderTests
                 new DeviceTreeIoLinkMaster
                 {
                     Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
                     MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster"
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -811,9 +811,9 @@ public class DeviceTreeBuilderTests
                 new DeviceTreeIoLinkMaster
                 {
                     Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
                     MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster"
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -830,9 +830,9 @@ public class DeviceTreeBuilderTests
             {
                 Id = "TestMaster",
                 IsOffline = false,
-                Url = new Uri("http://127.0.0.1"),
                 MacAddress = "ab:ab:ab:ab:ab",
-                Name = "TestMaster"
+                Name = "TestMaster",
+                Url = new Uri("http://127.0.0.1")
             });
 
             var iotCoreTree = new List<IDeviceTreeBase>();
@@ -851,9 +851,9 @@ public class DeviceTreeBuilderTests
             {
                 Id = "TestMaster",
                 IsOffline = true,
-                Url = new Uri("http://127.0.0.1"),
                 MacAddress = "ab:ab:ab:ab:ab",
-                Name = "TestMaster"
+                Name = "TestMaster",
+                Url = new Uri("http://127.0.0.1")
             });
 
             var iotCoreTree = new List<IDeviceTreeBase>
@@ -861,9 +861,9 @@ public class DeviceTreeBuilderTests
                 new DeviceTreeIoLinkMaster
                 {
                     Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
                     MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster"
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -880,9 +880,9 @@ public class DeviceTreeBuilderTests
             currentTree.Children.Add(new DeviceTreeIoLinkMaster
             {
                 Id = "TestMaster",
-                Url = new Uri("http://127.0.0.1"),
                 MacAddress = "ab:ab:ab:ab:ab",
-                Name = "TestMaster"
+                Name = "TestMaster",
+                Url = new Uri("http://127.0.0.1")
             });
 
             var iotCoreTree = new List<IDeviceTreeBase>
@@ -890,9 +890,9 @@ public class DeviceTreeBuilderTests
                 new DeviceTreeIoLinkMaster
                 {
                     Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
                     MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster"
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -908,9 +908,9 @@ public class DeviceTreeBuilderTests
             currentTree.Children.Add(new DeviceTreeIoLinkMaster
             {
                 Id = "TestMaster",
-                Url = new Uri("http://127.0.0.1"),
                 MacAddress = "ab:ab:ab:ab:ab",
-                Name = "TestMaster"
+                Name = "TestMaster",
+                Url = new Uri("http://127.0.0.1")
             });
 
             var iotCoreTree = new List<IDeviceTreeBase>
@@ -926,9 +926,9 @@ public class DeviceTreeBuilderTests
                         }
                     ],
                     Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
                     MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster"
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -955,9 +955,9 @@ public class DeviceTreeBuilderTests
                     }
                 ],
                 Id = "TestMaster",
-                Url = new Uri("http://127.0.0.1"),
                 MacAddress = "ab:ab:ab:ab:ab",
-                Name = "TestMaster"
+                Name = "TestMaster",
+                Url = new Uri("http://127.0.0.1")
             });
 
             var iotCoreTree = new List<IDeviceTreeBase>
@@ -965,9 +965,9 @@ public class DeviceTreeBuilderTests
                 new DeviceTreeIoLinkMaster
                 {
                     Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
                     MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster"
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -993,9 +993,9 @@ public class DeviceTreeBuilderTests
                     }
                 ],
                 Id = "TestMaster",
-                Url = new Uri("http://127.0.0.1"),
                 MacAddress = "ab:ab:ab:ab:ab",
-                Name = "TestMaster"
+                Name = "TestMaster",
+                Url = new Uri("http://127.0.0.1")
             });
 
             var iotCoreTree = new List<IDeviceTreeBase>
@@ -1011,9 +1011,9 @@ public class DeviceTreeBuilderTests
                         }
                     ],
                     Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
                     MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster"
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -1031,27 +1031,27 @@ public class DeviceTreeBuilderTests
                 Children = [
                     new DeviceTreeIoLinkMaster
                     {
-                        Id = "TestMaster",
-                        Url = new Uri("http://127.0.0.1"),
-                        MacAddress = "ab:ab:ab:ab:ab",
-                        Name = "TestMaster",
                         Children =
                         [
                             new DeviceTreeIoLinkMasterPort()
                             {
-                                Id = "TestMaster/Port1",
-                                Name = "Port1",
                                 Children =
                                 [
                                     new DeviceTreeDevice()
                                     {
                                         Id = "TestMaster/Port1/Sensor",
-                                        Name = "Sensor",
                                         IsUnknown = true,
+                                        Name = "Sensor",
                                     }
-                                ]
+                                ],
+                                Id = "TestMaster/Port1",
+                                Name = "Port1"
                             }
-                        ]
+                        ],
+                        Id = "TestMaster",
+                        MacAddress = "ab:ab:ab:ab:ab",
+                        Name = "TestMaster",
+                        Url = new Uri("http://127.0.0.1")
                     }
                 ]
             };
@@ -1060,22 +1060,14 @@ public class DeviceTreeBuilderTests
             {
                 new DeviceTreeIoLinkMaster
                 {
-                    Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
-                    MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster",
                     Children =
                     [
                         new DeviceTreeIoLinkMasterPort()
                         {
-                            Id = "TestMaster/Port1",
-                            Name = "Port1",
                             Children =
                             [
                                 new DeviceTreeDevice()
                                 {
-                                    Id = "TestMaster/Port1/Sensor",
-                                    Name = "Sensor",
                                     Children =
                                     [
                                         new DeviceTreeProcessData()
@@ -1083,11 +1075,19 @@ public class DeviceTreeBuilderTests
                                             Id = "TestMaster/Port1/Sensor/ProcessData",
                                             Name = "ProcessData"
                                         }
-                                    ]
+                                    ],
+                                    Id = "TestMaster/Port1/Sensor",
+                                    Name = "Sensor"
                                 }
-                            ]
+                            ],
+                            Id = "TestMaster/Port1",
+                            Name = "Port1"
                         }
-                    ]
+                    ],
+                    Id = "TestMaster",
+                    MacAddress = "ab:ab:ab:ab:ab",
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -1109,22 +1109,14 @@ public class DeviceTreeBuilderTests
                 Children = [
                     new DeviceTreeIoLinkMaster
                     {
-                        Id = "TestMaster",
-                        Url = new Uri("http://127.0.0.1"),
-                        MacAddress = "ab:ab:ab:ab:ab",
-                        Name = "TestMaster",
                         Children =
                         [
                             new DeviceTreeIoLinkMasterPort()
                             {
-                                Id = "TestMaster/Port1",
-                                Name = "Port1",
                                 Children =
                                 [
                                     new DeviceTreeDevice()
                                     {
-                                        Id = "TestMaster/Port1/Sensor",
-                                        Name = "Sensor",
                                         Children =
                                         [
                                             new DeviceTreeProcessData()
@@ -1132,11 +1124,19 @@ public class DeviceTreeBuilderTests
                                                 Id = "TestMaster/Port1/Sensor/ProcessData",
                                                 Name = "ProcessData"
                                             }
-                                        ]
+                                        ],
+                                        Id = "TestMaster/Port1/Sensor",
+                                        Name = "Sensor"
                                     }
-                                ]
+                                ],
+                                Id = "TestMaster/Port1",
+                                Name = "Port1"
                             }
-                        ]
+                        ],
+                        Id = "TestMaster",
+                        MacAddress = "ab:ab:ab:ab:ab",
+                        Name = "TestMaster",
+                        Url = new Uri("http://127.0.0.1")
                     }
                 ]
             };
@@ -1145,27 +1145,27 @@ public class DeviceTreeBuilderTests
             {
                 new DeviceTreeIoLinkMaster
                 {
-                    Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
-                    MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster",
                     Children =
                     [
                         new DeviceTreeIoLinkMasterPort()
                         {
-                            Id = "TestMaster/Port1",
-                            Name = "Port1",
                             Children =
                             [
                                 new DeviceTreeDevice()
                                 {
                                     Id = "TestMaster/Port1/Sensor",
-                                    Name = "Sensor",
                                     IsUnknown = true,
+                                    Name = "Sensor",
                                 }
-                            ]
+                            ],
+                            Id = "TestMaster/Port1",
+                            Name = "Port1"
                         }
-                    ]
+                    ],
+                    Id = "TestMaster",
+                    MacAddress = "ab:ab:ab:ab:ab",
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -1187,10 +1187,6 @@ public class DeviceTreeBuilderTests
                 Children = [
                     new DeviceTreeIoLinkMaster
                     {
-                        Id = "TestMaster",
-                        Url = new Uri("http://127.0.0.1"),
-                        MacAddress = "ab:ab:ab:ab:ab",
-                        Name = "TestMaster",
                         Children =
                         [
                             new DeviceTreeConstantData()
@@ -1199,7 +1195,11 @@ public class DeviceTreeBuilderTests
                                 Name = "Constant",
                                 Value = "old",
                             }
-                        ]
+                        ],
+                        Id = "TestMaster",
+                        MacAddress = "ab:ab:ab:ab:ab",
+                        Name = "TestMaster",
+                        Url = new Uri("http://127.0.0.1")
                     }
                 ]
             };
@@ -1208,10 +1208,6 @@ public class DeviceTreeBuilderTests
             {
                 new DeviceTreeIoLinkMaster
                 {
-                    Id = "TestMaster",
-                    Url = new Uri("http://127.0.0.1"),
-                    MacAddress = "ab:ab:ab:ab:ab",
-                    Name = "TestMaster",
                     Children =
                     [
                         new DeviceTreeConstantData()
@@ -1220,7 +1216,11 @@ public class DeviceTreeBuilderTests
                             Name = "Constant",
                             Value = "new",
                         }
-                    ]
+                    ],
+                    Id = "TestMaster",
+                    MacAddress = "ab:ab:ab:ab:ab",
+                    Name = "TestMaster",
+                    Url = new Uri("http://127.0.0.1")
                 }
             };
 
@@ -1234,35 +1234,35 @@ public class DeviceTreeBuilderTests
         {
             var vse = new DeviceTreeVseDevice
             {
+                Id = "deviceip",
                 MacAddress = "ff:ff:ff:ff:ff",
                 Name = "VseDevice",
-                Id = "deviceip",
                 Url = new UriBuilder("deviceip").Uri,
             };
 
             var objects = new DeviceTreeStructureNode
             {
-                Name = "Objects",
                 Id = "deviceip/Objects",
+                Name = "Objects",
             };
 
             var obj = new DeviceTreeVseObject
             {
-                Name = "Object01",
                 Alias = "RPM_LEFT",
                 Id = "deviceip/Objects/Object01",
-                Path = "Device/Objects/Object01",
                 InputId = "Input01",
                 InputType = "External",
+                Name = "Object01",
                 ObjectId = "Object01",
+                Path = "Device/Objects/Object01",
                 Type = "re",
                 Unit = string.Empty,
             };
 
             var child = new DeviceTreeProcessData
             {
-                Name = "Max",
                 Id = "deviceip/Objects/Object01/Max",
+                Name = "Max",
             };
 
             vse.Children.Add(objects);
@@ -1281,41 +1281,41 @@ public class DeviceTreeBuilderTests
             {
                 new DeviceTreeVseDevice
                 {
-                    MacAddress = "ff:ff:ff:ff:ff",
-                    Name = "VseDevice",
-                    Id = "deviceip",
-                    Url = new UriBuilder("deviceip").Uri,
                     Children =
                     {
                         new DeviceTreeStructureNode
                         {
-                            Name = "Objects",
-                            Id = "deviceip/Objects",
                             Children =
                             {
                                 new DeviceTreeVseObject
                                 {
-                                    Name = "Object01",
                                     Alias = "RPM_LEFT",
-                                    Id = "deviceip/Objects/Object01",
-                                    Path = "127.0.0.1/Device/Objects/Object01",
-                                    InputId = "Input01",
-                                    InputType = "External",
-                                    ObjectId = "Object01",
-                                    Type = "re",
-                                    Unit = string.Empty,
                                     Children =
                                     {
                                         new DeviceTreeProcessData
                                         {
-                                            Name = "Max",
                                             Id = $"deviceip/Objects/Object01{DeviceTreeBuilder.IdSeparatorNameAlias}RPM_LEFT/Max",
+                                            Name = "Max",
                                         }
-                                    }
+                                    },
+                                    Id = "deviceip/Objects/Object01",
+                                    InputId = "Input01",
+                                    InputType = "External",
+                                    Name = "Object01",
+                                    ObjectId = "Object01",
+                                    Path = "127.0.0.1/Device/Objects/Object01",
+                                    Type = "re",
+                                    Unit = string.Empty
                                 }
-                            }
+                            },
+                            Id = "deviceip/Objects",
+                            Name = "Objects"
                         }
-                    }
+                    },
+                    Id = "deviceip",
+                    MacAddress = "ff:ff:ff:ff:ff",
+                    Name = "VseDevice",
+                    Url = new UriBuilder("deviceip").Uri
                 },
             };
 
@@ -1332,25 +1332,25 @@ public class DeviceTreeBuilderTests
             {
                 Id = "TestMaster 1 Offline Random GUID",
                 IsOffline = true,
+                MacAddress = "ab:ab:ab:ab:ab",
                 Name = "IO-Link Master",
                 Url = new Uri("http://127.0.0.1"),
-                MacAddress = "ab:ab:ab:ab:ab",
             });
             currentTree.Children.Add(new DeviceTreeIoLinkMaster
             {
                 Id = "TestMaster 2 Offline Random GUID",
                 IsOffline = true,
+                MacAddress = "ab:ab:ab:ab:ab",
                 Name = "IO-Link Master",
                 Url = new Uri("http://127.0.0.2"),
-                MacAddress = "ab:ab:ab:ab:ab",
             });
             currentTree.Children.Add(new DeviceTreeIoLinkMaster
             {
                 Id = "TestMaster 3 Offline Random GUID",
                 IsOffline = true,
+                MacAddress = "ab:ab:ab:ab:ab",
                 Name = "IO-Link Master",
                 Url = new Uri("http://127.0.0.3"),
-                MacAddress = "ab:ab:ab:ab:ab",
             });
 
             var iotCoreTree = new List<IDeviceTreeBase>
@@ -1365,12 +1365,12 @@ public class DeviceTreeBuilderTests
                             [
                                 new DeviceTreeDevice
                                 {
-                                    Name = "TestMaster 1 Online Port 1 Device",
                                     Id = "TestMaster 1 Online IoTCore ID, TestMaster 1 Online Port 1, TestMaster 1 Online Port 1 Device",
+                                    Name = "TestMaster 1 Online Port 1 Device",
                                 }
                             ],
-                            Name = "TestMaster 1 Online Port 1",
                             Id = "TestMaster 1 Online IoTCore ID, TestMaster 1 Online Port 1",
+                            Name = "TestMaster 1 Online Port 1",
                         },
                         new DeviceTreeIoLinkMasterPort
                         {
@@ -1378,18 +1378,18 @@ public class DeviceTreeBuilderTests
                             [
                                 new DeviceTreeDevice
                                 {
-                                    Name = "TestMaster 1 Online Port 2 Device",
                                     Id = "TestMaster 1 Online IoTCore ID, TestMaster 1 Online Port 2, TestMaster 1 Online Port 2 Device",
+                                    Name = "TestMaster 1 Online Port 2 Device",
                                 }
                             ],
-                            Name = "TestMaster 1 Online Port 2",
                             Id = "TestMaster 1 Online IoTCore ID, TestMaster 1 Online Port 2",
+                            Name = "TestMaster 1 Online Port 2",
                         }
                     ],
                     Id = "TestMaster 1 Online IoTCore ID",
+                    MacAddress = "ab:ab:ab:ab:ab",
                     Name = "IO-Link Master",
                     Url = new Uri("http://127.0.0.1"),
-                    MacAddress = "ab:ab:ab:ab:ab",
                 },
 
                 new DeviceTreeIoLinkMaster
@@ -1402,18 +1402,18 @@ public class DeviceTreeBuilderTests
                             [
                                 new DeviceTreeDevice
                                 {
-                                    Name = "TestMaster 2 Online Port 1 Device",
                                     Id = "TestMaster 2 Online IoTCore ID, TestMaster 2 Online Port 1, TestMaster 2 Online Port 1 Device",
+                                    Name = "TestMaster 2 Online Port 1 Device",
                                 }
                             ],
-                            Name = "TestMaster 2 Online Port 1",
                             Id = "TestMaster 2 Online IoTCore ID, TestMaster 2 Online Port 1",
+                            Name = "TestMaster 2 Online Port 1",
                         }
                     ],
                     Id = "TestMaster 2 Online IoTCore ID",
+                    MacAddress = "ab:ab:ab:ab:ab",
                     Name = "IO-Link Master",
                     Url = new Uri("http://127.0.0.2"),
-                    MacAddress = "ab:ab:ab:ab:ab",
                 }
             };
 

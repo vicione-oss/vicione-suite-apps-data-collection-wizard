@@ -57,8 +57,8 @@ public static class DeviceTreeDataNodeExtensions
                     sensor.Triggers.Add(new()
                     {
                         DataGroupIdentifier = config.Id,
-                        Enabled = false,
                         Delay = 1,
+                        Enabled = false,
                     });
                 }
             }

@@ -61,8 +61,8 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
                 await mediator.Publish(new DeviceTreeEngineAddedEvent
                 {
                     Address = deviceEngineInfo.Address,
-                    DeviceTreeConnectors = deviceTreeConnectors,
-                    CorrelationId = correlationId
+                    CorrelationId = correlationId,
+                    DeviceTreeConnectors = deviceTreeConnectors
                 });
 
                 continue;
@@ -103,8 +103,8 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
         var deviceConnectorIds = new DeviceConnectorIds
         {
             DeviceAddress = address.ToString(),
-            TriggerInput = deviceTreeTrigger,
-            DeviceTreeOutput = deviceTreeOutput
+            DeviceTreeOutput = deviceTreeOutput,
+            TriggerInput = deviceTreeTrigger
         };
 
         await mediator.Send(new UpsertDeviceConnectorIds([deviceConnectorIds]));
@@ -180,7 +180,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
             };
 
             await mediator.Send(new UpsertDeviceConnectorIds([new DeviceConnectorIds { DeviceAddress = deviceTreeMasterDevice.Url.ToString(),
-                TriggerInput = deviceTreeTrigger, DeviceTreeOutput = deviceTreeOutput }]));
+                DeviceTreeOutput = deviceTreeOutput, TriggerInput = deviceTreeTrigger }]));
 
             await mediator.Send(new UpsertOutputConnectorMapping(outputMapping));
         }

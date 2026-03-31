@@ -59,26 +59,26 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private readonly TimedMessage[] _loadingSpinnerMessagesInitializing = [
         new()
         {
+            DisplayDuration = 3,
             Message = Localization.DataCollectionWizardPage.SpinnerMessageAwaitingCurrentDeployments,
-            DisplayDuration = 3,
         },
         TimedMessageFactory.CreateGap(1),
         new()
         {
+            DisplayDuration = 3,
             Message = Localization.DataCollectionWizardPage.SpinnerMessageCreatingScanEngine,
-            DisplayDuration = 3,
         },
         TimedMessageFactory.CreateGap(1),
         new()
         {
+            DisplayDuration = 3,
             Message = Localization.DataCollectionWizardPage.SpinnerMessageSubscribingResultOutput,
-            DisplayDuration = 3,
         },
         TimedMessageFactory.CreateGap(1),
         new()
         {
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
             DisplayDuration = 3,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
         },
         TimedMessageFactory.CreateGap(1),
         new()
@@ -89,26 +89,26 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private readonly TimedMessage[] _loadingSpinnerMessagesScanDevice = [
         new()
         {
+            DisplayDuration = 3,
             Message = Localization.DataCollectionWizardPage.SpinnerMessageGeneratingDataflow,
-            DisplayDuration = 3,
         },
         TimedMessageFactory.CreateGap(1),
         new()
         {
+            DisplayDuration = 3,
             Message = Localization.DataCollectionWizardPage.SpinnerMessageDeployingDataflow,
-            DisplayDuration = 3,
         },
         TimedMessageFactory.CreateGap(1),
         new()
         {
+            DisplayDuration = 3,
             Message = Localization.DataCollectionWizardPage.SpinnerMessageSubscribingResultOutput,
-            DisplayDuration = 3,
         },
         TimedMessageFactory.CreateGap(1),
         new()
         {
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
             DisplayDuration = 3,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
         },
         TimedMessageFactory.CreateGap(1),
         new()
@@ -120,8 +120,8 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     [
         new()
         {
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringIoLinkScan,
             DisplayDuration = 3,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringIoLinkScan,
         },
         TimedMessageFactory.CreateGap(1),
         new()
@@ -132,14 +132,14 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private readonly TimedMessage[] _loadingSpinnerMessagesUpdateDeviceTree = [
         new()
         {
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageSubscribingResultOutput,
             DisplayDuration = 3,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageSubscribingResultOutput,
         },
         TimedMessageFactory.CreateGap(1),
         new()
         {
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
             DisplayDuration = 3,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
         },
         TimedMessageFactory.CreateGap(1),
         new()
@@ -585,15 +585,15 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                     LogUnexpectedNullDeviceError(Logger, uri.AbsoluteUri);
                     d = new DeviceTreeIoLinkMaster
                     {
-                        Id = $"IoLink@{uri.DnsSafeHost}:{uri.Port}",
                         Description = new DeviceTreeNodeDescription
                         {
                             Text = "an ifm IO-Link device",
                         },
+                        Id = $"IoLink@{uri.DnsSafeHost}:{uri.Port}",
+                        IsOffline = true,
                         MacAddress = "ff:ff:ff:ff:ff",
                         Name = "IO-Link Master",
                         Url = uri,
-                        IsOffline = true,
                     };
                 }
 
@@ -651,14 +651,14 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                 LogUnexpectedNullDeviceError(Logger, vseAddress!.DnsSafeHost);
                 d = new DeviceTreeVseDevice
                 {
-                    Id = $"vse@{vseAddress}",
                     Description = new DeviceTreeNodeDescription
                     {
                         Text = "an ifm VSE device",
                     },
+                    Id = $"vse@{vseAddress}",
+                    IsOffline = true,
                     MacAddress = "ff:ff:ff:ff:ff",
                     Name = "VSE Device",
-                    IsOffline = true,
                     Url = VseAddresses.GetVseAddressWithPort(vseAddress.DnsSafeHost),
                 };
             }

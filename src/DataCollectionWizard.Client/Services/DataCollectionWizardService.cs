@@ -420,7 +420,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
         await _mediator.Send(command);
     }
 
-    public async Task SaveDeviceTreeAsync(IReadOnlyCollection<string> masterNodesToUpdate, IDeviceTreeBase[] deletedNodes,
+    public async Task SaveDeviceTreeAsync(IReadOnlyCollection<string> masterNodesToUpdate, IReadOnlyCollection<IDeviceTreeBase> deletedNodes,
         DeviceTreeRoot deviceTree, LogLevel logLevel)
     {
         _skipNextDeviceTreeChange = true;

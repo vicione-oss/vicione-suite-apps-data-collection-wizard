@@ -23,7 +23,7 @@ public interface IDataCollectionWizardService : IDisposable
     Task RequestNewDevicesDeviceTreeAsync(IEnumerable<DeviceEngineInfo> deviceEngineInfos, Func<IDeviceTreeMasterNode?, bool, Uri, Task> callBack, bool allowUseExistingEngine, LogLevel logLevel);
     Task<DeviceTreeRoot> RequestDeviceTreeAsync();
     Task SaveDeviceTreeAsync(IReadOnlyCollection<string> masterNodesToUpdate,
-                             IDeviceTreeBase[] deletedNodes,
+                             IReadOnlyCollection<IDeviceTreeBase> deletedNodes,
                              DeviceTreeRoot deviceTree, LogLevel logLevel);
     Task<DcpScanningResult> ScanIoLinkDevicesAsync(LogLevel logLevel, CancellationToken cancellationToken);
     Task<bool> WaitForCurrentDeployment(TimeSpan timeout);

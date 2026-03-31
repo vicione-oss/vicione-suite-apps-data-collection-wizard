@@ -30,14 +30,14 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
     [
         new()
         {
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageSubscribingResultOutput,
             DisplayDuration = 3,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageSubscribingResultOutput,
         },
         TimedMessageFactory.CreateGap(1),
         new()
         {
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
             DisplayDuration = 3,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
         },
         TimedMessageFactory.CreateGap(1),
         new()

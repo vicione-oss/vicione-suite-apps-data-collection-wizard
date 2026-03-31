@@ -295,8 +295,8 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
             result.RotationalFrequencyOutputs[obj.Id] = new()
             {
                 RefValue = refValueOutput,
-                RotSpeed = rotSpeedOutput,
                 RotationalFrequencyTuple = rotationalFrequencyTupleOutput,
+                RotSpeed = rotSpeedOutput,
             };
 
             foreach (var child in obj.Children.OfType<IDeviceTreeCompressableDataNode>())
@@ -362,8 +362,8 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
                 {
                     rawDataInfo.SchedulerSensors[configuration.Key] = new()
                     {
-                        TriggerInput = sensorFb.GetInputByDesignId(FunctionBlocks.VseRawDataSubscriber.Inputs.Trigger),
                         MeasurementOutput = sensorFb.GetOutputByDesignId(FunctionBlocks.VseRawDataSubscriber.Outputs.Data),
+                        TriggerInput = sensorFb.GetInputByDesignId(FunctionBlocks.VseRawDataSubscriber.Inputs.Trigger),
                     };
                 }
 
@@ -426,10 +426,10 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
     {
         var outputInfo = new DataOutputInfo
         {
+            AvailableOutput = availableOutput,
             Output = output,
             Suffix = $"{parentName} {child.Name}",
             ValidOutput = validOutput,
-            AvailableOutput = availableOutput,
         };
 
         foreach (var compressorConfig in child.CompressorConfigurations)

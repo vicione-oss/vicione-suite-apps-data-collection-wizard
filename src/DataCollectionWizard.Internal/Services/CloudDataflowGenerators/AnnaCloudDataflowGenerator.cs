@@ -140,11 +140,11 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
                 Avg = new CloudInput() { InputConnector = annaObjectDataFb.GetInputByDesignId(FunctionBlocks.AnnaObjectData.Inputs.Average) },
                 Max = new CloudInput() { InputConnector = annaObjectDataFb.GetInputByDesignId(FunctionBlocks.AnnaObjectData.Inputs.Maximum) },
                 Min = new CloudInput() { InputConnector = annaObjectDataFb.GetInputByDesignId(FunctionBlocks.AnnaObjectData.Inputs.Minimum) },
-                Value = new CloudInput() { InputConnector = annaObjectDataFb.GetInputByDesignId(FunctionBlocks.AnnaObjectData.Inputs.Value) },
                 RefValueAtMax = new CloudInput() { InputConnector = annaObjectDataFb.GetInputByDesignId(FunctionBlocks.AnnaObjectData.Inputs.RefValueAtMaximum) },
                 RefValueAtMin = new CloudInput() { InputConnector = annaObjectDataFb.GetInputByDesignId(FunctionBlocks.AnnaObjectData.Inputs.RefValueAtMinimum) },
                 RotSpeedAtMax = new CloudInput() { InputConnector = annaObjectDataFb.GetInputByDesignId(FunctionBlocks.AnnaObjectData.Inputs.RotSpeedAtMaximum) },
                 RotSpeedAtMin = new CloudInput() { InputConnector = annaObjectDataFb.GetInputByDesignId(FunctionBlocks.AnnaObjectData.Inputs.RotSpeedAtMinimum) },
+                Value = new CloudInput() { InputConnector = annaObjectDataFb.GetInputByDesignId(FunctionBlocks.AnnaObjectData.Inputs.Value) },
             };
         }
     }
