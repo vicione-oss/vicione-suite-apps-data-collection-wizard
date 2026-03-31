@@ -172,7 +172,7 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
             return;
         }
 
-        var outputInfo = new DataOutputInfo { Output = valueOutputLogging, Suffix = $"{ioLinkPort.Name} {device.Name} {processData.Name}", AvailableOutput = availableOutput };
+        var outputInfo = new DataOutputInfo { AvailableOutput = availableOutput, Output = valueOutputLogging, Suffix = $"{ioLinkPort.Name} {device.Name} {processData.Name}" };
 
         if (node is IDeviceTreeCompressableDataNode compressableDataNode)
         {
@@ -186,10 +186,10 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
 
         result.OutputMapping.Add(new ValueMappingEntry
         {
+            ProcessDataId = processData.Id,
+            UnitOutputId = unitOutput.Id,
             ValueOutputIdLogging = valueOutputLogging.Id,
             ValueOutputIdUI = valueOutputUi.Id,
-            UnitOutputId = unitOutput.Id,
-            ProcessDataId = processData.Id,
         });
     }
 
@@ -228,22 +228,22 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
         var booleanSubscriber = new IoTSubscriberDesignTuple
         {
             FunctionBlock = FunctionBlocks.IoLinkBooleanSubscriber.DesignId,
-            Settings = FunctionBlocks.IoLinkBooleanSubscriber.Settings,
             Outputs = FunctionBlocks.IoLinkBooleanSubscriber.Outputs,
+            Settings = FunctionBlocks.IoLinkBooleanSubscriber.Settings,
         };
 
         var doubleSubscriber = new IoTSubscriberDesignTuple
         {
             FunctionBlock = FunctionBlocks.IoLinkDoubleSubscriber.DesignId,
-            Settings = FunctionBlocks.IoLinkDoubleSubscriber.Settings,
             Outputs = FunctionBlocks.IoLinkDoubleSubscriber.Outputs,
+            Settings = FunctionBlocks.IoLinkDoubleSubscriber.Settings,
         };
 
         var stringSubscriber = new IoTSubscriberDesignTuple
         {
             FunctionBlock = FunctionBlocks.IoLinkStringSubscriber.DesignId,
-            Settings = FunctionBlocks.IoLinkStringSubscriber.Settings,
             Outputs = FunctionBlocks.IoLinkStringSubscriber.Outputs,
+            Settings = FunctionBlocks.IoLinkStringSubscriber.Settings,
         };
 
         return processData.DataType switch

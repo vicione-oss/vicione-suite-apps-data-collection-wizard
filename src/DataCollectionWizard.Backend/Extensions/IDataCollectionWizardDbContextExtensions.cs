@@ -17,7 +17,7 @@ public static class IDataCollectionWizardDbContextExtensions
             var model = new DeviceTreeDbModel
             {
                 DeviceAddress = masterDevice.Url.ToString(),
-                DeviceTreeJson = JsonSerializer.Serialize(new DeviceTreeStructureNode { Id = "placeholder", Name = "placeholder", Children = [masterDevice] }, SerializerOptions.DeviceTree),
+                DeviceTreeJson = JsonSerializer.Serialize(new DeviceTreeStructureNode { Children = [masterDevice], Id = "placeholder", Name = "placeholder" }, SerializerOptions.DeviceTree),
             };
 
             dbContext.Devices.Add(model);

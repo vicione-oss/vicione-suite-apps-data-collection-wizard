@@ -58,8 +58,8 @@ public sealed partial class DataCollectionWizardConsumer(DataCollectionWizardSta
             await context.Publish(new DeviceTreeEngineAddedEvent
             {
                 Address = requestedDevice.url,
-                DeviceTreeConnectors = dataCollectionWizardState.DeviceTreeConnectors[requestedDevice.url],
                 CorrelationId = requestedDevice.correlationId,
+                DeviceTreeConnectors = dataCollectionWizardState.DeviceTreeConnectors[requestedDevice.url],
             });
         }
     }

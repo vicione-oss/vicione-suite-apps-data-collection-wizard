@@ -259,11 +259,11 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                 _rootNode = new Root()
                 {
                     Device = root,
+                    DisplayText = DeviceTreeNodeNameProvider.GetTreeDisplayText(root),
                     Expanded = true,
                     Id = new StringTreeNodeIdentifier() { Value = root.Id, },
                     IsLiveView = isLiveView,
                     Parent = null,
-                    DisplayText = DeviceTreeNodeNameProvider.GetTreeDisplayText(root),
                 };
             }
             else

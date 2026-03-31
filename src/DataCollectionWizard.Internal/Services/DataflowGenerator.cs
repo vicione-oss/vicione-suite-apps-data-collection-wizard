@@ -63,9 +63,9 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
                 {
                     yield return new BlobLoggingConfiguration()
                     {
-                        Node = schedulableDataNode,
                         DataGroupIdentifier = schedulerConfig.DataGroupIdentifier,
                         NeedsScheduler = true,
+                        Node = schedulableDataNode,
                     };
                 }
             }
@@ -81,9 +81,9 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
                     {
                         yield return new BlobLoggingConfiguration()
                         {
-                            Node = sensor,
                             DataGroupIdentifier = eventTrigger.DataGroupIdentifier,
                             NeedsEventTrigger = true,
+                            Node = sensor,
                         };
                     }
                 }

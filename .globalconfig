@@ -7,3 +7,5 @@ dotnet_diagnostic.VO2003.severity = none # Properties should be grouped by first
 dotnet_diagnostic.VO2004.severity = warning # Events should be sorted in alphabetical order
 dotnet_diagnostic.VO2005.severity = warning # Constructors should be grouped by keyword, then sorted by number of parameters in ascending order
 dotnet_diagnostic.VO2006.severity = none # Methods should be sorted in alphabetical order
+dotnet_diagnostic.VO2008.severity = warning # Property assignments in the object initializer are not sorted alphabetically by property name
+dotnet_diagnostic.VO2009.severity = warning # Property assignments in the constructor are not sorted alphabetically by property name
