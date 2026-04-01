@@ -1,11 +1,14 @@
 ﻿<div class="raw-data-cell">
     <div class="row header">
         <div class="column status">
-            <span class="column damage mdi mdi-alert-circle @(IsSupportedConnection() ? string.Empty : "disabled")"
-                  title="@Localization.DataCollectionWizardPage.Damage"></span>
-
-            <span class="column warning mdi mdi-alert-outline @(IsSupportedConnection() ? string.Empty : "disabled")"
-                  title="@Localization.DataCollectionWizardPage.Warning"></span>
+            <div class="@($"damage {(IsSupportedConnection() ? string.Empty : "disabled")}")"
+                 title="@Localization.DataCollectionWizardPage.Damage" >
+                <MonochromeIcon Name="MonochromeIconName.ErrorLight" Size="MonochromeIconSize.Small"/>
+            </div>
+            <div class="@($"warning {(IsSupportedConnection() ? string.Empty : "disabled")}")"
+                 title="@Localization.DataCollectionWizardPage.Warning">
+                <MonochromeIcon Name="MonochromeIconName.ErrorSolid" Size="MonochromeIconSize.Small"/>
+            </div>
         </div>
 
         <span class="column delay header @(IsSupportedConnection() ? string.Empty : "disabled")">Delay (h)</span>

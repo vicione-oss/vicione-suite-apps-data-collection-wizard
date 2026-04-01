@@ -132,11 +132,14 @@
       <MonochromeIcon Include="align-right" Size="16;24" />
       <MonochromeIcon Include="align-top" Size="16;24" />
       <MonochromeIcon Include="align-top-by-lowest-element" Size="16;24" />
+      <MonochromeIcon Include="arrow-navigation-light-down" Size="24" />
       <MonochromeIcon Include="bug-light" Size="32" />
       <MonochromeIcon Include="cluster-2" Size="32" />
       <MonochromeIcon Include="dataflow-solid" Size="24" />
       <MonochromeIcon Include="data-switch" Size="32" />
       <MonochromeIcon Include="export" Size="24" />
+      <MonochromeIcon Include="error-solid" Size="16" />
+      <MonochromeIcon Include="error-light" Size="16" />
       <MonochromeIcon Include="hamburger-menu" Size="24" />
       <MonochromeIcon Include="import" Size="24" />
       <MonochromeIcon Include="info-outlined" Size="24" />

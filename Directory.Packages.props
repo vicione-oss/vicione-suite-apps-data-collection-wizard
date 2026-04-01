@@ -19,7 +19,7 @@
     <PackageVersion Include="ViciOne.Suite.Sdk.Deployment" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="ViciOne.Suite.Sdk.Client" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="ViciOne.Ui.Blazor.Components" Version="5.6.0" />
-    <PackageVersion Include="ViciOne.Ui.MonochromeIcons.Assets" Version="4.6.0" />
+    <PackageVersion Include="ViciOne.Ui.MonochromeIcons.Assets" Version="4.7.0" />
     <PackageVersion Include="ViciOne.Ui.Design" Version="2.0.3" />
     <PackageVersion Include="ViciOne.Ui.Shared.Dx" Version="0.19.1" />
     <PackageVersion Include="ViciOne.Ui.TreeEditor" Version="2.0.0" />
