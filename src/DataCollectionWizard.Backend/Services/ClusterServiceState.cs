@@ -8,6 +8,7 @@ namespace DataCollectionWizard.Backend.Services;
 public sealed class ClusterServiceState : IAsyncDisposable
 {
     private static readonly TimeSpan s_defaultTicketValidity = TimeSpan.FromSeconds(10);
+    private readonly Lock _lock = new();
     private readonly Timer _timer = new() { AutoReset = false };
 
     public ConcurrentDictionary<Guid, TaskCompletionSource<ErrorInfo?>> TaskCompletionSourceMap { get; } = new();
@@ -44,12 +45,15 @@ public sealed class ClusterServiceState : IAsyncDisposable
 
     public void DiscardUpdateRequest(Guid ticketId)
     {
-        if (IssuedTicket?.Id != ticketId)
-            return;
-        TaskCompletionSourceMap.TryRemove(IssuedTicket.Value.CorrelationId, out _);
-        StopTimer();
-        IssuedTicket = null;
-        Semaphore.Release();
+        lock (_lock)
+        {
+            if (IssuedTicket?.Id != ticketId)
+                return;
+            TaskCompletionSourceMap.TryRemove(IssuedTicket.Value.CorrelationId, out _);
+            StopTimer();
+            IssuedTicket = null;
+            Semaphore.Release();
+        }
     }
 
     public async ValueTask DisposeAsync()

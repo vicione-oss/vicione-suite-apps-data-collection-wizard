@@ -48,7 +48,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
     private Dictionary<IDeviceTreeBase, List<IDeviceTreeBase>>? _nodePaths;
     private Dialog? _refLatestClusterNotRunningDialog;
     private Dialog? _refDataInvalidDialog;
-    private SemaphoreSlim? _semaphore = new(1);
+    private SemaphoreSlim? _semaphore = new(1, 1);
     private readonly LiveGridService _service = new();
     private DeviceTreeRoot _tree = new();
 
@@ -91,11 +91,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
         await UnsubscribeAllAsync();
 
-        if (_semaphore is not null)
-        {
-            _semaphore.Dispose();
-            _semaphore = null;
-        }
+        _semaphore.Dispose();
 
         await base.DisposeInternal();
     }
@@ -205,11 +201,12 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
     private async void OnTreeSelectionChangedAsync()
     {
         _cancelSubscribing.Cancel();
+        var acquired = false;
 
         try
         {
-            if (_semaphore is not null)
-                await _semaphore.WaitAsync();
+            await _semaphore.WaitAsync();
+            acquired = true;
 
             _cancelSubscribing.Dispose();
             _cancelSubscribing = new();
@@ -224,7 +221,11 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         }
         finally
         {
-            _semaphore?.Release();
+            if (acquired)
+            {
+                try { _semaphore.Release(); }
+                catch (ObjectDisposedException) { }
+            }
         }
     }
 
