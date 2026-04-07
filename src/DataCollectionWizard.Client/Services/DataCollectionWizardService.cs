@@ -11,7 +11,6 @@ using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Public.Events;
 using DataCollectionWizard.Public.Requests;
-using DataCollectionWizard.Public.Services;
 using Microsoft.Extensions.Logging;
 using Sdk.Client.Infrastructure;
 using Sdk.Messaging;
@@ -40,8 +39,8 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
     private readonly Dictionary<Guid, List<(Func<IDeviceTreeMasterNode?, bool, Uri, Task> callBack, Type deviceType, Uri address)>> _newDeviceEngineRequests = [];
     private readonly SemaphoreSlim _requestDevicesSemaphore = new(1, 1);
     private readonly AutoDisposeList<IDisposable> _autoDisposeList = [];
-    private readonly ManualResetEvent _ioLinkScannerEngineAdded = new(false);
-    private readonly ManualResetEvent _deploymentResetEvent = new(false);
+    private readonly SemaphoreSlim _ioLinkScannerEngineAdded = new(0, 1);
+    private readonly SemaphoreSlim _deploymentResetEvent = new(0, 1);
     private bool _deploymentInProgress;
     private bool _skipNextDeviceTreeChange;
 
@@ -72,10 +71,10 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
     public async Task<bool> AddIoLinkScannerDataflow(LogLevel logLevel)
     {
-        _ioLinkScannerEngineAdded.Reset();
+        await DrainSemaphoreAsync(_ioLinkScannerEngineAdded);
         await _mediator.Send(new AddIoLinkScanner(logLevel));
 
-        if (!_ioLinkScannerEngineAdded.WaitOne(25000))
+        if (!await _ioLinkScannerEngineAdded.WaitAsync(25000))
         {
             LogIoLinkScanEngineTimeoutCreatingDataflow(_logger);
             return false;
@@ -86,7 +85,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
     public Task Consume(ClientContext<IoLinkScannerEngineAddedEvent> context, CancellationToken cancellationToken)
     {
-        _ioLinkScannerEngineAdded.Set();
+        SignalSemaphore(_ioLinkScannerEngineAdded);
         return Task.CompletedTask;
     }
 
@@ -448,7 +447,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
     {
         var firstMessage = true;
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        ManualResetEvent? resetEvent = new(false);
+        SemaphoreSlim? resetEvent = new(0, 1);
 #pragma warning restore CA2000 // Dispose objects before losing scope
         DcpScanningResult scanValue = new()
         {
@@ -465,8 +464,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                resetEvent?.Set();
-                Thread.Yield();
+                SignalSemaphore(resetEvent);
                 return Task.CompletedTask;
             }
 
@@ -512,7 +510,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
         await TriggerDcpScan();
 
-        var isTimeout = !resetEvent.WaitOne(IoLinkMasterScanTimeout);
+        var isTimeout = !await resetEvent.WaitAsync(IoLinkMasterScanTimeout, CancellationToken.None);
 
         if (cancellationToken.IsCancellationRequested)
         {
@@ -545,7 +543,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
         return scanValue;
     }
 
-    private Task ScanIoLinkDeviceCallback(string? value, ref bool firstMessage, ManualResetEvent resetEvent, ref DcpScanningResult scanValue, ref string? firstMessageResult)
+    private Task ScanIoLinkDeviceCallback(string? value, ref bool firstMessage, SemaphoreSlim? resetEvent, ref DcpScanningResult scanValue, ref string? firstMessageResult)
     {
         if (firstMessage)
         {
@@ -575,8 +573,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
             }
         }
 
-        resetEvent.Set();
-        Thread.Yield();
+        SignalSemaphore(resetEvent);
         return Task.CompletedTask;
     }
 
@@ -609,8 +606,8 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
     {
         if (_deploymentInProgress || await IsDeployInProgressAsync())
         {
-            _deploymentResetEvent.Reset();
-            return _deploymentResetEvent.WaitOne(timeout);
+            await DrainSemaphoreAsync(_deploymentResetEvent);
+            return await _deploymentResetEvent.WaitAsync(timeout);
         }
 
         return true;
@@ -619,7 +616,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
     public Task Consume(ClientContext<ClusterUpdateCompleted> context, CancellationToken cancellationToken)
     {
         _deploymentInProgress = false;
-        _deploymentResetEvent.Set();
+        SignalSemaphore(_deploymentResetEvent);
         return Task.CompletedTask;
     }
 
@@ -662,14 +659,14 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
     public Task Consume(ClientContext<ClusterUpdateFailed> context, CancellationToken cancellationToken)
     {
         _deploymentInProgress = false;
-        _deploymentResetEvent.Set();
+        SignalSemaphore(_deploymentResetEvent);
         return Task.CompletedTask;
     }
 
     public Task Consume(ClientContext<ClusterUpdateRejected> context, CancellationToken cancellationToken)
     {
         _deploymentInProgress = false;
-        _deploymentResetEvent.Set();
+        SignalSemaphore(_deploymentResetEvent);
         return Task.CompletedTask;
     }
 
@@ -684,4 +681,27 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
     public Task Consume(ClientContext<NodesOfflineEvent> context, CancellationToken cancellationToken)
         => NodesOffline?.Invoke([.. context.Message.OfflineNodes.Select(n => n.Id)]) ?? Task.CompletedTask;
+
+    private static void SignalSemaphore(SemaphoreSlim? semaphore)
+    {
+        if (semaphore is null)
+            return;
+
+        try
+        {
+            if (semaphore.CurrentCount == 0)
+                semaphore.Release();
+        }
+        catch (ObjectDisposedException) { }
+        catch (SemaphoreFullException) { }
+    }
+
+    private static async Task DrainSemaphoreAsync(SemaphoreSlim semaphore)
+    {
+        while (semaphore.CurrentCount > 0)
+        {
+            if (!await semaphore.WaitAsync(0))
+                break;
+        }
+    }
 }
