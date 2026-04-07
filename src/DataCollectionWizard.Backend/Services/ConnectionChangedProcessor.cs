@@ -71,49 +71,60 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
         var deviceTreeUpdater = _serviceScope.ServiceProvider.GetRequiredService<IDeviceTreeUpdater>();
 
         var ticket = await deviceTreeUpdater.RequestUpdateAsync(cts.Token);
-        var deviceTree = await deviceTreeUpdater.LoadDeviceTree();
-
-        var relevantDevices = new List<string>();
-        var saveTree = false;
-
-        foreach (var changedEvent in events)
+        try
         {
-            var cloudConnections = _cloudFilters
-                .SelectMany(f => f.GetCloudConnections([changedEvent.Connection]))
-                .DistinctBy(c => c.Id)
-                .ToArray();
+            var deviceTree = await deviceTreeUpdater.LoadDeviceTree();
 
-            if (cloudConnections.Length == 0)
-                continue;
+            var relevantDevices = new List<string>();
+            var saveTree = false;
 
-            if (changedEvent.Action == CrudAction.Created || changedEvent.Action == CrudAction.Updated)
+            foreach (var changedEvent in events)
             {
-                foreach (var dataNode in deviceTree.GetNodeAndDescendants().OfType<IDeviceTreeDataNode>())
-                    dataNode.AddConfigurations(cloudConnections);
+                var cloudConnections = _cloudFilters
+                    .SelectMany(f => f.GetCloudConnections([changedEvent.Connection]))
+                    .DistinctBy(c => c.Id)
+                    .ToArray();
 
-                saveTree = true;
-                relevantDevices.AddRange(deviceTree.Children.OfType<IDeviceTreeMasterNode>()
-                                                            .Select(m => m.Id));
+                if (cloudConnections.Length == 0)
+                    continue;
+
+                if (changedEvent.Action == CrudAction.Created || changedEvent.Action == CrudAction.Updated)
+                {
+                    foreach (var dataNode in deviceTree.GetNodeAndDescendants().OfType<IDeviceTreeDataNode>())
+                        dataNode.AddConfigurations(cloudConnections);
+
+                    saveTree = true;
+                    relevantDevices.AddRange(deviceTree.Children.OfType<IDeviceTreeMasterNode>()
+                                                                .Select(m => m.Id));
+                }
+                else if (changedEvent.Action == CrudAction.Deleted)
+                {
+                    var publishTargetsIds = cloudConnections.Select(t => t.Id).ToArray();
+
+                    foreach (var dataNode in deviceTree.GetNodeAndDescendants().OfType<IDeviceTreeDataNode>())
+                        dataNode.RemoveConfigurations(publishTargetsIds);
+
+                    saveTree = true;
+
+                    relevantDevices.AddRange(deviceTree.Children.OfType<IDeviceTreeMasterNode>()
+                                                                .Where(m => IsRelevantMasterNode(m, changedEvent.Connection.Id))
+                                                                .Select(m => m.Id));
+                }
             }
-            else if (changedEvent.Action == CrudAction.Deleted)
+
+            if (relevantDevices.Count == 0)
             {
-                var publishTargetsIds = cloudConnections.Select(t => t.Id).ToArray();
-
-                foreach (var dataNode in deviceTree.GetNodeAndDescendants().OfType<IDeviceTreeDataNode>())
-                    dataNode.RemoveConfigurations(publishTargetsIds);
-
-                saveTree = true;
-
-                relevantDevices.AddRange(deviceTree.Children.OfType<IDeviceTreeMasterNode>()
-                                                            .Where(m => IsRelevantMasterNode(m, changedEvent.Connection.Id))
-                                                            .Select(m => m.Id));
+                deviceTreeUpdater.DiscardUpdateRequest(ticket);
+                return;
             }
+
+            await deviceTreeUpdater.UpdateDeviceTreeAsync(ticket, deviceTree, [], relevantDevices.Distinct(), saveTree: saveTree);
         }
-
-        if (relevantDevices.Count == 0)
-            return;
-
-        await deviceTreeUpdater.UpdateDeviceTreeAsync(ticket, deviceTree, [], relevantDevices.Distinct(), saveTree: saveTree);
+        catch
+        {
+            deviceTreeUpdater.DiscardUpdateRequest(ticket);
+            throw;
+        }
     }
 
     private static bool IsRelevantMasterNode(IDeviceTreeMasterNode masterNode, Guid connectionId)

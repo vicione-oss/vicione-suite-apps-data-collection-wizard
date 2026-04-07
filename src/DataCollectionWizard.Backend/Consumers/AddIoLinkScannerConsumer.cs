@@ -18,22 +18,25 @@ public sealed partial class AddIoLinkScannerConsumer(
             nameof(AddIoLinkScanner),
             context.CorrelationId);
 
+        Guid? ticket = null;
         try
         {
-            var ticket = await clusterService.RequestUpdateAsync(context.CancellationToken, context.CorrelationId);
+            ticket = await clusterService.RequestUpdateAsync(context.CancellationToken, context.CorrelationId);
             var cluster = await dataCollectionWizardService.AddIoLinkScannerAsync(context.Message.LogLevel);
             if (cluster is null)
             {
-                clusterService.DiscardUpdateRequest(ticket);
+                clusterService.DiscardUpdateRequest(ticket.Value);
                 await context.Publish(new IoLinkScannerEngineAddedEvent(false));
                 return;
             }
 
-            await clusterService.DeployClusterAsync(ticket, cluster, context.CancellationToken);
+            await clusterService.DeployClusterAsync(ticket.Value, cluster, context.CancellationToken);
             await context.Publish(new IoLinkScannerEngineAddedEvent(true));
         }
         catch (Exception ex)
         {
+            if (ticket is not null)
+                clusterService.DiscardUpdateRequest(ticket.Value);
             LogError(logger, ex.Message, ex.StackTrace);
         }
     }

@@ -16,20 +16,23 @@ public sealed partial class AddDeviceTreeEngineConsumer(IDataCollectionWizardSer
             context.CorrelationId,
             string.Join(", ", context.Message.Infos.Select(i => $"[{i.Type}|{i.Address}]")));
 
+        Guid? ticket = null;
         try
         {
-            var ticket = await clusterService.RequestUpdateAsync(context.CancellationToken, context.CorrelationId);
+            ticket = await clusterService.RequestUpdateAsync(context.CancellationToken, context.CorrelationId);
             var updatedCluster = await dataCollectionWizardService.AddDeviceTreeEnginesAsync(context.Message.Infos, context.Message.CorrelationId, context.Message.AllowUseExistingEngine, context.Message.LogLevel);
 
             if (updatedCluster is null)
             {
-                clusterService.DiscardUpdateRequest(ticket);
+                clusterService.DiscardUpdateRequest(ticket.Value);
                 return;
             }
-            await clusterService.DeployClusterAsync(ticket, updatedCluster, context.CancellationToken);
+            await clusterService.DeployClusterAsync(ticket.Value, updatedCluster, context.CancellationToken);
         }
         catch (Exception ex)
         {
+            if (ticket is not null)
+                clusterService.DiscardUpdateRequest(ticket.Value);
             LogError(logger, ex.Message, ex.StackTrace);
         }
     }

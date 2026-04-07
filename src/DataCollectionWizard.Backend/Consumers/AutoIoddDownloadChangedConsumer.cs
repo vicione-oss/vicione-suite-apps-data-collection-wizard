@@ -16,23 +16,26 @@ public sealed partial class AutoIoddDownloadChangedConsumer(IDeviceTreeUpdater d
              nameof(AutoIoddDownloadChanged),
              context.CorrelationId);
 
+        Guid? ticket = null;
         try
         {
-            var ticket = await deviceTreeUpdater.RequestUpdateAsync(context.CancellationToken, context.CorrelationId);
+            ticket = await deviceTreeUpdater.RequestUpdateAsync(context.CancellationToken, context.CorrelationId);
             var deviceTree = await deviceTreeUpdater.LoadDeviceTree(context.CancellationToken);
             var iolinkDevices = deviceTree.Children.OfType<DeviceTreeIoLinkMaster>().Select(d => d.Id).ToList();
 
             if (iolinkDevices.Count == 0)
             {
                 LogNoDevices(logger);
-                deviceTreeUpdater.DiscardUpdateRequest(ticket);
+                deviceTreeUpdater.DiscardUpdateRequest(ticket.Value);
                 return;
             }
 
-            await deviceTreeUpdater.UpdateDeviceTreeAsync(ticket, deviceTree, [], iolinkDevices, null, false, context.CancellationToken);
+            await deviceTreeUpdater.UpdateDeviceTreeAsync(ticket.Value, deviceTree, [], iolinkDevices, null, false, context.CancellationToken);
         }
         catch (Exception ex)
         {
+            if (ticket is not null)
+                deviceTreeUpdater.DiscardUpdateRequest(ticket.Value);
             LogApplicationFailedError(logger, ex.Message, ex.StackTrace ?? string.Empty);
         }
     }

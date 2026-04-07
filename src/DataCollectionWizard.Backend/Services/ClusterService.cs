@@ -27,10 +27,9 @@ public sealed partial class ClusterService(
 
         await state.Semaphore.WaitAsync(cancellationToken);
         var ticketId = Guid.NewGuid();
-        state.IssuedTicket = new Ticket(ticketId, correlationId ?? ticketId);
+        state.IssueTicket(ticketId, correlationId ?? ticketId, validity);
         LogIssuedTicket(ticketId);
 
-        state.StartTimer(validity);
         return ticketId;
     }
 
@@ -52,19 +51,11 @@ public sealed partial class ClusterService(
         Cluster cluster,
         CancellationToken? cancellationToken = null)
     {
-        if (state.IssuedTicket is null)
-            throw new InvalidOperationException($"Ticket '{ticketId}' is invalid or expired");
-
-        if (!IsTicketValid(ticketId))
-            throw new InvalidOperationException($"'{ticketId}' is not the last issued ticked ({state.IssuedTicket.Value.Id})");
-
+        var correlationId = state.ValidateTicketAndStopTimer(ticketId);
         var ct = cancellationToken ?? state.Cts.Token;
-        var correlationId = state.IssuedTicket.Value.CorrelationId;
 
         try
         {
-            state.StopTimer();
-
             var command = new DeployCluster(cluster.Id, null)
             {
                 CorrelationId = correlationId,

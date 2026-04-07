@@ -36,18 +36,10 @@ public sealed partial class DeviceTreeUpdater(
         bool saveTree = true,
         CancellationToken? cancellationToken = null)
     {
-        if (clusterServiceState.IssuedTicket is null)
-            throw new InvalidOperationException($"Ticket '{ticketId}' is invalid or expired");
-
-        if (!clusterService.IsTicketValid(ticketId))
-            throw new InvalidOperationException($"'{ticketId}' is not the last issued ticked ({clusterServiceState.IssuedTicket.Value.Id})");
-
+        var correlationId = clusterServiceState.ValidateTicketAndStopTimer(ticketId);
         var ct = cancellationToken ?? state.Cts.Token;
-        var correlationId = clusterServiceState.IssuedTicket.Value.CorrelationId;
         try
         {
-            clusterServiceState.StopTimer();
-
             if (saveTree)
             {
                 var command = new SaveDeviceTree(deviceTree) { CorrelationId = correlationId };
@@ -60,6 +52,7 @@ public sealed partial class DeviceTreeUpdater(
 
                     if (await WaitForCommandCompletion(taskCompletionSource, ct) is { } error)
                     {
+                        DiscardUpdateRequest(ticketId);
                         await mediator.Publish(new DeviceTreeApplicationEvent(error) { CorrelationId = correlationId }, ct);
                         return;
                     }
