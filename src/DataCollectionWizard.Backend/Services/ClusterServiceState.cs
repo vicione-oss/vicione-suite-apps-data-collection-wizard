@@ -15,7 +15,7 @@ public sealed class ClusterServiceState : IAsyncDisposable
     public ConcurrentDictionary<Guid, TaskCompletionSource<ErrorInfo?>> TaskCompletionSourceMap { get; } = new();
     public SemaphoreSlim Semaphore { get; } = new(1, 1);
     public CancellationTokenSource Cts { get; } = new();
-    public Ticket? IssuedTicket { get; set; }
+    public Ticket? IssuedTicket { get; private set; }
 
     public void IssueTicket(Guid ticketId, Guid correlationId, TimeSpan? validity)
     {
@@ -34,7 +34,7 @@ public sealed class ClusterServiceState : IAsyncDisposable
                 throw new InvalidOperationException($"Ticket '{ticketId}' is invalid or expired");
 
             if (IssuedTicket.Value.Id != ticketId)
-                throw new InvalidOperationException($"'{ticketId}' is not the last issued ticked ({IssuedTicket.Value.Id})");
+                throw new InvalidOperationException($"'{ticketId}' is not the last issued ticket ({IssuedTicket.Value.Id})");
 
             StopTimer();
             return IssuedTicket.Value.CorrelationId;

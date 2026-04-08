@@ -120,7 +120,7 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
 
             await deviceTreeUpdater.UpdateDeviceTreeAsync(ticket, deviceTree, [], relevantDevices.Distinct(), saveTree: saveTree);
         }
-        catch
+        catch (Exception)
         {
             deviceTreeUpdater.DiscardUpdateRequest(ticket);
             throw;

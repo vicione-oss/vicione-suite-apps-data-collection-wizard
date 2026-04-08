@@ -689,8 +689,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
         try
         {
-            if (semaphore.CurrentCount == 0)
-                semaphore.Release();
+            semaphore.Release();
         }
         catch (ObjectDisposedException) { }
         catch (SemaphoreFullException) { }

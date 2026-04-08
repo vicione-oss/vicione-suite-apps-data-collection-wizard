@@ -57,9 +57,9 @@ public sealed partial class DeviceTreeUpdater(
                 catch (DbUpdateException e)
                 {
                     var error = new ErrorInfo(ErrorCodes.DbUpdateFailed, e.Message);
-                    await mediator.Publish(new DeviceTreeChangeErrorEvent(error), ct);
+                    await mediator.Publish(new DeviceTreeChangeErrorEvent(error), CancellationToken.None);
                     DiscardUpdateRequest(ticketId);
-                    await mediator.Publish(new DeviceTreeApplicationEvent(error) { CorrelationId = correlationId }, ct);
+                    await mediator.Publish(new DeviceTreeApplicationEvent(error) { CorrelationId = correlationId }, CancellationToken.None);
                     return;
                 }
             }
@@ -81,7 +81,7 @@ public sealed partial class DeviceTreeUpdater(
         catch (Exception ex)
         {
             DiscardUpdateRequest(ticketId);
-            await mediator.Publish(new DeviceTreeApplicationEvent(new ErrorInfo(-1, ex.Message)) { CorrelationId = correlationId }, ct);
+            await mediator.Publish(new DeviceTreeApplicationEvent(new ErrorInfo(-1, ex.Message)) { CorrelationId = correlationId }, CancellationToken.None);
             LogApplicationFailedError(logger, ex.Message, ex.StackTrace ?? string.Empty);
         }
     }
