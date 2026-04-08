@@ -64,27 +64,28 @@ public sealed partial class DataCollectionWizardConsumer(DataCollectionWizardSta
         }
     }
 
-    public Task Consume(ConsumeContext<ClusterUpdateFailed> context)
+    public async Task Consume(ConsumeContext<ClusterUpdateFailed> context)
     {
         var errors = string.Join(" | ", context.Message.ErrorsByApplication.Select(kvp => $"ApplicationId:{kvp.Key} {kvp.Value.Message} ({kvp.Value.ErrorCode})"));
-        if (!clusterServiceState.SetResult(context.CorrelationId, new ErrorInfo(-1, errors)))
-            return Task.CompletedTask;
+        if (!clusterServiceState.SetResult(context.Message.CorrelationId, new ErrorInfo(-1, errors)))
+            return;
 
+        await context.Publish(new DeviceTreeApplicationEvent(new ErrorInfo(-1, errors)) { CorrelationId = context.Message.CorrelationId }, context.CancellationToken);
         LogClusterUpdateFailed(logger, context.Message.Version, context.Message.ClusterId, errors);
-        return Task.CompletedTask;
     }
 
-    public Task Consume(ConsumeContext<CommitClusterChangeFailed> context)
+    public async Task Consume(ConsumeContext<CommitClusterChangeFailed> context)
     {
-        if (dataCollectionWizardState.ClusterBuilder?.Cluster.Id != context.Message.ClusterId)
-            return Task.CompletedTask;
+        var error = new ErrorInfo(context.Message.Error.ErrorCode, context.Message.Error.Message);
+        if (!clusterServiceState.SetResult(context.Message.CorrelationId, error))
+            return;
 
+        await context.Publish(new DeviceTreeApplicationEvent(error) { CorrelationId = context.Message.CorrelationId }, context.CancellationToken);
         LogClusterCommitFailed(logger,
             context.Message.Version,
             context.Message.ClusterId,
             context.Message.Error.Message,
             context.Message.Error.ErrorCode);
-        return Task.CompletedTask;
     }
 
     public Task Consume(ConsumeContext<DeviceConnectorIdsChangedEvent> context)
@@ -98,13 +99,13 @@ public sealed partial class DataCollectionWizardConsumer(DataCollectionWizardSta
         }
     }
 
-    public Task Consume(ConsumeContext<ClusterUpdateRejected> context)
+    public async Task Consume(ConsumeContext<ClusterUpdateRejected> context)
     {
-        if (!clusterServiceState.SetResult(context.CorrelationId, new ErrorInfo(-1, "Cluster update was rejected")))
-            return Task.CompletedTask;
+        if (!clusterServiceState.SetResult(context.Message.CorrelationId, new ErrorInfo(-1, "Cluster update was rejected")))
+            return;
 
+        await context.Publish(new DeviceTreeApplicationEvent(new ErrorInfo(-1, "Cluster update was rejected")) { CorrelationId = context.Message.CorrelationId }, context.CancellationToken);
         LogClusterUpdateRejected(logger, context.Message.RejectedVersion, context.Message.ClusterId);
-        return Task.CompletedTask;
     }
 
     [LoggerMessage(LogLevel.Warning, "Failed to commit cluster {ClusterVersion}({ClusterId}): {Error}({ErrorCode})")]
