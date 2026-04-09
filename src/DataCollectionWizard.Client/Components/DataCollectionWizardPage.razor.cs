@@ -24,9 +24,9 @@ using ViciOne.Driver.IoTCore.Contracts.Constants;
 using ViciOne.Driver.IoTCore.Contracts.Dcp;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.Ui.Blazor.Components.Dialog.Components;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Factories;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Models;
-using ViciOne.Ui.Shared.Dx.Components;
 
 namespace DataCollectionWizard.Client.Components;
 
@@ -149,15 +149,15 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     ];
     private TimedMessage[] _loadingSpinnerMessages = [];
     private readonly List<Connection> _publishTargets = [];
-    private DxDialog? _refAddIoLinkMasterDialog;
+    private Dialog? _refAddIoLinkMasterDialog;
     private DxTextBox? _refAddIoLinkMasterTextBox;
-    private DxDialog? _refAddVSEDialog;
+    private Dialog? _refAddVSEDialog;
     private DxTextBox? _refAddVSETextBox;
-    private DxDialog? _refAliasDialog;
+    private Dialog? _refAliasDialog;
     private DxTextBox? _refAliasTextBox;
-    private DxDialog? _refDataInvalidDialog;
-    private DxDialog? _refDeleteDialog;
-    private DxDialog? _refDeleteAllOfflineDialog;
+    private Dialog? _refDataInvalidDialog;
+    private Dialog? _refDeleteDialog;
+    private Dialog? _refDeleteAllOfflineDialog;
 
     private List<DcpDevice>? _scannedIoLinkDevices;
     private readonly List<string> _selectedIoLinkDevices = [];
@@ -466,7 +466,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
         _deletingNode = node;
         _deletingNodeParent = parent;
-        _refDeleteDialog!.OpenAsync();
+        _refDeleteDialog!.ShowAsync();
     }
 
     private void OnAdapterNodeEdited(NodeBase node)
@@ -476,7 +476,13 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
         _deviceAlias = aliasNode.NameAlias ?? string.Empty;
         _editingNode = node;
-        _refAliasDialog!.OpenAsync();
+        _refAliasDialog!.ShowAsync();
+    }
+
+    private async Task OnAliasDialogVisibleChanged(bool visible)
+    {
+        if (visible)
+            await OnAliasDialogShownAsync();
     }
 
     private async Task OnAliasDialogShownAsync()
@@ -486,6 +492,12 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     {
         if (e.Key == "Enter")
             await OnAliasDialogOkAsync();
+    }
+
+    private async Task OnAddIoLinkMasterDialogVisibleChangedAsync(bool visible)
+    {
+        if (visible)
+            await OnAddIoLinkMasterDialogShownAsync();
     }
 
     private async Task OnAddIoLinkMasterDialogShownAsync()
@@ -506,7 +518,13 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _dcwScanTokenSource = new CancellationTokenSource();
         ScanIoLinkDevices(_dcwScanTokenSource.Token);
 
-        await _refAddIoLinkMasterDialog!.OpenAsync();
+        await _refAddIoLinkMasterDialog!.ShowAsync();
+    }
+
+    private async void OnAddVSEDialogVisibleChangedAsync(bool visible)
+    {
+        if (visible)
+            await OnAddVSEDialogShownAsync();
     }
 
     private async Task OnAddVSEDialogShownAsync()
@@ -522,7 +540,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     }
 
     private async void OnAddVSERequestedAsync()
-        => await _refAddVSEDialog!.OpenAsync();
+        => await _refAddVSEDialog!.ShowAsync();
 
     private async Task OnAddIoLinkMasterDialogCloseAsync()
     {
@@ -710,7 +728,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             {
                 if (deviceTreeChanged)
                 {
-                    await InvokeAsync(_refDataInvalidDialog!.OpenAsync);
+                    await InvokeAsync(_refDataInvalidDialog!.ShowAsync);
                     return;
                 }
 
@@ -859,7 +877,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     }
 
     private async void OpenDeleteAllOfflineDialogAsync()
-        => await _refDeleteAllOfflineDialog!.OpenAsync();
+        => await _refDeleteAllOfflineDialog!.ShowAsync();
 
     private async void RebrowseButton()
     {

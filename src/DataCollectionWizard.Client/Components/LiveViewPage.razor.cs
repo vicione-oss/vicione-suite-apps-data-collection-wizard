@@ -13,9 +13,9 @@ using Microsoft.AspNetCore.Components;
 using Sdk.Client.Modules;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.Ui.Blazor.Components.Dialog.Components;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Factories;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Models;
-using ViciOne.Ui.Shared.Dx.Components;
 
 namespace DataCollectionWizard.Client.Components;
 
@@ -46,8 +46,8 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         },
     ];
     private Dictionary<IDeviceTreeBase, List<IDeviceTreeBase>>? _nodePaths;
-    private DxDialog? _refLatestClusterNotRunningDialog;
-    private DxDialog? _refDataInvalidDialog;
+    private Dialog? _refLatestClusterNotRunningDialog;
+    private Dialog? _refDataInvalidDialog;
     private SemaphoreSlim? _semaphore = new(1);
     private readonly LiveGridService _service = new();
     private DeviceTreeRoot _tree = new();
@@ -107,7 +107,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
         if (!await DataCollectionWizardService.IsClusterRunningAsync())
         {
-            await InvokeAsync(_refLatestClusterNotRunningDialog!.OpenAsync);
+            await InvokeAsync(_refLatestClusterNotRunningDialog!.ShowAsync);
         }
     }
 
@@ -141,7 +141,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
             {
                 if (deviceTreeChanged)
                 {
-                    await InvokeAsync(_refDataInvalidDialog!.OpenAsync);
+                    await InvokeAsync(_refDataInvalidDialog!.ShowAsync);
                     return;
                 }
 

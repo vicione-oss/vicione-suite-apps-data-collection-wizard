@@ -5,9 +5,9 @@
 @using Microsoft.AspNetCore.Authorization
 @using Sdk.Authorization
 @using Sdk.Client.Modules
+@using ViciOne.Ui.Blazor.Components.Dialog.Components
 @using ViciOne.Ui.Blazor.Components.EditorLayout
 @using ViciOne.Ui.Localization.Resources
-@using ViciOne.Ui.Shared.Dx.Components
 
 @attribute [Authorize]
 @attribute [Route(Constants.LiveViewPageRoute)]
@@ -34,41 +34,41 @@
         </EditorLayout>
     </CascadingValue>
 
-    <DxDialog @ref="@_refLatestClusterNotRunningDialog"
-              CloseOnEscape="true"
-              CloseOnOutsideClick="false"
-              Header="@Localization.LiveViewPage.LatestClusterNotRunningDialogHeader"
-              Height="300px"
-              IsTextOnly="true"
-              Width="600px">
+    @* CloseOnEscape="true" not supported yet, https://gitlab.com/vicione-oss/vicione/ui-libs/blazor-components/-/issues/141 *@
+    <Dialog @ref="@_refLatestClusterNotRunningDialog"
+            HeaderText="@Localization.LiveViewPage.LatestClusterNotRunningDialogHeader"
+            Height="300px"
+            Width="600px">
 
         <Body>
-            <p class="dialog-content text-only">@Localization.LiveViewPage.LatestClusterNotRunningDialogText</p>
+            <DialogBodyTextLayout>
+                <p class="dialog-content text-only">@Localization.LiveViewPage.LatestClusterNotRunningDialogText</p>
+            </DialogBodyTextLayout>
         </Body>
 
         <Footer>
-            <DxDialogFooterButton OnClick="@OnLatestClusterNotRunningDialogOkAsync"
-                                  Text="@CommonVocabulary.Ok" />
+            <DialogFooterButton OnClick="@OnLatestClusterNotRunningDialogOkAsync"
+                                Text="@CommonVocabulary.Ok" />
         </Footer>
-    </DxDialog>
+    </Dialog>
 
-    <DxDialog @ref="@_refDataInvalidDialog"
-              CloseOnEscape="true"
-              CloseOnOutsideClick="false"
-              Header="@Localization.LiveViewPage.ClusterOutOfDateDialogHeader"
-              Height="300px"
-              IsTextOnly="true"
-              Width="600px">
+    @* CloseOnEscape="true" not supported yet, https://gitlab.com/vicione-oss/vicione/ui-libs/blazor-components/-/issues/141 *@
+    <Dialog @ref="@_refDataInvalidDialog"
+            HeaderText="@Localization.LiveViewPage.ClusterOutOfDateDialogHeader"
+            Height="300px"
+            Width="600px">
 
         <Body>
-            <p class="dialog-content text-only">@Localization.LiveViewPage.ClusterOutOfDateDialogText</p>
+            <DialogBodyTextLayout>
+                <p class="dialog-content text-only">@Localization.LiveViewPage.ClusterOutOfDateDialogText</p>
+            </DialogBodyTextLayout>
         </Body>
 
         <Footer>
-            <DxDialogFooterButton OnClick="@OnDataInvalidDialogOkAsync"
-                                  Text="@CommonVocabulary.Ok" />
+            <DialogFooterButton OnClick="@OnDataInvalidDialogOkAsync"
+                                Text="@CommonVocabulary.Ok" />
         </Footer>
-    </DxDialog>
+    </Dialog>
 
     <LoadingSpinner Messages="@(_loadingSpinnerMessages)"
                     Visible="@(_displayLoadingSpinner)" />

@@ -6,6 +6,7 @@ using DataCollectionWizard.Client.Tests.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.Ui.Blazor.Components.Dialog.Extensions;
 using ViciOne.Ui.Blazor.Components.ExpandableMenu.Extensions;
 using ViciOne.Ui.Blazor.Components.Tooltip.Extensions;
 
@@ -14,13 +15,13 @@ namespace DataCollectionWizard.Client.Tests.Components;
 public class LiveViewPageTests
 {
     [Fact]
-    public void Init_module_should_register_and_configure_services()
+    public async Task Init_module_should_register_and_configure_services()
     {
         // Arrange
         var timeProvider = Substitute.For<TimeProvider>();
         timeProvider.LocalTimeZone.Returns(TimeZoneInfo.Utc);
 
-        using var ctx = new BunitContext();
+        await using var ctx = new BunitContext();
 
         ctx.SetupSuiteServicesWithBlazorDx(setup =>
         {
@@ -37,6 +38,7 @@ public class LiveViewPageTests
 
         ctx.JSInterop.Mode = JSRuntimeMode.Loose;
         ctx.JSInterop.SetupModule("init", _ => true);
+        ctx.Services.AddDialog();
         ctx.Services.AddExpandableMenu();
         ctx.Services.AddTooltip();
 
