@@ -6,6 +6,17 @@
 
 - Replaced `DxDialog` with `ViciOne.Ui.Blazor.Components.Dialog`
 
+### Fix
+
+- Save button blocked for ~60 seconds on standalone instances due to internal message bus deadlock
+- UI remained disabled after a failed or rejected cluster deployment
+- Cluster commit failures did not release the update lock, permanently blocking subsequent save and delete operations
+- Update lock not released when consumers threw exceptions between ticket acquisition and deployment
+- Connection change processing did not release update lock on early return or exception
+- Replaced blocking `ManualResetEvent` calls with async `SemaphoreSlim` to prevent thread pool starvation during IO-Link scanning and deployment waiting
+- Thread-safety issue on `ClusterBuilder` property getter that could cause inconsistent reads
+- `SemaphoreSlim` in LiveView page could cause `ObjectDisposedException` on release after dispose
+
 ### Dependencies
 
 - `AspNetCore.SassCompiler` packages, update version to `1.97.1`
@@ -80,7 +91,7 @@
 
 ### Fix
 
-- Set input and output Connectors for converter FunctionBlocks to the correct value comparison method 
+- Set input and output Connectors for converter FunctionBlocks to the correct value comparison method
 
 ## 1.3.2 - 2025-10-28
 
@@ -205,7 +216,7 @@
 - `ViciOne.Suite.DataPort.Anna.Contracts` package, update version to `0.35.0`
 - `ViciOne.Suite.ClusterManagement.Public` package, update version to `1.0.0`
 - `ViciOne.Ui.Shared.Dx` package, update version to `0.15.0`
- 
+
 ### Fixed
 
 - Fix CMS Anna identifiers
@@ -214,7 +225,7 @@
 
 ### Added
 
-- Add localization for `Devices` in Sidebar and DeviceTree 
+- Add localization for `Devices` in Sidebar and DeviceTree
 
 ### Removed
 
@@ -223,7 +234,7 @@
 ### Dependencies
 
 - `ViciOne.Suite.ClusterManagement.Public` package, update version to `0.36.0`
-- `ViciOne.Suite.DataPort.Anna.Contracts ` package, update version to `0.34.0`
+- `ViciOne.Suite.DataPort.Anna.Contracts` package, update version to `0.34.0`
 - `ViciOne.Suite.Sdk` packages, update version to `0.31.0`
 - `ViciOne.Driver.IoTCore.Contracts` package, update version to `1.16.0`
 - `ViciOne.Ui.Blazor.Components` package, update version to `3.8.7`
@@ -233,7 +244,7 @@
 
 ### Added
 
-- Use TimeProvider in Live View 
+- Use TimeProvider in Live View
 
 ### Dependencies
 
@@ -253,7 +264,7 @@
 
 ### Fixed
 
-- Fix IO-Link Master address validation during onboarding 
+- Fix IO-Link Master address validation during onboarding
 
 ## 0.18.1 - 2025-05-28
 
@@ -265,7 +276,7 @@
 
 ### Added
 
-- Use latest IoddStore 
+- Use latest IoddStore
 
 ### Dependencies
 
@@ -404,7 +415,7 @@
 - `AspNetCore.SassCompiler` package, update version to `1.83.0`
 - `ViciOne.Cluster.Builder` package, update version to `0.5.0`
 - `ViciOne.Core.Dataflow.DataModel.Generation` package, update version to `0.46.0`
-- `ViciOne.Suite.DataPort.Anna.Contracts` package, update version to `0.27.0` 
+- `ViciOne.Suite.DataPort.Anna.Contracts` package, update version to `0.27.0`
 - `ViciOne.Driver.IoTCore.Contracts` package, update version to `1.11.0`
 - `ViciOne.Suite.ClusterManagement.Public` package, update version to `0.26.0`
 - `ViciOne.Suite.Sdk` packages, update version to `0.25.0`

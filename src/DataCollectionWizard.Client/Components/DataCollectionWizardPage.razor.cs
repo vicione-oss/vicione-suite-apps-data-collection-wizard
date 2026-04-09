@@ -405,19 +405,27 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
         lock (_treeLock)
         {
-            var treeNodes = root.GetNodeAndDescendants().ToArray();
-            DeviceTreeAdapter.SortNodeChildren(treeNodes);
-            DeviceTreeAdapter.SortEventTriggers(treeNodes);
-
-            _tree = root;
-            _allNodes = _tree.GetNodeAndDescendants().ToDictionary(n => n.Id, n => n);
-
-            _adapter.SetDeviceTree(_tree, expandToOfflineNodes);
-            _nodePaths = GetNodePaths([_tree]);
-            _service.HasOfflineNodes = _tree.GetNodeAndDescendants().Any(n => n.IsOffline && n is not IDeviceTreeMasterNode);
+            SetTreeCore(root, expandToOfflineNodes);
         }
 
         CheckDataPointRecommendedLimit(true);
+    }
+
+    /// <summary>
+    /// Must be called while holding <see cref="_treeLock"/>.
+    /// </summary>
+    private void SetTreeCore(DeviceTreeRoot root, bool expandToOfflineNodes)
+    {
+        var treeNodes = root.GetNodeAndDescendants().ToArray();
+        DeviceTreeAdapter.SortNodeChildren(treeNodes);
+        DeviceTreeAdapter.SortEventTriggers(treeNodes);
+
+        _tree = root;
+        _allNodes = _tree.GetNodeAndDescendants().ToDictionary(n => n.Id, n => n);
+
+        _adapter.SetDeviceTree(_tree, expandToOfflineNodes);
+        _nodePaths = GetNodePaths([_tree]);
+        _service.HasOfflineNodes = _tree.GetNodeAndDescendants().Any(n => n.IsOffline && n is not IDeviceTreeMasterNode);
     }
 
     private bool TryGetExistingDeviceTreeMaster(IDeviceTreeMasterNode device, out IDeviceTreeMasterNode? existingDevice)
@@ -972,9 +980,12 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
                         if (isNewUpdated)
                         {
-                            SetTree(_tree, false);
+                            _tree.Name = Localization.DataCollectionWizardPage.Devices;
+                            SetTreeCore(_tree, false);
                         }
                     }
+
+                    CheckDataPointRecommendedLimit(true);
 
                     await DataCollectionWizardService.SaveDeviceTreeAsync(changedMasters, deletedNodes, _tree!, _service.LogLevel);
                 }
@@ -1155,7 +1166,8 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
                     DeviceTreeBuilder.ExtendCurrentDeviceTree(_tree, [.. receivedDevices.Select(d => d.device).Where(d => d is not null && !d.IsOffline).Cast<IDeviceTreeBase>()], _publishTargets, retainNewFlags);
 
-                    SetTree(_tree, true);
+                    _tree.Name = Localization.DataCollectionWizardPage.Devices;
+                    SetTreeCore(_tree, true);
                     _adapter.Builder.Expansion.ChangeExpansionForLayers(true, 0, 0);
 
                     var masterNodes = _tree.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>().ToArray();
@@ -1175,6 +1187,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                     }
                 }
 
+                CheckDataPointRecommendedLimit(true);
 
                 _service.DeviceTreeChanged = mastersThatNeedToBeUpdated.Length > 0 || _deletedNodes.Count > 0 || _service.DeviceTreeChanged;
                 _changedMasterDevices.AddRange(mastersThatNeedToBeUpdated);

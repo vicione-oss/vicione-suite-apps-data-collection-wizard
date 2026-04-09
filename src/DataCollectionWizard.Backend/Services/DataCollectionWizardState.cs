@@ -9,7 +9,7 @@ public class DataCollectionWizardState
     private readonly Lock _clusterBuilderLockObject = new();
     private ClusterBuilder? _clusterBuilder;
 
-    public ClusterBuilder? ClusterBuilder { get => _clusterBuilder; set { lock (_clusterBuilderLockObject) { _clusterBuilder = value; } } }
+    public ClusterBuilder? ClusterBuilder { get { lock (_clusterBuilderLockObject) { return _clusterBuilder; } } set { lock (_clusterBuilderLockObject) { _clusterBuilder = value; } } }
     public (Guid trackingId, Func<Task> callback) DeployTrackingInfo { get; set; }
     public Dictionary<Uri, DeviceConnectorIds> DeviceTreeConnectors { get; } = [];
     public Version? LatestClusterVersion { get; set; }

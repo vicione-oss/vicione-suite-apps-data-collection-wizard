@@ -1,6 +1,9 @@
-﻿using DataCollectionWizard.Internal.Commands;
+﻿using DataCollectionWizard.Backend.DbContext;
+using DataCollectionWizard.Backend.Extensions;
 using DataCollectionWizard.Internal.Events;
+using DataCollectionWizard.Public;
 using DataCollectionWizard.Public.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sdk.Backend.Messaging;
 using Sdk.Messaging;
@@ -10,21 +13,20 @@ namespace DataCollectionWizard.Backend.Services;
 
 public sealed partial class DeviceTreeUpdater(
     ISuiteMediator mediator,
+    IDataCollectionWizardDbContext dbContext,
     IDataCollectionWizardService dcwService,
     IClusterService clusterService,
-    DeviceTreeUpdaterState state,
     ClusterServiceState clusterServiceState,
     ILogger<DeviceTreeUpdater> logger)
     : IDeviceTreeUpdater
 {
-    private const int CommandTimeoutMs = 60_000;
 
     public Task<Guid> RequestUpdateAsync(CancellationToken cancellationToken, Guid? correlationId = null, TimeSpan? validity = null)
         => clusterService.RequestUpdateAsync(cancellationToken, correlationId, validity);
 
     public Task<DeviceTreeRoot> LoadDeviceTree(CancellationToken? cancellationToken = null)
     {
-        var ct = cancellationToken ?? state.Cts.Token;
+        var ct = cancellationToken ?? clusterServiceState.Cts.Token;
         return dcwService.RequestDeviceTreeAsync(ct);
     }
 
@@ -36,37 +38,28 @@ public sealed partial class DeviceTreeUpdater(
         bool saveTree = true,
         CancellationToken? cancellationToken = null)
     {
-        if (clusterServiceState.IssuedTicket is null)
-            throw new InvalidOperationException($"Ticket '{ticketId}' is invalid or expired");
-
-        if (!clusterService.IsTicketValid(ticketId))
-            throw new InvalidOperationException($"'{ticketId}' is not the last issued ticked ({clusterServiceState.IssuedTicket.Value.Id})");
-
-        var ct = cancellationToken ?? state.Cts.Token;
-        var correlationId = clusterServiceState.IssuedTicket.Value.CorrelationId;
+        var correlationId = clusterServiceState.ValidateTicketAndStopTimer(ticketId);
+        var ct = cancellationToken ?? clusterServiceState.Cts.Token;
         try
         {
-            clusterServiceState.StopTimer();
-
             if (saveTree)
             {
-                var command = new SaveDeviceTree(deviceTree) { CorrelationId = correlationId };
-                var taskCompletionSource = new TaskCompletionSource<ErrorInfo?>();
-                state.TaskCompletionSourceMap[correlationId] = taskCompletionSource;
+                dbContext.UpsertDeviceTree(deviceTree);
 
                 try
                 {
-                    await mediator.Send(command, ct);
-
-                    if (await WaitForCommandCompletion(taskCompletionSource, ct) is { } error)
+                    if (await dbContext.SaveChangesAsync(ct) > 0)
                     {
-                        await mediator.Publish(new DeviceTreeApplicationEvent(error) { CorrelationId = correlationId }, ct);
-                        return;
+                        await mediator.Publish(new DeviceTreeChangedEvent(CrudAction.Updated), ct);
                     }
                 }
-                finally
+                catch (DbUpdateException e)
                 {
-                    state.TaskCompletionSourceMap.TryRemove(correlationId, out _);
+                    var error = new ErrorInfo(ErrorCodes.DbUpdateFailed, e.Message);
+                    await mediator.Publish(new DeviceTreeChangeErrorEvent(error), ct);
+                    DiscardUpdateRequest(ticketId);
+                    await mediator.Publish(new DeviceTreeApplicationEvent(error) { CorrelationId = correlationId }, ct);
+                    return;
                 }
             }
 
@@ -94,22 +87,6 @@ public sealed partial class DeviceTreeUpdater(
 
     public void DiscardUpdateRequest(Guid ticketId)
         => clusterService.DiscardUpdateRequest(ticketId);
-
-    private static async Task<ErrorInfo?> WaitForCommandCompletion(TaskCompletionSource<ErrorInfo?> taskCompletionSource,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var errorInfo =
-                await taskCompletionSource.Task.WaitAsync(TimeSpan.FromMilliseconds(CommandTimeoutMs),
-                    cancellationToken);
-            return errorInfo;
-        }
-        catch (TimeoutException)
-        {
-            return new ErrorInfo(0, "timeout");
-        }
-    }
 
     [LoggerMessage(LogLevel.Error, "Failed to apply DeviceTree: {message} {stackTrace}")]
     public static partial void LogApplicationFailedError(ILogger logger, string message, string stackTrace);

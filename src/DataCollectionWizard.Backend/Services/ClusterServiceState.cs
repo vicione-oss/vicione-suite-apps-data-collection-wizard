@@ -8,12 +8,40 @@ namespace DataCollectionWizard.Backend.Services;
 public sealed class ClusterServiceState : IAsyncDisposable
 {
     private static readonly TimeSpan s_defaultTicketValidity = TimeSpan.FromSeconds(10);
+    private readonly Lock _lock = new();
     private readonly Timer _timer = new() { AutoReset = false };
+    private ElapsedEventHandler? _currentTimerHandler;
 
     public ConcurrentDictionary<Guid, TaskCompletionSource<ErrorInfo?>> TaskCompletionSourceMap { get; } = new();
     public SemaphoreSlim Semaphore { get; } = new(1, 1);
     public CancellationTokenSource Cts { get; } = new();
-    public Ticket? IssuedTicket { get; set; }
+    public Ticket? IssuedTicket { get; private set; }
+
+    public Guid IssueTicket(Guid? correlationId = null, TimeSpan? validity = null)
+    {
+        lock (_lock)
+        {
+            var ticketId = Guid.NewGuid();
+            IssuedTicket = new Ticket(ticketId, correlationId ?? ticketId);
+            StartTimer(ticketId, validity);
+            return ticketId;
+        }
+    }
+
+    public Guid ValidateTicketAndStopTimer(Guid ticketId)
+    {
+        lock (_lock)
+        {
+            if (IssuedTicket is null)
+                throw new InvalidOperationException($"Ticket '{ticketId}' is invalid or expired");
+
+            if (IssuedTicket.Value.Id != ticketId)
+                throw new InvalidOperationException($"'{ticketId}' is not the last issued ticket ({IssuedTicket.Value.Id})");
+
+            StopTimer();
+            return IssuedTicket.Value.CorrelationId;
+        }
+    }
 
     public bool SetResult(Guid? correlationId, ErrorInfo? errorInfo = null)
     {
@@ -24,25 +52,45 @@ public sealed class ClusterServiceState : IAsyncDisposable
         }
 
         taskCompletionSource.TrySetResult(errorInfo);
-        if (IssuedTicket is not null && IssuedTicket.Value.CorrelationId == correlationId.Value)
-            DiscardUpdateRequest(IssuedTicket.Value.Id);
+        lock (_lock)
+        {
+            if (IssuedTicket is not null && IssuedTicket.Value.CorrelationId == correlationId.Value)
+                DiscardUpdateRequestCore(IssuedTicket.Value.Id);
+        }
         return true;
     }
 
-    public void StartTimer(TimeSpan? interval)
+    private void StartTimer(Guid ticketId, TimeSpan? interval)
     {
+        StopTimer();
+        _currentTimerHandler = (_, _) => OnTimerElapsed(ticketId);
+        _timer.Elapsed += _currentTimerHandler;
         _timer.Interval = (interval ?? s_defaultTicketValidity).TotalMilliseconds;
-        _timer.Elapsed += TimerOnElapsed;
         _timer.Start();
     }
 
-    public void StopTimer()
+    private void StopTimer()
     {
-        _timer.Elapsed -= TimerOnElapsed;
+        if (_currentTimerHandler is not null)
+        {
+            _timer.Elapsed -= _currentTimerHandler;
+            _currentTimerHandler = null;
+        }
         _timer.Stop();
     }
 
     public void DiscardUpdateRequest(Guid ticketId)
+    {
+        lock (_lock)
+        {
+            DiscardUpdateRequestCore(ticketId);
+        }
+    }
+
+    /// <summary>
+    /// Must be called while holding <see cref="_lock"/>.
+    /// </summary>
+    private void DiscardUpdateRequestCore(Guid ticketId)
     {
         if (IssuedTicket?.Id != ticketId)
             return;
@@ -68,6 +116,7 @@ public sealed class ClusterServiceState : IAsyncDisposable
         }
         finally
         {
+            StopTimer();
             Cts.Dispose();
             _timer.Dispose();
             Semaphore.Dispose();
@@ -75,10 +124,13 @@ public sealed class ClusterServiceState : IAsyncDisposable
         }
     }
 
-    private void TimerOnElapsed(object? sender, ElapsedEventArgs e)
+    private void OnTimerElapsed(Guid ticketId)
     {
-        if (IssuedTicket is not null)
-            DiscardUpdateRequest(IssuedTicket.Value.Id);
+        lock (_lock)
+        {
+            if (IssuedTicket?.Id == ticketId)
+                DiscardUpdateRequestCore(ticketId);
+        }
     }
 }
 
