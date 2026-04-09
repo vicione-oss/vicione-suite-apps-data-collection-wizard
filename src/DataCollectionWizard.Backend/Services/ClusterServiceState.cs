@@ -17,12 +17,14 @@ public sealed class ClusterServiceState : IAsyncDisposable
     public CancellationTokenSource Cts { get; } = new();
     public Ticket? IssuedTicket { get; private set; }
 
-    public void IssueTicket(Guid ticketId, Guid correlationId, TimeSpan? validity)
+    public Guid IssueTicket(Guid? correlationId = null, TimeSpan? validity = null)
     {
         lock (_lock)
         {
-            IssuedTicket = new Ticket(ticketId, correlationId);
+            var ticketId = Guid.NewGuid();
+            IssuedTicket = new Ticket(ticketId, correlationId ?? ticketId);
             StartTimer(ticketId, validity);
+            return ticketId;
         }
     }
 

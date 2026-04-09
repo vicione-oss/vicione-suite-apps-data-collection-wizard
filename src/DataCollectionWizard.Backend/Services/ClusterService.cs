@@ -26,8 +26,7 @@ public sealed partial class ClusterService(
             throw new ArgumentOutOfRangeException(nameof(validity));
 
         await state.Semaphore.WaitAsync(cancellationToken);
-        var ticketId = Guid.NewGuid();
-        state.IssueTicket(ticketId, correlationId ?? ticketId, validity);
+        var ticketId = state.IssueTicket(correlationId, validity);
         LogIssuedTicket(ticketId);
 
         return ticketId;

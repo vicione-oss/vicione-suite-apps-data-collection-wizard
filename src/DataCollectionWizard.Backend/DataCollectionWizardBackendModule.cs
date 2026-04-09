@@ -40,7 +40,6 @@ public sealed class DataCollectionWizardBackendModule : BackendModule
         services.AddSingleton<IDeviceTreeGuard, DeviceTreeGuard>();
         services.AddScoped<IDataCollectionWizardService, DataCollectionWizardService>();
 
-        services.AddSingleton<DeviceTreeUpdaterState>();
         services.AddScoped<IDeviceTreeUpdater, DeviceTreeUpdater>();
     }
 }

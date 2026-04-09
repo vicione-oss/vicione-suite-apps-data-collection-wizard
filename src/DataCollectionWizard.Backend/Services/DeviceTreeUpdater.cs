@@ -16,7 +16,6 @@ public sealed partial class DeviceTreeUpdater(
     IDataCollectionWizardDbContext dbContext,
     IDataCollectionWizardService dcwService,
     IClusterService clusterService,
-    DeviceTreeUpdaterState state,
     ClusterServiceState clusterServiceState,
     ILogger<DeviceTreeUpdater> logger)
     : IDeviceTreeUpdater
@@ -27,7 +26,7 @@ public sealed partial class DeviceTreeUpdater(
 
     public Task<DeviceTreeRoot> LoadDeviceTree(CancellationToken? cancellationToken = null)
     {
-        var ct = cancellationToken ?? state.Cts.Token;
+        var ct = cancellationToken ?? clusterServiceState.Cts.Token;
         return dcwService.RequestDeviceTreeAsync(ct);
     }
 
@@ -40,7 +39,7 @@ public sealed partial class DeviceTreeUpdater(
         CancellationToken? cancellationToken = null)
     {
         var correlationId = clusterServiceState.ValidateTicketAndStopTimer(ticketId);
-        var ct = cancellationToken ?? state.Cts.Token;
+        var ct = cancellationToken ?? clusterServiceState.Cts.Token;
         try
         {
             if (saveTree)
@@ -57,9 +56,9 @@ public sealed partial class DeviceTreeUpdater(
                 catch (DbUpdateException e)
                 {
                     var error = new ErrorInfo(ErrorCodes.DbUpdateFailed, e.Message);
-                    await mediator.Publish(new DeviceTreeChangeErrorEvent(error), CancellationToken.None);
+                    await mediator.Publish(new DeviceTreeChangeErrorEvent(error), ct);
                     DiscardUpdateRequest(ticketId);
-                    await mediator.Publish(new DeviceTreeApplicationEvent(error) { CorrelationId = correlationId }, CancellationToken.None);
+                    await mediator.Publish(new DeviceTreeApplicationEvent(error) { CorrelationId = correlationId }, ct);
                     return;
                 }
             }
@@ -81,7 +80,7 @@ public sealed partial class DeviceTreeUpdater(
         catch (Exception ex)
         {
             DiscardUpdateRequest(ticketId);
-            await mediator.Publish(new DeviceTreeApplicationEvent(new ErrorInfo(-1, ex.Message)) { CorrelationId = correlationId }, CancellationToken.None);
+            await mediator.Publish(new DeviceTreeApplicationEvent(new ErrorInfo(-1, ex.Message)) { CorrelationId = correlationId }, ct);
             LogApplicationFailedError(logger, ex.Message, ex.StackTrace ?? string.Empty);
         }
     }
