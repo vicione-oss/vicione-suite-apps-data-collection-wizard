@@ -1178,7 +1178,7 @@
       },
       "ViciOne.Ui.Blazor.Components": {
         "type": "CentralTransitive",
-        "requested": "[5.6.0, )",
+        "requested": "[5.7.0, )",
         "resolved": "5.6.0",
         "contentHash": "tSCstLeLB+hzgqYXR47yM+f4yzcMsN5c+y2EihS8jK9cNoO4sycKEyTTgP5DGuklU2r6j3RvEYqgSVcnq7oToA==",
         "dependencies": {

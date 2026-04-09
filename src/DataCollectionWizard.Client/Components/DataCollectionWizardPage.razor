@@ -7,6 +7,7 @@
 @using Sdk.Authorization
 @using Sdk.Client.Modules
 @using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions
+@using ViciOne.Ui.Blazor.Components.Dialog.Components
 @using ViciOne.Ui.Blazor.Components.EditorLayout
 @using ViciOne.Ui.Localization.Resources
 @using ViciOne.Ui.Shared.Dx.Components
@@ -44,115 +45,111 @@
 <NavigationLock ConfirmExternalNavigation="@(_service.DeviceTreeChanged)"
                 OnBeforeInternalNavigation="@ConfirmLeave" />
 
-<DxDialog @ref="@_refDeleteDialog"
-          CloseOnEscape="true"
-          CloseOnOutsideClick="false"
-          Header="@Localization.DataCollectionWizardPage.DeleteDialogHeader"
-          Height="300px"
-          IsTextOnly="true"
-          Width="600px">
+@* CloseOnEscape="true" not supported yet, https://gitlab.com/vicione-oss/vicione/ui-libs/blazor-components/-/issues/141 *@
+<Dialog @ref="@_refDeleteDialog"
+        HeaderText="@Localization.DataCollectionWizardPage.DeleteDialogHeader"
+        Height="300px"
+        Width="600px">
 
     <Body>
-        <p class="dialog-content text-only">@Localization.DataCollectionWizardPage.DeleteDialogText</p>
+        <DialogBodyTextLayout>
+            <p class="dialog-content text-only">@Localization.DataCollectionWizardPage.DeleteDialogText</p>
+        </DialogBodyTextLayout>
     </Body>
 
     <Footer>
-        <DxDialogFooterButton OnClick="@OnDeleteDialogOkAsync"
-                              Text="@CommonVocabulary.Ok" />
+        <DialogFooterButton OnClick="@OnDeleteDialogOkAsync"
+                            Text="@CommonVocabulary.Ok" />
 
-        <DxDialogFooterButton OnClick="@OnDeleteDialogCloseAsync"
-                              Text="@CommonVocabulary.Cancel" />
+        <DialogFooterButton OnClick="@OnDeleteDialogCloseAsync"
+                            Text="@CommonVocabulary.Cancel" />
     </Footer>
-</DxDialog>
+</Dialog>
 
-<DxDialog @ref="@_refDeleteAllOfflineDialog"
-          CloseOnEscape="true"
-          CloseOnOutsideClick="false"
-          Header="@Localization.DataCollectionWizardPage.DeleteAllOfflineNodesDialogHeader"
-          Height="300px"
-          IsTextOnly="true"
-          Width="600px">
+@* CloseOnEscape="true" not supported yet, https://gitlab.com/vicione-oss/vicione/ui-libs/blazor-components/-/issues/141 *@
+<Dialog @ref="@_refDeleteAllOfflineDialog"
+        HeaderText="@Localization.DataCollectionWizardPage.DeleteAllOfflineNodesDialogHeader"
+        Height="300px"
+        Width="600px">
 
     <Body>
-        <p class="dialog-content text-only">@Localization.DataCollectionWizardPage.DeleteAllOfflineNodesDialogText</p>
+        <DialogBodyTextLayout>
+            <p class="dialog-content text-only">@Localization.DataCollectionWizardPage.DeleteAllOfflineNodesDialogText</p>
+        </DialogBodyTextLayout>
     </Body>
 
     <Footer>
-        <DxDialogFooterButton OnClick="@OnDeleteAllOfflineDialogOkAsync"
-                              Text="@CommonVocabulary.Ok" />
+        <DialogFooterButton OnClick="@OnDeleteAllOfflineDialogOkAsync"
+                            Text="@CommonVocabulary.Ok" />
 
-        <DxDialogFooterButton OnClick="@OnDeleteAllOfflineDialogCloseAsync"
-                              Text="@CommonVocabulary.Cancel" />
+        <DialogFooterButton OnClick="@OnDeleteAllOfflineDialogCloseAsync"
+                            Text="@CommonVocabulary.Cancel" />
     </Footer>
-</DxDialog>
+</Dialog>
 
-<DxDialog @ref="@_refDataInvalidDialog"
-          CloseOnEscape="true"
-          CloseOnOutsideClick="false"
-          Header="@Localization.DataCollectionWizardPage.ClusterOutOfDateDialogHeader"
-          Height="350px"
-          IsTextOnly="true"
-          Width="600px">
+@* CloseOnEscape="true" not supported yet, https://gitlab.com/vicione-oss/vicione/ui-libs/blazor-components/-/issues/141 *@
+<Dialog @ref="@_refDataInvalidDialog"
+        HeaderText="@Localization.DataCollectionWizardPage.ClusterOutOfDateDialogHeader"
+        Height="350px"
+        Width="600px">
 
     <Body>
-        <p class="dialog-content text-only">@Localization.DataCollectionWizardPage.ClusterOutOfDateDialogText</p>
+        <DialogBodyTextLayout>
+            <p class="dialog-content text-only">@Localization.DataCollectionWizardPage.ClusterOutOfDateDialogText</p>
+        </DialogBodyTextLayout>
     </Body>
 
     <Footer>
-        <DxDialogFooterButton OnClick="@OnDataInvalidDialogOkAsync"
-                              Text="@CommonVocabulary.Ok" />
+        <DialogFooterButton OnClick="@OnDataInvalidDialogOkAsync"
+                            Text="@CommonVocabulary.Ok" />
     </Footer>
-</DxDialog>
+</Dialog>
 
-<DxDialog @ref="@_refAliasDialog"
-          CloseOnEscape="true"
-          CloseOnOutsideClick="false"
-          Header="@Localization.DataCollectionWizardPage.AliasDialogHeader"
-          Height="350px"
-          IsTextOnly="true"
-          Shown="@OnAliasDialogShownAsync"
-          Width="600px">
+@* CloseOnEscape="true" not supported yet, https://gitlab.com/vicione-oss/vicione/ui-libs/blazor-components/-/issues/141 *@
+<Dialog @ref="@_refAliasDialog"
+        HeaderText="@Localization.DataCollectionWizardPage.AliasDialogHeader"
+        Height="350px"
+        VisibleChanged="@OnAliasDialogVisibleChanged"
+        Width="600px">
 
     <Body>
         <div class="dialog-content dialog-content-alias">
             <div class="input">
                 <label>@(Localization.DataCollectionWizardPage.Alias)</label>
                 <DxTextBox @bind-Text="_deviceAlias"
-                           @ref="@_refAliasTextBox"
-                           @onkeydown="OnAliasDialogTextBoxKeyDownAsync"
-                           BindValueMode="BindValueMode.OnInput"
-                           maxlength="64" />
+                            @ref="@_refAliasTextBox"
+                            @onkeydown="OnAliasDialogTextBoxKeyDownAsync"
+                            BindValueMode="BindValueMode.OnInput"
+                            maxlength="64" />
             </div>
         </div>
     </Body>
 
     <Footer>
-        <DxDialogFooterButton OnClick="@OnAliasDialogOkAsync"
-                              Text="@CommonVocabulary.Ok" />
+        <DialogFooterButton OnClick="@OnAliasDialogOkAsync"
+                            Text="@CommonVocabulary.Ok" />
 
-        <DxDialogFooterButton OnClick="@OnAliasDialogCloseAsync"
-                              Text="@CommonVocabulary.Cancel" />
+        <DialogFooterButton OnClick="@OnAliasDialogCloseAsync"
+                            Text="@CommonVocabulary.Cancel" />
     </Footer>
-</DxDialog>
+</Dialog>
 
-<DxDialog @ref="@_refAddVSEDialog"
-          CloseOnEscape="true"
-          CloseOnOutsideClick="false"
-          Closing="ResetAddVSEDialog"
-          Header="@Localization.DataCollectionWizardPage.AddVseDialogHeader"
-          Height="350px"
-          IsTextOnly="true"
-          Shown="@OnAddVSEDialogShownAsync"
-          Width="600px">
+@* CloseOnEscape="true" not supported yet, https://gitlab.com/vicione-oss/vicione/ui-libs/blazor-components/-/issues/141 *@
+<Dialog @ref="@_refAddVSEDialog"
+        HeaderText="@Localization.DataCollectionWizardPage.AddVseDialogHeader"
+        Height="350px"
+        OnClosing="ResetAddVSEDialog"
+        VisibleChanged="OnAddVSEDialogVisibleChangedAsync"
+        Width="600px">
 
     <Body>
         <div class="dialog-content dialog-content-vse">
             <div class="input">
                 <label>@(Localization.DataCollectionWizardPage.VseAddress)</label>
                 <DxTextBox @bind-Text="_newVSEAddress"
-                           @ref="@_refAddVSETextBox"
-                           @onkeydown="OnAddVSETextBoxKeyDownAsync"
-                           BindValueMode="BindValueMode.OnInput" />
+                            @ref="@_refAddVSETextBox"
+                            @onkeydown="OnAddVSETextBoxKeyDownAsync"
+                            BindValueMode="BindValueMode.OnInput" />
 
                 <div class="validation-message-container">
                     @if (!_isVSEUriValid)
@@ -174,24 +171,22 @@
     </Body>
 
     <Footer>
-        <DxDialogFooterButton OnClick="@OnAddVSEDialogOkAsync"
-                              Text="@CommonVocabulary.Ok"
-                              Enabled="@(!string.IsNullOrWhiteSpace(_newVSEAddress) && _isVSEUriValid && _isVSEUriUnique)" />
+        <DialogFooterButton OnClick="@OnAddVSEDialogOkAsync"
+                            Text="@CommonVocabulary.Ok"
+                            Enabled="@(!string.IsNullOrWhiteSpace(_newVSEAddress) && _isVSEUriValid && _isVSEUriUnique)" />
 
-        <DxDialogFooterButton OnClick="@OnAddVSEDialogCloseAsync"
-                              Text="@CommonVocabulary.Cancel" />
+        <DialogFooterButton OnClick="@OnAddVSEDialogCloseAsync"
+                            Text="@CommonVocabulary.Cancel" />
     </Footer>
-</DxDialog>
+</Dialog>
 
-<DxDialog @ref="@_refAddIoLinkMasterDialog"
-          CloseOnEscape="true"
-          CloseOnOutsideClick="false"
-          Closing="ResetAddIoLinkMasterDialog"
-          Header="@Localization.DataCollectionWizardPage.AddIoLinkMasterDialogHeader"
-          Height="@_ioLinkMasterDialogHeight"
-          IsTextOnly="true"
-          Shown="@OnAddIoLinkMasterDialogShownAsync"
-          Width="600px">
+@* CloseOnEscape="true" not supported yet, https://gitlab.com/vicione-oss/vicione/ui-libs/blazor-components/-/issues/141 *@
+<Dialog @ref="@_refAddIoLinkMasterDialog"
+        HeaderText="@Localization.DataCollectionWizardPage.AddIoLinkMasterDialogHeader"
+        Height="@_ioLinkMasterDialogHeight"
+        OnClosing="ResetAddIoLinkMasterDialog"
+        VisibleChanged="OnAddIoLinkMasterDialogVisibleChangedAsync"
+        Width="600px">
 
     <Body>
         <div class="dialog-content dialog-content-iolink">
@@ -225,9 +220,9 @@
                         <label>@(Localization.DataCollectionWizardPage.IoLinkMasterAddress)</label>
 
                         <DxTextBox @bind-Text="_newIoLinkMasterAddress"
-                                   @ref="@_refAddIoLinkMasterTextBox"
-                                   @onkeydown="OnAddIoLinkMasterTextBoxKeyDownAsync"
-                                   BindValueMode="BindValueMode.OnInput" />
+                                    @ref="@_refAddIoLinkMasterTextBox"
+                                    @onkeydown="OnAddIoLinkMasterTextBoxKeyDownAsync"
+                                    BindValueMode="BindValueMode.OnInput" />
 
                         <div class="validation-message-container">
                             @if (!_isIoLinkMasterUriValid)
@@ -283,8 +278,8 @@
                                     {
                                         <div class="device-list-entry">
                                             <input @onchange="@((e) => OnScannedDeviceSelectionChanged((bool)e.Value!, device))"
-                                                   checked="@_selectedIoLinkDevices.Contains(device.Address!.ToString())"
-                                                   type="checkbox" />
+                                                    checked="@_selectedIoLinkDevices.Contains(device.Address!.ToString())"
+                                                    type="checkbox" />
                                             <div class="device-list-entry-name">
                                                 @device.DeviceName
                                             </div>
@@ -301,15 +296,14 @@
                 }
             </div>
         </div>
-
     </Body>
 
     <Footer>
-        <DxDialogFooterButton OnClick="@OnAddIoLinkMasterDialogOkAsync"
-                              Enabled="@IsIoLinkMasterDialogOkEnabled()"
-                              Text="@CommonVocabulary.Ok" />
+        <DialogFooterButton OnClick="@OnAddIoLinkMasterDialogOkAsync"
+                            Enabled="@IsIoLinkMasterDialogOkEnabled()"
+                            Text="@CommonVocabulary.Ok" />
 
-        <DxDialogFooterButton OnClick="@OnAddIoLinkMasterDialogCloseAsync"
-                              Text="@CommonVocabulary.Cancel" />
+        <DialogFooterButton OnClick="@OnAddIoLinkMasterDialogCloseAsync"
+                            Text="@CommonVocabulary.Cancel" />
     </Footer>
-</DxDialog>
+</Dialog>

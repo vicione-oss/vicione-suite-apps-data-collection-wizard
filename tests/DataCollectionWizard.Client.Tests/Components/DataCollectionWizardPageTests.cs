@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Sdk.Client.Modules.Localization;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.Ui.Blazor.Components.Dialog.Extensions;
 using ViciOne.Ui.Blazor.Components.ExpandableMenu.Extensions;
 using ViciOne.Ui.Blazor.Components.Tooltip.Extensions;
 
@@ -15,10 +16,10 @@ namespace DataCollectionWizard.Client.Tests.Components;
 public class DataCollectionWizardPageTests
 {
     [Fact]
-    public void Init_module_should_register_and_configure_services()
+    public async Task Init_module_should_register_and_configure_services()
     {
         // Arrange
-        using var ctx = new BunitContext();
+        await using var ctx = new BunitContext();
 
         ctx.SetupSuiteServicesWithBlazorDx(setup =>
         {
@@ -36,6 +37,7 @@ public class DataCollectionWizardPageTests
         ctx.Services.AddTooltip();
         ctx.Services.AddScoped(_ => Substitute.For<IClientModuleLocalizer<DataCollectionWizardClientModule>>());
         ctx.Services.AddScoped(_ => Substitute.For<IEventBroker>());
+        ctx.Services.AddDialog();
 
         // Act
         var page = ctx.Render<DataCollectionWizardPage>();

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sdk.Client.Modules;
 using Sdk.Client.NavTiles.Extensions;
+using ViciOne.Ui.Blazor.Components.Dialog.Extensions;
 using ViciOne.Ui.Blazor.Components.ExpandableMenu.Extensions;
 
 namespace DataCollectionWizard.Client;
@@ -14,6 +15,7 @@ public sealed class DataCollectionWizardClientModule : ClientModule
         services.AddScoped<IClusterService, ClusterService>();
         services.AddScoped<IoddImageProvider>();
 
+        services.AddDialog();
         services.AddExpandableMenu();
 
         services.AddNavTiles<DataCollectionWizardClientModule>();

@@ -14,6 +14,7 @@
       <PrivateAssets>all</PrivateAssets>
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
+    <PackageReference Include="ViciOne.Ui.Blazor.Components" />
     <PackageReference Include="ViciOne.Ui.MonochromeIcons.Assets" />
     <PackageReference Include="ViciOne.Ui.Shared.Dx" />
     <PackageReference Include="ViciOne.Ui.TreeEditor" />

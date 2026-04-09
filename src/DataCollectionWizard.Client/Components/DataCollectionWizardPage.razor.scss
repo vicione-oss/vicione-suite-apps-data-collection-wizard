@@ -42,15 +42,23 @@
 }
 
 .dialog-content-alias.dialog-content {
-    padding: 72px 32px 20px 32px;
+    padding: 70px 32px 20px 32px;
 }
 
 .dialog-content-vse.dialog-content {
-    padding: 72px 32px 20px 32px;
+    padding: 70px 32px 20px 32px;
 }
 
 .dialog-content-iolink.dialog-content {
     overflow: clip;
+
+    .toolbar-container {
+        padding: 15px 25px 5px 32px;
+    }
+
+    .content-container {
+        padding: 0px 32px 20px 32px;
+    }
 }
 
 .dialog-content {
@@ -60,14 +68,16 @@
     left: 0;
     flex-direction: column;
     gap: 15px;
-    padding: 20px 28px 20px 32px;
-    position: absolute;
+    height: 100%;
     right: 0;
     text-align: left;
     top: 0;
 
     ::deep .loading-spinner {
         border-radius: 8px;
+        position: unset;
+        padding-bottom: 150px;
+        margin-right: 32px;
 
         .message-container {
             width: 90%;
@@ -86,6 +96,7 @@
             grid-template-columns: 25px auto;
 
             .device-list-entry-name {
+                font-size: 15px;
                 font-weight: normal;
             }
 
