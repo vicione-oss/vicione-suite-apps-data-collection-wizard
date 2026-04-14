@@ -48,7 +48,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
     private Dictionary<IDeviceTreeBase, List<IDeviceTreeBase>>? _nodePaths;
     private Dialog? _refLatestClusterNotRunningDialog;
     private Dialog? _refDataInvalidDialog;
-    private SemaphoreSlim? _semaphore = new(1, 1);
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
     private readonly LiveGridService _service = new();
     private DeviceTreeRoot _tree = new();
 
@@ -206,6 +206,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         try
         {
             await _semaphore.WaitAsync();
+
             acquired = true;
 
             _cancelSubscribing.Dispose();
