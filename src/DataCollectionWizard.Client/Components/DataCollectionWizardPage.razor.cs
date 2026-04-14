@@ -392,6 +392,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         catch (Exception ex)
         {
             LogInitDcwError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace);
+            await InvokeAsync(() => MessageBannerService.ShowMessageBanner(MessageType.Warning, Localization.DataCollectionWizardPage.Error));
         }
     }
 

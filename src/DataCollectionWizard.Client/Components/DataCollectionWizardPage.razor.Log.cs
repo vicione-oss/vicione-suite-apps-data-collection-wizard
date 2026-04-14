@@ -7,7 +7,7 @@ public sealed partial class DataCollectionWizardPage
     [LoggerMessage(LogLevel.Warning, "Error awaiting deployment: {exceptionType} {message} {stacktrace}")]
     public static partial void LogAwaitingDeploymentWarning(ILogger logger, string exceptionType, string message, string stacktrace);
 
-    [LoggerMessage(LogLevel.Error, "Error during data colletion wizard initialization: {exceptionType} {message} {stacktrace}")]
+    [LoggerMessage(LogLevel.Error, "Error during data collection wizard initialization: {exceptionType} {message} {stacktrace}")]
     public static partial void LogInitDcwError(ILogger logger, string exceptionType, string message, string? stacktrace);
 
     [LoggerMessage(LogLevel.Error, "Error during Rebrowse: {exceptionType} {message} {stacktrace}")]

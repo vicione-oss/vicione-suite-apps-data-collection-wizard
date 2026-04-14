@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Timers;
+﻿using System.Timers;
 using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using DataCollectionWizard.Public.Services;
@@ -16,7 +15,7 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
 {
     private readonly ILogger<ConnectionChangedProcessor> _logger;
     private readonly Lock _queuedEventsLock = new();
-    private readonly ConcurrentQueue<ConnectionChanged> _queuedEvents = [];
+    private readonly Queue<ConnectionChanged> _queuedEvents = [];
     private readonly ConnectionChangedProcessorState _state;
 #pragma warning disable CA2213 // Disposable fields should be disposed
     // Scope is beeing disposed when timer elapses
