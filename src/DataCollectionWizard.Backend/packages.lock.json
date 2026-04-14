@@ -10,14 +10,14 @@
       },
       "ViciOne.Suite.Sdk.Backend": {
         "type": "Direct",
-        "requested": "[2.0.0-ci2411067321, )",
-        "resolved": "2.0.0-ci2411067321",
-        "contentHash": "/KOi1Is+a41v5xc5iIe9uBw61ooghQZ6mct7Y0pXfho0oAeDu6m2vfPKfl1iM5/Lg98utYPzHk2vR3OQ/Dm95w==",
+        "requested": "[2.0.0-ci2451533346, )",
+        "resolved": "2.0.0-ci2451533346",
+        "contentHash": "r7tlNZTDWkpxVFNSCbkZC8Z+61zH5IVC676va94R+c3fsW8InV5yQQoDmH/l/8D3R8PthINpvRQlU/kN4rIkNg==",
         "dependencies": {
           "Microsoft.EntityFrameworkCore.Relational": "10.0.5",
           "Microsoft.EntityFrameworkCore.Sqlite": "10.0.5",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.1",
-          "ViciOne.Suite.Sdk": "2.0.0-ci2411067321"
+          "ViciOne.Suite.Sdk": "2.0.0-ci2451533346"
         }
       },
       "FastCloner": {
@@ -27,8 +27,8 @@
       },
       "MassTransit.Abstractions": {
         "type": "Transitive",
-        "resolved": "8.5.8",
-        "contentHash": "f1XJz88+JZNLl1iHWSGNoD91ownowoP4Vl+2DmVM7ljAxQebvolVKdlyY+iZBSdODCeyLGCcM9jrfZXWkDHtow=="
+        "resolved": "8.5.9",
+        "contentHash": "osNYcFMNzMbwPG6x5zc9u5l0t43+uvlbVqjS99hSIaop8uWnABps7NRgqAUgWX30Zd00wKhDv1nBFRtPV6CFSw=="
       },
       "Microsoft.AspNetCore.Authorization": {
         "type": "Transitive",
@@ -362,17 +362,17 @@
         "dependencies": {
           "ViciOne.Cluster.Builder": "[1.0.0, )",
           "ViciOne.Driver.IoTCore.Contracts": "[2.0.0, )",
-          "ViciOne.Suite.ClusterManagement.Public": "[2.0.0-ci2413784478, )",
+          "ViciOne.Suite.ClusterManagement.Public": "[2.0.0-ci2451751654, )",
           "ViciOne.Suite.DataCollectionWizard.Public": "[2.0.0, )",
-          "ViciOne.Suite.DataPort.Anna.Contracts": "[0.38.0, )",
-          "ViciOne.Suite.Sdk": "[2.0.0-ci2411067321, )"
+          "ViciOne.Suite.DataPort.Anna.Contracts": "[1.0.0, )",
+          "ViciOne.Suite.Sdk": "[2.0.0-ci2451533346, )"
         }
       },
       "ViciOne.Suite.DataCollectionWizard.Public": {
         "type": "Project",
         "dependencies": {
           "ViciOne.Driver.IoTCore.Contracts": "[2.0.0, )",
-          "ViciOne.Suite.Sdk": "[2.0.0-ci2411067321, )"
+          "ViciOne.Suite.Sdk": "[2.0.0-ci2451533346, )"
         }
       },
       "ViciOne.Cluster.Builder": {
@@ -394,27 +394,27 @@
       },
       "ViciOne.Suite.ClusterManagement.Public": {
         "type": "CentralTransitive",
-        "requested": "[2.0.0-ci2413784478, )",
-        "resolved": "2.0.0-ci2413784478",
-        "contentHash": "GAgDfitMSlwV/VBvZM5abHknmS9TU9j1z++M6yS3xhG6dk4XFvDB5UOK8oB3+rhZ7cw123HN9/IQv3bE94Tu6A==",
+        "requested": "[2.0.0-ci2451751654, )",
+        "resolved": "2.0.0-ci2451751654",
+        "contentHash": "qd6pekIxb0kjc27vMHMbaQBNnXtU+WQ/9uebaR9PYm7WhB8jtAxEuK6KOxjmDkJaIn8iyhuo0Oeg5ZIZ/L5f6g==",
         "dependencies": {
           "ViciOne.Cluster.Builder": "1.0.0",
-          "ViciOne.Suite.Sdk": "2.0.0-ci2411067321"
+          "ViciOne.Suite.Sdk": "2.0.0-ci2451533346"
         }
       },
       "ViciOne.Suite.DataPort.Anna.Contracts": {
         "type": "CentralTransitive",
-        "requested": "[0.38.0, )",
-        "resolved": "0.38.0",
-        "contentHash": "xcmYf+90vVn3hJFfTk/1cJs7C1MZvDKaXdrdIbpP7Of9GuirYYwWDfy424hvI4i+CnFDIp8e/ikhc76RCOfEQQ=="
+        "requested": "[1.0.0, )",
+        "resolved": "1.0.0",
+        "contentHash": "vPjGKYaeusCLt0jtOn9nwxN08mmdPZD7RAW5wiEXeNl0eItxsQg+Zil3fNX/e3/NPygquaWGJ7SZs/uyfWjbOw=="
       },
       "ViciOne.Suite.Sdk": {
         "type": "CentralTransitive",
-        "requested": "[2.0.0-ci2411067321, )",
-        "resolved": "2.0.0-ci2411067321",
-        "contentHash": "lQZZd0rHKpvZkcwU/rBC5moqtcH4sBPwf2E32s7fY5UI9WNC98w/0dOLcz5r9SLmjHWUn/UtMZFSJxmMLrjZVQ==",
+        "requested": "[2.0.0-ci2451533346, )",
+        "resolved": "2.0.0-ci2451533346",
+        "contentHash": "fBo4V9L+iEg7BEAK4q7YKVGjjUfcq2n6gXIef039AMBE5yTcnYw/uCOCXJcaD7ia+7upk06DO0yYpgKQLEqwYw==",
         "dependencies": {
-          "MassTransit.Abstractions": "8.5.8",
+          "MassTransit.Abstractions": "8.5.9",
           "Microsoft.AspNetCore.Authorization": "10.0.5",
           "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions": "10.0.5",
           "ViciOne.CodeAnalysis.MustCallBase": "1.6.0"
