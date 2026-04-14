@@ -282,7 +282,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
 
         if (rootNodeReused)
         {
-            Builder.Notifications.NotifyNodeChanged(_rootNode);
+            Builder.Notifications.NotifyNodeChanged(_rootNode, ChangedNodeDetail.Actions);
             Builder.Notifications.NotifyChildrenChanged(_rootNode);
             Builder.Helper.RequestNodeRefresh(_rootNode);
         }
@@ -347,7 +347,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
 
                 if (childNodeReused)
                 {
-                    Builder.Notifications.NotifyNodeChanged(childNode);
+                    Builder.Notifications.NotifyNodeChanged(childNode, ChangedNodeDetail.Actions);
                     Builder.Notifications.NotifyChildrenChanged(childNode);
                     Builder.Helper.RequestNodeRefresh(childNode);
                 }
