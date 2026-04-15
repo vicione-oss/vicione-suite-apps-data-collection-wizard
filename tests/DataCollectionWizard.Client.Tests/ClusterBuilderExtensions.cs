@@ -10,7 +10,7 @@ internal static class ClusterBuilderExtensions
     {
         var resolvedFunctionblocks = builder.Cache.FunctionBlockDesigns.Keys
             .Select(builder.ResolveFunctionBlockDesign);
-        
+
         return resolvedFunctionblocks.First(design => design.Name == functionBlockDesignName);
     }
 }
