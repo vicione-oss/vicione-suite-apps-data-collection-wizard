@@ -22,7 +22,7 @@
 - `AspNetCore.SassCompiler` packages, update version to `1.99.0`
 - `ViciOne.Core.Dataflow.DataModel.Generation` package, update version to `1.0.0`
 - `ViciOne.Suite.DataPort.Anna.Contracts` package, update version to `1.0.0`
-- `ViciOne.Suite.ClusterManagement.Public` package, update version to `2.0.0-ci2451751654`
+- `ViciOne.Suite.ClusterManagement.Public` package, update version to `2.0.0-ci2452036204`
 - `ViciOne.Suite.Sdk` packages, update version to `2.0.0-ci2451533346`
 - `ViciOne.Ui.Blazor.Components` package, update version to `5.8.0`
 - `ViciOne.Ui.MonochromeIcons.Assets` packages, update version to `4.7.0`

@@ -1,5 +1,6 @@
 ﻿using Bunit;
 using ClusterManagement.Public.DataflowEvents;
+using ClusterManagement.Public.Services;
 using DataCollectionWizard.Client.Components;
 using DataCollectionWizard.Client.Services;
 using DataCollectionWizard.Client.Tests.Extensions;
@@ -34,6 +35,7 @@ public class LiveViewPageTests
         ctx.Services.AddScoped(_ => dataCollectionWizardServiceMock);
         ctx.Services.AddScoped(_ => Substitute.For<IClusterService>());
         ctx.Services.AddScoped(_ => Substitute.For<IEventBroker>());
+        ctx.Services.AddScoped(_ => Substitute.For<IResourceDownloadStateService>());
         ctx.Services.AddKeyedScoped(Sdk.Constants.ClientTimeProviderServiceKey, (_, __) => timeProvider);
 
         ctx.JSInterop.Mode = JSRuntimeMode.Loose;
