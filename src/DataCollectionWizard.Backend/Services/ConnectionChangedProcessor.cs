@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Timers;
+﻿using System.Timers;
 using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using DataCollectionWizard.Public.Services;
@@ -15,7 +14,8 @@ namespace DataCollectionWizard.Backend.Services;
 public sealed partial class ConnectionChangedProcessor : IConnectionChangedProcessor
 {
     private readonly ILogger<ConnectionChangedProcessor> _logger;
-    private readonly ConcurrentQueue<ConnectionChanged> _queuedEvents = [];
+    private readonly Lock _queuedEventsLock = new();
+    private readonly Queue<ConnectionChanged> _queuedEvents = [];
     private readonly ConnectionChangedProcessorState _state;
 #pragma warning disable CA2213 // Disposable fields should be disposed
     // Scope is beeing disposed when timer elapses
@@ -38,7 +38,12 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
     public void Enqueue(ConnectionChanged connectionChanged)
     {
         _state.Timer.Stop();
-        _queuedEvents.Enqueue(connectionChanged);
+
+        lock (_queuedEventsLock)
+        {
+            _queuedEvents.Enqueue(connectionChanged);
+        }
+
         _state.Timer.Start();
     }
 
@@ -62,8 +67,13 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
 
     private async Task OnTimerElapsedAsync()
     {
-        var events = _queuedEvents.ToArray();
-        _queuedEvents.Clear();
+        ConnectionChanged[] events;
+
+        lock (_queuedEventsLock)
+        {
+            events = _queuedEvents.ToArray();
+            _queuedEvents.Clear();
+        }
 
         using var cts = new CancellationTokenSource();
         cts.CancelAfter(TimeSpan.FromSeconds(30));

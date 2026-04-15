@@ -550,7 +550,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         Dictionary<Guid, string> connectionNames)
     {
         var compressorContainerManager = new DeviceContainerManager(deviceNode, compressorsContainer, builder);
- 
+
         foreach (var compressableDataNode in nodeAndDescendants.OfType<IDeviceTreeCompressableDataNode>())
         {
             if (!compressableDataNode.DataType.SupportedForLogging())

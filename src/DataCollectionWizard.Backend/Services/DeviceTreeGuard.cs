@@ -15,14 +15,19 @@ namespace DataCollectionWizard.Backend.Services;
 
 public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
 {
+    private readonly Lock _deviceTreeLock = new();
     private DeviceTreeRoot? _deviceTree;
+    private readonly Lock _deviceTreeConnectorsLock = new();
     private readonly Dictionary<Uri, (Guid deviceTreeTrigger, Guid deviceTreeOutput)> _deviceTreeConnectors = [];
     private readonly AsyncServiceScope _eventBrokerScope;
     private readonly List<string> _lastOfflineNodes = [];
+    private readonly Lock _lastOfflineNodesLock = new();
     private readonly ILogger<DeviceTreeGuard> _logger;
     private readonly IServiceProvider _serviceProvider;
+    private readonly Lock _subscriptionHandlesLock = new();
     private readonly Dictionary<string, IAsyncDisposable> _subscriptionHandles = [];
     private IDeviceTreeBase[] _untrackedNodes = [];
+    private readonly Lock _untrackedNodesLock = new();
 
     public DeviceTreeGuard(IServiceProvider serviceProvider, ILogger<DeviceTreeGuard> logger)
     {
@@ -35,7 +40,16 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
 
     private async Task AwaitLoadFunctionBlocks()
     {
-        if (_deviceTreeConnectors.Count == 0)
+        Guid firstOutput;
+        bool hasConnectors;
+
+        lock (_deviceTreeConnectorsLock)
+        {
+            hasConnectors = _deviceTreeConnectors.Count > 0;
+            firstOutput = hasConnectors ? _deviceTreeConnectors.Values.First().deviceTreeOutput : default;
+        }
+
+        if (!hasConnectors)
             return;
 
         LogIgnoreErrors(_logger);
@@ -47,7 +61,7 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
 
             try
             {
-                handle = await eventBroker.Subscribe(_deviceTreeConnectors.Values.ElementAt(0).deviceTreeOutput, (t, v) => Task.CompletedTask);
+                handle = await eventBroker.Subscribe(firstOutput, (t, v) => Task.CompletedTask);
                 await handle.DisposeAsync();
                 return;
             }
@@ -79,7 +93,12 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
             return;
         }
 
-        var currentDevice = _deviceTree?.Children.FirstOrDefault(c => c.Id == masterNode.Id);
+        IDeviceTreeBase? currentDevice;
+
+        lock (_deviceTreeLock)
+        {
+            currentDevice = _deviceTree?.Children.FirstOrDefault(c => c.Id == masterNode.Id);
+        }
 
         if (currentDevice is null)
         {
@@ -92,39 +111,55 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
         var masterNodeDescendants = masterNode.GetNodeAndDescendants().ToArray();
         var nodeAndDescendants = currentDevice.GetNodeAndDescendants().ToArray();
         var untrackedNodes = masterNodeDescendants.ExceptBy(nodeAndDescendants.Select(n => n.Id), n => n.Id).ToArray();
-        var lastUntrackedNodes = _untrackedNodes;
-        _untrackedNodes = untrackedNodes;
+        IDeviceTreeBase[] lastUntrackedNodes = [];
+
+        lock (_untrackedNodesLock)
+        {
+            lastUntrackedNodes = _untrackedNodes.ToArray();
+            _untrackedNodes = untrackedNodes;
+        }
 
         if (masterNode.IsOffline)
         {
             var allOfflineNodes = currentDevice.GetNodeAndDescendants().Union(lastUntrackedNodes).ToArray();
             LogTriggeringNodesOfflineMasterOffline(_logger, allOfflineNodes.Length);
             await mediator.Publish(new NodesOfflineEvent(allOfflineNodes));
-            _lastOfflineNodes.AddRange(allOfflineNodes.Select(n => n.Id));
+
+            lock (_lastOfflineNodesLock)
+            {
+                _lastOfflineNodes.AddRange(allOfflineNodes.Select(n => n.Id));
+            }
+
             return;
         }
 
         DeviceTreeBuilder.UpdateOnlineStatus(DeviceTreeBuilder.CorrelateParsedDevices(currentDevice, [masterNode]));
 
-        var newOnlineNodes = nodeAndDescendants.Union(lastUntrackedNodes)
+        IDeviceTreeBase[] newOnlineNodes = [];
+        IDeviceTreeBase[] newOfflineNodes = [];
+
+        lock (_lastOfflineNodesLock)
+        {
+            newOnlineNodes = nodeAndDescendants.Union(lastUntrackedNodes)
                                                .Where(n => !n.IsOffline)
                                                .Where(n => _lastOfflineNodes.Contains(n.Id))
                                                .Union(untrackedNodes.ExceptBy(lastUntrackedNodes.Select(n => n.Id), n => n.Id)
                                                                     .ExceptBy(nodeAndDescendants.Where(n => !n.IsOffline).Select(n => n.Id), n => n.Id))
                                                .ToArray();
 
-        var newOfflineNodes = nodeAndDescendants.Union(lastUntrackedNodes)
+            newOfflineNodes = nodeAndDescendants.Union(lastUntrackedNodes)
                                                 .Where(n => n.IsOffline)
                                                 .Where(n => !_lastOfflineNodes.Contains(n.Id))
                                                 .Union(lastUntrackedNodes.ExceptBy(untrackedNodes.Select(n => n.Id), n => n.Id)
-                                                                         .ExceptBy(nodeAndDescendants.Select(n => n.Id), n => n.Id))
+                                                                            .ExceptBy(nodeAndDescendants.Select(n => n.Id), n => n.Id))
                                                 .ToArray();
 
-        _lastOfflineNodes.AddRange(newOfflineNodes.Select(n => n.Id));
+            _lastOfflineNodes.AddRange(newOfflineNodes.Select(n => n.Id));
 
-        foreach (var newOnlineNode in newOnlineNodes)
-        {
-            _lastOfflineNodes.Remove(newOnlineNode.Id);
+            foreach (var newOnlineNode in newOnlineNodes)
+            {
+                _lastOfflineNodes.Remove(newOnlineNode.Id);
+            }
         }
 
         if (newOfflineNodes.Length > 0)
@@ -155,25 +190,58 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
     {
         using var scope = _serviceProvider.CreateScope();
         var dataCollectionWizardService = scope.ServiceProvider.GetRequiredService<IDataCollectionWizardService>();
-        _deviceTree = await dataCollectionWizardService.RequestDeviceTreeAsync(CancellationToken.None);
+
+        var tree = await dataCollectionWizardService.RequestDeviceTreeAsync(CancellationToken.None);
+
+        lock (_deviceTreeLock)
+        {
+            _deviceTree = tree;
+        }
     }
 
     private async Task UpdateSubscriptionsAsync()
     {
         LogUpdatingDeviceTreeGuardSubscriptions(_logger);
-        var masterDevices = _deviceTree!.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>().ToList();
+
+        List<IDeviceTreeMasterNode>? masterDevices;
+
+        lock (_deviceTreeLock)
+        {
+            masterDevices = _deviceTree!.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>().ToList();
+        }
+
         var eventBroker = _eventBrokerScope.ServiceProvider.GetRequiredService<IEventBroker>();
 
         foreach (var masterDevice in masterDevices)
         {
-            if (_deviceTreeConnectors.TryGetValue(masterDevice.Url, out var deviceTreeConnectors))
+            (Guid deviceTreeTrigger, Guid deviceTreeOutput) deviceTreeConnectors;
+            bool hasConnector;
+
+            lock (_deviceTreeConnectorsLock)
             {
-                if (_subscriptionHandles.TryGetValue(masterDevice.Id, out var existingSubscriptionHandle))
+                hasConnector = _deviceTreeConnectors.TryGetValue(masterDevice.Url, out deviceTreeConnectors);
+            }
+
+            if (hasConnector)
+            {
+                IAsyncDisposable? existingSubscriptionHandle;
+
+                lock (_subscriptionHandlesLock)
+                {
+                    _subscriptionHandles.TryGetValue(masterDevice.Id, out existingSubscriptionHandle);
+                }
+
+                if (existingSubscriptionHandle is not null)
                 {
                     await existingSubscriptionHandle.DisposeAsync();
                 }
 
-                _subscriptionHandles[masterDevice.Id] = await eventBroker.Subscribe(deviceTreeConnectors.deviceTreeOutput, (t, v) => DeviceEventHandler(masterDevice.GetType(), v));
+                var newHandle = await eventBroker.Subscribe(deviceTreeConnectors.deviceTreeOutput, (t, v) => DeviceEventHandler(masterDevice.GetType(), v));
+
+                lock (_subscriptionHandlesLock)
+                {
+                    _subscriptionHandles[masterDevice.Id] = newHandle;
+                }
             }
             else
             {
@@ -184,16 +252,19 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
 
     private async Task LoadDeviceConnectorsAsync()
     {
-        _deviceTreeConnectors.Clear();
-
         using var scope = _serviceProvider.CreateScope();
         var mediator = scope.ServiceProvider.GetRequiredService<ISuiteMediator>();
 
         var deviceConnectorsResponse = await mediator.Request<GetDeviceConnectorsRequest, GetDeviceConnectorsResponse>(new GetDeviceConnectorsRequest(null));
 
-        foreach (var deviceConnectorIds in deviceConnectorsResponse.Ids)
+        lock (_deviceTreeConnectorsLock)
         {
-            _deviceTreeConnectors[new UriBuilder(deviceConnectorIds.DeviceAddress).Uri] = (deviceConnectorIds.TriggerInput, deviceConnectorIds.DeviceTreeOutput);
+            _deviceTreeConnectors.Clear();
+
+            foreach (var deviceConnectorIds in deviceConnectorsResponse.Ids)
+            {
+                _deviceTreeConnectors[new UriBuilder(deviceConnectorIds.DeviceAddress).Uri] = (deviceConnectorIds.TriggerInput, deviceConnectorIds.DeviceTreeOutput);
+            }
         }
     }
 
@@ -202,10 +273,24 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
 
     public async Task OnDeviceTreeApplication()
     {
-        var currentDeviceTree = _deviceTree;
+        DeviceTreeRoot? currentDeviceTree;
+
+        lock (_deviceTreeLock)
+        {
+            currentDeviceTree = _deviceTree;
+        }
+
         await RequestDeviceTree();
         await UpdateSubscriptionsAsync();
-        DeviceTreeBuilder.UpdateOnlineStatus(DeviceTreeBuilder.CorrelateParsedDevices(currentDeviceTree!, _deviceTree!.Children));
+
+        DeviceTreeRoot? newDeviceTree;
+
+        lock (_deviceTreeLock)
+        {
+            newDeviceTree = _deviceTree;
+        }
+
+        DeviceTreeBuilder.UpdateOnlineStatus(DeviceTreeBuilder.CorrelateParsedDevices(currentDeviceTree!, newDeviceTree!.Children));
 
         var offlineNodes = currentDeviceTree!.GetNodeAndDescendants()
                                              .Where(n => n.IsOffline)
