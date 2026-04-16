@@ -243,6 +243,15 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
         siblings.Remove(node);
         parentNode.Children = siblings;
 
+        //Deselect removed nodes
+        var nodeAndChildren = node.GetNodeAndDescendants().ToArray();
+
+        foreach (var item in nodeAndChildren)
+        {
+            Builder.Selection.ChangeSelection(item, false);
+        }
+
+
         Builder.Notifications.NotifyChildrenChanged(parentNode);
     }
 
