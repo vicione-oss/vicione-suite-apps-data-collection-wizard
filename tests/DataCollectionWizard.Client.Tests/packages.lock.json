@@ -1378,7 +1378,7 @@
       "ViciOne.Suite.DataCollectionWizard.Client": {
         "type": "Project",
         "dependencies": {
-          "ViciOne.Suite.DataCollectionWizard.Internal": "[2.0.0, )",
+          "ViciOne.Suite.DataCollectionWizard.Internal": "[2.0.1, )",
           "ViciOne.Suite.Sdk.Client": "[2.0.0, )",
           "ViciOne.Ui.Blazor.Components": "[5.8.0, )",
           "ViciOne.Ui.MonochromeIcons.Assets": "[4.7.0, )",
@@ -1392,7 +1392,7 @@
           "ViciOne.Cluster.Builder": "[1.0.0, )",
           "ViciOne.Driver.IoTCore.Contracts": "[2.0.0, )",
           "ViciOne.Suite.ClusterManagement.Public": "[2.0.0, )",
-          "ViciOne.Suite.DataCollectionWizard.Public": "[2.0.0, )",
+          "ViciOne.Suite.DataCollectionWizard.Public": "[2.0.1, )",
           "ViciOne.Suite.DataPort.Anna.Contracts": "[1.0.0, )",
           "ViciOne.Suite.Sdk": "[2.0.0, )"
         }
