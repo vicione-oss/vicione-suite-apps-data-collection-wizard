@@ -12,7 +12,7 @@
     <PackageVersion Include="ViciOne.Core.Dataflow.DataModel.Generation" Version="1.0.0" />
     <PackageVersion Include="ViciOne.Cluster.Builder" Version="1.0.0" />
     <PackageVersion Include="ViciOne.Driver.IoTCore.Contracts" Version="2.0.0" />
-    <PackageVersion Include="ViciOne.Suite.ClusterManagement.Public" Version="2.0.0-ci2457222913" />
+    <PackageVersion Include="ViciOne.Suite.ClusterManagement.Public" Version="2.0.0" />
     <PackageVersion Include="ViciOne.Suite.DataPort.Anna.Contracts" Version="1.0.0" />
     <PackageVersion Include="ViciOne.Suite.Sdk" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="ViciOne.Suite.Sdk.Backend" Version="$(ViciOneSuiteSdkVersion)" />

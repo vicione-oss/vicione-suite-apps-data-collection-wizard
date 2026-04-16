@@ -251,7 +251,6 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
             Builder.Selection.ChangeSelection(item, false);
         }
 
-
         Builder.Notifications.NotifyChildrenChanged(parentNode);
     }
 

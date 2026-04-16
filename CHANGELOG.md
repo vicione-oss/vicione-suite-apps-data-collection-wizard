@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0 unreleased
+## 2.0.0 - 2026-04-16
 
 ### Changed
 
@@ -23,7 +23,7 @@
 - `AspNetCore.SassCompiler` packages, update version to `1.99.0`
 - `ViciOne.Core.Dataflow.DataModel.Generation` package, update version to `1.0.0`
 - `ViciOne.Suite.DataPort.Anna.Contracts` package, update version to `1.0.0`
-- `ViciOne.Suite.ClusterManagement.Public` package, update version to `2.0.0-ci2457222913`
+- `ViciOne.Suite.ClusterManagement.Public` package, update version to `2.0.0`
 - `ViciOne.Suite.Sdk` packages, update version to `2.0.0`
 - `ViciOne.Ui.Blazor.Components` package, update version to `5.8.0`
 - `ViciOne.Ui.MonochromeIcons.Assets` packages, update version to `4.7.0`
