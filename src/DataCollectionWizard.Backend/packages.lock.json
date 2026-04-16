@@ -362,7 +362,7 @@
         "dependencies": {
           "ViciOne.Cluster.Builder": "[1.0.0, )",
           "ViciOne.Driver.IoTCore.Contracts": "[2.0.0, )",
-          "ViciOne.Suite.ClusterManagement.Public": "[2.0.0-ci2451751654, )",
+          "ViciOne.Suite.ClusterManagement.Public": "[2.0.0-ci2452036204, )",
           "ViciOne.Suite.DataCollectionWizard.Public": "[2.0.0, )",
           "ViciOne.Suite.DataPort.Anna.Contracts": "[1.0.0, )",
           "ViciOne.Suite.Sdk": "[2.0.0-ci2451533346, )"
@@ -394,9 +394,9 @@
       },
       "ViciOne.Suite.ClusterManagement.Public": {
         "type": "CentralTransitive",
-        "requested": "[2.0.0-ci2451751654, )",
-        "resolved": "2.0.0-ci2451751654",
-        "contentHash": "qd6pekIxb0kjc27vMHMbaQBNnXtU+WQ/9uebaR9PYm7WhB8jtAxEuK6KOxjmDkJaIn8iyhuo0Oeg5ZIZ/L5f6g==",
+        "requested": "[2.0.0-ci2452036204, )",
+        "resolved": "2.0.0-ci2452036204",
+        "contentHash": "aOsOIJrtFbyimXkT3F1j3a9xC2W9haOEZ5zO0lMGjUVaWovY2Q1fNqjB+hlJsPNYQvP8OAriRiJNqhv23NziMw==",
         "dependencies": {
           "ViciOne.Cluster.Builder": "1.0.0",
           "ViciOne.Suite.Sdk": "2.0.0-ci2451533346"

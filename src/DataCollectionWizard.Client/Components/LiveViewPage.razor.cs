@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Text.Json;
 using ClusterManagement.Public.DataflowEvents;
+using ClusterManagement.Public.Services;
 using DataCollectionWizard.Client.Components.LiveGrid.Models;
 using DataCollectionWizard.Client.Components.LiveGrid.Services;
 using DataCollectionWizard.Client.Extensions;
@@ -59,6 +60,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
     [Inject] private IDataCollectionWizardService DataCollectionWizardService { get; set; } = null!;
     [Inject] private IEventBroker EventBroker { get; set; } = null!;
+    [Inject] private IResourceDownloadStateService ResourceDownloadState { get; set; } = null!;
 
     [Inject(Key = Sdk.Constants.ClientTimeProviderServiceKey)]
     private TimeProvider TimeProvider { get; set; } = default!;
@@ -98,6 +100,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
     private async Task InitLiveView()
     {
+        await ResourceDownloadState.WaitForCompletion();
         await DataCollectionWizardService.WaitForCurrentDeployment(new TimeSpan(0, 1, 0));
         await UpdateDeviceTreeAsync();
 

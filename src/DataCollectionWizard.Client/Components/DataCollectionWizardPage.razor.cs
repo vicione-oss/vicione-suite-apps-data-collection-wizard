@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using ClusterManagement.Public.Services;
 using DataCollectionWizard.Client.Components.ManagementGrid.Models;
 using DataCollectionWizard.Client.Components.ManagementGrid.Services;
 using DataCollectionWizard.Client.Models.DeviceTree;
@@ -182,6 +183,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     [Inject] private IConnectionService ConnectionService { get; set; } = null!;
     [Inject] private IEnumerable<ICloudFilter> CloudFilters { get; set; } = null!;
     [Inject] private IDataCollectionWizardService DataCollectionWizardService { get; set; } = null!;
+    [Inject] private IResourceDownloadStateService ResourceDownloadState { get; set; } = null!;
     [Inject] private IJSRuntime Js { get; set; } = default!;
     [Inject] private IMessageBannerService MessageBannerService { get; set; } = default!;
     [Inject] private IUiMediator Mediator { get; set; } = default!;
@@ -385,6 +387,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     {
         try
         {
+            await ResourceDownloadState.WaitForCompletion();
             await DataCollectionWizardService.WaitForCurrentDeployment(new TimeSpan(0, 1, 0));
             await DataCollectionWizardService.AddIoLinkScannerDataflow(_service.LogLevel);
             await UpdateDeviceTreeAsync(false, false);

@@ -1,5 +1,6 @@
 ﻿using Bunit;
 using ClusterManagement.Public.DataflowEvents;
+using ClusterManagement.Public.Services;
 using DataCollectionWizard.Client.Components;
 using DataCollectionWizard.Client.Services;
 using DataCollectionWizard.Client.Tests.Extensions;
@@ -37,6 +38,7 @@ public class DataCollectionWizardPageTests
         ctx.Services.AddTooltip();
         ctx.Services.AddScoped(_ => Substitute.For<IClientModuleLocalizer<DataCollectionWizardClientModule>>());
         ctx.Services.AddScoped(_ => Substitute.For<IEventBroker>());
+        ctx.Services.AddScoped(_ => Substitute.For<IResourceDownloadStateService>());
         ctx.Services.AddDialog();
 
         // Act
