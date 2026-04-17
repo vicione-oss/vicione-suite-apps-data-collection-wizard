@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.1 - Unreleased
+
+### Fix
+
+- `KeyNotFoundException` when selecting a tree node that contains newly discovered data nodes (`DeviceTreeProcessData`) not yet present in the path dictionary
+
 ## 2.0.0 - 2026-04-16
 
 ### Changed
@@ -28,7 +34,6 @@
 - `ViciOne.Ui.Blazor.Components` package, update version to `5.8.0`
 - `ViciOne.Ui.MonochromeIcons.Assets` packages, update version to `4.7.0`
 - `ViciOne.Ui.TreeEditor` package, update version to `2.0.0`
-
 
 ## 1.4.2 - 2026-02-21
 

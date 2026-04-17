@@ -434,8 +434,8 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _tree = root;
         _allNodes = _tree.GetNodeAndDescendants().ToDictionary(n => n.Id, n => n);
 
-        _adapter.SetDeviceTree(_tree, expandToOfflineNodes);
         _nodePaths = GetNodePaths([_tree]);
+        _adapter.SetDeviceTree(_tree, expandToOfflineNodes);
         _service.HasOfflineNodes = _tree.GetNodeAndDescendants().Any(n => n.IsOffline && n is not IDeviceTreeMasterNode);
     }
 
