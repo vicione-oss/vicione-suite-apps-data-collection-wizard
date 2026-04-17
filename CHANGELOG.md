@@ -4,7 +4,8 @@
 
 ### Fix
 
-- `KeyNotFoundException` when selecting a tree node that contains newly discovered data nodes (`DeviceTreeProcessData`) not yet present in the path dictionary
+- `KeyNotFoundException` when selecting a tree node that contains newly discovered data nodes (`DeviceTreeProcessData`) not yet present in the path Dictionary
+- Text alignment has been adjusted in the dialogs for adding devices and editing aliases
 
 ## 2.0.0 - 2026-04-16
 
