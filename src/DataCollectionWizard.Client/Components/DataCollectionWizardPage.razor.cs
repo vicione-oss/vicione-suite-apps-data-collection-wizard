@@ -150,6 +150,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     ];
     private TimedMessage[] _loadingSpinnerMessages = [];
     private readonly List<Connection> _publishTargets = [];
+    private List<PublishTargetInfo> _publishTargetInfos = [];
     private Dialog? _refAddIoLinkMasterDialog;
     private DxTextBox? _refAddIoLinkMasterTextBox;
     private Dialog? _refAddVSEDialog;
@@ -305,6 +306,15 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     {
         _publishTargets.Clear();
         _publishTargets.AddRange(PublishTargetsFilter.GetPublishTargets(ConnectionService.Connections, CloudFilters));
+
+        var moneoFilter = new MoneoCloudFilter();
+        _publishTargetInfos = [.. _publishTargets.Select(c =>
+        {
+            var kind = AnnaCloudFilter.IsAnnaConnection(c) ? ConnectionKind.Anna
+                     : moneoFilter.GetCloudConnections([c]).Any() ? ConnectionKind.Moneo
+                     : ConnectionKind.Unsupported;
+            return new PublishTargetInfo(c, kind);
+        })];
     }
 
     private IEnumerable<DcpDevice> FilterScannedDevices(IEnumerable<DcpDevice> devices)
@@ -437,6 +447,9 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _nodePaths = GetNodePaths([_tree]);
         _adapter.SetDeviceTree(_tree, expandToOfflineNodes);
         _service.HasOfflineNodes = _tree.GetNodeAndDescendants().Any(n => n.IsOffline && n is not IDeviceTreeMasterNode);
+
+        foreach (var dataNode in treeNodes.OfType<IDeviceTreeDataNode>())
+            dataNode.AddConfigurations(_publishTargets);
     }
 
     private bool TryGetExistingDeviceTreeMaster(IDeviceTreeMasterNode device, out IDeviceTreeMasterNode? existingDevice)
@@ -886,6 +899,14 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
     private async void OnTreeSelectionChangedAsync()
     {
+        // Phase 1: clear the grid immediately so the UI does not freeze on large datasets.
+        _service.GridItems = [];
+        await InvokeAsync(StateHasChanged);
+
+        // Yield to allow the render cycle to complete before rebuilding.
+        await Task.Yield();
+
+        // Phase 2: build and display the new grid items.
         SetGridItems();
         await InvokeAsync(StateHasChanged);
     }
@@ -1110,16 +1131,11 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         ];
 
         ManagementGridRowModel DataNodeToGridModel(IDeviceTreeDataNode dataNode)
-        {
-            var model = new ManagementGridRowModel
+            => new()
             {
                 DataNode = dataNode,
                 PathToNode = _nodePaths![dataNode],
             };
-
-            model.DataNode.AddConfigurations(_publishTargets);
-            return model;
-        }
     }
 
     private void SetNodesIsOffline(string[] nodeIds, bool isOffline)

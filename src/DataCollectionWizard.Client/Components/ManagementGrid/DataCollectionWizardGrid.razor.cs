@@ -1,7 +1,10 @@
 ﻿using System.ComponentModel;
+using DataCollectionWizard.Client.Components.ManagementGrid.Models;
 using DataCollectionWizard.Client.Components.ManagementGrid.Services;
+using DataCollectionWizard.Client.Models;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
 using Sdk.Connections.Contracts;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
@@ -13,6 +16,8 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
     private IJSObjectReference? _jsModule;
     private ElementReference _mainContainerRef = default!;
     private bool _resetScrollPositionAfterNextRender;
+    private Virtualize<IndexedItem<ManagementGridRowModel>>? _virtualizeRef;
+    private List<IndexedItem<ManagementGridRowModel>> _indexedItems = [];
 
     [CascadingParameter]
     private ManagementGridService Service { get; set; } = default!;
@@ -30,10 +35,26 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
     public EventCallback<IDeviceTreeMasterNode> OnDeviceTreeChanged { get; set; }
 
     [Parameter, EditorRequired]
-    public IEnumerable<Connection> PublishTargets { get; set; } = [];
+    public IReadOnlyList<PublishTargetInfo> PublishTargetInfos { get; set; } = [];
 
     [Parameter]
     public int RawDataPullingMaxTimesADay { get; set; } = 12;
+
+    private string GridColumnsStyle
+    {
+        get
+        {
+            var deviceName = "minmax(160px, 320px)";
+            var targets = string.Join(" 80px ", Enumerable.Repeat("minmax(356px, 356px)", PublishTargetInfos.Count));
+            var absorption = "1fr";
+
+            var targetsPart = targets.Length > 0 ? $" {targets}" : string.Empty;
+
+            return Service.PathVisible
+                ? $"minmax(190px, 520px) 24px {deviceName}{targetsPart} {absorption}"
+                : $"{deviceName}{targetsPart} {absorption}";
+        }
+    }
 
     public void Dispose()
         => Dispose(true);
@@ -64,9 +85,6 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
         Dispose(false);
     }
 
-    private static bool IsSupportedConnection(Connection connection)
-        => connection is not null && new AnnaCloudFilter().GetCloudConnections([connection]).Any();
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -83,12 +101,16 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
     {
         Service.PropertyChanged += OnServicePropertyChanged;
         Service.RefreshRequested += RefreshAsync;
+        RebuildIndexedItems();
     }
 
     private void OnServicePropertyChanged(object? _1, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is nameof(ManagementGridService.FilteredGridItems))
+        {
             _resetScrollPositionAfterNextRender = true;
+            RebuildIndexedItems();
+        }
 
         var refresh = e.PropertyName
             is nameof(ManagementGridService.DeviceTreeChanged)
@@ -98,6 +120,16 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
             RefreshAsync();
     }
 
+    private void RebuildIndexedItems()
+        => _indexedItems = [.. Service.FilteredGridItems.Select((item, idx) => new IndexedItem<ManagementGridRowModel>(idx, item))];
+
     private async void RefreshAsync()
-        => await InvokeAsync(StateHasChanged);
+    {
+        await InvokeAsync(async () =>
+        {
+            StateHasChanged();
+            if (_virtualizeRef is not null)
+                await _virtualizeRef.RefreshDataAsync();
+        });
+    }
 }

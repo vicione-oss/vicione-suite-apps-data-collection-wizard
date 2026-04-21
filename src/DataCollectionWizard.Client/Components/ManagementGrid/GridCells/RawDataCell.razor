@@ -16,7 +16,7 @@
 
     @foreach (var sensor in _triggers!)
     {
-        var triggerConfig = sensor.Triggers.First(t => t.DataGroupIdentifier == Configuration!.Id);
+        var triggerConfig = sensor.Triggers.First(t => t.DataGroupIdentifier == Configuration!.Connection.Id);
 
         <div class="row sensor">
             <div class="column enabled">

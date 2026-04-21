@@ -1,6 +1,6 @@
 ﻿using DataCollectionWizard.Client.Components.ManagementGrid.Models;
+using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using Microsoft.AspNetCore.Components;
-using Sdk.Connections.Contracts;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.GridCells;
@@ -20,7 +20,7 @@ public sealed partial class DeviceIdentifierCell : ComponentBase
     public ManagementGridRowModel Model { get; set; } = default!;
 
     [Parameter, EditorRequired]
-    public IEnumerable<Connection> PublishTargets { get; set; } = [];
+    public IReadOnlyList<PublishTargetInfo> PublishTargetInfos { get; set; } = [];
 
     public static IEnumerable<EventTriggerConfiguration> FilterTriggerConfigurations(List<EventTriggerConfiguration> eventTriggerConfigurations, bool isExpanded)
         => isExpanded

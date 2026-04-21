@@ -5,7 +5,6 @@ using DataCollectionWizard.Internal.Contracts;
 using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using Microsoft.AspNetCore.Components;
-using Sdk.Connections.Contracts;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.GridCells;
@@ -54,67 +53,55 @@ public sealed partial class CompressableCell : ComponentBase
     public IDeviceTreeCompressableDataNode CompressableDataNode { get; set; } = default!;
 
     [Parameter, EditorRequired]
-    public Connection Configuration { get; set; } = default!;
+    public PublishTargetInfo Configuration { get; set; } = default!;
 
     [Parameter]
     public EventCallback OnDeviceTreeChanged { get; set; }
 
     private ComboBoxOption<PoolingGrid>[] PoolingGrids
-    {
-        get
+        => Configuration.Kind switch
         {
-            if (Configuration is not null && new AnnaCloudFilter().GetCloudConnections([Configuration]).Any())
-                return s_poolingGridsAnna;
-
-            if (Configuration is not null && new MoneoCloudFilter().GetCloudConnections([Configuration]).Any())
-                return s_poolingGridsMoneo;
-
-            return [];
-        }
-    }
+            ConnectionKind.Anna => s_poolingGridsAnna,
+            ConnectionKind.Moneo => s_poolingGridsMoneo,
+            _ => [],
+        };
 
     private ComboBoxOption<PoolingMode>[] PoolingModes
-    {
-        get
+        => Configuration.Kind switch
         {
-            if (Configuration is not null && new AnnaCloudFilter().GetCloudConnections([Configuration]).Any())
-                return s_poolingModesAnna;
-
-            if (Configuration is not null && new MoneoCloudFilter().GetCloudConnections([Configuration]).Any())
-                return s_poolingModesMoneo;
-
-            return [];
-        }
-    }
+            ConnectionKind.Anna => s_poolingModesAnna,
+            ConnectionKind.Moneo => s_poolingModesMoneo,
+            _ => [],
+        };
 
     private PoolingGrid GetSelectedPoolingGrid()
         => CompressableDataNode.CompressorConfigurations
-            .Single(cc => cc.DataGroupIdentifier == Configuration.Id)
+            .Single(cc => cc.DataGroupIdentifier == Configuration.Connection.Id)
             .CompressionTime
             .ToPoolingGrid();
 
     private PoolingMode GetSelectedPoolingMode()
         => CompressableDataNode.CompressorConfigurations
-            .Single(cc => cc.DataGroupIdentifier == Configuration.Id)
+            .Single(cc => cc.DataGroupIdentifier == Configuration.Connection.Id)
             .PoolingMode;
 
     public bool IsOnChange()
         => CompressableDataNode.CompressorConfigurations
-            .Single(cc => cc.DataGroupIdentifier == Configuration.Id)
+            .Single(cc => cc.DataGroupIdentifier == Configuration.Connection.Id)
             .CompressionTime == -1;
 
     private bool IsPoolingEnabled()
         => CompressableDataNode.CompressorConfigurations
-            .Single(cc => cc.DataGroupIdentifier == Configuration.Id)
+            .Single(cc => cc.DataGroupIdentifier == Configuration.Connection.Id)
             .Enabled;
 
     private bool IsSupportedConnection()
-        => Configuration is not null && new AnnaCloudFilter().GetCloudConnections([Configuration]).Any();
+        => Configuration.IsSupported;
 
     private void PoolingEnabledChanged(bool isEnabled)
     {
         CompressableDataNode.CompressorConfigurations
-            .Single(cc => cc.DataGroupIdentifier == Configuration.Id)
+            .Single(cc => cc.DataGroupIdentifier == Configuration.Connection.Id)
             .Enabled = isEnabled;
 
         Service.InvokeDataPointEnabledChanged(isEnabled);
@@ -124,7 +111,7 @@ public sealed partial class CompressableCell : ComponentBase
     private void PoolingGridChanged(PoolingGrid poolingGrid)
     {
         CompressableDataNode.CompressorConfigurations
-            .Single(cc => cc.DataGroupIdentifier == Configuration.Id)
+            .Single(cc => cc.DataGroupIdentifier == Configuration.Connection.Id)
             .CompressionTime = (int)poolingGrid;
 
         OnDeviceTreeChanged.InvokeAsync();
@@ -133,7 +120,7 @@ public sealed partial class CompressableCell : ComponentBase
     private void PoolingModeChanged(PoolingMode poolingMode)
     {
         CompressableDataNode.CompressorConfigurations
-            .Single(cc => cc.DataGroupIdentifier == Configuration.Id)
+            .Single(cc => cc.DataGroupIdentifier == Configuration.Connection.Id)
             .PoolingMode = poolingMode;
 
         OnDeviceTreeChanged.InvokeAsync();

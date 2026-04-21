@@ -1,7 +1,6 @@
 ﻿using DataCollectionWizard.Client.Components.ManagementGrid.Services;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using Microsoft.AspNetCore.Components;
-using Sdk.Connections.Contracts;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.GridCells;
@@ -11,7 +10,7 @@ public sealed partial class RawDataCell : ComponentBase
     private IEnumerable<EventTriggerConfiguration>? _triggers;
 
     [Parameter]
-    public Connection? Configuration { get; set; }
+    public PublishTargetInfo? Configuration { get; set; }
 
     [Parameter]
     public bool IsExpanded { get; set; }
@@ -54,7 +53,7 @@ public sealed partial class RawDataCell : ComponentBase
             : [.. eventTriggerConfigurations.Where(e => e.IsSensorConfigured || e.Triggers.Any(t => t.Enabled))];
 
     private bool IsSupportedConnection()
-        => Configuration is not null && new AnnaCloudFilter().GetCloudConnections([Configuration]).Any();
+        => Configuration?.IsSupported ?? false;
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
