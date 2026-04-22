@@ -176,6 +176,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private string _ioLinkMasterFilter = string.Empty;
     private List<string> _scanIoLinkErrors = [];
     private string _saveReasons = string.Empty;
+    private bool _gridNeedsRebuild;
     private readonly ManagementGridService _service = new();
     private IDisposable? _subscriptionHandleDeviceTreeApplication;
 
@@ -897,18 +898,44 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             _selectedIoLinkDevices.Remove(deviceAddress);
     }
 
-    private async void OnTreeSelectionChangedAsync()
+    private void OnTreeSelectionChangedAsync()
     {
-        // Phase 1: clear the grid immediately so the UI does not freeze on large datasets.
-        _service.GridItems = [];
-        await InvokeAsync(StateHasChanged);
+        // SelectionChanged can fire from a background thread (e.g. DataflowEventBroker
+        // calling SetDeviceTree inside UpdateDeviceTreeAsync), so InvokeAsync is required
+        // to marshal back to the Blazor circuit dispatcher before touching component state.
+        //
+        // Two-phase render to show the tree selection highlight before the grid is rebuilt:
+        //   Phase 1 — clear the grid and queue a render via StateHasChanged. Blazor will
+        //             include both the empty grid and the sidebar's own selection-highlight
+        //             render in the same batch and send it to the browser.
+        //   Phase 2 — OnAfterRenderedAsync is invoked only after that batch has been sent,
+        //             so SetGridItems() always runs in a subsequent render cycle.
+        //
+        // Note: if Blazor coalesces this StateHasChanged with another pending render
+        // (e.g. a simultaneous node-online event), Phase 1 and Phase 2 may still appear
+        // together. This is expected Blazor Server batching behaviour.
+        _ = InvokeAsync(() =>
+        {
+            _service.GridItems = [];
+            _gridNeedsRebuild = true;
+            StateHasChanged();
+        });
+    }
 
-        // Yield to allow the render cycle to complete before rebuilding.
-        await Task.Yield();
+    protected override Task OnAfterRenderedAsync(bool firstRender)
+    {
+        if (_gridNeedsRebuild)
+        {
+            // Clear the flag before SetGridItems so a re-entrant render does not loop.
+            _gridNeedsRebuild = false;
 
-        // Phase 2: build and display the new grid items.
-        SetGridItems();
-        await InvokeAsync(StateHasChanged);
+            // Phase 2: rebuild grid items. SetGridItems sets _service.GridItems which
+            // triggers the grid component to re-render itself via its own PropertyChanged
+            // subscription — no page-level StateHasChanged needed here.
+            SetGridItems();
+        }
+
+        return Task.CompletedTask;
     }
 
     private async void OpenDeleteAllOfflineDialogAsync()

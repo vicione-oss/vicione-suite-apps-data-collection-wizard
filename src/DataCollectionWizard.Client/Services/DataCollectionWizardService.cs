@@ -356,10 +356,13 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
                 LogReceivedDeviceMessageInfo(_logger, deviceAddress);
 
-                if (handle is not null)
-                {
-                    await handle.DisposeAsync();
-                }
+                // Capture and clear the outer handle variable so the timeout path cannot race
+                // on a double-dispose, then fire-and-forget the unsubscribe.  Disposing from
+                // within the subscriber callback would call Unsubscribe while the broker's
+                // dispatch loop is still on the call stack, risking a race between dictionary
+                // removal and a concurrent re-subscribe for the same event.
+                var handleToDispose = handle;
+                handle = null;
 
                 await timeoutCancellation.CancelAsync();
                 timeoutCancellation.Dispose();
@@ -369,6 +372,9 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
                     DeviceTreeBuilder.RemoveEmptyStructureNodes(device);
                     await callback(device, true, deviceAddress);
                 }
+
+                if (handleToDispose is not null)
+                    _ = Task.Run(() => handleToDispose.DisposeAsync().AsTask());
             });
         }
         catch (Exception ex)
