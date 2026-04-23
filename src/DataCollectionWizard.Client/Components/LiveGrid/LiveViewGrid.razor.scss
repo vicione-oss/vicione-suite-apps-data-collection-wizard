@@ -68,7 +68,7 @@ table {
             max-width: 520px;
         }
 
-        &.last-updated, &.unit, &.value {
+        &.last-changed, &.unit, &.value {
             min-width: 200px;
             max-width: 200px;
         }
@@ -113,7 +113,7 @@ table {
             }
         }
 
-        &.last-updated, &.unit, &.value {
+        &.last-changed, &.unit, &.value {
             align-content: center;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -135,4 +135,9 @@ table {
             z-index: 20;
         }
     }
+}
+
+::deep .icon-header {
+    margin: -5px 3px;
+    position: absolute;
 }

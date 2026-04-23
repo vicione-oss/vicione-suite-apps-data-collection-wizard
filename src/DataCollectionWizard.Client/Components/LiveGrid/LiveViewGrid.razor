@@ -64,10 +64,10 @@
                     </div>
                 </th>
 
-                <th class="last-updated">
-                    <div class="header-template">
+                <th class="last-changed">
+                    <div class="header-template" title=" @(Localization.LiveViewPage.LastChangedHint)">
                         <span></span>
-                        <div>@Localization.LiveViewPage.LastUpdated</div>
+                        <div>@Localization.LiveViewPage.LastChanged <span class="icon-header"><MonochromeIcon Name="@MonochromeIconName.WarningSolid" Size="@MonochromeIconSize.SmallMedium" /></span></div>
                     </div>
                 </th>
 
@@ -126,7 +126,7 @@
                         <span>@item.Unit</span>
                     </td>
 
-                    <td class="last-updated">
+                    <td class="last-changed">
                         <span>@item.LastUpdated</span>
                     </td>
 

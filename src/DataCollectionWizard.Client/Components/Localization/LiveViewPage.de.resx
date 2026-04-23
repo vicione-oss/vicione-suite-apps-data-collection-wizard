@@ -132,8 +132,11 @@
   <data name="Expand" xml:space="preserve">
     <value>Ausklappen</value>
   </data>
-  <data name="LastUpdated" xml:space="preserve">
-    <value>Zuletzt aktualisiert</value>
+  <data name="LastChanged" xml:space="preserve">
+    <value>Zuletzt geändert</value>
+  </data>
+  <data name="LastChangedHint" xml:space="preserve">
+    <value>Diese Spalte aktualisiert sich nur, wenn sich der Wert tatsächlich geändert hat.</value>
   </data>
   <data name="LatestClusterNotRunningDialogHeader" xml:space="preserve">
     <value>Der neueste Cluster ist inaktiv</value>
