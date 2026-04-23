@@ -9,8 +9,8 @@
 @using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions
 @using ViciOne.Ui.Blazor.Components.Dialog.Components
 @using ViciOne.Ui.Blazor.Components.EditorLayout
+@using ViciOne.Ui.Blazor.Components.SearchBox
 @using ViciOne.Ui.Localization.Resources
-@using ViciOne.Ui.Shared.Dx.Components
 
 @attribute [Route(Constants.DataCollectionWizardPageRoute)]
 @attribute [ModuleAuthorize<DataCollectionWizardClientModule>(AccessLevel.Full)]
@@ -201,7 +201,9 @@
                 @if (_ioLinkMasterTabIndex == 1)
                 {
                     <div class="toolbar">
-                        <SearchBox TextChanged="@((e) => SetScannedIoLinkMastersFilter(e))"/>
+                        <SearchBox @bind-Text="@_ioLinkMasterFilter"
+                                   @bind-Text:event="TextChanging"
+                                   Placeholder="@CommonVocabulary.Search" />
 
                         <span class="separator"></span>
 
@@ -220,9 +222,9 @@
                         <label>@(Localization.DataCollectionWizardPage.IoLinkMasterAddress)</label>
 
                         <DxTextBox @bind-Text="_newIoLinkMasterAddress"
-                                    @ref="@_refAddIoLinkMasterTextBox"
-                                    @onkeydown="OnAddIoLinkMasterTextBoxKeyDownAsync"
-                                    BindValueMode="BindValueMode.OnInput" />
+                                   @ref="@_refAddIoLinkMasterTextBox"
+                                   @onkeydown="OnAddIoLinkMasterTextBoxKeyDownAsync"
+                                   BindValueMode="BindValueMode.OnInput" />
 
                         <div class="validation-message-container">
                             @if (!_isIoLinkMasterUriValid)
@@ -253,7 +255,7 @@
                         <div class="device-list">
                             @if (_scanIoLinkErrors.Count > 0)
                             {
-                                <span>@Localization.DataCollectionWizardPage.IoLinkScanErrorDuringScan</span>
+                                <span class="validation-message">@Localization.DataCollectionWizardPage.IoLinkScanErrorDuringScan</span>
 
                                 @foreach (var errorMessage in _scanIoLinkErrors)
                                 {
@@ -262,7 +264,7 @@
                             }
                             else if (_scannedIoLinkDevices.Count == 0)
                             {
-                                <span class="validation-message">@Localization.DataCollectionWizardPage.IoLinkScanNoResult</span>
+                                <span class="validation-message validation-message-info">@Localization.DataCollectionWizardPage.IoLinkScanNoResult</span>
                             }
                             else
                             {
@@ -270,7 +272,7 @@
                                 
                                 @if (filteredDevices.Count() == 0)
                                 {
-                                    <span class="validation-message">@Localization.DataCollectionWizardPage.IoLinkScanFilterNoResult</span>
+                                    <span class="validation-message validation-message-info">@Localization.DataCollectionWizardPage.IoLinkScanFilterNoResult</span>
                                 }
                                 else
                                 {

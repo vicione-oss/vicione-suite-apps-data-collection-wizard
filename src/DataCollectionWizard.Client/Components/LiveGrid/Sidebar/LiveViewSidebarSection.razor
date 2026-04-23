@@ -1,18 +1,24 @@
 ﻿@using DataCollectionWizard.Client.Services
-@using ViciOne.Ui.Shared.Dx.Components
+@using ViciOne.Ui.Blazor.Components.Button
+@using ViciOne.Ui.Blazor.Components.SearchBox
+@using ViciOne.Ui.Localization.Resources
 
 <div class="live-view-section-container">
-    <SearchBox TextChanged="@OnFilterTextChanged">
-        <SearchBoxButton Action="@(() => OnChangeTreeExpansionClicked(true))"
-                         Enabled="@(Service.TreeBuilder.Selection.SelectedNodes.Any())"
-                         Icon="@(SvgIcons.expand)"
-                         Tooltip="@Localization.DataCollectionWizardPage.Expand" />
+    <div class="tree-options">
+        <SearchBox Placeholder="@CommonVocabulary.Search"
+                   Text="@_filterText"
+                   TextChanging="@OnFilterTextChanging" />
 
-        <SearchBoxButton Action="@(() => OnChangeTreeExpansionClicked(false))"
-                         Enabled="@(Service.TreeBuilder.Selection.SelectedNodes.Any())"
-                         Icon="@(SvgIcons.collapse)"
-                         Tooltip="@Localization.DataCollectionWizardPage.Collapse" />
-    </SearchBox>
+        <Button Enabled="@Service.TreeBuilder.Selection.SelectedNodes.Any()"
+                IconCssClass="@s_expandIconCssClass"
+                OnClick="@OnExpandTreeButtonClick"
+                Title="@Localization.DataCollectionWizardPage.Expand" />
+
+        <Button Enabled="@Service.TreeBuilder.Selection.SelectedNodes.Any()"
+                IconCssClass="@s_collapseIconCssClass"
+                OnClick="@OnCollapseTreeButtonClick"
+                Title="@Localization.DataCollectionWizardPage.Collapse" />
+    </div>
     
-    <TreeEditor Builder="@(Service.TreeBuilder)" />
+    <TreeEditor Builder="@Service.TreeBuilder" />
 </div>

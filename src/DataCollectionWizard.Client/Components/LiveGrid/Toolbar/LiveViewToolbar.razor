@@ -1,4 +1,5 @@
-﻿@using ViciOne.Ui.Shared.Dx.Components
+﻿@using ViciOne.Ui.Blazor.Components.SearchBox
+@using ViciOne.Ui.Localization.Resources
 
 <div class="toolbar-container">
     <span class="header">
@@ -6,10 +7,14 @@
     </span>
 
     <div class="searchbox-container">
-        <SearchBox TextChanged="@(e => SearchText = e)" />
+        <SearchBox @bind-Text="SearchText"
+                   @bind-Text:event="TextChanging"
+                   Placeholder="@CommonVocabulary.Search" />
     </div>
 
     <div class="toolbar">
+        <span class="separator"></span>
+
         <button @onclick="@(OnTogglePathVisible)"
                 class="@(Service.PathVisible ? "active" : string.Empty)"
                 title="@Localization.LiveViewPage.PathVisible">

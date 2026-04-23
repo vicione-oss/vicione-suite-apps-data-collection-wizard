@@ -1,7 +1,8 @@
 ﻿@using DataCollectionWizard.Internal.Contracts
 @using DataCollectionWizard.Internal.Extensions
 @using Microsoft.Extensions.Logging
-@using ViciOne.Ui.Shared.Dx.Components
+@using ViciOne.Ui.Blazor.Components.SearchBox
+@using ViciOne.Ui.Localization.Resources
 
 <div class="toolbar-container">
     <span class="header">
@@ -9,10 +10,14 @@
     </span>
 
     <div class="searchbox-container">
-        <SearchBox TextChanged="@(e => SearchText = e)" />
+        <SearchBox Placeholder="@CommonVocabulary.Search" 
+                   @bind-Text="SearchText"
+                   @bind-Text:event="TextChanging" />
     </div>
 
     <div class="toolbar @(_showDebug ? "debug" : string.Empty)">
+        <span class="separator"></span>
+
         <button @onclick="@(OnSaveButtonClicked)"
                 disabled="@(!Service.DeviceTreeChanged || Service.DisableClusterActions)"
                 title="@(_showDebug ? SaveReasons : Localization.DataCollectionWizardPage.Save)">

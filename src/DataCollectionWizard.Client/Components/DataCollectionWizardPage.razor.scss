@@ -54,6 +54,16 @@
 
     .toolbar-container {
         padding: 15px 25px 5px 32px;
+
+        .toolbar {
+            display: grid;
+            grid-auto-flow: column;
+            grid-template-columns: 250px 22px auto;
+
+            .separator {
+                justify-self: end;
+            }
+        }
     }
 
     .content-container {
@@ -184,6 +194,11 @@
 .validation-message {
     overflow: hidden;
     padding-top: 6px;
+    font-size: 14px;
+
+    &.validation-message-info {
+        color: col.$font;
+    }
 }
 
 .validation-message-container {

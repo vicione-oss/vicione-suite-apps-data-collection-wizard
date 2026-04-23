@@ -1,30 +1,37 @@
 ﻿@using DataCollectionWizard.Client.Services
 @using System.Drawing
-@using ViciOne.Ui.Shared.Dx.Components
+@using ViciOne.Ui.Blazor.Components.Button
+@using ViciOne.Ui.Blazor.Components.SearchBox
+@using ViciOne.Ui.Localization.Resources
 
 <div @onclick="@OnContainerClicked"
      class="device-tree-section-container">
+     
+    <div class="tree-options">
+        <SearchBox Placeholder="@CommonVocabulary.Search"
+                   Text="@_filterText"
+                   TextChanging="@OnFilterTextChanging" />
 
-    <SearchBox TextChanged="@OnFilterTextChanged">
-        <SearchBoxButton Action="@(OnAddDeviceClicked)"
-                         Enabled="@(!Service.DisableClusterActions)"
-                         Icon="@(SvgIcons.plus)"
-                         Tooltip="@Localization.DataCollectionWizardPage.AddNewDevice" />
+        <Button Enabled="@(!Service.DisableClusterActions)"
+                IconCssClass="@_plusIconCssClass"
+                OnClick="@OnAddNewDeviceButtonClick"
+                Title="@Localization.DataCollectionWizardPage.AddNewDevice" />
 
-        <SearchBoxButton Action="@(() => OnChangeTreeExpansionClicked(true))"
-                         Enabled="@(Service.TreeBuilder.Selection.SelectedNodes.Any())"
-                         Icon="@(SvgIcons.expand)"
-                         Tooltip="@Localization.DataCollectionWizardPage.Expand" />
+        <Button Enabled="@Service.TreeBuilder.Selection.SelectedNodes.Any()"
+                IconCssClass="@_expandIconCssClass"
+                OnClick="@OnExpandTreeButtonClick"
+                Title="@Localization.DataCollectionWizardPage.Expand" />
 
-        <SearchBoxButton Action="@(() => OnChangeTreeExpansionClicked(false))"
-                         Enabled="@(Service.TreeBuilder.Selection.SelectedNodes.Any())"
-                         Icon="@(SvgIcons.collapse)"
-                         Tooltip="@Localization.DataCollectionWizardPage.Collapse" />
-    </SearchBox>
+        <Button Enabled="@Service.TreeBuilder.Selection.SelectedNodes.Any()"
+                IconCssClass="@_collapseIconCssClass"
+                OnClick="@OnCollapseTreeButtonClick"
+                Title="@Localization.DataCollectionWizardPage.Collapse" />
+    </div>
     
     <TreeEditor Builder="@(Service.TreeBuilder)" />
 </div>
 
+@* Todo: use context menu *@
 @if (_addDeviceMenuRootPosition != Point.Empty)
 {
     <div @onpointerleave="@OnAddDeviceMenuPointerLeave"
@@ -34,14 +41,16 @@
         <div @onclick="@OnAddIoLinkMasterClicked"
              class="menu-entry">
 
-            <div>@((MarkupString)SvgIcons.plus)</div>
+            <MonochromeIcon Name="@MonochromeIconName.PlusSlim" Size="@MonochromeIconSize.SmallMedium" />
+
             <div>@Localization.DataCollectionWizardPage.IoLinkMasterName</div>
         </div>
 
         <div @onclick="@OnAddVseClicked"
              class="menu-entry">
 
-            <div>@((MarkupString)SvgIcons.plus)</div>
+            <MonochromeIcon Name="@MonochromeIconName.PlusSlim" Size="@MonochromeIconSize.SmallMedium" />
+
             <div>@Localization.DataCollectionWizardPage.VseName</div>
         </div>
 

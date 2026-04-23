@@ -308,17 +308,17 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     }
 
     private IEnumerable<DcpDevice> FilterScannedDevices(IEnumerable<DcpDevice> devices)
-    => devices.Where(d =>
-    {
-        if (string.IsNullOrWhiteSpace(_ioLinkMasterFilter))
-            return true;
+        => devices.Where(d =>
+        {
+            if (string.IsNullOrWhiteSpace(_ioLinkMasterFilter))
+                return true;
 
-        return (d.Address?.ToString()?.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase) ?? false)
-            || d.DeviceName.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
-            || d.MacAddress.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
-            || d.VendorId.ToString(CultureInfo.InvariantCulture).Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
-            || d.DeviceId.ToString(CultureInfo.InvariantCulture).Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase);
-    });
+            return (d.Address?.ToString()?.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase) ?? false)
+                || d.DeviceName.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
+                || d.MacAddress.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
+                || d.VendorId.ToString(CultureInfo.InvariantCulture).Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
+                || d.DeviceId.ToString(CultureInfo.InvariantCulture).Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase);
+        });
 
     protected override ValueTask DisposeInternal()
     {
@@ -446,12 +446,6 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     {
         existingDevice = existingMasterNodes.FirstOrDefault(v => device.Url == v.Url);
         return existingDevice is not null;
-    }
-
-    private void SetScannedIoLinkMastersFilter(string filter)
-    {
-        _ioLinkMasterFilter = filter;
-        InvokeAsync(StateHasChanged);
     }
 
     private async Task NodesOffline(string[] arg)
