@@ -8,7 +8,7 @@
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "Instance__HomeDirectory": "AppData_Standalone",
                 "Instance__CacheDirectory": "Cache_Standalone",
-                "ModuleLoader__ModuleDebugPaths__0": "\\data-collection-wizard\\src"
+                "ModuleLoader__ModuleDebugPaths__0": "$(SolutionDir)\\src"
             }
         }
     }
