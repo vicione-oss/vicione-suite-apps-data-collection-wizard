@@ -7,7 +7,8 @@
     grid-template-columns: 70px repeat(2, 120px);
     justify-items: center;
 
-    input, select {
+    input,
+    select {
         background-color: col.$content-dark;
         border-color: col.$border;
         border-radius: 4px;
@@ -31,13 +32,13 @@
         &.combo-box {
             width: 100%;
 
-            > select {
+            >select {
                 width: 100%;
             }
         }
 
         &.spin-edit {
-            > input {
+            >input {
                 width: 100%;
             }
         }

@@ -98,6 +98,8 @@
     >.device-name {
         background-color: col.$background;
         left: 0;
+        max-width: 320px;
+        min-width: 160px;
         position: sticky;
         // Must be above body device-name (z-index 10) and the header background
         // (z-index 15) to form the correct "frozen corner" of the grid.
@@ -117,11 +119,16 @@
     >.device-name {
         display: flex;
         left: 0;
+        max-width: 320px;
+        min-width: 160px;
         position: sticky;
         z-index: 10;
     }
 
     >.device-path {
+        max-width: 520px;
+        min-width: 190px;
+
         .device-path-container {
             align-items: center;
             display: flex;
@@ -144,18 +151,14 @@
         ::deep .device-identifier-cell .caption.sensors span:nth-of-type(even) {
             background-color: col.$background;
         }
-
-        ::deep .raw-data-cell .row.sensor:nth-of-type(odd) {
-            background-color: col.$background;
-        }
     }
 
     &.row-odd {
-        ::deep .device-identifier-cell .caption.sensors span:nth-of-type(even) {
-            background-color: color.adjust(col.$background, $lightness: 2%);
+        >div {
+            background-color: col.$background;
         }
 
-        ::deep .raw-data-cell .row.sensor:nth-of-type(odd) {
+        ::deep .device-identifier-cell .caption.sensors span:nth-of-type(even) {
             background-color: color.adjust(col.$background, $lightness: 2%);
         }
     }

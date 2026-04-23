@@ -47,7 +47,7 @@
 
             }
 
-            > span {
+            >span {
                 background-color: unset !important;
             }
         }
@@ -89,31 +89,31 @@
 .device-status {
     grid-area: status;
 
-    > .status {
+    >.status {
         display: grid;
         grid-column-gap: 4px;
         grid-template-columns: min-content auto;
         white-space: nowrap;
 
         &.error {
-            > .status-dot {
+            >.status-dot {
                 background-color: col.$error;
             }
         }
 
-        &.info{
-            > .status-dot {
+        &.info {
+            >.status-dot {
                 background-color: col.$add;
             }
         }
 
         &.warning {
-            > .status-dot {
+            >.status-dot {
                 background-color: col.$warning;
             }
         }
 
-        > .status-dot {
+        >.status-dot {
             background-color: rebeccapurple;
             border-radius: 8px;
             height: 8px;

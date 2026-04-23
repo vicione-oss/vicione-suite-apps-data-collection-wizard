@@ -44,14 +44,14 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
     {
         get
         {
-            var deviceName = "minmax(160px, 320px)";
-            var targets = string.Join(" 80px ", Enumerable.Repeat("minmax(356px, 356px)", PublishTargetInfos.Count));
+            var deviceName = "max-content";
+            var targets = string.Join(" 80px ", Enumerable.Repeat("334px", PublishTargetInfos.Count));
             var absorption = "1fr";
 
             var targetsPart = targets.Length > 0 ? $" {targets}" : string.Empty;
 
             return Service.PathVisible
-                ? $"minmax(190px, 520px) 24px {deviceName}{targetsPart} {absorption}"
+                ? $"max-content 24px {deviceName}{targetsPart} {absorption}"
                 : $"{deviceName}{targetsPart} {absorption}";
         }
     }
