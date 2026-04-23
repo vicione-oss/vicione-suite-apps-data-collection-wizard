@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.0 - Unreleased
+
+### Changed
+
+- Replaced `Shared.Dx.Components.SearchBox` with `ViciOne.Ui.Blazor.Components.SearchBox`
+
 ## 2.0.1 - 2026-04-17
 
 ### Fix

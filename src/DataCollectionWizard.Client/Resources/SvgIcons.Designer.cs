@@ -19,7 +19,7 @@ namespace DataCollectionWizard.Client.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class SvgIcons {
@@ -133,15 +133,6 @@ namespace DataCollectionWizard.Client.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M7.41,15.41L12,10.83L16.59,15.41L18,14L12,8L6,14L7.41,15.41Z&quot; /&gt;&lt;/svg&gt;.
-        /// </summary>
-        internal static string collapse {
-            get {
-                return ResourceManager.GetString("collapse", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M4,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M4,6V18H11V6H4M20,18V6H18.76C19,6.54 18.95,7.07 18.95,7.13C18.88,7.8 18.41,8.5 18.24,8.75L15.91,11.3L19.23,11.28L19.24,12.5L14.04,12.47L14,11.47C14,11.47 17.05,8.24 17.2,7.95C17.34,7.67 17.91,6 16.5,6C15.27,6.05 15.41,7.3 15.41,7.3L13.87,7.31C13.87,7.31 13.88,6.65 14.25,6H13V18H15.58L15.57,17.14L16.54,17.13C16.54,17.13 17.45,16.97 17.46,16.08C17.5,15.08 16.65,15.08 1 [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string counter {
@@ -174,15 +165,6 @@ namespace DataCollectionWizard.Client.Resources {
         internal static string elevation_rise {
             get {
                 return ResourceManager.GetString("elevation-rise", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z&quot; /&gt;&lt;/svg&gt;.
-        /// </summary>
-        internal static string expand {
-            get {
-                return ResourceManager.GetString("expand", resourceCulture);
             }
         }
         
@@ -255,15 +237,6 @@ namespace DataCollectionWizard.Client.Resources {
         internal static string pencil {
             get {
                 return ResourceManager.GetString("pencil", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z&quot; /&gt;&lt;/svg&gt;.
-        /// </summary>
-        internal static string plus {
-            get {
-                return ResourceManager.GetString("plus", resourceCulture);
             }
         }
         

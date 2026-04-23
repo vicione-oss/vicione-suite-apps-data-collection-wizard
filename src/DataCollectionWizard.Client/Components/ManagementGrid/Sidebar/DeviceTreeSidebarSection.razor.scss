@@ -22,6 +22,29 @@
     right: 0;
     top: 0;
 
+    .tree-options {
+        display: grid;
+        gap: 8px;
+        grid-auto-flow: column;
+        grid-template-columns: auto min-content min-content min-content;
+        margin: 12px 8px 12px 8px;
+
+        ::deep .button {
+            grid-template-columns: unset;
+            height: unset;
+            border-color: col.$border;
+            transition: background-color .3s ease-in-out;
+
+            .icon {
+                margin-left: 0px;
+            }
+
+            &:hover:not(:disabled) {
+                background-color: col.$content-dark-hover;
+            }
+        }
+    }
+
     ::deep .tree-editor-container {
         background-color: inherit;
 

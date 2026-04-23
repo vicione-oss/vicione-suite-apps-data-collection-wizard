@@ -289,7 +289,7 @@
     <value>The configuration of process values is generally supported for all data targets. For the moneo|cloud, this functionality will be enabled once the corresponding features are available. In the meantime, please use the configuration options provided directly in the moneo|cloud.</value>
   </data>
   <data name="IoLinkScanNoResult" xml:space="preserve">
-    <value>No IO-Link Masters were found in network...</value>
+    <value>No IO-Link Masters were found on the network...</value>
   </data>
   <data name="IoLinkScanFilterNoResult" xml:space="preserve">
     <value>The filter applied did not produce any results...</value>

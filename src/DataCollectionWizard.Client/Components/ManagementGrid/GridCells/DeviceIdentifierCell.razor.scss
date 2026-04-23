@@ -45,24 +45,10 @@
             &:hover {
                 color: col.$accent;
 
-                ::deep svg {
-                    path {
-                        fill: col.$accent;
-                    }
-                }
             }
 
             > span {
                 background-color: unset !important;
-            }
-
-            ::deep svg {
-                height: 24px;
-                width: 24px;
-
-                path {
-                    fill: col.$font-dark;
-                }
             }
         }
     }
@@ -135,6 +121,10 @@
             width: 8px;
         }
     }
+}
+
+.expander {
+    display: flex;
 }
 
 .hidden-caption {

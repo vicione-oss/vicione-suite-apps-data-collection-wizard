@@ -106,18 +106,20 @@
                     @if (!Model.IsExpanded)
                     {
                         <button @onclick="@(async () => await SetIsExpandedAsync(true, triggerNode))"
+                                class="expander"
                                 title="@DataCollectionWizardPage.ShowAll">
 
-                            <span>@((MarkupString)SvgIcons.expand)</span>
+                            <MonochromeIcon Name="@MonochromeIconName.ExpanderLightDown" Size="@MonochromeIconSize.SmallMedium" />
                             <span>@DataCollectionWizardPage.ShowAll</span>
                         </button>
                     }
                     else
                     {
                         <button @onclick="@(async () => await SetIsExpandedAsync(false, triggerNode))"
+                                class="expander"
                                 title="@DataCollectionWizardPage.Hide">
 
-                            <span>@((MarkupString)SvgIcons.collapse)</span>
+                            <MonochromeIcon Name="@MonochromeIconName.ExpanderLightTop" Size="@MonochromeIconSize.SmallMedium" />
                             <span>@DataCollectionWizardPage.Hide</span>
                         </button>
                     }

@@ -138,20 +138,23 @@
       <MonochromeIcon Include="cluster-2" Size="32" />
       <MonochromeIcon Include="dataflow-solid" Size="24" />
       <MonochromeIcon Include="data-switch" Size="32" />
+      <MonochromeIcon Include="expander-light-down" Size="24" />
+      <MonochromeIcon Include="expander-light-top" Size="24" />
       <MonochromeIcon Include="export" Size="24" />
       <MonochromeIcon Include="error-solid" Size="16" />
-      <MonochromeIcon Include="error-light" Size="16" />
       <MonochromeIcon Include="hamburger-menu" Size="24" />
       <MonochromeIcon Include="import" Size="24" />
       <MonochromeIcon Include="info-outlined" Size="24" />
       <MonochromeIcon Include="library" Size="32" />
       <MonochromeIcon Include="new" Size="24" />
       <MonochromeIcon Include="new-in-wizard" Size="24" />
+      <MonochromeIcon Include="plus-slim" Size="24" />
       <MonochromeIcon Include="properties" Size="32" />
       <MonochromeIcon Include="published-connector-full" Size="32" />
       <MonochromeIcon Include="save-outline" Size="24" />
       <MonochromeIcon Include="search-and-tools" Size="32" />
       <MonochromeIcon Include="test-tube-solid" Size="32" />
+      <MonochromeIcon Include="warning-solid" Size="16" />
     </ItemGroup>
 
     <PropertyGroup>

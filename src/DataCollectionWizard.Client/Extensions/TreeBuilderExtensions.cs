@@ -7,7 +7,7 @@ namespace DataCollectionWizard.Client.Extensions;
 
 public static class TreeBuilderExtensions
 {
-    public static void ApplyFilter(this TreeBuilder treeBuilder, string filterExpression)
+    public static void ApplyFilter(this TreeBuilder treeBuilder, string? filterExpression)
     {
         if (string.IsNullOrWhiteSpace(filterExpression))
             treeBuilder.Filter.SetFilter([]);

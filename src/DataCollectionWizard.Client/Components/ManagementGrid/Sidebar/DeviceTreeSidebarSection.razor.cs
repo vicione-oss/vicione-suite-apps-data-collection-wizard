@@ -3,12 +3,20 @@ using DataCollectionWizard.Client.Components.ManagementGrid.Services;
 using DataCollectionWizard.Client.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using ViciOne.Ui.MonochromeIcons.Core.Enums;
+using ViciOne.Ui.MonochromeIcons.Core.Extensions;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Nodes;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.Sidebar;
 
 public sealed partial class DeviceTreeSidebarSection : ComponentBase, IDisposable
 {
+    private string? _filterText;
+
+    private readonly string _expandIconCssClass = MonochromeIconName.ExpanderLightDown.GetCssClasses(MonochromeIconSize.SmallMedium).ToSpaceSeparated();
+    private readonly string _collapseIconCssClass = MonochromeIconName.ExpanderLightTop.GetCssClasses(MonochromeIconSize.SmallMedium).ToSpaceSeparated();
+    private readonly string _plusIconCssClass = MonochromeIconName.PlusSlim.GetCssClasses(MonochromeIconSize.SmallMedium).ToSpaceSeparated();
+
     private Point _addDeviceMenuRootPosition = Point.Empty;
     private bool _displayAddDeviceMenu;
 
@@ -27,10 +35,14 @@ public sealed partial class DeviceTreeSidebarSection : ComponentBase, IDisposabl
         Service.TreeBuilder.Selection.SelectionChanged -= OnTreeSelectionChangedAsync;
     }
 
-    private void OnFilterTextChanged(string filterText)
-        => Service.TreeBuilder.ApplyFilter(filterText);
+    private void OnFilterTextChanging(string? filterText)
+    {
+        _filterText = filterText;
 
-    private void OnAddDeviceClicked()
+        Service.TreeBuilder.ApplyFilter(filterText);
+    }
+
+    private void OnAddNewDeviceButtonClick()
         => _displayAddDeviceMenu = true;
 
     private void OnAddDeviceMenuPointerLeave()
@@ -48,8 +60,11 @@ public sealed partial class DeviceTreeSidebarSection : ComponentBase, IDisposabl
         Service.RequestAddNewVse();
     }
 
-    private void OnChangeTreeExpansionClicked(bool expand)
-        => Service.TreeBuilder.ChangeExpansion(expand);
+    private void OnExpandTreeButtonClick()
+        => Service.TreeBuilder.ChangeExpansion(true);
+
+    private void OnCollapseTreeButtonClick()
+        => Service.TreeBuilder.ChangeExpansion(false);
 
     private void OnContainerClicked(MouseEventArgs e)
     {
