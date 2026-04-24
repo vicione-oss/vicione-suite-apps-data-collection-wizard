@@ -396,7 +396,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
         Builder.Expansion.ExpansionChanged += OnExpansionChanged;
 
         // apply default settings
-        Builder.Settings.ActionsAlignment = ActionAlignment.ByMax;
+        Builder.Settings.ActionsAlignment = ActionAlignment.None;
         Builder.Settings.ActionsVisibility = ActionVisibility.Hover;
 
         Builder.DragAndDrop.EnableInbound = false;
