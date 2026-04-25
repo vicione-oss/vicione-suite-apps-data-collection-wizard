@@ -132,8 +132,11 @@
   <data name="Expand" xml:space="preserve">
     <value>Expand</value>
   </data>
-  <data name="LastUpdated" xml:space="preserve">
-    <value>Last updated</value>
+  <data name="LastChanged" xml:space="preserve">
+    <value>Last changed</value>
+  </data>
+  <data name="LastChangedHint" xml:space="preserve">
+    <value>This column is updated only if the value has actually changed.</value>
   </data>
   <data name="LatestClusterNotRunningDialogHeader" xml:space="preserve">
     <value>Latest Cluster is not Active</value>

@@ -5,6 +5,7 @@
 ### Changed
 
 - Replaced `Shared.Dx.Components.SearchBox` with `ViciOne.Ui.Blazor.Components.SearchBox`
+- Renamed Live View column from "Last updated" to "Last changed" and added a tooltip
 
 ## 2.0.1 - 2026-04-17
 

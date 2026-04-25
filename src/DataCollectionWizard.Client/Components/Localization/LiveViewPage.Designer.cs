@@ -19,7 +19,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class LiveViewPage {
@@ -108,9 +108,18 @@ namespace DataCollectionWizard.Client.Components.Localization {
         /// <summary>
         ///   Looks up a localized string similar to Last updated.
         /// </summary>
-        internal static string LastUpdated {
+        internal static string LastChanged {
             get {
-                return ResourceManager.GetString("LastUpdated", resourceCulture);
+                return ResourceManager.GetString("LastChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This column is updated only if the value has actually changed..
+        /// </summary>
+        internal static string LastChangedHint {
+            get {
+                return ResourceManager.GetString("LastChangedHint", resourceCulture);
             }
         }
         
