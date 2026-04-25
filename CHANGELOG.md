@@ -7,6 +7,10 @@
 - Replaced `Shared.Dx.Components.SearchBox` with `ViciOne.Ui.Blazor.Components.SearchBox`
 - Renamed Live View column from "Last updated" to "Last changed" and added a tooltip
 
+### Fix
+
+- Icon for deleting ProcessData was misaligned when only a single action button was available
+
 ## 2.0.1 - 2026-04-17
 
 ### Fix
