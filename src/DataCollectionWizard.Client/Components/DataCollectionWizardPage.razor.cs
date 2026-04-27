@@ -595,6 +595,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                 return;
             }
 
+            _selectedIoLinkDevices.Clear();
             _selectedIoLinkDevices.Add(_newIoLinkMasterAddress);
         }
 
