@@ -374,7 +374,13 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
                 }
 
                 if (handleToDispose is not null)
-                    _ = Task.Run(() => handleToDispose.DisposeAsync().AsTask());
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        try { await handleToDispose.DisposeAsync(); }
+                        catch (Exception ex) { LogClusterSubscriptionFailed(_logger, ex.GetType(), ex.Message, ex.StackTrace); }
+                    });
+                }
             });
         }
         catch (Exception ex)

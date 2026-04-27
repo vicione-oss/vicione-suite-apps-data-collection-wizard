@@ -109,7 +109,7 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
         if (e.PropertyName is nameof(ManagementGridService.FilteredGridItems))
         {
             _resetScrollPositionAfterNextRender = true;
-            RebuildIndexedItems();
+            _ = InvokeAsync(RebuildIndexedItems);
         }
 
         var refresh = e.PropertyName
