@@ -5,11 +5,14 @@ using ViciOne.Ui.TreeEditor.Builder;
 
 namespace DataCollectionWizard.Client.Components.LiveGrid.Services;
 
-internal sealed class LiveGridService : INotifyPropertyChanged
+internal sealed class LiveGridService : INotifyPropertyChanged, IDisposable
 {
     private IEnumerable<LiveGridRowModel> _filteredGridItems = [];
     private IEnumerable<LiveGridRowModel> _gridItems = [];
     private string _toolbarSearchText = string.Empty;
+    private Timer? _refreshBatchTimer;
+    private bool _refreshRequested;
+    private const int RefreshBatchIntervalMs = 50;
 
     public IEnumerable<LiveGridRowModel> FilteredGridItems
     {
@@ -57,7 +60,22 @@ internal sealed class LiveGridService : INotifyPropertyChanged
     public event Action? RefreshRequested;
 
     public void Refresh()
-        => RefreshRequested?.Invoke();
+    {
+        _refreshRequested = true;
+        _refreshBatchTimer ??= new Timer(ProcessBatchedRefresh, null, RefreshBatchIntervalMs, Timeout.Infinite);
+    }
+
+    private void ProcessBatchedRefresh(object? state)
+    {
+        if (_refreshRequested)
+        {
+            _refreshRequested = false;
+            RefreshRequested?.Invoke();
+        }
+
+        _refreshBatchTimer?.Dispose();
+        _refreshBatchTimer = null;
+    }
 
     public void RequestRebrowse()
         => RebrowseRequested?.Invoke();
@@ -76,4 +94,7 @@ internal sealed class LiveGridService : INotifyPropertyChanged
                 || gi.PathToNode.GetBreadcrumb().Contains(filterText, StringComparison.OrdinalIgnoreCase)
             )];
     }
+
+    public void Dispose()
+        => _refreshBatchTimer?.Dispose();
 }

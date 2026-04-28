@@ -8,6 +8,7 @@ using DataCollectionWizard.Client.Components.LiveGrid.Models;
 using DataCollectionWizard.Client.Components.LiveGrid.Services;
 using DataCollectionWizard.Client.Extensions;
 using DataCollectionWizard.Client.Services;
+using DataCollectionWizard.Internal.Contracts;
 using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Public.Extensions;
 using Microsoft.AspNetCore.Components;
@@ -284,80 +285,96 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
         var mapping = await DataCollectionWizardService.GetOutputConnectorMappingAsync();
         var mappingByNodeId = mapping.ToDictionary(m => m.ProcessDataId);
-        var gridItemsByNodeId = _service.GridItems.ToDictionary(gi => gi.DataNode.Id);
 
         var nodesToSubscribe = _service.FilteredGridItems
             .Select(lvrm => lvrm.DataNode)
             .OfType<IDeviceTreeLiveDataNode>()
             .ToArray();
 
-        foreach (var node in nodesToSubscribe)
+        // Create all subscription tasks in parallel instead of awaiting each one
+        var subscriptionTasks = nodesToSubscribe
+            .Where(node => mappingByNodeId.TryGetValue(node.Id, out _))
+            .Select(node => SubscribeToNodeAsync(node, mappingByNodeId, cancellationToken))
+            .ToArray();
+
+        await Task.WhenAll(subscriptionTasks);
+    }
+
+    private async Task SubscribeToNodeAsync(
+        IDeviceTreeLiveDataNode node,
+        Dictionary<string, ValueMappingEntry> mappingByNodeId,
+        CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+            return;
+
+        if (!mappingByNodeId.TryGetValue(node.Id, out var mapData))
+            return;
+
+        if (_handles.TryGetValue(node, out var valueTuple) && valueTuple.Item1 is not null)
+            return;
+
+        IAsyncDisposable? processValueHandle = null;
+
+        try
         {
-            if (cancellationToken.IsCancellationRequested)
-                break;
+            Task ValueHandler(DateTime t, string? e)
+            {
+                var item = _service.GridItems.FirstOrDefault(i => i.DataNode.Id == node.Id);
+                if (item is null)
+                    return Task.CompletedTask;
 
-            if (!mappingByNodeId.TryGetValue(node.Id, out var mapData))
-                continue;
+                if (e is not null)
+                    item.Value = e;
 
-            if (_handles.TryGetValue(node, out var valueTuple) && valueTuple.Item1 is not null)
-                return;
+                item.LastUpdated = t > DateTime.MinValue
+                    ? TimeZoneInfo.ConvertTime(t, TimeProvider.LocalTimeZone).ToString(CultureInfo.CurrentCulture)
+                    : string.Empty;
 
-            IAsyncDisposable? processValueHandle = null;
+                _service.Refresh();
+                return Task.CompletedTask;
+            }
 
+            processValueHandle = await EventBroker.Subscribe(mapData.ValueOutputIdUI, ValueHandler);
+        }
+        catch (Exception ex)
+        {
+            LogSubscribeTopicError(Logger, mapData.ValueOutputIdUI, node.Id, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+        }
+
+        IAsyncDisposable? unitHandle = null;
+        if (mapData.UnitOutputId is not null)
+        {
             try
             {
-                processValueHandle = await EventBroker.Subscribe(mapData.ValueOutputIdUI, (t, e) =>
+                Task UnitHandler(DateTime _, string? e)
                 {
-                    if (!gridItemsByNodeId.TryGetValue(node.Id, out var item))
+                    var item = _service.GridItems.FirstOrDefault(i => i.DataNode.Id == node.Id);
+                    if (item is null)
                         return Task.CompletedTask;
 
                     if (e is not null)
-                        item.Value = e;
+                    {
+                        var unit = JsonSerializer.Deserialize<string>(e);
+                        if (unit is not null)
+                        {
+                            item.Unit = unit;
+                            _service.Refresh();
+                        }
+                    }
 
-                    item.LastUpdated = t > DateTime.MinValue
-                        ? TimeZoneInfo.ConvertTime(t, TimeProvider.LocalTimeZone).ToString(CultureInfo.CurrentCulture)
-                        : string.Empty;
-
-                    _service.Refresh();
                     return Task.CompletedTask;
-                });
+                }
+
+                unitHandle = await EventBroker.Subscribe(mapData.UnitOutputId.Value, UnitHandler);
             }
             catch (Exception ex)
             {
-                LogSubscribeTopicError(Logger, mapData.ValueOutputIdUI, node.Id, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+                LogSubscribeTopicError(Logger, mapData.ValueOutputIdUI, $"{node.Id} (Unit)", ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
             }
-
-            IAsyncDisposable? unitHandle = null;
-            if (mapData.UnitOutputId is not null)
-            {
-                try
-                {
-                    unitHandle = await EventBroker.Subscribe(mapData.UnitOutputId.Value, (_, e) =>
-                    {
-                        if (!gridItemsByNodeId.TryGetValue(node.Id, out var item))
-                            return Task.CompletedTask;
-
-                        if (e is not null)
-                        {
-                            var unit = JsonSerializer.Deserialize<string>(e);
-                            if (unit is not null)
-                            {
-                                item.Unit = unit;
-                                _service.Refresh();
-                            }
-                        }
-
-                        return Task.CompletedTask;
-                    });
-                }
-                catch (Exception ex)
-                {
-                    LogSubscribeTopicError(Logger, mapData.ValueOutputIdUI, $"{node.Id} (Unit)", ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
-                }
-            }
-
-            _handles[node] = (processValueHandle, unitHandle);
         }
+
+        _handles[node] = (processValueHandle, unitHandle);
     }
 
     private async Task UpdateDeviceTreeAsync()
