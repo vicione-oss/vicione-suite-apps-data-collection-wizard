@@ -283,6 +283,9 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
             return;
 
         var mapping = await DataCollectionWizardService.GetOutputConnectorMappingAsync();
+        var mappingByNodeId = mapping.ToDictionary(m => m.ProcessDataId);
+        var gridItemsByNodeId = _service.GridItems.ToDictionary(gi => gi.DataNode.Id);
+
         var nodesToSubscribe = _service.FilteredGridItems
             .Select(lvrm => lvrm.DataNode)
             .OfType<IDeviceTreeLiveDataNode>()
@@ -293,8 +296,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
             if (cancellationToken.IsCancellationRequested)
                 break;
 
-            var mapData = mapping.FirstOrDefault(e => e.ProcessDataId == node.Id);
-            if (mapData is null)
+            if (!mappingByNodeId.TryGetValue(node.Id, out var mapData))
                 continue;
 
             if (_handles.TryGetValue(node, out var valueTuple) && valueTuple.Item1 is not null)
@@ -306,13 +308,15 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
             {
                 processValueHandle = await EventBroker.Subscribe(mapData.ValueOutputIdUI, (t, e) =>
                 {
-                    var item = _service.GridItems.First(i => i.DataNode.Id == node.Id);
+                    if (!gridItemsByNodeId.TryGetValue(node.Id, out var item))
+                        return Task.CompletedTask;
+
                     if (e is not null)
                         item.Value = e;
 
                     item.LastUpdated = t > DateTime.MinValue
-                        ? item.LastUpdated = TimeZoneInfo.ConvertTime(t, TimeProvider.LocalTimeZone).ToString(CultureInfo.CurrentCulture)
-                        : item.LastUpdated = string.Empty;
+                        ? TimeZoneInfo.ConvertTime(t, TimeProvider.LocalTimeZone).ToString(CultureInfo.CurrentCulture)
+                        : string.Empty;
 
                     _service.Refresh();
                     return Task.CompletedTask;
@@ -330,12 +334,15 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
                 {
                     unitHandle = await EventBroker.Subscribe(mapData.UnitOutputId.Value, (_, e) =>
                     {
+                        if (!gridItemsByNodeId.TryGetValue(node.Id, out var item))
+                            return Task.CompletedTask;
+
                         if (e is not null)
                         {
                             var unit = JsonSerializer.Deserialize<string>(e);
                             if (unit is not null)
                             {
-                                _service.GridItems.First(i => i.DataNode.Id == node.Id).Unit = unit;
+                                item.Unit = unit;
                                 _service.Refresh();
                             }
                         }
