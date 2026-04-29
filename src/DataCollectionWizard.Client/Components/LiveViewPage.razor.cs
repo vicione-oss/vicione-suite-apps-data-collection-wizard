@@ -95,6 +95,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         await UnsubscribeAllAsync();
 
         _semaphore.Dispose();
+        _service.Dispose();
 
         await base.DisposeInternal();
     }

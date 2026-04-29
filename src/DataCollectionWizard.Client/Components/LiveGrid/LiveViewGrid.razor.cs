@@ -26,7 +26,6 @@ public sealed partial class LiveViewGrid : ComponentBase, IDisposable, IAsyncDis
         {
             Service.PropertyChanged -= OnServicePropertyChanged;
             Service.RefreshRequested -= RefreshAsync;
-            Service.Dispose();
         }
     }
 
