@@ -4,14 +4,8 @@ namespace DataCollectionWizard.Backend.Services;
 
 public sealed partial class DeviceTreeGuard
 {
-    [LoggerMessage(LogLevel.Error, "Failed to wait for cluster to load")]
-    public static partial void LogLoadClusterError(ILogger logger);
-
     [LoggerMessage(LogLevel.Warning, "Failed to check for DeviceTree updates for device {masterAddress}, no DeviceTree connectors")]
     public static partial void LogNoDeviceTreeConnectorWarning(ILogger logger, Uri masterAddress);
-
-    [LoggerMessage(LogLevel.Error, "DeviceTreeGuard: Checking if events can be subscribed already, this may result in error log entries regarding not yet loaded FunctionBlock designs. Please ignore these.")]
-    public static partial void LogIgnoreErrors(ILogger logger);
 
     [LoggerMessage(LogLevel.Information, "Received DeviceTree event, triggering Nodes*Off*lineEvent for {offlineNodes} nodes")]
     public static partial void LogTriggeringNodesOffline(ILogger logger, int offlineNodes);

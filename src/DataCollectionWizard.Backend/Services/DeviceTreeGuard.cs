@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using ClusterManagement.Public.DataflowEvents;
+using ClusterManagement.Public.Services;
 using DataCollectionWizard.Internal;
 using DataCollectionWizard.Internal.Events;
 using DataCollectionWizard.Internal.Requests;
@@ -36,49 +37,6 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
         _eventBrokerScope = serviceProvider.CreateAsyncScope();
 
         _ = InitDeviceTreeGuard();
-    }
-
-    private async Task AwaitLoadFunctionBlocks()
-    {
-        Guid firstOutput;
-        bool hasConnectors;
-
-        lock (_deviceTreeConnectorsLock)
-        {
-            hasConnectors = _deviceTreeConnectors.Count > 0;
-            firstOutput = hasConnectors ? _deviceTreeConnectors.Values.First().deviceTreeOutput : default;
-        }
-
-        if (!hasConnectors)
-            return;
-
-        LogIgnoreErrors(_logger);
-        var eventBroker = _eventBrokerScope.ServiceProvider.GetRequiredService<IEventBroker>();
-
-        for (var count = 0; count < 20; count++)
-        {
-            IAsyncDisposable? handle = null;
-
-            try
-            {
-                handle = await eventBroker.Subscribe(firstOutput, (t, v) => Task.CompletedTask);
-                await handle.DisposeAsync();
-                return;
-            }
-            catch
-            {
-                await Task.Delay(10000);
-            }
-            finally
-            {
-                if (handle is not null)
-                {
-                    await handle.DisposeAsync();
-                }
-            }
-        }
-
-        LogLoadClusterError(_logger);
     }
 
     private async Task DeviceEventHandler(Type deviceType, string? deviceTreeJson)
@@ -182,7 +140,11 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
     {
         await LoadDeviceConnectorsAsync();
         await RequestDeviceTree();
-        await AwaitLoadFunctionBlocks();
+
+        using var scope = _serviceProvider.CreateScope();
+        var downloadState = scope.ServiceProvider.GetRequiredService<IResourceDownloadStateService>();
+
+        await downloadState.WaitForCompletion();
         await UpdateSubscriptionsAsync();
     }
 
