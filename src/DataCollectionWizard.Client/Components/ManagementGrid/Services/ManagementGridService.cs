@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using DataCollectionWizard.Client.Components.ManagementGrid.Models;
-using DataCollectionWizard.Client.Extensions;
 using DataCollectionWizard.Internal.Contracts;
 using Microsoft.Extensions.Logging;
 using ViciOne.Ui.TreeEditor.Builder;
@@ -11,7 +10,7 @@ internal sealed class ManagementGridService : INotifyPropertyChanged
 {
     private bool _deviceTreeChanged;
     private bool _disableClusterActions;
-    private IEnumerable<ManagementGridRowModel> _filteredGridItems = [];
+    private IReadOnlyList<ManagementGridRowModel> _filteredGridItems = [];
     private IEnumerable<ManagementGridRowModel> _gridItems = [];
     private bool _hasOfflineNodes;
     private string _toolbarSearchText = string.Empty;
@@ -31,7 +30,7 @@ internal sealed class ManagementGridService : INotifyPropertyChanged
 
     public LogLevel LogLevel { get; set; } = LogLevel.Error;
 
-    public IEnumerable<ManagementGridRowModel> FilteredGridItems
+    public IReadOnlyList<ManagementGridRowModel> FilteredGridItems
     {
         get => _filteredGridItems;
         private set
@@ -117,14 +116,14 @@ internal sealed class ManagementGridService : INotifyPropertyChanged
     {
         if (string.IsNullOrWhiteSpace(filterText))
         {
-            FilteredGridItems = GridItems;
+            FilteredGridItems = [.. GridItems];
             return;
         }
 
         FilteredGridItems = [.. GridItems
             .Where(gi =>
                 gi.DataNode.Name.Contains(filterText, StringComparison.OrdinalIgnoreCase)
-                || gi.PathToNode.GetBreadcrumb().Contains(filterText, StringComparison.OrdinalIgnoreCase)
+                || gi.Breadcrumb.Contains(filterText, StringComparison.OrdinalIgnoreCase)
             )];
     }
 

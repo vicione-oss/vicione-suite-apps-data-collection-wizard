@@ -1,7 +1,6 @@
 ﻿using DataCollectionWizard.Client.Models;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using Microsoft.AspNetCore.Components;
-using Sdk.Connections.Contracts;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.GridCells;
@@ -31,7 +30,7 @@ public sealed partial class ConfigurableRawDataCell : ComponentBase
     public IDeviceTreeConfigurableRawDataNode? ConfigurableRawDataNode { get; set; }
 
     [Parameter]
-    public Connection? Configuration { get; set; }
+    public PublishTargetInfo? Configuration { get; set; }
 
     [Parameter]
     public int MaxTimesADay { get; set; } = 12;
@@ -41,22 +40,22 @@ public sealed partial class ConfigurableRawDataCell : ComponentBase
 
     private void DurationChanged(int duration)
     {
-        ConfigurableRawDataNode!.RawDataConfigurations[Configuration!.Id].Duration = duration;
+        ConfigurableRawDataNode!.RawDataConfigurations[Configuration!.Connection.Id].Duration = duration;
         OnDeviceTreeChanged.InvokeAsync();
     }
 
     private void FrequencyChanged(int frequency)
     {
-        ConfigurableRawDataNode!.RawDataConfigurations[Configuration!.Id].Frequency = frequency;
+        ConfigurableRawDataNode!.RawDataConfigurations[Configuration!.Connection.Id].Frequency = frequency;
         OnDeviceTreeChanged.InvokeAsync();
     }
 
     private int GetSelectedDuration()
-        => ConfigurableRawDataNode!.RawDataConfigurations[Configuration!.Id].Duration;
+        => ConfigurableRawDataNode!.RawDataConfigurations[Configuration!.Connection.Id].Duration;
 
     private int GetSelectedFrequency()
-        => ConfigurableRawDataNode!.RawDataConfigurations[Configuration!.Id].Frequency;
+        => ConfigurableRawDataNode!.RawDataConfigurations[Configuration!.Connection.Id].Frequency;
 
     private bool IsSupportedConnection()
-        => Configuration is not null && new AnnaCloudFilter().GetCloudConnections([Configuration]).Any();
+        => Configuration?.IsSupported ?? false;
 }

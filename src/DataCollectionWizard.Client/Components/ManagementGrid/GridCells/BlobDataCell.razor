@@ -24,7 +24,7 @@
               ValueChanged="@(OnTimesADayChanged)"
               ValueSelector="@(e => e.Value)" />
 
-    <button @onclick="@(async () => await DownloadButtonClicked.InvokeAsync((BlobDataNode!, Configuration!)))"
+    <button @onclick="@(async () => await DownloadButtonClicked.InvokeAsync((BlobDataNode!, Configuration!.Connection)))"
             class="btn"
             disabled="@(!IsSupportedConnection())"
             hidden="@(!IsDownloadButtonSupported())">

@@ -14,16 +14,9 @@
         <span class="device-name">
             @(Model.DataNode.Name)
         </span>
-
-        @if (PublishTargets.Any() && Model.DataNode.HasCaptions())
-        {
-            <span class="hidden-caption">
-                <span>@DataCollectionWizardPage.RecordingSettings</span>
-            </span>
-        }
     </div>
 
-    @if (PublishTargets.Any() && Model.DataNode.HasCaptions())
+    @if (PublishTargetInfos.Count > 0 && Model.DataNode.HasCaptions())
     {
         <div class="captions"
              style="--caption-count: @(Model.DataNode.CaptionCount())">

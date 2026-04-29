@@ -150,6 +150,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     ];
     private TimedMessage[] _loadingSpinnerMessages = [];
     private readonly List<Connection> _publishTargets = [];
+    private List<PublishTargetInfo> _publishTargetInfos = [];
     private Dialog? _refAddIoLinkMasterDialog;
     private DxTextBox? _refAddIoLinkMasterTextBox;
     private Dialog? _refAddVSEDialog;
@@ -175,6 +176,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private string _ioLinkMasterFilter = string.Empty;
     private List<string> _scanIoLinkErrors = [];
     private string _saveReasons = string.Empty;
+    private bool _gridNeedsRebuild;
     private readonly ManagementGridService _service = new();
     private IDisposable? _subscriptionHandleDeviceTreeApplication;
 
@@ -305,6 +307,15 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     {
         _publishTargets.Clear();
         _publishTargets.AddRange(PublishTargetsFilter.GetPublishTargets(ConnectionService.Connections, CloudFilters));
+
+        var moneoFilter = new MoneoCloudFilter();
+        _publishTargetInfos = [.. _publishTargets.Select(c =>
+        {
+            var kind = AnnaCloudFilter.IsAnnaConnection(c) ? ConnectionKind.Anna
+                     : moneoFilter.GetCloudConnections([c]).Any() ? ConnectionKind.Moneo
+                     : ConnectionKind.Unsupported;
+            return new PublishTargetInfo(c, kind);
+        })];
     }
 
     private IEnumerable<DcpDevice> FilterScannedDevices(IEnumerable<DcpDevice> devices)
@@ -437,6 +448,9 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _nodePaths = GetNodePaths([_tree]);
         _adapter.SetDeviceTree(_tree, expandToOfflineNodes);
         _service.HasOfflineNodes = _tree.GetNodeAndDescendants().Any(n => n.IsOffline && n is not IDeviceTreeMasterNode);
+
+        foreach (var dataNode in treeNodes.OfType<IDeviceTreeDataNode>())
+            dataNode.AddConfigurations(_publishTargets);
     }
 
     private bool TryGetExistingDeviceTreeMaster(IDeviceTreeMasterNode device, out IDeviceTreeMasterNode? existingDevice)
@@ -884,10 +898,44 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             _selectedIoLinkDevices.Remove(deviceAddress);
     }
 
-    private async void OnTreeSelectionChangedAsync()
+    private void OnTreeSelectionChangedAsync()
     {
-        SetGridItems();
-        await InvokeAsync(StateHasChanged);
+        // SelectionChanged can fire from a background thread (e.g. DataflowEventBroker
+        // calling SetDeviceTree inside UpdateDeviceTreeAsync), so InvokeAsync is required
+        // to marshal back to the Blazor circuit dispatcher before touching component state.
+        //
+        // Two-phase render to show the tree selection highlight before the grid is rebuilt:
+        //   Phase 1 — clear the grid and queue a render via StateHasChanged. Blazor will
+        //             include both the empty grid and the sidebar's own selection-highlight
+        //             render in the same batch and send it to the browser.
+        //   Phase 2 — OnAfterRenderedAsync is invoked only after that batch has been sent,
+        //             so SetGridItems() always runs in a subsequent render cycle.
+        //
+        // Note: if Blazor coalesces this StateHasChanged with another pending render
+        // (e.g. a simultaneous node-online event), Phase 1 and Phase 2 may still appear
+        // together. This is expected Blazor Server batching behaviour.
+        _ = InvokeAsync(() =>
+        {
+            _service.GridItems = [];
+            _gridNeedsRebuild = true;
+            StateHasChanged();
+        });
+    }
+
+    protected override Task OnAfterRenderedAsync(bool firstRender)
+    {
+        if (_gridNeedsRebuild)
+        {
+            // Clear the flag before SetGridItems so a re-entrant render does not loop.
+            _gridNeedsRebuild = false;
+
+            // Phase 2: rebuild grid items. SetGridItems sets _service.GridItems which
+            // triggers the grid component to re-render itself via its own PropertyChanged
+            // subscription — no page-level StateHasChanged needed here.
+            SetGridItems();
+        }
+
+        return Task.CompletedTask;
     }
 
     private async void OpenDeleteAllOfflineDialogAsync()
@@ -1110,16 +1158,11 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         ];
 
         ManagementGridRowModel DataNodeToGridModel(IDeviceTreeDataNode dataNode)
-        {
-            var model = new ManagementGridRowModel
+            => new()
             {
                 DataNode = dataNode,
                 PathToNode = _nodePaths![dataNode],
             };
-
-            model.DataNode.AddConfigurations(_publishTargets);
-            return model;
-        }
     }
 
     private void SetNodesIsOffline(string[] nodeIds, bool isOffline)

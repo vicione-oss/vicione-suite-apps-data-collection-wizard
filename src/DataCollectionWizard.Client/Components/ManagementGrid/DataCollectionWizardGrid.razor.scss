@@ -2,8 +2,18 @@
 @use 'sass:color';
 
 .data-collection-wizard-grid {
+    --width-padding: 8px;
+
+    // Pack rows to the block-start so the header stays at the top when the
+    // body is empty.  Without this, 'align-content: normal' distributes the
+    // spare height between the two auto row tracks, pushing the header to the
+    // vertical centre of the absolutely-positioned container.
+    align-content: start;
     bottom: 0;
     color: col.$font-dark;
+    // Master grid: defines the column tracks shared by header and all rows.
+    display: grid;
+    grid-template-columns: var(--grid-columns);
     left: 0;
     overflow: auto;
     position: absolute;
@@ -12,7 +22,7 @@
 }
 
 .header-template {
-    > div {
+    >div {
         border-top: 1px solid col.$content-hover;
         border-bottom: 1px solid col.$content-hover;
         padding: 16px 0px 16px var(--width-padding);
@@ -22,13 +32,13 @@
             grid-column-gap: 8px;
             grid-template-columns: 70px auto;
 
-            > span:first-of-type {
+            >span:first-of-type {
                 text-align: center;
             }
         }
     }
 
-    > span {
+    >span {
         padding: 0px 0px 8px 16px;
         display: block;
         font-weight: normal;
@@ -52,102 +62,104 @@
     }
 }
 
-table {
-    --width-padding: 8px;
+// ─── Shared subgrid layout ─────────────────────────────────────────────────
+// All three elements span all columns and inherit the master grid's tracks via
+// CSS subgrid so that header, body and every row share identical column widths.
 
-    border: none;
-    width: 100%;
+.grid-header,
+.grid-body,
+.grid-row {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+}
 
-    tbody {
-        > tr:nth-child(even) > td {
-            background-color: color.adjust(col.$background, $lightness: 2%);
+// Virtualize inserts unstyled spacer <div>s directly inside .grid-body.
+// They must span all columns so they don't consume only one column track.
+.grid-body>div:not(.grid-row) {
+    grid-column: 1 / -1;
+}
 
-            ::deep .device-identifier-cell .caption.sensors span:nth-of-type(even) {
-                background-color: col.$background;
-            }
+// ─── Header ────────────────────────────────────────────────────────────────
 
-            ::deep .raw-data-cell .row.sensor:nth-of-type(odd) {
-                background-color: col.$background;
-            }
-        }
+.grid-header {
+    background-color: col.$background;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1em;
+    position: sticky;
+    top: 0;
+    z-index: 15;
 
-        > tr:nth-child(odd) > td {
-            ::deep .device-identifier-cell .caption.sensors span:nth-of-type(even) {
-                background-color: color.adjust(col.$background, $lightness: 2%);
-            }
-
-            ::deep .raw-data-cell .row.sensor:nth-of-type(odd) {
-                background-color: color.adjust(col.$background, $lightness: 2%);
-            }
-        }
+    >div {
+        align-content: end;
     }
 
-    td, th {
-        &.device-name {
-            --max-width: 320px;
-
-            background-color: col.$background;
-            left: 0px;
-            min-width: 160px;
-            max-width: var(--max-width);
-            position: sticky;
-        }
-
-        &.device-path {
-            min-width: 190px;
-            max-width: 520px;
-        }
-
-        &.publish-target {
-            min-width: calc(70px + (2 * 120px) + (2 * 8px) + 8px);
-            max-width: calc(70px + (2 * 120px) + (2 * 8px) + 8px);
-        }
-
-        &.spacer {
-            max-width: calc(8px * var(--spacer-width, 0));
-            min-width: calc(8px * var(--spacer-width, 0));
-
-            &.absorbtion {
-                width: 100%;
-            }
-        }
+    >.device-name {
+        background-color: col.$background;
+        left: 0;
+        max-width: 320px;
+        min-width: 160px;
+        position: sticky;
+        // Must be above body device-name (z-index 10) and the header background
+        // (z-index 15) to form the correct "frozen corner" of the grid.
+        z-index: 20;
     }
+}
 
-    td {
+// ─── Body rows ─────────────────────────────────────────────────────────────
+
+.grid-row {
+    >div {
         align-content: start;
         padding: 11px 0px 11px var(--width-padding);
+    }
 
-        &.device-name {
+    // Sticky left column — device name
+    >.device-name {
+        display: flex;
+        left: 0;
+        max-width: 320px;
+        min-width: 160px;
+        position: sticky;
+        z-index: 10;
+    }
+
+    >.device-path {
+        max-width: 520px;
+        min-width: 190px;
+
+        .device-path-container {
+            align-items: center;
             display: flex;
-            z-index: 10;
-        }
 
-        &.device-path {
-            .device-path-container {
-                align-items: center;
-                display: flex;
-
-                > span {
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                }
+            >span {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
         }
     }
 
-    th {
-        align-content: end;
-        background-color: col.$background;
-        font-size: 14px;
-        font-weight: normal;
-        line-height: 1em;
-        position: sticky;
-        top: 0px;
-        z-index: 15;
+    // Alternating row backgrounds — applied via index-based classes because
+    // <Virtualize> inserts spacer divs that break CSS :nth-child selectors.
+    &.row-even {
+        >div {
+            background-color: color.adjust(col.$background, $lightness: 2%);
+        }
 
-        &.device-name {
-            z-index: 20;
+        ::deep .device-identifier-cell .caption.sensors span:nth-of-type(even) {
+            background-color: col.$background;
+        }
+    }
+
+    &.row-odd {
+        >div {
+            background-color: col.$background;
+        }
+
+        ::deep .device-identifier-cell .caption.sensors span:nth-of-type(even) {
+            background-color: color.adjust(col.$background, $lightness: 2%);
         }
     }
 }

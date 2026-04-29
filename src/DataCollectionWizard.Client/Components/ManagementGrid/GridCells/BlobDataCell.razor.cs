@@ -35,7 +35,7 @@ public sealed partial class BlobDataCell : ComponentBase
     public IDeviceTreeSchedulableDataNode? BlobDataNode { get; set; }
 
     [Parameter]
-    public Connection? Configuration { get; set; }
+    public PublishTargetInfo? Configuration { get; set; }
 
     [Parameter]
     public EventCallback<(IDeviceTreeSchedulableDataNode BlobDataNode, Connection Configuration)> DownloadButtonClicked { get; set; }
@@ -61,13 +61,13 @@ public sealed partial class BlobDataCell : ComponentBase
 
     private int GetTimesADay()
         => BlobDataNode!.SchedulerConfigurations
-            .Single(cc => cc.DataGroupIdentifier == Configuration!.Id)
+            .Single(cc => cc.DataGroupIdentifier == Configuration!.Connection.Id)
             .Times.First().Value.Length;
 
     private DaysOfWeek GetSelectedDaysOfWeek()
     {
         var times = BlobDataNode!.SchedulerConfigurations
-            .Single(cc => cc.DataGroupIdentifier == Configuration!.Id)
+            .Single(cc => cc.DataGroupIdentifier == Configuration!.Connection.Id)
             .Times;
 
         foreach (var daysOfWeek in _daysOfWeek)
@@ -93,10 +93,10 @@ public sealed partial class BlobDataCell : ComponentBase
         => false;
 
     private bool IsRecordingEnabled()
-        => BlobDataNode!.SchedulerConfigurations.Single(cc => cc.DataGroupIdentifier == Configuration!.Id).Enabled;
+        => BlobDataNode!.SchedulerConfigurations.Single(cc => cc.DataGroupIdentifier == Configuration!.Connection.Id).Enabled;
 
     private bool IsSupportedConnection()
-        => Configuration is not null && new AnnaCloudFilter().GetCloudConnections([Configuration]).Any();
+        => Configuration?.IsSupported ?? false;
 
     protected override void OnParametersSet()
     {
@@ -118,7 +118,7 @@ public sealed partial class BlobDataCell : ComponentBase
     private void OnDaysOfWeekChanged(DaysOfWeek daysOfWeek)
     {
         var times = BlobDataNode!.SchedulerConfigurations
-            .Single(cc => cc.DataGroupIdentifier == Configuration!.Id)
+            .Single(cc => cc.DataGroupIdentifier == Configuration!.Connection.Id)
             .Times;
 
         SchedulingChanged(times.Values.First().Length, daysOfWeek.AsEnumerable(), times);
@@ -127,7 +127,7 @@ public sealed partial class BlobDataCell : ComponentBase
     private void OnTimesADayChanged(int timesADay)
     {
         var times = BlobDataNode!.SchedulerConfigurations
-            .Single(cc => cc.DataGroupIdentifier == Configuration!.Id)
+            .Single(cc => cc.DataGroupIdentifier == Configuration!.Connection.Id)
             .Times;
 
         SchedulingChanged(timesADay, times.Keys, times);
@@ -147,7 +147,7 @@ public sealed partial class BlobDataCell : ComponentBase
     private void SchedulingEnabledChanged(bool isEnabled)
     {
         BlobDataNode!.SchedulerConfigurations
-            .Single(cc => cc.DataGroupIdentifier == Configuration!.Id)
+            .Single(cc => cc.DataGroupIdentifier == Configuration!.Connection.Id)
             .Enabled = isEnabled;
 
         Service.InvokeDataPointEnabledChanged(isEnabled);

@@ -6,6 +6,7 @@
 
 - Replaced `Shared.Dx.Components.SearchBox` with `ViciOne.Ui.Blazor.Components.SearchBox`
 - Renamed Live View column from "Last updated" to "Last changed" and added a tooltip
+- Support virtual scrolling in process data grid to improve performance with large datasets
 
 ### Fix
 
