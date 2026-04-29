@@ -1005,6 +1005,8 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
             _service.DisableClusterActions = true;
             _service.DeviceTreeChanged = false;
+            _displayLoadingSpinner = true;
+
             await InvokeAsync(StateHasChanged);
             _ = Task.Run(async () =>
             {
