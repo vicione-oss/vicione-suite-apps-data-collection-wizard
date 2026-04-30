@@ -65,7 +65,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
     [Inject(Key = Sdk.Constants.ClientTimeProviderServiceKey)]
     private TimeProvider TimeProvider { get; set; } = default!;
 
-    private LiveGridRowModel[] CalculateGridItems(List<IDeviceTreeLiveDataNode> nodes)
+    private LiveGridRowModel[] CalculateGridItems(List<IDeviceTreeLiveDataNode> _)
     {
         return [.. _adapter.GetRelevantDataNodes()
             .Where(n => n.Visible && n.DataType.SupportedForLiveView())
