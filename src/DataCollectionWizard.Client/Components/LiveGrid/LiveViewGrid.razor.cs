@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using DataCollectionWizard.Client.Components.LiveGrid.Services;
+﻿using DataCollectionWizard.Client.Components.LiveGrid.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -24,7 +23,7 @@ public sealed partial class LiveViewGrid : ComponentBase, IDisposable, IAsyncDis
     {
         if (disposing)
         {
-            Service.PropertyChanged -= OnServicePropertyChanged;
+            Service.FilteredGridItemsChanged -= OnFilteredGridItemsChanged;
             Service.RefreshRequested -= RefreshAsync;
         }
     }
@@ -60,17 +59,14 @@ public sealed partial class LiveViewGrid : ComponentBase, IDisposable, IAsyncDis
 
     protected override void OnInitialized()
     {
-        Service.PropertyChanged += OnServicePropertyChanged;
+        Service.FilteredGridItemsChanged += OnFilteredGridItemsChanged;
         Service.RefreshRequested += RefreshAsync;
     }
 
-    private void OnServicePropertyChanged(object? s, PropertyChangedEventArgs e)
+    private void OnFilteredGridItemsChanged()
     {
-        if (e.PropertyName is nameof(LiveGridService.FilteredGridItems))
-        {
-            _resetScrollPositionAfterNextRender = true;
-            RefreshAsync();
-        }
+        _resetScrollPositionAfterNextRender = true;
+        RefreshAsync();
     }
 
     private async void RefreshAsync()

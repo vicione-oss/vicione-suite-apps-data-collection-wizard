@@ -1,41 +1,21 @@
-﻿using System.ComponentModel;
-using DataCollectionWizard.Client.Components.LiveGrid.Models;
+﻿using DataCollectionWizard.Client.Components.LiveGrid.Models;
 using DataCollectionWizard.Client.Extensions;
 using ViciOne.Ui.TreeEditor.Builder;
 
 namespace DataCollectionWizard.Client.Components.LiveGrid.Services;
 
-internal sealed class LiveGridService : INotifyPropertyChanged
+internal sealed class LiveGridService : IDisposable
 {
+    private const int RenderIntervalMs = 500;
     private IEnumerable<LiveGridRowModel> _filteredGridItems = [];
     private IEnumerable<LiveGridRowModel> _gridItems = [];
     private string _toolbarSearchText = string.Empty;
+    private readonly Timer _renderTimer;
+    private int _renderRequested;
 
-    public IEnumerable<LiveGridRowModel> FilteredGridItems
-    {
-        get => _filteredGridItems;
-        private set
-        {
-            if (ReferenceEquals(value, _filteredGridItems))
-                return;
+    public IEnumerable<LiveGridRowModel> FilteredGridItems => _filteredGridItems;
+    public IEnumerable<LiveGridRowModel> GridItems => _gridItems;
 
-            _filteredGridItems = value;
-            PropertyChanged?.Invoke(this, new(nameof(FilteredGridItems)));
-        }
-    }
-    public IEnumerable<LiveGridRowModel> GridItems
-    {
-        get => _gridItems;
-        set
-        {
-            if (ReferenceEquals(value, _gridItems))
-                return;
-
-            _gridItems = value;
-            PropertyChanged?.Invoke(this, new(nameof(GridItems)));
-            FilterGridItems(ToolbarSearchText);
-        }
-    }
     public bool PathVisible { get; set; } = true;
     public string ToolbarSearchText
     {
@@ -46,34 +26,67 @@ internal sealed class LiveGridService : INotifyPropertyChanged
                 return;
 
             _toolbarSearchText = value;
-            PropertyChanged?.Invoke(this, new(nameof(ToolbarSearchText)));
             FilterGridItems(_toolbarSearchText);
         }
     }
     public TreeBuilder TreeBuilder { get; } = new();
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+    public event Action? FilteredGridItemsChanged;
     public event Action? RebrowseRequested;
     public event Action? RefreshRequested;
 
+    public LiveGridService()
+        => _renderTimer = new Timer(OnRenderTick, null, Timeout.Infinite, Timeout.Infinite);
+
     public void Refresh()
-        => RefreshRequested?.Invoke();
+    {
+        if (Interlocked.Exchange(ref _renderRequested, 1) == 0)
+            _renderTimer.Change(RenderIntervalMs, RenderIntervalMs);
+    }
+
+    public void RefreshImmediate()
+    {
+        Interlocked.Exchange(ref _renderRequested, 0);
+        _renderTimer.Change(Timeout.Infinite, Timeout.Infinite);
+        RefreshRequested?.Invoke();
+    }
+
+    private void OnRenderTick(object? state)
+    {
+        if (Interlocked.Exchange(ref _renderRequested, 0) == 1)
+            RefreshRequested?.Invoke();
+        else
+            _renderTimer.Change(Timeout.Infinite, Timeout.Infinite);
+    }
 
     public void RequestRebrowse()
         => RebrowseRequested?.Invoke();
 
-    public void FilterGridItems(string filterText)
+    internal void SetGridItems(IEnumerable<LiveGridRowModel> items, bool notify = true)
     {
-        if (string.IsNullOrWhiteSpace(filterText))
-        {
-            FilteredGridItems = GridItems;
+        if (ReferenceEquals(items, _gridItems))
             return;
-        }
 
-        FilteredGridItems = [.. GridItems
-            .Where(gi =>
-                gi.DataNode.Name.Contains(filterText, StringComparison.OrdinalIgnoreCase)
-                || gi.PathToNode.GetBreadcrumb().Contains(filterText, StringComparison.OrdinalIgnoreCase)
-            )];
+        _gridItems = items;
+        FilterGridItems(_toolbarSearchText, notify);
     }
+
+    internal void FilterGridItems(string filterText, bool notify = true)
+    {
+        var filtered = string.IsNullOrWhiteSpace(filterText)
+            ? _gridItems
+            : [.. _gridItems.Where(gi => gi.DataNode.Name.Contains(filterText, StringComparison.OrdinalIgnoreCase)
+                || gi.PathToNode.GetBreadcrumb().Contains(filterText, StringComparison.OrdinalIgnoreCase))];
+
+        if (ReferenceEquals(filtered, _filteredGridItems))
+            return;
+
+        _filteredGridItems = filtered;
+
+        if (notify)
+            FilteredGridItemsChanged?.Invoke();
+    }
+
+    public void Dispose()
+        => _renderTimer.Dispose();
 }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.ComponentModel;
 using System.Globalization;
 using System.Text.Json;
 using ClusterManagement.Public.DataflowEvents;
@@ -8,6 +7,7 @@ using DataCollectionWizard.Client.Components.LiveGrid.Models;
 using DataCollectionWizard.Client.Components.LiveGrid.Services;
 using DataCollectionWizard.Client.Extensions;
 using DataCollectionWizard.Client.Services;
+using DataCollectionWizard.Internal.Contracts;
 using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Public.Extensions;
 using Microsoft.AspNetCore.Components;
@@ -83,7 +83,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
     protected override async ValueTask DisposeInternal()
     {
         _adapter.SelectionChanged -= OnTreeSelectionChangedAsync;
-        _service.PropertyChanged -= OnServicePropertyChangedAsync;
+        _service.FilteredGridItemsChanged -= OnFilterChangedAsync;
         _service.RebrowseRequested -= OnRebrowse;
 
         _cancelSubscribing.Dispose();
@@ -94,6 +94,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         await UnsubscribeAllAsync();
 
         _semaphore.Dispose();
+        _service.Dispose();
 
         await base.DisposeInternal();
     }
@@ -165,7 +166,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
         _service.TreeBuilder.SetAdapter(_adapter);
 
-        _service.PropertyChanged += OnServicePropertyChangedAsync;
+        _service.FilteredGridItemsChanged += OnFilterChangedAsync;
         _service.RebrowseRequested += OnRebrowse;
 
         SetTree(await DataCollectionWizardService.RequestDeviceTreeAsync(), false);
@@ -185,25 +186,8 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
     private async Task OnLatestClusterNotRunningDialogOkAsync()
         => await _refLatestClusterNotRunningDialog!.CloseAsync();
 
-    private void OnRebrowse()
+    private async void OnFilterChangedAsync()
     {
-        _displayLoadingSpinner = true;
-        InvokeAsync(StateHasChanged);
-        _ = UpdateDeviceTreeAsync();
-    }
-
-    private async void OnServicePropertyChangedAsync(object? s, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(LiveGridService.FilteredGridItems))
-        {
-            await UnsubscribeAllAsync();
-            await SubscribeAllAsync(_cancelSubscribing.Token);
-        }
-    }
-
-    private async void OnTreeSelectionChangedAsync()
-    {
-        _cancelSubscribing.Cancel();
         var acquired = false;
 
         try
@@ -212,12 +196,48 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
             acquired = true;
 
+            await UnsubscribeAllAsync();
+            await SubscribeAllAsync(_cancelSubscribing.Token);
+        }
+        catch (Exception ex)
+        {
+            LogSubscribeAllError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+        }
+        finally
+        {
+            if (acquired)
+            {
+                try { _semaphore.Release(); }
+                catch (ObjectDisposedException) { }
+            }
+        }
+    }
+
+    private void OnRebrowse()
+    {
+        _displayLoadingSpinner = true;
+        InvokeAsync(StateHasChanged);
+        _ = UpdateDeviceTreeAsync();
+    }
+
+    private async void OnTreeSelectionChangedAsync()
+    {
+        var acquired = false;
+
+        try
+        {
+            await _semaphore.WaitAsync();
+
+            acquired = true;
+
+            _cancelSubscribing.Cancel();
             _cancelSubscribing.Dispose();
             _cancelSubscribing = new();
             await UnsubscribeAllAsync();
             _gridNodes = [.. _adapter.GetRelevantDataNodes().OfType<IDeviceTreeLiveDataNode>().Where(n => n.Visible)];
-            _service.GridItems = CalculateGridItems(_gridNodes);
-            _service.Refresh();
+            _service.SetGridItems(CalculateGridItems(_gridNodes), false);
+            await SubscribeAllAsync(_cancelSubscribing.Token);
+            _service.RefreshImmediate();
         }
         catch (Exception ex)
         {
@@ -283,74 +303,93 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
             return;
 
         var mapping = await DataCollectionWizardService.GetOutputConnectorMappingAsync();
+        var mappingByNodeId = mapping.ToDictionary(m => m.ProcessDataId);
+
         var nodesToSubscribe = _service.FilteredGridItems
             .Select(lvrm => lvrm.DataNode)
             .OfType<IDeviceTreeLiveDataNode>()
             .ToArray();
 
-        foreach (var node in nodesToSubscribe)
+        // Create all subscription tasks in parallel instead of awaiting each one
+        var subscriptionTasks = nodesToSubscribe
+            .Where(node => mappingByNodeId.TryGetValue(node.Id, out _))
+            .Select(node => SubscribeToNodeAsync(node, mappingByNodeId, cancellationToken))
+            .ToArray();
+
+        await Task.WhenAll(subscriptionTasks);
+    }
+
+    private async Task SubscribeToNodeAsync(
+        IDeviceTreeLiveDataNode node,
+        Dictionary<string, ValueMappingEntry> mappingByNodeId,
+        CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+            return;
+
+        if (!mappingByNodeId.TryGetValue(node.Id, out var mapData))
+            return;
+
+        if (_handles.TryGetValue(node, out var valueTuple) && valueTuple.Item1 is not null)
+            return;
+
+        var item = _service.GridItems.FirstOrDefault(i => i.DataNode.Id == node.Id);
+        if (item is null)
+            return;
+
+        IAsyncDisposable? processValueHandle = null;
+
+        try
         {
-            if (cancellationToken.IsCancellationRequested)
-                break;
+            Task ValueHandler(DateTime t, string? e)
+            {
+                if (e is not null)
+                    item.Value = e;
 
-            var mapData = mapping.FirstOrDefault(e => e.ProcessDataId == node.Id);
-            if (mapData is null)
-                continue;
+                item.LastUpdated = t > DateTime.MinValue
+                    ? TimeZoneInfo.ConvertTime(t, TimeProvider.LocalTimeZone).ToString(CultureInfo.CurrentCulture)
+                    : string.Empty;
 
-            if (_handles.TryGetValue(node, out var valueTuple) && valueTuple.Item1 is not null)
-                return;
+                _service.Refresh();
+                return Task.CompletedTask;
+            }
 
-            IAsyncDisposable? processValueHandle = null;
+            processValueHandle = await EventBroker.Subscribe(mapData.ValueOutputIdUI, ValueHandler);
+        }
+        catch (Exception ex)
+        {
+            LogSubscribeTopicError(Logger, mapData.ValueOutputIdUI, node.Id, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+        }
 
+        IAsyncDisposable? unitHandle = null;
+        if (mapData.UnitOutputId is not null)
+        {
             try
             {
-                processValueHandle = await EventBroker.Subscribe(mapData.ValueOutputIdUI, (t, e) =>
+                Task UnitHandler(DateTime _, string? e)
                 {
-                    var item = _service.GridItems.First(i => i.DataNode.Id == node.Id);
                     if (e is not null)
-                        item.Value = e;
+                    {
+                        var unit = JsonSerializer.Deserialize<string>(e);
+                        if (unit is not null)
+                        {
+                            item.Unit = unit;
+                            _service.Refresh();
+                        }
+                    }
 
-                    item.LastUpdated = t > DateTime.MinValue
-                        ? item.LastUpdated = TimeZoneInfo.ConvertTime(t, TimeProvider.LocalTimeZone).ToString(CultureInfo.CurrentCulture)
-                        : item.LastUpdated = string.Empty;
-
-                    _service.Refresh();
                     return Task.CompletedTask;
-                });
+                }
+
+                unitHandle = await EventBroker.Subscribe(mapData.UnitOutputId.Value, UnitHandler);
             }
             catch (Exception ex)
             {
-                LogSubscribeTopicError(Logger, mapData.ValueOutputIdUI, node.Id, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+                LogSubscribeTopicError(Logger, mapData.ValueOutputIdUI, $"{node.Id} (Unit)", ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
             }
-
-            IAsyncDisposable? unitHandle = null;
-            if (mapData.UnitOutputId is not null)
-            {
-                try
-                {
-                    unitHandle = await EventBroker.Subscribe(mapData.UnitOutputId.Value, (_, e) =>
-                    {
-                        if (e is not null)
-                        {
-                            var unit = JsonSerializer.Deserialize<string>(e);
-                            if (unit is not null)
-                            {
-                                _service.GridItems.First(i => i.DataNode.Id == node.Id).Unit = unit;
-                                _service.Refresh();
-                            }
-                        }
-
-                        return Task.CompletedTask;
-                    });
-                }
-                catch (Exception ex)
-                {
-                    LogSubscribeTopicError(Logger, mapData.ValueOutputIdUI, $"{node.Id} (Unit)", ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
-                }
-            }
-
-            _handles[node] = (processValueHandle, unitHandle);
         }
+
+        _handles[node] = (processValueHandle, unitHandle);
     }
 
     private async Task UpdateDeviceTreeAsync()
@@ -390,13 +429,17 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         var subscriptionsToDelete = _handles.Values.ToList();
         _handles.Clear();
 
+        var disposeTasks = new List<Task>();
+
         foreach (var (processValue, unit) in subscriptionsToDelete)
         {
             if (processValue is not null)
-                await processValue.DisposeAsync();
+                disposeTasks.Add(processValue.DisposeAsync().AsTask());
 
             if (unit is not null)
-                await unit.DisposeAsync();
+                disposeTasks.Add(unit.DisposeAsync().AsTask());
         }
+
+        await Task.WhenAll(disposeTasks);
     }
 }
