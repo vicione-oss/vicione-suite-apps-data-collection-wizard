@@ -14,22 +14,19 @@ public static class ContainerEditorExtensions
         var y = GetLowestChildY(parent, x);
 
         if (string.IsNullOrWhiteSpace(name))
-        {
             name = NotGiven;
-        }
 
         return containerEditor.AddContainer(parent, name, null, new Point(x, y + verticalSeparation));
     }
 
     public static FunctionBlock AddSubFunctionBlock(this ContainerEditor containerEditor, Dataflow dataflow, Guid designId, string name, Container? parent, int x, int verticalSeparation)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            name = NotGiven;
-        }
-
         parent ??= dataflow.Root;
         var y = GetLowestChildY(parent, x);
+
+        if (string.IsNullOrWhiteSpace(name))
+            name = NotGiven;
+
         return AddFunctionBlock(containerEditor, dataflow, designId, name, parent, new Point(x, y + verticalSeparation));
     }
 
