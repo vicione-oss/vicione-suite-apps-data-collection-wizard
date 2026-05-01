@@ -7,7 +7,5 @@ namespace DataCollectionWizard.Internal.Services;
 
 public interface IDataflowGenerator
 {
-    int ContainerSize { get; set; }
-
     void Generate(IDeviceTreeMasterNode master, IReadOnlyCollection<Connection> publishTargets, Dataflow dataflow, Engine engine, out Guid deviceTreeTrigger, out Guid deviceTreeOutput, out List<ValueMappingEntry> outputMapping);
 }
