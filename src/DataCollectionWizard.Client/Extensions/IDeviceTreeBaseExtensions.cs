@@ -27,7 +27,7 @@ internal static class IDeviceTreeBaseExtensions
         return $"{deviceTreeNode.Name}";
     }
 
-    public static NodeStatus GetStatus(this IDeviceTreeBase device)
+    public static NodeStatus GetStatus(this IDeviceTreeBase device, bool isLiveView = false)
     {
         var deviceStatus = NodeStatus.None;
 
@@ -37,7 +37,7 @@ internal static class IDeviceTreeBaseExtensions
         if (device.IsNew)
             deviceStatus |= NodeStatus.New;
 
-        if (!device.IsSupported())
+        if (!device.IsSupported(isLiveView))
             deviceStatus |= NodeStatus.NotSupported;
 
         if (device is DeviceTreeDevice deviceTreeDevice && deviceTreeDevice.IsUnknown)
@@ -46,11 +46,13 @@ internal static class IDeviceTreeBaseExtensions
         return deviceStatus;
     }
 
-    private static bool IsSupported(this IDeviceTreeBase device)
+    private static bool IsSupported(this IDeviceTreeBase device, bool isLiveView)
     {
         if (device is not IDeviceTreeDataNode dataNodeDevice)
             return true;
 
-        return dataNodeDevice.DataType.SupportedForLogging();
+        return isLiveView
+            ? dataNodeDevice.DataType.SupportedForLiveView()
+            : dataNodeDevice.DataType.SupportedForLogging();
     }
 }

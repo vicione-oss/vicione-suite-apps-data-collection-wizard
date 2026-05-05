@@ -280,7 +280,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                 _rootNode.DisplayText = DeviceTreeNodeNameProvider.GetTreeDisplayText(_rootNode.Device);
             }
 
-            _rootNode.Status = _rootNode.Device.GetStatus();
+            _rootNode.Status = _rootNode.Device.GetStatus(isLiveView);
             _rootNode.Subtitle = DeviceTreeNodeSubTitleProvider.GetSubTitle(_rootNode.Device);
 
             var children = ResolveChildrenRecursive(_rootNode.Device, _rootNode, expandOfflineNodes).ToArray();
@@ -336,7 +336,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                     childNode.DisplayText = DeviceTreeNodeNameProvider.GetTreeDisplayText(childNode.Device);
                 }
 
-                childNode.Status = childNode.Device.GetStatus();
+                childNode.Status = childNode.Device.GetStatus(isLiveView);
                 childNode.Subtitle = DeviceTreeNodeSubTitleProvider.GetSubTitle(childNode.Device);
 
                 if (childNode.Device is IDeviceTreeMasterNode)
