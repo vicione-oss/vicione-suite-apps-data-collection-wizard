@@ -16,4 +16,5 @@ internal abstract class NodeBase : ITreeNode
     public NodeBase? Parent { get; set; }
     public string? Subtitle { get; set; }
     public NodeStatus Status { get; set; }
+    public NodeStatus InheritedStatus { get; set; }
 }

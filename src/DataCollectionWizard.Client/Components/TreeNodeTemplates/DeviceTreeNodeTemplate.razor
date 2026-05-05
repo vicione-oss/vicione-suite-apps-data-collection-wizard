@@ -25,7 +25,7 @@
 @code {
     private RenderFragment _contentFragment => __builder =>
     {
-        var hasAdditionalStatus = DeviceNode.Status > 0;
+        var hasAdditionalStatus = DeviceNode.Status > 0 || DeviceNode.InheritedStatus > 0;
         var hasSubtitle = !string.IsNullOrEmpty(DeviceNode.Subtitle);
 
         <div @onpointerenter:stopPropagation
@@ -60,15 +60,27 @@
                     {
                         <div class="status-icon error"></div>
                     }
+                    else if (DeviceNode.HasInheritedError())
+                    {
+                        <div class="status-icon error inherited"></div>
+                    }
 
                     @if (DeviceNode.HasWarning())
                     {
                         <div class="status-icon warning"></div>
                     }
+                    else if (DeviceNode.HasInheritedWarning())
+                    {
+                        <div class="status-icon warning inherited"></div>
+                    }
 
                     @if (DeviceNode.IsNew())
                     {
                         <div class="status-icon new"></div>
+                    }
+                    else if (DeviceNode.IsInheritedNew())
+                    {
+                        <div class="status-icon new inherited"></div>
                     }
                 </div>
             }

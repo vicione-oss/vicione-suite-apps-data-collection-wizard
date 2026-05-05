@@ -15,10 +15,20 @@ internal static class NodeBaseExtensions
     public static bool HasError(this NodeBase node)
         => node.Status.HasFlag(NodeStatus.Offline);
 
+    public static bool HasInheritedError(this NodeBase node)
+        => node.InheritedStatus.HasFlag(NodeStatus.Offline);
+
     public static bool HasWarning(this NodeBase node)
         => node.Status.HasFlag(NodeStatus.NotSupported)
         || node.Status.HasFlag(NodeStatus.Unknown);
 
+    public static bool HasInheritedWarning(this NodeBase node)
+        => node.InheritedStatus.HasFlag(NodeStatus.NotSupported)
+        || node.InheritedStatus.HasFlag(NodeStatus.Unknown);
+
     public static bool IsNew(this NodeBase node)
         => node.Status.HasFlag(NodeStatus.New);
+
+    public static bool IsInheritedNew(this NodeBase node)
+        => node.InheritedStatus.HasFlag(NodeStatus.New);
 }

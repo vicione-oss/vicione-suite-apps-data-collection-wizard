@@ -36,6 +36,29 @@
         &.warning {
             background-color: col.$warning;
         }
+
+        &.inherited {
+            background-color: transparent;
+            border-style: solid;
+            border-width: 2px;
+            height: 10px;
+            width: 10px;
+
+            &.error {
+                background-color: transparent;
+                border-color: col.$error;
+            }
+
+            &.new {
+                background-color: transparent;
+                border-color: col.$add;
+            }
+
+            &.warning {
+                background-color: transparent;
+                border-color: col.$warning;
+            }
+        }
     }
 
     .status-icon-container {

@@ -278,6 +278,10 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
             var children = ResolveChildrenRecursive(_rootNode.Device, _rootNode, expandOfflineNodes).ToArray();
             _rootNode.Children = children;
             _rootNode.HasChildren = children.Length > 0;
+
+            _rootNode.InheritedStatus = NodeStatus.None;
+            foreach (var child in children)
+                _rootNode.InheritedStatus |= child.Status | child.InheritedStatus;
         }
 
         if (rootNodeReused)
@@ -342,6 +346,11 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                 var children = ResolveChildrenRecursive(childNode.Device, childNode, expandAnyOfflineNodes, expandToOfflineNodes).ToArray();
                 childNode.Children = children;
                 childNode.HasChildren = children.Length > 0;
+
+                // Propagate child status up to parent as inherited
+                childNode.InheritedStatus = NodeStatus.None;
+                foreach (var child in children)
+                    childNode.InheritedStatus |= child.Status | child.InheritedStatus;
 
                 result.Add(childNode);
 
