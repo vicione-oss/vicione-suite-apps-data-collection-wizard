@@ -13,7 +13,6 @@ internal sealed class DeviceContainerManager
     private const string InvalidNodeArgumentExceptionMessage = "Node has to be a sub node of this managers device at the moment of its creation.";
     private readonly ClusterBuilder _builder;
     private readonly Dataflow _dataflow;
-    private readonly Dictionary<Type, Func<IDeviceTreeBase, string>> _nameGenerators = [];
     private readonly Dictionary<string, Container> _nodesContainers = [];
     private readonly Dictionary<string, IDeviceTreeBase?> _nodesParents;
     private readonly ChildContainer _parentContainer;
@@ -27,9 +26,6 @@ internal sealed class DeviceContainerManager
         _dataflow = _builder.Cache.GetDataflow(_parentContainer);
     }
 
-    public void AddNameGeneration<T>(Func<T, string> getName)
-        => _nameGenerators.Add(typeof(T), node => getName((T)node));
-
     private Container GetNodeContainer(IDeviceTreeBase node)
     {
         if (_nodesContainers.TryGetValue(node.Id, out var cachedContainer))
@@ -42,12 +38,8 @@ internal sealed class DeviceContainerManager
             return _parentContainer;
 
         var parentContainer = GetNodeContainer(parentNode);
-        var name = node.Name;
 
-        if (_nameGenerators.TryGetValue(parentNode.GetType(), out var nameGenerator))
-            name = nameGenerator(parentNode);
-
-        var newContainer = _builder.Editors.Container.AddSubContainer(_dataflow, name, parentContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
+        var newContainer = _builder.Editors.Container.AddSubContainer(_dataflow, node.Name, parentContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
         _nodesContainers[node.Id] = newContainer;
 
         return newContainer;
