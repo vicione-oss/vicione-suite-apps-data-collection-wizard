@@ -243,7 +243,21 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
             Builder.Selection.ChangeSelection(item, false);
         }
 
+        RecalculateInheritedStatusToRoot(parentNode);
+
         Builder.Notifications.NotifyChildrenChanged(parentNode);
+    }
+
+    private static void RecalculateInheritedStatusToRoot(NodeBase? node)
+    {
+        while (node is not null)
+        {
+            node.InheritedStatus = NodeStatus.None;
+            foreach (var child in node.Children)
+                node.InheritedStatus |= child.Status | child.InheritedStatus;
+
+            node = node.Parent;
+        }
     }
 
     internal void SetDeviceTree(DeviceTreeRoot root, bool expandOfflineNodes)
