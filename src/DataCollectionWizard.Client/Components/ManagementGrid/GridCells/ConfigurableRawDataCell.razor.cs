@@ -1,4 +1,5 @@
-﻿using DataCollectionWizard.Client.Models;
+﻿using System.Linq.Expressions;
+using DataCollectionWizard.Client.Models;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using Microsoft.AspNetCore.Components;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
@@ -7,6 +8,8 @@ namespace DataCollectionWizard.Client.Components.ManagementGrid.GridCells;
 
 public sealed partial class ConfigurableRawDataCell : ComponentBase
 {
+    private static readonly Expression<Func<ComboBoxOption<int>, string>> s_intTextSelector = e => e.Text;
+    private static readonly Expression<Func<ComboBoxOption<int>, int>> s_intValueSelector = e => e.Value;
     private readonly ComboBoxOption<int>[] _durations =
     [
         new() { Text = "1s", Value = 1000, },
@@ -25,6 +28,7 @@ public sealed partial class ConfigurableRawDataCell : ComponentBase
         new() { Text = $"50k Sample/s", Value = 50000, },
         new() { Text = $"100k Sample/s", Value = 100000, },
     ];
+    private RawDataSettings? _cachedConfig;
 
     [Parameter]
     public IDeviceTreeConfigurableRawDataNode? ConfigurableRawDataNode { get; set; }
@@ -38,23 +42,29 @@ public sealed partial class ConfigurableRawDataCell : ComponentBase
     [Parameter]
     public EventCallback OnDeviceTreeChanged { get; set; }
 
+    private RawDataSettings Config
+        => _cachedConfig ??= ConfigurableRawDataNode!.RawDataConfigurations[Configuration!.Connection.Id];
+
+    protected override void OnParametersSet()
+        => _cachedConfig = null;
+
     private void DurationChanged(int duration)
     {
-        ConfigurableRawDataNode!.RawDataConfigurations[Configuration!.Connection.Id].Duration = duration;
+        Config.Duration = duration;
         OnDeviceTreeChanged.InvokeAsync();
     }
 
     private void FrequencyChanged(int frequency)
     {
-        ConfigurableRawDataNode!.RawDataConfigurations[Configuration!.Connection.Id].Frequency = frequency;
+        Config.Frequency = frequency;
         OnDeviceTreeChanged.InvokeAsync();
     }
 
     private int GetSelectedDuration()
-        => ConfigurableRawDataNode!.RawDataConfigurations[Configuration!.Connection.Id].Duration;
+        => Config.Duration;
 
     private int GetSelectedFrequency()
-        => ConfigurableRawDataNode!.RawDataConfigurations[Configuration!.Connection.Id].Frequency;
+        => Config.Frequency;
 
     private bool IsSupportedConnection()
         => Configuration?.IsSupported ?? false;

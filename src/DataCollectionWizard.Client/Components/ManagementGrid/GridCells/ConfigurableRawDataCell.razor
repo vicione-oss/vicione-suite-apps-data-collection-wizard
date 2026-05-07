@@ -5,19 +5,19 @@
 
     <ComboBox Enabled="@(IsSupportedConnection())"
               Items="@(_frequencies)"
-              TextSelector="@(e => e.Text)"
+              TextSelector="@(s_intTextSelector)"
               TItem="@(ComboBoxOption<int>)"
               TValue="@(int)"
               Value="@(GetSelectedFrequency())"
               ValueChanged="@(FrequencyChanged)"
-              ValueSelector="@(e => e.Value)"/>
+              ValueSelector="@(s_intValueSelector)"/>
 
     <ComboBox Enabled="@(IsSupportedConnection())"
               Items="@(_durations)"
-              TextSelector="@(e => e.Text)"
+              TextSelector="@(s_intTextSelector)"
               TItem="@(ComboBoxOption<int>)"
               TValue="@(int)"
               Value="@(GetSelectedDuration())"
               ValueChanged="@(DurationChanged)"
-              ValueSelector="@(e => e.Value)"/>
+              ValueSelector="@(s_intValueSelector)"/>
 </div>
