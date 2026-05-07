@@ -28,6 +28,7 @@ using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
 using ViciOne.Ui.Blazor.Components.Dialog.Components;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Factories;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Models;
+using ViciOne.Ui.Blazor.Components.TextBox;
 
 namespace DataCollectionWizard.Client.Components;
 
@@ -152,11 +153,11 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private readonly List<Connection> _publishTargets = [];
     private List<PublishTargetInfo> _publishTargetInfos = [];
     private Dialog? _refAddIoLinkMasterDialog;
-    private DxTextBox? _refAddIoLinkMasterTextBox;
+    private TextBox? _refAddIoLinkMasterTextBox;
     private Dialog? _refAddVSEDialog;
-    private DxTextBox? _refAddVSETextBox;
+    private TextBox? _refAddVSETextBox;
     private Dialog? _refAliasDialog;
-    private DxTextBox? _refAliasTextBox;
+    private TextBox? _refAliasTextBox;
     private Dialog? _refDataInvalidDialog;
     private Dialog? _refDeleteDialog;
     private Dialog? _refDeleteAllOfflineDialog;
@@ -515,11 +516,8 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private async Task OnAliasDialogShownAsync()
         => await _refAliasTextBox!.FocusAsync();
 
-    private async void OnAliasDialogTextBoxKeyDownAsync(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter")
-            await OnAliasDialogOkAsync();
-    }
+    private async Task OnAliasDialogTextBoxEnterPressedAsync(string? _)
+        => await OnAliasDialogOkAsync();
 
     private async Task OnAddIoLinkMasterDialogVisibleChangedAsync(bool visible)
     {
@@ -530,13 +528,12 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private async Task OnAddIoLinkMasterDialogShownAsync()
         => await _refAddIoLinkMasterTextBox!.FocusAsync();
 
-    private async void OnAddIoLinkMasterTextBoxKeyDownAsync(KeyboardEventArgs e)
+    private async Task OnAddIoLinkMasterTextBoxEnterPressedAsync(string? _)
     {
         _isIoLinkMasterUriValid = true;
         _isIoLinkMasterUriUnique = true;
 
-        if (e.Key == "Enter")
-            await OnAddIoLinkMasterDialogOkAsync();
+        await OnAddIoLinkMasterDialogOkAsync();
     }
 
     private async void OnAddIoLinkMasterRequestedAsync()
@@ -557,13 +554,12 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private async Task OnAddVSEDialogShownAsync()
         => await _refAddVSETextBox!.FocusAsync();
 
-    private async void OnAddVSETextBoxKeyDownAsync(KeyboardEventArgs e)
+    private async Task OnAddVSETextBoxEnterPressedAsync(string? _)
     {
         _isVSEUriValid = true;
         _isVSEUriUnique = true;
 
-        if (e.Key == "Enter")
-            await OnAddVSEDialogOkAsync();
+        await OnAddVSEDialogOkAsync();
     }
 
     private async void OnAddVSERequestedAsync()

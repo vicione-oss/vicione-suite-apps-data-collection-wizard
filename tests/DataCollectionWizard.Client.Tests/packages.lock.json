@@ -441,10 +441,10 @@
       },
       "Microsoft.AspNetCore.Components.QuickGrid": {
         "type": "Transitive",
-        "resolved": "10.0.5",
-        "contentHash": "8wpq9liUp/C2SQXBaAH7qUcLDJSiShEMUNyO72dgMw37bZJDm2ZJbxh6iNhauhIBukfZmts11BrQyyuqTdcLLw==",
+        "resolved": "10.0.6",
+        "contentHash": "F4BxqgydITAo/fbQpljL1SA5lav47iOPXfwl2/jfHyEaRCUnPz7/FNWuiKBavCrlIzM8AAro1Exe5Y1hb/B5hw==",
         "dependencies": {
-          "Microsoft.AspNetCore.Components.Web": "10.0.5"
+          "Microsoft.AspNetCore.Components.Web": "10.0.6"
         }
       },
       "Microsoft.AspNetCore.Components.Web": {
@@ -1380,7 +1380,7 @@
         "dependencies": {
           "ViciOne.Suite.DataCollectionWizard.Internal": "[2.1.0, )",
           "ViciOne.Suite.Sdk.Client": "[2.0.0, )",
-          "ViciOne.Ui.Blazor.Components": "[5.8.0, )",
+          "ViciOne.Ui.Blazor.Components": "[5.9.0, )",
           "ViciOne.Ui.MonochromeIcons.Assets": "[4.7.0, )",
           "ViciOne.Ui.Shared.Dx": "[0.19.1, )",
           "ViciOne.Ui.TreeEditor": "[2.0.0, )"
@@ -1489,12 +1489,12 @@
       },
       "ViciOne.Ui.Blazor.Components": {
         "type": "CentralTransitive",
-        "requested": "[5.8.0, )",
-        "resolved": "5.8.0",
-        "contentHash": "sUBpkKsGUkEpXziYEcj2Aa8DowyliVEHMytXIsU1jOHZkDpljHPMZyHk6Q+RHkzFLchqWgGv8CABUxFHMEt0KQ==",
+        "requested": "[5.9.0, )",
+        "resolved": "5.9.0",
+        "contentHash": "skrD8H5FuOlfYr9Wzwd0V6dsRkDy8DJrRzJYX1p1mTeJ3TqAahGPyy3wauE8TMsqJpq5aEd0VMRVUjtsy/zaUw==",
         "dependencies": {
-          "Microsoft.AspNetCore.Components.QuickGrid": "10.0.5",
-          "Microsoft.AspNetCore.Components.Web": "10.0.5",
+          "Microsoft.AspNetCore.Components.QuickGrid": "10.0.6",
+          "Microsoft.AspNetCore.Components.Web": "10.0.6",
           "ViciOne.Ui.Localization": "3.0.1",
           "ViciOne.Ui.MonochromeIcons.Components": "4.5.0"
         }
