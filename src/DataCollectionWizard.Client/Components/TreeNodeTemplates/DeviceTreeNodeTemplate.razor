@@ -56,13 +56,13 @@
             @if (hasAdditionalStatus)
             {
                 <div class="status-icon-container">
-                    @if (DeviceNode.HasError())
+                    @if (DeviceNode.IsNew())
                     {
-                        <div class="status-icon error"></div>
+                        <div class="status-icon new"></div>
                     }
-                    else if (DeviceNode.HasInheritedError())
+                    else if (DeviceNode.IsInheritedNew())
                     {
-                        <div class="status-icon error inherited"></div>
+                        <div class="status-icon new inherited"></div>
                     }
 
                     @if (DeviceNode.HasWarning())
@@ -74,13 +74,13 @@
                         <div class="status-icon warning inherited"></div>
                     }
 
-                    @if (DeviceNode.IsNew())
+                    @if (DeviceNode.HasError())
                     {
-                        <div class="status-icon new"></div>
+                        <div class="status-icon error"></div>
                     }
-                    else if (DeviceNode.IsInheritedNew())
+                    else if (DeviceNode.HasInheritedError())
                     {
-                        <div class="status-icon new inherited"></div>
+                        <div class="status-icon error inherited"></div>
                     }
                 </div>
             }

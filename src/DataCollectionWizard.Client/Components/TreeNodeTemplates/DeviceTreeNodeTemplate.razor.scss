@@ -29,12 +29,12 @@
             background-color: col.$error;
         }
 
-        &.new {
-            background-color: col.$add;
-        }
-
         &.warning {
             background-color: col.$warning;
+        }
+
+        &.new {
+            background-color: col.$add;
         }
 
         &.inherited {
@@ -49,14 +49,14 @@
                 border-color: col.$error;
             }
 
-            &.new {
-                background-color: transparent;
-                border-color: col.$add;
-            }
-
             &.warning {
                 background-color: transparent;
                 border-color: col.$warning;
+            }
+
+            &.new {
+                background-color: transparent;
+                border-color: col.$add;
             }
         }
     }
