@@ -343,9 +343,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         {
             Task ValueHandler(DateTime t, string? e)
             {
-                if (e is not null)
-                    item.Value = e;
-
+                item.Value = e ?? string.Empty;
                 item.LastUpdated = t > DateTime.MinValue
                     ? TimeZoneInfo.ConvertTime(t, TimeProvider.LocalTimeZone).ToString(CultureInfo.CurrentCulture)
                     : string.Empty;

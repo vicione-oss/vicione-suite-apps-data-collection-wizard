@@ -167,6 +167,14 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
         _ = AddProcessDataFb(builder, dataflow, processData, device, ioLinkMaster, ioLinkPort.SubIndex, processDataName, parentContainer,
             out var unitOutput, out var valueOutputUi, out var valueOutputLogging, out var availableOutput);
 
+        result.OutputMapping.Add(new ValueMappingEntry
+        {
+            ProcessDataId = processData.Id,
+            UnitOutputId = unitOutput.Id,
+            ValueOutputIdLogging = valueOutputLogging?.Id ?? Guid.Empty,
+            ValueOutputIdUI = valueOutputUi.Id,
+        });
+
         if (valueOutputLogging is null)
         {
             return;
@@ -183,14 +191,6 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
         }
 
         result.DataOutputs[processData.Id] = outputInfo;
-
-        result.OutputMapping.Add(new ValueMappingEntry
-        {
-            ProcessDataId = processData.Id,
-            UnitOutputId = unitOutput.Id,
-            ValueOutputIdLogging = valueOutputLogging.Id,
-            ValueOutputIdUI = valueOutputUi.Id,
-        });
     }
 
     private static string GetBlobDataName(string nodeName, string cloud)

@@ -6,7 +6,7 @@
     var hasInfo = deviceInfo.Count > 0;
 
     var hasImage = !string.IsNullOrWhiteSpace(_deviceImageDataBase64);
-    var nodeStatus = Device.GetStatus();
+    var nodeStatus = Device.GetStatus(IsLiveView);
 }
 
 <div class="tooltip-container @(hasImage ? string.Empty : "no-image") @(hasInfo ? string.Empty : "no-info") @(nodeStatus == NodeStatus.None ? "no-status" : string.Empty)">

@@ -19,6 +19,9 @@ public sealed partial class DeviceTreeNodeTooltip
     [Parameter, EditorRequired]
     public required IDeviceTreeBase Device { get; set; }
 
+    [Parameter]
+    public bool IsLiveView { get; set; }
+
     private async Task<string> GetDeviceImage()
     {
         if (Device is not DeviceTreeDevice treeDevice)
