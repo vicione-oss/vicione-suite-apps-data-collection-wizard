@@ -121,7 +121,7 @@
     <value>newly added</value>
   </data>
   <data name="DeviceStatusNotSupported" xml:space="preserve">
-    <value>Process value not supported</value>
+    <value>Process value not supported for logging</value>
   </data>
   <data name="DeviceStatusOffline" xml:space="preserve">
     <value>device is offline</value>

@@ -121,7 +121,7 @@
     <value>Neu hinzugefügt</value>
   </data>
   <data name="DeviceStatusNotSupported" xml:space="preserve">
-    <value>Prozesswert wird nicht unterstützt</value>
+    <value>Prozesswert wird für das Logging nicht unterstützt</value>
   </data>
   <data name="DeviceStatusOffline" xml:space="preserve">
     <value>Gerät nicht erreichbar</value>
