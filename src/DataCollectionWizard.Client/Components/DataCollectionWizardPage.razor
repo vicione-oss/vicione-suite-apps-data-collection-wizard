@@ -10,6 +10,7 @@
 @using ViciOne.Ui.Blazor.Components.Dialog.Components
 @using ViciOne.Ui.Blazor.Components.EditorLayout
 @using ViciOne.Ui.Blazor.Components.SearchBox
+@using ViciOne.Ui.Blazor.Components.TextBox
 @using ViciOne.Ui.Localization.Resources
 
 @attribute [Route(Constants.DataCollectionWizardPageRoute)]
@@ -116,11 +117,12 @@
         <div class="dialog-content dialog-content-alias">
             <div class="input">
                 <label>@(Localization.DataCollectionWizardPage.Alias)</label>
-                <DxTextBox @bind-Text="_deviceAlias"
-                            @ref="@_refAliasTextBox"
-                            @onkeydown="OnAliasDialogTextBoxKeyDownAsync"
-                            BindValueMode="BindValueMode.OnInput"
-                            maxlength="64" />
+
+                <TextBox @bind-Value="_deviceAlias"
+                         @bind-Value:event="ValueChanging"
+                         @ref="_refAliasTextBox"
+                         EnterPressed="OnAliasDialogTextBoxEnterPressedAsync"
+                         MaximumLength="64" />
             </div>
         </div>
     </Body>
@@ -146,10 +148,11 @@
         <div class="dialog-content dialog-content-vse">
             <div class="input">
                 <label>@(Localization.DataCollectionWizardPage.VseAddress)</label>
-                <DxTextBox @bind-Text="_newVSEAddress"
-                            @ref="@_refAddVSETextBox"
-                            @onkeydown="OnAddVSETextBoxKeyDownAsync"
-                            BindValueMode="BindValueMode.OnInput" />
+
+                <TextBox @bind-Value="_newVSEAddress"
+                         @bind-Value:event="ValueChanging"
+                         @ref="_refAddVSETextBox"
+                         EnterPressed="OnAddVSETextBoxEnterPressedAsync" />
 
                 <div class="validation-message-container">
                     @if (!_isVSEUriValid)
@@ -221,10 +224,10 @@
                     <div class="input">
                         <label>@(Localization.DataCollectionWizardPage.IoLinkMasterAddress)</label>
 
-                        <DxTextBox @bind-Text="_newIoLinkMasterAddress"
-                                   @ref="@_refAddIoLinkMasterTextBox"
-                                   @onkeydown="OnAddIoLinkMasterTextBoxKeyDownAsync"
-                                   BindValueMode="BindValueMode.OnInput" />
+                        <TextBox @bind-Value="_newIoLinkMasterAddress"
+                                 @bind-Value:event="ValueChanging"
+                                 @ref="_refAddIoLinkMasterTextBox"
+                                 EnterPressed="OnAddIoLinkMasterTextBoxEnterPressedAsync" />
 
                         <div class="validation-message-container">
                             @if (!_isIoLinkMasterUriValid)
