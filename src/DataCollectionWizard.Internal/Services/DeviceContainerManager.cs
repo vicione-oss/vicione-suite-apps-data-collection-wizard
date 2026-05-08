@@ -1,6 +1,7 @@
 ﻿using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using ViciOne.Cluster.Builder;
+using ViciOne.Cluster.Builder.Extensions;
 using ViciOne.Cluster.Model;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
@@ -10,20 +11,20 @@ namespace DataCollectionWizard.Internal.Services;
 internal sealed class DeviceContainerManager
 {
     private const string InvalidNodeArgumentExceptionMessage = "Node has to be a sub node of this managers device at the moment of its creation.";
-    private readonly ClusterBuilder _clusterBuilder;
+    private readonly ClusterBuilder _builder;
     private readonly Dataflow _dataflow;
     private readonly Dictionary<Type, Func<IDeviceTreeBase, string>> _nameGenerators = [];
     private readonly Dictionary<string, Container> _nodesContainers = [];
     private readonly Dictionary<string, IDeviceTreeBase?> _nodesParents;
-    private readonly Container _parentContainer;
+    private readonly ChildContainer _parentContainer;
 
-    public DeviceContainerManager(IDeviceTreeMasterNode device, Container container, ClusterBuilder builder, Dataflow dataflow)
+    public DeviceContainerManager(IDeviceTreeMasterNode device, ChildContainer parent, ClusterBuilder builder)
     {
         var allNodes = device.GetNodeAndDescendants().ToArray();
-        _dataflow = dataflow;
         _nodesParents = allNodes.ToDictionary(n => n.Id, n => allNodes.FirstOrDefault(p => p.Children.Contains(n)));
-        _parentContainer = container;
-        _clusterBuilder = builder;
+        _parentContainer = parent;
+        _builder = builder;
+        _dataflow = _builder.Cache.GetDataflow(_parentContainer);
     }
 
     public void AddNameGeneration<T>(Func<T, string> getName)
@@ -46,7 +47,7 @@ internal sealed class DeviceContainerManager
         if (_nameGenerators.TryGetValue(parentNode.GetType(), out var nameGenerator))
             name = nameGenerator(parentNode);
 
-        var newContainer = _clusterBuilder.Editors.Container.AddSubContainer(_dataflow, name, parentContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
+        var newContainer = _builder.Editors.Container.AddSubContainer(_dataflow, name, parentContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
         _nodesContainers[node.Id] = newContainer;
 
         return newContainer;

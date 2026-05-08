@@ -47,14 +47,14 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
     public Dictionary<string, PoolingModesCloudInput> GenerateCloudDataflow(Connection connection, IDeviceTreeMasterNode deviceTreeMaster,
                                                                             ClusterBuilder builder, Dataflow dataflow, string machineIdentifier,
                                                                             Dictionary<string, DataOutputInfo> dataOutputs, uint engineCycleInterval,
-                                                                            Container cloudContainer,
+                                                                            ChildContainer cloudContainer,
                                                                             Dictionary<string, RotationalFrequencyOutputs> rotationalFrequencyOutputs,
                                                                             List<ProcessDataConfiguration> loggedProcessDataNodes,
                                                                             List<IDeviceTreeDataNode> loggedRawDataNodes)
     {
         var result = new Dictionary<string, PoolingModesCloudInput>();
 
-        var deviceContainerManager = new DeviceContainerManager(deviceTreeMaster, cloudContainer, builder, dataflow);
+        var deviceContainerManager = new DeviceContainerManager(deviceTreeMaster, cloudContainer, builder);
 
         var stringOutput = GetConstantStringOutput(builder, dataflow, cloudContainer);
         GenerateDataPort(connection, deviceTreeMaster, builder, dataflow, stringOutput, out var deviceId, out var deviceIdNode);

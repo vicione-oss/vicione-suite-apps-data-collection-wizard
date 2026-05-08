@@ -542,14 +542,14 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         }
     }
 
-    private void GenerateProcessDataLogging(Dataflow dataflow, IDeviceTreeBase[] nodeAndDescendants, IDeviceTreeMasterNode deviceNode, Container compressorsContainer,
+    private void GenerateProcessDataLogging(Dataflow dataflow, IDeviceTreeBase[] nodeAndDescendants, IDeviceTreeMasterNode deviceNode, ChildContainer compressorsContainer,
         Dictionary<IDeviceTreeBase, IDeviceTreeBase> parents,
         Dictionary<IDeviceTreeBase, Dictionary<string, FunctionBlock>> compressorFbs, Guid[] enabledConfigs,
         DeviceDataflowGeneratorResult generateDataflowResult,
         Dictionary<Guid, Dictionary<string, PoolingModesCloudInput>> cloudInputs,
         Dictionary<Guid, string> connectionNames)
     {
-        var compressorContainerManager = new DeviceContainerManager(deviceNode, compressorsContainer, builder, dataflow);
+        var compressorContainerManager = new DeviceContainerManager(deviceNode, compressorsContainer, builder);
 
         foreach (var compressableDataNode in nodeAndDescendants.OfType<IDeviceTreeCompressableDataNode>())
         {
