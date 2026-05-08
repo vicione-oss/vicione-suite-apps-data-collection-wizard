@@ -22,6 +22,8 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
     private const string ContainerNameCompressors = "Compressors";
     private const string ContainerNameMoneoConnect = "moneoConnect";
     private const string ContainerNameSchedulers = "Schedulers";
+    private const int ContainerSize = 20;
+
     // TODO: im Anna dataport yaml und attribut gleich schreiben
 
     private const string UnexpectedPoolingModeErrorMessage = "Encountered unexpected PoolingMode.";
@@ -30,11 +32,10 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
     private const string WrongDesignIdErrorMessage = "FunctionBlock has wrong DesignId.";
 
     private static readonly Point s_schedulerContainerLocation = new(FunctionBlocks.DefaultHorizontalSeparation * -1, 0);
-
     private static readonly Guid s_designIdSystemDataPort = Guid.Parse("c7390e0f-761d-40f6-9112-a31216eac2c7");
+
     private ChildContainer? _moneoConnectContainer;
     private int _schedulerFbY;
-    public int ContainerSize { get; set; } = 20;
 
     private static Guid[] GetActiveDataGroupIds(IDeviceTreeBase[] nodeAndDescendants)
         => [.. nodeAndDescendants
@@ -377,13 +378,12 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
             .Where(t => activeDatagroupIdentifiers.Contains(t.Id))
             .ToArray();
 
-        var compressorFbs = new Dictionary<string, FunctionBlock>();
+        var compressorFbs = new Dictionary<IDeviceTreeBase, FunctionBlock>();
         var schedulerFbs = new Dictionary<SchedulerConfiguration, FunctionBlock>(SchedulerConfigurationComparerIgnoreDataGroupIdentifier.Instance);
 
         var enabledConfigs = activePublishTargets.Select(c => c.Id).ToArray();
 
-        InitContainerSizeManagers(dataflow,
-                    out var dataFormatterContainerManager);
+        InitContainerSizeManagers(dataflow, out var dataFormatterContainerManager);
 
         var masterUrl = new UriBuilder(master.Url).Uri;
         var masterAddress = $"{masterUrl.DnsSafeHost}:{masterUrl.Port}";
@@ -544,7 +544,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
     private void GenerateProcessDataLogging(Dataflow dataflow, IDeviceTreeBase[] nodeAndDescendants, IDeviceTreeMasterNode deviceNode, Container compressorsContainer,
         Dictionary<IDeviceTreeBase, IDeviceTreeBase> parents,
-        Dictionary<string, FunctionBlock> compressorFbs, Guid[] enabledConfigs,
+        Dictionary<IDeviceTreeBase, FunctionBlock> compressorFbs, Guid[] enabledConfigs,
         DeviceDataflowGeneratorResult generateDataflowResult,
         Dictionary<Guid, Dictionary<string, PoolingModesCloudInput>> cloudInputs,
         Dictionary<Guid, string> connectionNames)
@@ -658,12 +658,13 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         });
 
     private bool GetOrAddCompressorFb(Dataflow dataflow, string fbName, CompressorConfiguration configuration, IDeviceTreeBase node,
-        DeviceContainerManager compressorContainerManager, Dictionary<string, FunctionBlock> compressorFbs, out FunctionBlock compressorFb)
+        DeviceContainerManager compressorContainerManager, Dictionary<IDeviceTreeBase, FunctionBlock> compressorFbs, out FunctionBlock compressorFb)
     {
-        if (compressorFbs.TryGetValue(fbName, out compressorFb!))
+        var compressorContainer = compressorContainerManager.GetParentContainer(node);
+
+        if (compressorFbs.TryGetValue(node, out compressorFb!))
             return true;
 
-        var compressorContainer = compressorContainerManager.GetParentContainer(node);
         compressorFb = builder.Editors.Container.AddSubFunctionBlock(dataflow, FunctionBlocks.IntervalStatistic.DesignId, fbName, compressorContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
 
         builder.Editors.Setting.SetFunctionBlockSetting(compressorFb, FunctionBlocks.IntervalStatistic.Settings.CompressionTime, configuration.CompressionTime);
@@ -671,7 +672,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         foreach (var output in compressorFb.ProcessDataOutputs)
             builder.Editors.Connector.SetMarkAsChangedOnlyIfNotEqual(output, false);
 
-        compressorFbs.Add(fbName, compressorFb);
+        compressorFbs.Add(node, compressorFb);
         return false;
     }
 
