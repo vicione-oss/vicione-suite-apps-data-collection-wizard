@@ -378,7 +378,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
             .Where(t => activeDatagroupIdentifiers.Contains(t.Id))
             .ToArray();
 
-        var compressorFbs = new Dictionary<(string Name, Container Parent), FunctionBlock>();
+        var compressorFbs = new Dictionary<IDeviceTreeBase, FunctionBlock>();
         var schedulerFbs = new Dictionary<SchedulerConfiguration, FunctionBlock>(SchedulerConfigurationComparerIgnoreDataGroupIdentifier.Instance);
 
         var enabledConfigs = activePublishTargets.Select(c => c.Id).ToArray();
@@ -544,7 +544,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
     private void GenerateProcessDataLogging(Dataflow dataflow, IDeviceTreeBase[] nodeAndDescendants, IDeviceTreeMasterNode deviceNode, Container compressorsContainer,
         Dictionary<IDeviceTreeBase, IDeviceTreeBase> parents,
-        Dictionary<(string Name, Container Parent), FunctionBlock> compressorFbs, Guid[] enabledConfigs,
+        Dictionary<IDeviceTreeBase, FunctionBlock> compressorFbs, Guid[] enabledConfigs,
         DeviceDataflowGeneratorResult generateDataflowResult,
         Dictionary<Guid, Dictionary<string, PoolingModesCloudInput>> cloudInputs,
         Dictionary<Guid, string> connectionNames)
@@ -658,12 +658,11 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         });
 
     private bool GetOrAddCompressorFb(Dataflow dataflow, string fbName, CompressorConfiguration configuration, IDeviceTreeBase node,
-        DeviceContainerManager compressorContainerManager, Dictionary<(string Name, Container Parent), FunctionBlock> compressorFbs, out FunctionBlock compressorFb)
+        DeviceContainerManager compressorContainerManager, Dictionary<IDeviceTreeBase, FunctionBlock> compressorFbs, out FunctionBlock compressorFb)
     {
         var compressorContainer = compressorContainerManager.GetParentContainer(node);
-        var key = (fbName, compressorContainer);
 
-        if (compressorFbs.TryGetValue(key, out compressorFb!))
+        if (compressorFbs.TryGetValue(node, out compressorFb!))
             return true;
 
         compressorFb = builder.Editors.Container.AddSubFunctionBlock(dataflow, FunctionBlocks.IntervalStatistic.DesignId, fbName, compressorContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
@@ -673,7 +672,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         foreach (var output in compressorFb.ProcessDataOutputs)
             builder.Editors.Connector.SetMarkAsChangedOnlyIfNotEqual(output, false);
 
-        compressorFbs.Add(key, compressorFb);
+        compressorFbs.Add(node, compressorFb);
         return false;
     }
 
