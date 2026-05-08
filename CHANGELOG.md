@@ -12,6 +12,7 @@
 
 ### Fix
 
+- Generate correct container name for sensors
 - Icon for deleting ProcessData was misaligned when only a single action button was available
 - `DeviceTreeGuard` did not dispose MQTT subscription handles on shutdown, causing leaked subscriptions
 
