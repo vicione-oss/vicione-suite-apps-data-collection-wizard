@@ -8,19 +8,19 @@
 
     <ComboBox Enabled="@(IsSupportedConnection())"
               Items="@(PoolingGrids)"
-              TextSelector="@(e => e.Text)"
+              TextSelector="@(s_poolingGridTextSelector)"
               TItem="@(ComboBoxOption<PoolingGrid>)"
               TValue="@(PoolingGrid)"
               Value="@(GetSelectedPoolingGrid())"
               ValueChanged="@(PoolingGridChanged)"
-              ValueSelector="@(e => e.Value)" />
+              ValueSelector="@(s_poolingGridValueSelector)" />
 
     <ComboBox Enabled="@(!IsOnChange() && IsSupportedConnection())"
               Items="@(PoolingModes)"
-              TextSelector="@(e => e.Text)"
+              TextSelector="@(s_poolingModeTextSelector)"
               TItem="@(ComboBoxOption<PoolingMode>)"
               TValue="@(PoolingMode)"
               Value="@(GetSelectedPoolingMode())"
               ValueChanged="@(PoolingModeChanged)"
-              ValueSelector="@(e => e.Value)" />
+              ValueSelector="@(s_poolingModeValueSelector)" />
 </div>

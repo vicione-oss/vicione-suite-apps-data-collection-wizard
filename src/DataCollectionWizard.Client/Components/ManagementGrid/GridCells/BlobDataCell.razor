@@ -8,21 +8,21 @@
 
     <ComboBox Enabled="@(IsSupportedConnection())"
               Items="@(_daysOfWeek)"
-              TextSelector="@(e => e.Text)"
+              TextSelector="@(s_daysOfWeekTextSelector)"
               TItem="@(ComboBoxOption<DaysOfWeek>)"
               TValue="@(DaysOfWeek)"
               Value="@(GetSelectedDaysOfWeek())"
               ValueChanged="@(OnDaysOfWeekChanged)"
-              ValueSelector="@(e => e.Value)" />
+              ValueSelector="@(s_daysOfWeekValueSelector)" />
 
     <ComboBox Enabled="@(IsSupportedConnection())"
               Items="@(_timesADay)"
-              TextSelector="@(e => e.Text)"
+              TextSelector="@(s_timesADayTextSelector)"
               TItem="@(ComboBoxOption<int>)"
               TValue="@(int)"
               Value="@(GetTimesADay())"
               ValueChanged="@(OnTimesADayChanged)"
-              ValueSelector="@(e => e.Value)" />
+              ValueSelector="@(s_timesADayValueSelector)" />
 
     <button @onclick="@(async () => await DownloadButtonClicked.InvokeAsync((BlobDataNode!, Configuration!.Connection)))"
             class="btn"
