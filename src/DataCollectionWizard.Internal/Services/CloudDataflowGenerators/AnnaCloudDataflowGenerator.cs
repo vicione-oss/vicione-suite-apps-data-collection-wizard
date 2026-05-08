@@ -118,7 +118,7 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
                                     Dictionary<string, PoolingModesCloudInput> result,
                                     DataPortTreeNode objectDataTreeNode, Container cloudContainer, IDeviceTreeMasterNode deviceTreeMaster)
     {
-        var deviceContainerManager = new DeviceContainerManager(deviceTreeMaster, cloudContainer, builder);
+        var deviceContainerManager = new DeviceContainerManager(deviceTreeMaster, cloudContainer, builder, dataflow);
 
         foreach (var dataNode in loggedProcessDataNodes)
         {

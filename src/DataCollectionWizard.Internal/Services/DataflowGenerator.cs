@@ -5,7 +5,6 @@ using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using DataCollectionWizard.Public.Extensions;
-using MassTransit.Internals;
 using Microsoft.Extensions.Logging;
 using Sdk.Connections.Contracts;
 using ViciOne.Cluster.Builder;
@@ -550,7 +549,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         Dictionary<Guid, Dictionary<string, PoolingModesCloudInput>> cloudInputs,
         Dictionary<Guid, string> connectionNames)
     {
-        var compressorContainerManager = new DeviceContainerManager(deviceNode, compressorsContainer, builder);
+        var compressorContainerManager = new DeviceContainerManager(deviceNode, compressorsContainer, builder, dataflow);
 
         foreach (var compressableDataNode in nodeAndDescendants.OfType<IDeviceTreeCompressableDataNode>())
         {
@@ -673,7 +672,12 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         foreach (var output in compressorFb.ProcessDataOutputs)
             builder.Editors.Connector.SetMarkAsChangedOnlyIfNotEqual(output, false);
 
-        var compressorFbsOfNewNode = compressorFbs.GetOrAdd(node, (n) => new Dictionary<string, FunctionBlock>());
+        if (!compressorFbs.TryGetValue(node, out var compressorFbsOfNewNode))
+        {
+            compressorFbsOfNewNode = new Dictionary<string, FunctionBlock>();
+            compressorFbs[node] = compressorFbsOfNewNode;
+        }
+
         compressorFbsOfNewNode.Add(fbName, compressorFb);
         return false;
     }
