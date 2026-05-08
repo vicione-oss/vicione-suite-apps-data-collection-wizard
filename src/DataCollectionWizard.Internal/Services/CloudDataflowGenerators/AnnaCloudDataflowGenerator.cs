@@ -127,11 +127,9 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
                 throw new InvalidOperationException($"No data output found for {dataNode.Node.Id}.");
             }
 
-            var suffix = $"{dataOutputInfo.Output.FunctionBlock.Name}-{dataOutputInfo.Output.Name}";
-
             var insertRotSpeedAndRefValue = rotationalFrequencyOutputs.TryGetValue(dataNode.Node.Id, out _);
 
-            var annaObjectDataFb = AddAnnaObjectDataFb(builder, dataflow, dataOutputInfo.DataPointIdentifiers[connection.Id], suffix, dataNode.Configuration, deviceContainerManager,
+            var annaObjectDataFb = AddAnnaObjectDataFb(builder, dataflow, dataOutputInfo.DataPointIdentifiers[connection.Id], dataOutputInfo.Output.FunctionBlock.Name, dataNode.Configuration, deviceContainerManager,
                     insertRotSpeedAndRefValue, insertRotSpeedAndRefValue, dataNode.Node);
             builder.Editors.DataPortTreeNode.AssignConnector(objectDataTreeNode, annaObjectDataFb.GetOutputByDesignId(FunctionBlocks.AnnaObjectData.Outputs.Value));
 
