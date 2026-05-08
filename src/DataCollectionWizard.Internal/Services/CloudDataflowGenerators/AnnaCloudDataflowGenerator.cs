@@ -74,7 +74,7 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
 
     public Dictionary<string, PoolingModesCloudInput> GenerateCloudDataflow(Connection connection, IDeviceTreeMasterNode deviceTreeMaster, ClusterBuilder builder,
                                                                             Dataflow dataflow, string machineIdentifier, Dictionary<string, DataOutputInfo> dataOutputs, uint engineCycleInterval,
-                                                                            Container cloudContainer, Dictionary<string, RotationalFrequencyOutputs> rotationalFrequencyOutputs,
+                                                                            ChildContainer cloudContainer, Dictionary<string, RotationalFrequencyOutputs> rotationalFrequencyOutputs,
                                                                             List<ProcessDataConfiguration> loggedProcessDataNodes, List<IDeviceTreeDataNode> loggedRawDataNodes)
     {
         var result = new Dictionary<string, PoolingModesCloudInput>();
@@ -116,7 +116,7 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
                                     Dictionary<string, DataOutputInfo> dataOutputs,
                                     Dictionary<string, RotationalFrequencyOutputs> rotationalFrequencyOutputs,
                                     Dictionary<string, PoolingModesCloudInput> result,
-                                    DataPortTreeNode objectDataTreeNode, Container cloudContainer, IDeviceTreeMasterNode deviceTreeMaster)
+                                    DataPortTreeNode objectDataTreeNode, ChildContainer cloudContainer, IDeviceTreeMasterNode deviceTreeMaster)
     {
         var deviceContainerManager = new DeviceContainerManager(deviceTreeMaster, cloudContainer, builder);
 
