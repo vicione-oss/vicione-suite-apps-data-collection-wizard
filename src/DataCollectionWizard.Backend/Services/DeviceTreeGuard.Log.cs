@@ -27,4 +27,7 @@ public sealed partial class DeviceTreeGuard
 
     [LoggerMessage(LogLevel.Information, "DeviceTreeGuard received event but did not return IDeviceTreeMasterDevice")]
     public static partial void LogWrongDeviceTypeInformation(ILogger logger);
+
+    [LoggerMessage(LogLevel.Warning, "Failed to dispose subscription handle during DeviceTreeGuard disposal")]
+    public static partial void LogDisposeSubscriptionHandleFailed(ILogger logger, Exception exception);
 }

@@ -134,7 +134,29 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
     }
 
     public async ValueTask DisposeAsync()
-        => await _eventBrokerScope.DisposeAsync();
+    {
+        IAsyncDisposable[] handles;
+
+        lock (_subscriptionHandlesLock)
+        {
+            handles = [.. _subscriptionHandles.Values];
+            _subscriptionHandles.Clear();
+        }
+
+        foreach (var handle in handles)
+        {
+            try
+            {
+                await handle.DisposeAsync();
+            }
+            catch (Exception ex)
+            {
+                LogDisposeSubscriptionHandleFailed(_logger, ex);
+            }
+        }
+
+        await _eventBrokerScope.DisposeAsync();
+    }
 
     private async Task InitDeviceTreeGuard()
     {
