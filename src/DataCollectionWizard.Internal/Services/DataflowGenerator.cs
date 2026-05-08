@@ -5,6 +5,7 @@ using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using DataCollectionWizard.Public.Extensions;
+using MassTransit.Internals;
 using Microsoft.Extensions.Logging;
 using Sdk.Connections.Contracts;
 using ViciOne.Cluster.Builder;
@@ -245,7 +246,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         builder.Editors.Connector.AddLink(compressorFb.GetOutputByDesignId(compressorOutputs.Sum), rpmMinMaxTrackerFb.GetInputByDesignId(minMaxTrackerInputs.Sum));
     }
 
-    private FunctionBlock? ConnectMinMaxTracker(Dataflow dataflow, Dictionary<string, FunctionBlock> minMaxTrackerFbs,
+    private FunctionBlock? ConnectMinMaxTracker(Dataflow dataflow, Dictionary<FunctionBlock, FunctionBlock> minMaxTrackerFbsByCompressor,
         Guid[] activeClouds,
         DeviceDataflowGeneratorResult generateDataflowResult, IDeviceTreeCompressableDataNode compressableDataNode, string suffix,
         CompressorConfiguration configuration, ConnectorOutput subscriberOutput, IDeviceTreeBase parent, FunctionBlock compressorFb)
@@ -259,7 +260,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
             if (!GetOrAddRpmMinMaxTrackerFb(dataflow, rpmMinMaxTrackerName, compressorFb.Container,
                                            new Point(compressorFb.X ?? 0, compressorFb.Y ?? 0),
-                                           minMaxTrackerFbs, out rpmMinMaxTrackerFb))
+                                           minMaxTrackerFbsByCompressor, compressorFb, out rpmMinMaxTrackerFb))
             {
                 ConnectSubscriberToRpmMinMaxTracker(subscriberOutput, rotationalFrequencyOutputs.RotSpeed, rotationalFrequencyOutputs.RefValue, rpmMinMaxTrackerFb);
                 ConnectCompressorToRpmMinMaxTracker(compressorFb, rpmMinMaxTrackerFb);
@@ -270,7 +271,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
     }
 
     private void ConnectProcessDataToCloud(Dataflow dataflow, IDeviceTreeCompressableDataNode compressableDataNode,
-        CompressorConfiguration configuration, DataOutputInfo outputInfo, Dictionary<string, FunctionBlock> minMaxTrackerFbs,
+        CompressorConfiguration configuration, DataOutputInfo outputInfo, Dictionary<FunctionBlock, FunctionBlock> minMaxTrackerFbsByCompressor,
         FunctionBlock compressorFb, IDeviceTreeBase parent, DeviceDataflowGeneratorResult generateDataflowResult,
         Dictionary<Guid, Dictionary<string, PoolingModesCloudInput>> cloudInputs, Dictionary<Guid, string> connectionNames)
     {
@@ -284,7 +285,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
         if (cloudInputs.Any(cis => cis.Value.Any(ci => ci.Value.RotationalFrequencies.IsConfigured())))
         {
-            rpmMinMaxTrackerFb = ConnectMinMaxTracker(dataflow, minMaxTrackerFbs, [.. cloudInputs.Keys], generateDataflowResult, compressableDataNode,
+            rpmMinMaxTrackerFb = ConnectMinMaxTracker(dataflow, minMaxTrackerFbsByCompressor, [.. cloudInputs.Keys], generateDataflowResult, compressableDataNode,
             outputInfo.Suffix, configuration, outputInfo.Output, parent, compressorFb);
         }
 
@@ -378,7 +379,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
             .Where(t => activeDatagroupIdentifiers.Contains(t.Id))
             .ToArray();
 
-        var compressorFbs = new Dictionary<IDeviceTreeBase, FunctionBlock>();
+        var compressorFbs = new Dictionary<IDeviceTreeBase, Dictionary<string, FunctionBlock>>();
         var schedulerFbs = new Dictionary<SchedulerConfiguration, FunctionBlock>(SchedulerConfigurationComparerIgnoreDataGroupIdentifier.Instance);
 
         var enabledConfigs = activePublishTargets.Select(c => c.Id).ToArray();
@@ -544,7 +545,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
     private void GenerateProcessDataLogging(Dataflow dataflow, IDeviceTreeBase[] nodeAndDescendants, IDeviceTreeMasterNode deviceNode, Container compressorsContainer,
         Dictionary<IDeviceTreeBase, IDeviceTreeBase> parents,
-        Dictionary<IDeviceTreeBase, FunctionBlock> compressorFbs, Guid[] enabledConfigs,
+        Dictionary<IDeviceTreeBase, Dictionary<string, FunctionBlock>> compressorFbs, Guid[] enabledConfigs,
         DeviceDataflowGeneratorResult generateDataflowResult,
         Dictionary<Guid, Dictionary<string, PoolingModesCloudInput>> cloudInputs,
         Dictionary<Guid, string> connectionNames)
@@ -560,7 +561,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
                 continue;
 
             var activeConfigs = compressableDataNode.CompressorConfigurations.Where(s => s.Enabled && enabledConfigs.Contains(s.DataGroupIdentifier)).ToArray();
-            var minMaxTrackerFbs = new Dictionary<string, FunctionBlock>();
+            var minMaxTrackerFbsByCompressor = new Dictionary<FunctionBlock, FunctionBlock>();
             var convertedOutputs = new Dictionary<ConnectorOutput, ConnectorOutput>();
 
             foreach (var configuration in activeConfigs)
@@ -575,7 +576,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
                         if (!GetOrAddCompressorFb(dataflow, compressorName, configuration, compressableDataNode, compressorContainerManager, compressorFbs, out var compressorFb))
                             ConnectSubscriberToCompressor(dataflow, dataOutput, compressorFb, convertedOutputs);
 
-                        ConnectProcessDataToCloud(dataflow, compressableDataNode, configuration, dataOutput, minMaxTrackerFbs, compressorFb, parent, generateDataflowResult, cloudInputs, connectionNames);
+                        ConnectProcessDataToCloud(dataflow, compressableDataNode, configuration, dataOutput, minMaxTrackerFbsByCompressor, compressorFb, parent, generateDataflowResult, cloudInputs, connectionNames);
                     }
                     else
                     {
@@ -658,32 +659,33 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         });
 
     private bool GetOrAddCompressorFb(Dataflow dataflow, string fbName, CompressorConfiguration configuration, IDeviceTreeBase node,
-        DeviceContainerManager compressorContainerManager, Dictionary<IDeviceTreeBase, FunctionBlock> compressorFbs, out FunctionBlock compressorFb)
+        DeviceContainerManager compressorContainerManager, Dictionary<IDeviceTreeBase, Dictionary<string, FunctionBlock>> compressorFbs, out FunctionBlock compressorFb)
     {
         var compressorContainer = compressorContainerManager.GetParentContainer(node);
 
-        if (compressorFbs.TryGetValue(node, out compressorFb!))
+        if (compressorFbs.TryGetValue(node, out var compressorFbsOfNode) && compressorFbsOfNode.TryGetValue(fbName, out compressorFb!))
             return true;
 
-        compressorFb = builder.Editors.Container.AddSubFunctionBlock(dataflow, FunctionBlocks.IntervalStatistic.DesignId, fbName, compressorContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
+        compressorFb = builder.Editors.Container.AddSubFunctionBlock(dataflow, FunctionBlocks.IntervalStatistic.DesignId, fbName, compressorContainer, 0, FunctionBlocks.DefaultVerticalSeparation + 30);
 
         builder.Editors.Setting.SetFunctionBlockSetting(compressorFb, FunctionBlocks.IntervalStatistic.Settings.CompressionTime, configuration.CompressionTime);
 
         foreach (var output in compressorFb.ProcessDataOutputs)
             builder.Editors.Connector.SetMarkAsChangedOnlyIfNotEqual(output, false);
 
-        compressorFbs.Add(node, compressorFb);
+        var compressorFbsOfNewNode = compressorFbs.GetOrAdd(node, (n) => new Dictionary<string, FunctionBlock>());
+        compressorFbsOfNewNode.Add(fbName, compressorFb);
         return false;
     }
 
     private bool GetOrAddRpmMinMaxTrackerFb(Dataflow dataflow, string fbName, Container compressorContainer,
-        Point compressorLocation, Dictionary<string, FunctionBlock> rpmTrackerFbs, out FunctionBlock minMaxTrackerFb)
+        Point compressorLocation, Dictionary<FunctionBlock, FunctionBlock> minMaxTrackerFbsByCompressor, FunctionBlock compressor, out FunctionBlock minMaxTrackerFb)
     {
-        if (rpmTrackerFbs.TryGetValue(fbName, out minMaxTrackerFb!))
+        if (minMaxTrackerFbsByCompressor.TryGetValue(compressor, out minMaxTrackerFb!))
             return true;
 
         minMaxTrackerFb = builder.Editors.Container.AddFunctionBlock(dataflow, FunctionBlocks.RpmAtMinMaxTracker.DesignId, fbName, compressorContainer, new Point(compressorLocation.X + FunctionBlocks.DefaultHorizontalSeparation, compressorLocation.Y));
-        rpmTrackerFbs.Add(fbName, minMaxTrackerFb);
+        minMaxTrackerFbsByCompressor.Add(compressor, minMaxTrackerFb);
         return false;
     }
 
