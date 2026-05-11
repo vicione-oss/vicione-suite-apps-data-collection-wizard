@@ -984,6 +984,13 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         return [.. result];
     }
 
+    private void OnAddIoLinkMasterAddressChanged(string value)
+    {
+        _newIoLinkMasterAddress = value;
+        _isIoLinkMasterUriValid = true;
+        _isIoLinkMasterUriUnique = true;
+    }
+
     private void ResetAddIoLinkMasterDialog()
     {
         _ioLinkMasterFilter = string.Empty;
@@ -991,6 +998,13 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _isIoLinkMasterUriUnique = true;
         _isIoLinkMasterUriValid = true;
         _ioLinkMasterDialogHeight = IoLinkMasterDialogHeightNormal;
+    }
+
+    private void OnAddVSEAddressChanged(string value)
+    {
+        _newVSEAddress = value;
+        _isVSEUriValid = true;
+        _isVSEUriUnique = true;
     }
 
     private void ResetAddVSEDialog()

@@ -149,8 +149,8 @@
             <div class="input">
                 <label>@(Localization.DataCollectionWizardPage.VseAddress)</label>
 
-                <TextBox @bind-Value="_newVSEAddress"
-                         @bind-Value:event="ValueChanging"
+                <TextBox Value="@_newVSEAddress"
+                         ValueChanging="OnAddVSEAddressChanged"
                          @ref="_refAddVSETextBox"
                          EnterPressed="OnAddVSETextBoxEnterPressedAsync" />
 
@@ -224,8 +224,8 @@
                     <div class="input">
                         <label>@(Localization.DataCollectionWizardPage.IoLinkMasterAddress)</label>
 
-                        <TextBox @bind-Value="_newIoLinkMasterAddress"
-                                 @bind-Value:event="ValueChanging"
+                        <TextBox Value="@_newIoLinkMasterAddress"
+                                 ValueChanging="OnAddIoLinkMasterAddressChanged"
                                  @ref="_refAddIoLinkMasterTextBox"
                                  EnterPressed="OnAddIoLinkMasterTextBoxEnterPressedAsync" />
 
