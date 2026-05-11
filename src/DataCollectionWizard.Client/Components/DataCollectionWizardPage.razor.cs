@@ -1,4 +1,6 @@
 ﻿using System.Globalization;
+using System.Net;
+using System.Net.Sockets;
 using ClusterManagement.Public.Services;
 using DataCollectionWizard.Client.Components.ManagementGrid.Models;
 using DataCollectionWizard.Client.Components.ManagementGrid.Services;
@@ -580,9 +582,13 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
             try
             {
-                var uriBuilder = new UriBuilder(_newIoLinkMasterAddress);
-                newIoLinkUri = uriBuilder.Uri;
-                _isIoLinkMasterUriValid = !string.IsNullOrEmpty(uriBuilder.Uri.DnsSafeHost) && uriBuilder.Uri.Port > 0;
+                _isIoLinkMasterUriValid = IsValidHost(ExtractHost(_newIoLinkMasterAddress));
+                if (_isIoLinkMasterUriValid)
+                {
+                    var uriBuilder = new UriBuilder(_newIoLinkMasterAddress);
+                    _isIoLinkMasterUriValid = uriBuilder.Uri.Port > 0;
+                    newIoLinkUri = uriBuilder.Uri;
+                }
             }
             catch
             {
@@ -657,9 +663,13 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
         try
         {
-            var uriBuilder = new UriBuilder(_newVSEAddress);
-            _isVSEUriValid = !string.IsNullOrEmpty(uriBuilder.Uri.DnsSafeHost) && uriBuilder.Uri.Port > 0;
-            vseAddress = uriBuilder.Uri.SetVsePort();
+            _isVSEUriValid = IsValidHost(ExtractHost(_newVSEAddress));
+            if (_isVSEUriValid)
+            {
+                var uriBuilder = new UriBuilder(_newVSEAddress);
+                _isVSEUriValid = uriBuilder.Uri.Port > 0;
+                vseAddress = uriBuilder.Uri.SetVsePort();
+            }
         }
         catch
         {
@@ -1254,5 +1264,44 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         {
             LogUpdateDeviceTreeError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
         }
+    }
+
+    private static bool IsValidHost(string host)
+    {
+        if (string.IsNullOrWhiteSpace(host))
+            return false;
+
+        if (IPAddress.TryParse(host, out var ip))
+            return ip.AddressFamily == AddressFamily.InterNetwork && host.Count(c => c == '.') == 3;
+
+        if (host.All(c => char.IsAsciiDigit(c) || c == '.'))
+            return false;
+
+        return Uri.CheckHostName(host) == UriHostNameType.Dns;
+    }
+
+    private static string ExtractHost(string input)
+    {
+        var host = input;
+
+        // Remove scheme (e.g. "http://")
+        var schemeEnd = host.IndexOf("://", StringComparison.Ordinal);
+        if (schemeEnd >= 0)
+            host = host[(schemeEnd + 3)..];
+
+        // Remove path
+        var pathStart = host.IndexOf('/', StringComparison.Ordinal);
+        if (pathStart >= 0)
+            host = host[..pathStart];
+
+        // Remove port (but not from IPv6 addresses)
+        if (!host.StartsWith('['))
+        {
+            var lastColon = host.LastIndexOf(":", StringComparison.Ordinal);
+            if (lastColon >= 0)
+                host = host[..lastColon];
+        }
+
+        return host;
     }
 }
