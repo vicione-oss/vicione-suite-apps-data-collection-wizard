@@ -20,6 +20,9 @@
 ### Dependencies
 
 - `ViciOne.Ui.Blazor.Components` package, update version to `5.9.0`
+- `ViciOne.Driver.IoTCore.Contracts` package, update version to `2.0.1`
+- `ViciOne.Suite.ClusterManagement.Public` package, update version to `2.1.0`
+- `ViciOne.Ui.TreeEditor` package, update version to `2.0.1`
 
 ## 2.0.1 - 2026-04-17
 

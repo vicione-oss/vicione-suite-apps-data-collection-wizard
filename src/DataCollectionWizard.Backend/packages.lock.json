@@ -361,8 +361,8 @@
         "type": "Project",
         "dependencies": {
           "ViciOne.Cluster.Builder": "[1.0.0, )",
-          "ViciOne.Driver.IoTCore.Contracts": "[2.0.0, )",
-          "ViciOne.Suite.ClusterManagement.Public": "[2.0.0, )",
+          "ViciOne.Driver.IoTCore.Contracts": "[2.0.1, )",
+          "ViciOne.Suite.ClusterManagement.Public": "[2.1.0, )",
           "ViciOne.Suite.DataCollectionWizard.Public": "[2.1.0, )",
           "ViciOne.Suite.DataPort.Anna.Contracts": "[1.0.0, )",
           "ViciOne.Suite.Sdk": "[2.0.0, )"
@@ -371,7 +371,7 @@
       "ViciOne.Suite.DataCollectionWizard.Public": {
         "type": "Project",
         "dependencies": {
-          "ViciOne.Driver.IoTCore.Contracts": "[2.0.0, )",
+          "ViciOne.Driver.IoTCore.Contracts": "[2.0.1, )",
           "ViciOne.Suite.Sdk": "[2.0.0, )"
         }
       },
@@ -388,15 +388,15 @@
       },
       "ViciOne.Driver.IoTCore.Contracts": {
         "type": "CentralTransitive",
-        "requested": "[2.0.0, )",
-        "resolved": "2.0.0",
-        "contentHash": "JiwhLeldrvXxuO8a/wWbgdUY5I7f6rJ3ZzpTKeIEIqHflkcORB4gHjFCTuxolOtq32iT5rKaDC9dFOa7UChDPg=="
+        "requested": "[2.0.1, )",
+        "resolved": "2.0.1",
+        "contentHash": "eTAHCTRnPIBWQiXw9qm1idbA/nKfDKboxepqZorKPfOqaGmc9xDLd3/1GkVOcB4dbJnRMvVREU1FtS680zTNkA=="
       },
       "ViciOne.Suite.ClusterManagement.Public": {
         "type": "CentralTransitive",
-        "requested": "[2.0.0, )",
-        "resolved": "2.0.0",
-        "contentHash": "m87uGPzDVk0UhamXTJ2Utf7d+Qmgtn11nNzlXoi9oynsGUvlc9jtvZcs8pB67dbkcthGFJWbDvucOKpPXDxcbQ==",
+        "requested": "[2.1.0, )",
+        "resolved": "2.1.0",
+        "contentHash": "9DFjrt3lU94wizsooNdF/0XGT+yGlIzEY9KnR/t0wy2ccPW/ViYHaiZnEG5XAhSzngNWc0xD4b2M33RETvMYaQ==",
         "dependencies": {
           "ViciOne.Cluster.Builder": "1.0.0",
           "ViciOne.Suite.Sdk": "2.0.0"

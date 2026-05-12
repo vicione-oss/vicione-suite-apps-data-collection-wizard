@@ -485,7 +485,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
         try
         {
-            subscription = await _eventBroker.Subscribe(FunctionBlocks.IoLinkMasterFinder.Outputs.DevicesNodeId, callBack);
+            subscription = await _eventBroker.Subscribe(FunctionBlocks.IoLinkMasterFinder.Outputs.DevicesNodeId, callBack, cancellationToken);
         }
         catch
         {
@@ -504,7 +504,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
             try
             {
-                subscription = await _eventBroker.Subscribe(FunctionBlocks.IoLinkMasterFinder.Outputs.DevicesNodeId, callBack);
+                subscription = await _eventBroker.Subscribe(FunctionBlocks.IoLinkMasterFinder.Outputs.DevicesNodeId, callBack, cancellationToken);
             }
             catch (Exception ex)
             {

@@ -352,7 +352,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
                 return Task.CompletedTask;
             }
 
-            processValueHandle = await EventBroker.Subscribe(mapData.ValueOutputIdUI, ValueHandler);
+            processValueHandle = await EventBroker.Subscribe(mapData.ValueOutputIdUI, ValueHandler, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -379,7 +379,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
                     return Task.CompletedTask;
                 }
 
-                unitHandle = await EventBroker.Subscribe(mapData.UnitOutputId.Value, UnitHandler);
+                unitHandle = await EventBroker.Subscribe(mapData.UnitOutputId.Value, UnitHandler, cancellationToken);
             }
             catch (Exception ex)
             {
