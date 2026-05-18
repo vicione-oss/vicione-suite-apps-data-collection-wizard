@@ -9,6 +9,7 @@
 - Renamed Live View column from "Last updated" to "Last changed" and added a Tooltip
 - Optimize Live View rendering performance with refresh batching
 - Support virtual scrolling in process data grid to improve performance with large datasets
+- Adjust validation for Hostname and IP address
 
 ### Fix
 
