@@ -6,6 +6,8 @@ using DataCollectionWizard.Client.Resources;
 using DataCollectionWizard.Internal.Services;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.Ui.MonochromeIcons.Assets.Extensions;
+using ViciOne.Ui.MonochromeIcons.Core.Enums;
 using ViciOne.Ui.TreeEditor.Builder.Interface;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Enums;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Icons;
@@ -74,7 +76,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
             {
                 Action = (_, _) => Console.Out.WriteLine($"[configure] action invoked for [{baseNode.DisplayText}]"),
                 Description = Localization.DeviceTreeAdapter.ConfigureNode,
-                Icon = new SvgIcon(SvgIcons.cog_outline),
+                Icon = new SvgIcon(MonochromeIconName.GearLight.GetSvgMarkup(MonochromeIconSize.SmallMedium) ?? string.Empty),
                 Index = 0,
             });
         }

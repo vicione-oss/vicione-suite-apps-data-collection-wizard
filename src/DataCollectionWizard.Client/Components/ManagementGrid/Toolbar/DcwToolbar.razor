@@ -3,6 +3,8 @@
 @using Microsoft.Extensions.Logging
 @using ViciOne.Ui.Blazor.Components.SearchBox
 @using ViciOne.Ui.Localization.Resources
+@using ViciOne.Ui.MonochromeIcons.Assets.Extensions
+
 
 <div class="toolbar-container">
     <span class="header">
@@ -53,7 +55,7 @@
                 title="@Localization.DataCollectionWizardPage.ShowDebugTooling"
                 @onclick="@(() => _showDebug ^= true)">
 
-            @((MarkupString)SvgIcons.bug)
+            <MonochromeIcon Name="@MonochromeIconName.BugLight" Size="@MonochromeIconSize.SmallMedium" />
         </button>
 
         @if (_showDebug)
@@ -72,7 +74,7 @@
             <button @onclick="@(() => SetAllDatapointsCompression(_debugPoolingGrid))"
                     title="@Localization.DataCollectionWizardPage.SetAllDatapointsCompression">
 
-                @((MarkupString)SvgIcons.check)
+                <MonochromeIcon Name="@MonochromeIconName.Check" Size="@MonochromeIconSize.SmallMedium" />
             </button>
 
             <span class="separator"></span>
@@ -80,13 +82,13 @@
             <button @onclick="@(() => SetAllDatapointsEnabled(true))"
                     title="@Localization.DataCollectionWizardPage.SetAllDatapointsEnabled">
 
-                @((MarkupString)SvgIcons.checkbox_outline)
+                <MonochromeIcon Name="@MonochromeIconName.Toggle" Size="@MonochromeIconSize.SmallMedium" />
             </button>
 
             <button @onclick="@(() => SetAllDatapointsEnabled(false))"
                     title="@Localization.DataCollectionWizardPage.SetAllDatapointsDisabled">
 
-                @((MarkupString)SvgIcons.checkbox_blank_outline)
+                <MonochromeIcon Name="@MonochromeIconName.Clear" Size="@MonochromeIconSize.SmallMedium" />
             </button>
 
             <span class="separator"></span>

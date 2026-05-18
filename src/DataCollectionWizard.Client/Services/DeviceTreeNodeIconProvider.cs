@@ -1,5 +1,7 @@
 ﻿using DataCollectionWizard.Client.Resources;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.Ui.MonochromeIcons.Assets.Extensions;
+using ViciOne.Ui.MonochromeIcons.Core.Enums;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Icons;
 
 namespace DataCollectionWizard.Client.Services;
@@ -72,7 +74,7 @@ internal static class DeviceTreeNodeIconProvider
                 return GetIcon(relevantChild);
             }
 
-            return new SvgIcon(SvgIcons.layers_outline);
+            return new SvgIcon(MonochromeIconName.Folder.GetSvgMarkup(MonochromeIconSize.SmallMedium) ?? string.Empty);
         }
 
         return new SvgIcon(SvgIcons.progress_question);
