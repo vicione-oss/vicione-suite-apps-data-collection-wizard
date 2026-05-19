@@ -52,7 +52,7 @@ internal static class DeviceTreeNodeIconProvider
             return new SvgIcon(RoccoSvgIcons.cluster);
 
         if (treeDevice is DeviceTreeVseAlarm)
-            return new SvgIcon(RoccoSvgIcons.alarm);
+            return new SvgIcon(MonochromeIconName.AlarmLight.GetSvgMarkup(MonochromeIconSize.Medium) ?? string.Empty);
 
         if (treeDevice is DeviceTreeVseCounter)
             return new SvgIcon(RoccoSvgIcons.counter);

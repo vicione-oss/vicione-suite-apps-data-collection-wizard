@@ -2,7 +2,6 @@
 using DataCollectionWizard.Client.Extensions;
 using DataCollectionWizard.Client.Models;
 using DataCollectionWizard.Client.Models.DeviceTree;
-using DataCollectionWizard.Client.Resources;
 using DataCollectionWizard.Internal.Services;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
@@ -91,7 +90,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                     NodeEdited?.Invoke(nodeBase);
                 },
                 Description = Localization.DeviceTreeAdapter.EditAlias,
-                Icon = new SvgIcon(RoccoSvgIcons.edit),
+                Icon = new SvgIcon(MonochromeIconName.Edit.GetSvgMarkup(MonochromeIconSize.Medium) ?? string.Empty),
                 Index = 0,
             });
         }
@@ -112,7 +111,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                     NodeDeleted?.Invoke(nodeBase, nodeBase.Parent);
                 },
                 Description = baseNode.Device is IDeviceTreeMasterNode ? Localization.DeviceTreeAdapter.DeleteDevice : Localization.DeviceTreeAdapter.DeleteNode,
-                Icon = new SvgIcon(RoccoSvgIcons.delete),
+                Icon = new SvgIcon(MonochromeIconName.Delete.GetSvgMarkup(MonochromeIconSize.Medium) ?? string.Empty),
                 Index = 1,
             });
         }

@@ -142,6 +142,7 @@
       <MonochromeIcon Include="dataflow-solid" Size="24" />
       <MonochromeIcon Include="data-switch" Size="32" />
       <MonochromeIcon Include="delete" Size="32" />
+      <MonochromeIcon Include="edit" Size="32" />
       <MonochromeIcon Include="error-solid" Size="16" />
       <MonochromeIcon Include="expander-light-down" Size="24" />
       <MonochromeIcon Include="expander-light-top" Size="24" />
@@ -157,6 +158,7 @@
       <MonochromeIcon Include="plus-slim" Size="24" />
       <MonochromeIcon Include="properties" Size="32" />
       <MonochromeIcon Include="published-connector-full" Size="32" />
+      <MonochromeIcon Include="refresh" Size="24" />
       <MonochromeIcon Include="save-outline" Size="24" />
       <MonochromeIcon Include="search-and-tools" Size="32" />
       <MonochromeIcon Include="test-tube-solid" Size="32" />

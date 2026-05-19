@@ -3,8 +3,6 @@
 @using Microsoft.Extensions.Logging
 @using ViciOne.Ui.Blazor.Components.SearchBox
 @using ViciOne.Ui.Localization.Resources
-@using ViciOne.Ui.MonochromeIcons.Assets.Extensions
-
 
 <div class="toolbar-container">
     <span class="header">
@@ -24,7 +22,7 @@
                 disabled="@(!Service.DeviceTreeChanged || Service.DisableClusterActions)"
                 title="@(_showDebug ? SaveReasons : CommonVocabulary.Save)">
 
-            @((MarkupString)RoccoSvgIcons.save)
+            <MonochromeIcon Name="@MonochromeIconName.SaveOutline" Size="@MonochromeIconSize.SmallMedium" />
         </button>
 
         <button @onclick="@(OnTogglePathVisible)"
@@ -39,7 +37,7 @@
                 title="@Localization.DataCollectionWizardPage.DeleteAllOfflineNodes">
 
             <!--Todo: Icon? Papierkorb mit offline symbol drin?-->
-            @((MarkupString)RoccoSvgIcons.delete)
+            <MonochromeIcon Name="@MonochromeIconName.Delete" Size="@MonochromeIconSize.Medium" />
         </button>
 
         <span class="separator"></span>
@@ -48,7 +46,7 @@
                 title="@Localization.DataCollectionWizardPage.Rescan"
                 @onclick="@OnRebrowseClicked">
 
-            @((MarkupString)RoccoSvgIcons.refresh)
+            <MonochromeIcon Name="@MonochromeIconName.Refresh" Size="@MonochromeIconSize.SmallMedium" />
         </button>
 
         <button class="debug-button @(_showDebug ? "active" : string.Empty)"
