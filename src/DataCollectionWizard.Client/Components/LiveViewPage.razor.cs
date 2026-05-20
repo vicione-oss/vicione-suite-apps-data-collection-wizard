@@ -99,6 +99,16 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         await base.DisposeInternal();
     }
 
+    private static string FormatValue(string? value, CultureInfo culture)
+    {
+        if (string.IsNullOrEmpty(value))
+            return string.Empty;
+
+        return double.TryParse(value, CultureInfo.InvariantCulture, out var number)
+            ? number.ToString(culture)
+            : value;
+    }
+
     private async Task InitLiveView()
     {
         await ResourceDownloadState.WaitForCompletion();
@@ -339,13 +349,15 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
         IAsyncDisposable? processValueHandle = null;
 
+        var culture = CultureInfo.CurrentCulture;
+
         try
         {
             Task ValueHandler(DateTime t, string? e)
             {
-                item.Value = e ?? string.Empty;
+                item.Value = FormatValue(e, culture);
                 item.LastUpdated = t > DateTime.MinValue
-                    ? TimeZoneInfo.ConvertTime(t, TimeProvider.LocalTimeZone).ToString(CultureInfo.CurrentCulture)
+                    ? TimeZoneInfo.ConvertTime(t, TimeProvider.LocalTimeZone).ToString(culture)
                     : string.Empty;
 
                 _service.Refresh();
