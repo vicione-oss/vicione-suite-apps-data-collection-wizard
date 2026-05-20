@@ -2,6 +2,10 @@
 
 ## 2.1.1 - unreleased
 
+### Changed
+
+- Format Live View values using client culture
+
 ## 2.1.0 - 2026-05-18
 
 ### Changed
