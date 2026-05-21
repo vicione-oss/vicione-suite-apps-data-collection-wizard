@@ -312,8 +312,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _publishTargetInfos = [.. _publishTargets.Select(c =>
         {
             var cloudFilter = CloudFilters.FirstOrDefault(f => f.GetCloudConnections([c]).Any());
-
-            if(cloudFilter is null)
+            if (cloudFilter is null)
             {
                 return new PublishTargetInfo(c, ConnectionKind.Unsupported, []);
             }

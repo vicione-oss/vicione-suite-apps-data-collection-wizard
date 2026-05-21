@@ -6,6 +6,10 @@
 
 - Format Live View values using client culture
 
+### Fix
+
+- Fix cloud grid cells not being disabled for unsupported cloud connections
+
 ## 2.1.0 - 2026-05-18
 
 ### Changed

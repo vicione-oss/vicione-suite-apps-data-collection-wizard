@@ -53,14 +53,7 @@ public sealed partial class RawDataCell : ComponentBase
             : [.. eventTriggerConfigurations.Where(e => e.IsSensorConfigured || e.Triggers.Any(t => t.Enabled))];
 
     private bool IsSupportedConnection()
-    {
-        if (RawDataNode is null)
-        {
-            return false;
-        }
-
-        return Configuration?.IsSupportedForConfiguration(RawDataNode) ?? false;
-    }
+        => Configuration?.IsSupportedForConfiguration(RawDataNode) ?? false;
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
