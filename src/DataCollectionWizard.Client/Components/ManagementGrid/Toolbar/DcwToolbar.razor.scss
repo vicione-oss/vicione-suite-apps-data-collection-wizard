@@ -27,10 +27,12 @@
     }
 
     > button {
+        display: grid;
+        place-items: center;
         border-radius: 4px;
         height: 28px;
-        padding: 0;
         width: 28px;
+        padding: 0;
 
         &:disabled {
             color: col.$content-dark-disabled;

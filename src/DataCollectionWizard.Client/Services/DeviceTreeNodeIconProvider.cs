@@ -2,6 +2,7 @@
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 using ViciOne.Ui.MonochromeIcons.Assets.Extensions;
 using ViciOne.Ui.MonochromeIcons.Core.Enums;
+using ViciOne.Ui.MonochromeIcons.Core.Extensions;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Icons;
 
 namespace DataCollectionWizard.Client.Services;
@@ -52,7 +53,12 @@ internal static class DeviceTreeNodeIconProvider
             return new SvgIcon(RoccoSvgIcons.cluster);
 
         if (treeDevice is DeviceTreeVseAlarm)
-            return new SvgIcon(MonochromeIconName.AlarmLight.GetSvgMarkup(MonochromeIconSize.Medium) ?? string.Empty);
+        {
+            return new SvgIcon(MonochromeIconName.AlarmLight.GetSvgMarkup(MonochromeIconSize.SmallMedium) ?? string.Empty)
+            {
+                CssClasses = MonochromeIconName.AlarmLight.GetCssClasses(MonochromeIconSize.SmallMedium)
+            };
+        }
 
         if (treeDevice is DeviceTreeVseCounter)
             return new SvgIcon(RoccoSvgIcons.counter);
@@ -74,7 +80,10 @@ internal static class DeviceTreeNodeIconProvider
                 return GetIcon(relevantChild);
             }
 
-            return new SvgIcon(MonochromeIconName.Folder.GetSvgMarkup(MonochromeIconSize.SmallMedium) ?? string.Empty);
+            return new SvgIcon(MonochromeIconName.Folder.GetSvgMarkup(MonochromeIconSize.SmallMedium) ?? string.Empty)
+            {
+                CssClasses = MonochromeIconName.Folder.GetCssClasses(MonochromeIconSize.SmallMedium)
+            };
         }
 
         return new SvgIcon(SvgIcons.progress_question);

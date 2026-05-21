@@ -7,6 +7,7 @@ using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
 using ViciOne.Ui.MonochromeIcons.Assets.Extensions;
 using ViciOne.Ui.MonochromeIcons.Core.Enums;
+using ViciOne.Ui.MonochromeIcons.Core.Extensions;
 using ViciOne.Ui.TreeEditor.Builder.Interface;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Enums;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Icons;
@@ -69,17 +70,6 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
 
         var result = new List<INodeAction>();
 
-        if (DeviceTreeNodeActionProvider.IsConfigurable(baseNode.Device))
-        {
-            result.Add(new NodeButton()
-            {
-                Action = (_, _) => Console.Out.WriteLine($"[configure] action invoked for [{baseNode.DisplayText}]"),
-                Description = Localization.DeviceTreeAdapter.ConfigureNode,
-                Icon = new SvgIcon(MonochromeIconName.GearLight.GetSvgMarkup(MonochromeIconSize.SmallMedium) ?? string.Empty),
-                Index = 0,
-            });
-        }
-
         if (DeviceTreeNodeActionProvider.IsEditable(baseNode.Device))
         {
             result.Add(new NodeButton()
@@ -90,7 +80,10 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                     NodeEdited?.Invoke(nodeBase);
                 },
                 Description = Localization.DeviceTreeAdapter.EditAlias,
-                Icon = new SvgIcon(MonochromeIconName.Edit.GetSvgMarkup(MonochromeIconSize.Medium) ?? string.Empty),
+                Icon = new SvgIcon(MonochromeIconName.Edit.GetSvgMarkup(MonochromeIconSize.SmallMedium) ?? string.Empty)
+                {
+                    CssClasses = MonochromeIconName.Edit.GetCssClasses(MonochromeIconSize.SmallMedium)
+                },
                 Index = 0,
             });
         }
@@ -111,7 +104,10 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                     NodeDeleted?.Invoke(nodeBase, nodeBase.Parent);
                 },
                 Description = baseNode.Device is IDeviceTreeMasterNode ? Localization.DeviceTreeAdapter.DeleteDevice : Localization.DeviceTreeAdapter.DeleteNode,
-                Icon = new SvgIcon(MonochromeIconName.Delete.GetSvgMarkup(MonochromeIconSize.Medium) ?? string.Empty),
+                Icon = new SvgIcon(MonochromeIconName.Delete.GetSvgMarkup(MonochromeIconSize.SmallMedium) ?? string.Empty)
+                {
+                    CssClasses = MonochromeIconName.Delete.GetCssClasses(MonochromeIconSize.SmallMedium)
+                },
                 Index = 1,
             });
         }
