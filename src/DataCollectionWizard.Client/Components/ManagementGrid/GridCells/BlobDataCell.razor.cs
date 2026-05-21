@@ -102,7 +102,14 @@ public sealed partial class BlobDataCell : ComponentBase
         => SchedulerConfig.Enabled;
 
     private bool IsSupportedConnection()
-        => Configuration?.IsSupported ?? false;
+    {
+        if (BlobDataNode is null)
+        {
+            return false;
+        }
+    
+        return Configuration?.IsSupportedForConfiguration(BlobDataNode) ?? false;
+    }
 
     protected override void OnParametersSet()
     {

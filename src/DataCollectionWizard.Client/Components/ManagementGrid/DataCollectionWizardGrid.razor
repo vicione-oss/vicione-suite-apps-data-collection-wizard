@@ -123,7 +123,7 @@
                     var targetInfo = PublishTargetInfos[ci];
 
                     <div class="publish-target"
-                         title="@(targetInfo.IsSupported ? string.Empty : Localization.DataCollectionWizardPage.MoneoDeactivatedTooltip)">
+                         title="@(targetInfo.Kind == Internal.Services.CloudDataflowGenerators.ConnectionKind.Moneo ? Localization.DataCollectionWizardPage.MoneoDeactivatedTooltip : string.Empty)">
 
                         <div class="publish-target-cell-wrapper @(item.DataNode.HasCaptions() ? "captioned" : string.Empty)"
                              style="--caption-count: @(item.DataNode.CaptionCount())">

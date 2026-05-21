@@ -309,13 +309,16 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _publishTargets.Clear();
         _publishTargets.AddRange(PublishTargetsFilter.GetPublishTargets(ConnectionService.Connections, CloudFilters));
 
-        var moneoFilter = new MoneoCloudFilter();
         _publishTargetInfos = [.. _publishTargets.Select(c =>
         {
-            var kind = AnnaCloudFilter.IsAnnaConnection(c) ? ConnectionKind.Anna
-                     : moneoFilter.GetCloudConnections([c]).Any() ? ConnectionKind.Moneo
-                     : ConnectionKind.Unsupported;
-            return new PublishTargetInfo(c, kind);
+            var cloudFilter = CloudFilters.FirstOrDefault(f => f.GetCloudConnections([c]).Any());
+
+            if(cloudFilter is null)
+            {
+                return new PublishTargetInfo(c, ConnectionKind.Unsupported, []);
+            }
+
+            return new PublishTargetInfo(c, cloudFilter.ConnectionKind, cloudFilter.TreeNodesSupportedForConfiguration);
         })];
     }
 
