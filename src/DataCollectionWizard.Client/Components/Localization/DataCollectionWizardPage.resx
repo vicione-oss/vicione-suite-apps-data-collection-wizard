@@ -156,9 +156,6 @@
   <data name="Rescan" xml:space="preserve">
     <value>Rescan</value>
   </data>
-  <data name="Save" xml:space="preserve">
-    <value>Save</value>
-  </data>
   <data name="ShowAll" xml:space="preserve">
     <value>Show all</value>
   </data>
@@ -210,20 +207,8 @@
   <data name="Damage" xml:space="preserve">
     <value>Damage</value>
   </data>
-  <data name="Details" xml:space="preserve">
-    <value>Details</value>
-  </data>
   <data name="Enabled" xml:space="preserve">
     <value>Enabled</value>
-  </data>
-  <data name="Error" xml:space="preserve">
-    <value>Error</value>
-  </data>
-  <data name="New" xml:space="preserve">
-    <value>New</value>
-  </data>
-  <data name="Path" xml:space="preserve">
-    <value>Path</value>
   </data>
   <data name="ProcessDataView" xml:space="preserve">
     <value>Process data view</value>
@@ -236,9 +221,6 @@
   </data>
   <data name="Scheduler" xml:space="preserve">
     <value>Scheduler</value>
-  </data>
-  <data name="Warning" xml:space="preserve">
-    <value>Warning</value>
   </data>
   <data name="IoLinkMasterAddress" xml:space="preserve">
     <value>IO-Link Master address</value>
@@ -281,9 +263,6 @@
   </data>
   <data name="IoLinkScanErrorDuringScan" xml:space="preserve">
     <value>Scanning for IO-Link Master devices failed:</value>
-  </data>
-  <data name="Devices" xml:space="preserve">
-    <value>Devices</value>
   </data>
   <data name="MoneoDeactivatedTooltip" xml:space="preserve">
     <value>The configuration of process values is generally supported for all data targets. For the moneo|cloud, this functionality will be enabled once the corresponding features are available. In the meantime, please use the configuration options provided directly in the moneo|cloud.</value>

@@ -123,15 +123,6 @@
   <data name="ClusterOutOfDateDialogText" xml:space="preserve">
     <value>Es können möglicherweise keine Live Prozessdaten angezeigt werden, da der geladene DeviceTree veraltet ist.</value>
   </data>
-  <data name="Collapse" xml:space="preserve">
-    <value>Einklappen</value>
-  </data>
-  <data name="Devices" xml:space="preserve">
-    <value>Geräte</value>
-  </data>
-  <data name="Expand" xml:space="preserve">
-    <value>Ausklappen</value>
-  </data>
   <data name="LastChanged" xml:space="preserve">
     <value>Zuletzt geändert</value>
   </data>
@@ -146,9 +137,6 @@
   </data>
   <data name="LiveView" xml:space="preserve">
     <value>Live Prozessdatenansicht</value>
-  </data>
-  <data name="Path" xml:space="preserve">
-    <value>Pfad</value>
   </data>
   <data name="PathVisible" xml:space="preserve">
     <value>Pfad anzeigen</value>
@@ -167,8 +155,5 @@
   </data>
   <data name="Unit" xml:space="preserve">
     <value>Einheit</value>
-  </data>
-  <data name="Value" xml:space="preserve">
-    <value>Wert</value>
   </data>
 </root>

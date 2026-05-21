@@ -29,6 +29,7 @@ using ViciOne.Ui.Blazor.Components.Dialog.Components;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Factories;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Models;
 using ViciOne.Ui.Blazor.Components.TextBox;
+using ViciOne.Ui.Localization.Resources;
 
 namespace DataCollectionWizard.Client.Components;
 
@@ -409,7 +410,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         catch (Exception ex)
         {
             LogInitDcwError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace);
-            await InvokeAsync(() => MessageBannerService.ShowMessageBanner(MessageType.Warning, Localization.DataCollectionWizardPage.Error));
+            await InvokeAsync(() => MessageBannerService.ShowMessageBanner(MessageType.Warning, CommonVocabulary.Error));
         }
     }
 
@@ -426,7 +427,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
     private void SetTree(DeviceTreeRoot root, bool expandToOfflineNodes)
     {
-        root.Name = Localization.DataCollectionWizardPage.Devices;
+        root.Name = CommonVocabulary.DevicePlural;
 
         lock (_treeLock)
         {
@@ -1056,7 +1057,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
                         if (isNewUpdated)
                         {
-                            _tree.Name = Localization.DataCollectionWizardPage.Devices;
+                            _tree.Name = CommonVocabulary.DevicePlural;
                             SetTreeCore(_tree, false);
                         }
                     }
@@ -1237,7 +1238,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
                     DeviceTreeBuilder.ExtendCurrentDeviceTree(_tree, [.. receivedDevices.Select(d => d.device).Where(d => d is not null && !d.IsOffline).Cast<IDeviceTreeBase>()], _publishTargets, retainNewFlags);
 
-                    _tree.Name = Localization.DataCollectionWizardPage.Devices;
+                    _tree.Name = CommonVocabulary.DevicePlural;
                     SetTreeCore(_tree, true);
                     _adapter.Builder.Expansion.ChangeExpansionForLayers(true, 0, 0);
 
