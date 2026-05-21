@@ -4,15 +4,15 @@
     align-items: center;
     display: grid;
     grid-column: 1;
-    grid-column-gap: 4px;
-    grid-template-columns: repeat(var(--icon-count), 24px);
+    grid-column-gap: 0px;
+    grid-template-columns: 8px repeat(var(--icon-count), 24px);
 
     ::deep svg path {
         fill: #dedede;
     }
 
     .icon {
-        grid-column: var(--icon-index);
+        grid-column: calc(var(--icon-index) + 1);
         grid-row: 1;
         height: 20px;
         justify-self: center;
@@ -20,10 +20,10 @@
         width: 20px;
     }
 
-    .status-icon {
-        border-radius: 10px;
-        height: 10px;
-        width: 10px;
+    .status-bar {
+        width: 1px;
+        height: 100%;
+        border-radius: 1px;
 
         &.error {
             background-color: col.$error;
@@ -38,40 +38,18 @@
         }
 
         &.inherited {
-            background-color: transparent;
-            border-style: solid;
-            border-width: 2px;
-            height: 10px;
-            width: 10px;
-
-            &.error {
-                background-color: transparent;
-                border-color: col.$error;
-            }
-
-            &.warning {
-                background-color: transparent;
-                border-color: col.$warning;
-            }
-
-            &.new {
-                background-color: transparent;
-                border-color: col.$add;
-            }
+            opacity: 1;
         }
     }
 
-    .status-icon-container {
-        direction: rtl;
-        display: grid;
+    .status-bar-container {
+        display: flex;
+        flex-direction: row;
+        gap: 1px;
         grid-column: 1;
         grid-row: 1;
-        grid-template-columns: repeat(3, 6px);
         height: 20px;
-        justify-self: right;
-        position: relative;
-        top: -4px;
-        z-index: 10;
+        align-items: stretch;
     }
 }
 
