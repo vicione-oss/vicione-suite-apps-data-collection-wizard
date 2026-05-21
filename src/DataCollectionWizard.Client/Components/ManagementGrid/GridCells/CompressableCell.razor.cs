@@ -121,7 +121,7 @@ public sealed partial class CompressableCell : ComponentBase
         => Config.Enabled;
 
     private bool IsSupportedConnection()
-        => Configuration.IsSupported;
+        => Configuration?.IsSupportedForConfiguration(CompressableDataNode) ?? false;
 
     private void PoolingEnabledChanged(bool isEnabled)
     {

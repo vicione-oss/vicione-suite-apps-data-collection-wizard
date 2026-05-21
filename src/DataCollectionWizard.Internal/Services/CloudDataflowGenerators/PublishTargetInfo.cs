@@ -1,8 +1,10 @@
 ﻿using Sdk.Connections.Contracts;
+using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 
 namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
-public sealed record PublishTargetInfo(Connection Connection, ConnectionKind Kind)
+public sealed record PublishTargetInfo(Connection Connection, ConnectionKind Kind, IReadOnlyCollection<Type> TreeNodesSupportedForConfiguration)
 {
-    public bool IsSupported => Kind != ConnectionKind.Unsupported;
+    public bool IsSupportedForConfiguration(IDeviceTreeBase? node)
+        => node is not null && TreeNodesSupportedForConfiguration.Any(t => node.GetType().IsAssignableTo(t));
 }

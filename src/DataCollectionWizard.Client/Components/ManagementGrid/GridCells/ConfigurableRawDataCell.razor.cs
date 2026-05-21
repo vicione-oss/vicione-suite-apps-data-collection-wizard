@@ -67,5 +67,5 @@ public sealed partial class ConfigurableRawDataCell : ComponentBase
         => Config.Frequency;
 
     private bool IsSupportedConnection()
-        => Configuration?.IsSupported ?? false;
+        => Configuration?.IsSupportedForConfiguration(ConfigurableRawDataNode) ?? false;
 }
