@@ -4,6 +4,7 @@ using ViciOne.Ui.Blazor.Components.ExpandableMenu.Models;
 using ViciOne.Ui.Blazor.Components.Sidebar.Enums;
 using ViciOne.Ui.MonochromeIcons.Core.Enums;
 using ViciOne.Ui.MonochromeIcons.Core.Extensions;
+using ViciOne.Ui.Localization.Resources;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.Sidebar;
 
@@ -24,7 +25,7 @@ public sealed partial class DataCollectionWizardSidebar : ComponentBase
                 ContentType = typeof(DeviceTreeSidebarSection),
                 IconCssClass = MonochromeIconName.DataflowSolid.GetCssClasses(MonochromeIconSize.SmallMedium).ToSpaceSeparated(),
                 IsDefault = true,
-                Label = Localization.DataCollectionWizardPage.Devices,
+                Label = CommonVocabulary.DevicePlural,
             },
         ];
 }

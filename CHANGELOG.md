@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.2 - unreleased
+
+### Changed
+
+- Use text from ViciOne.Ui.Localization
+
 ## 2.1.1 - 2026-05-21
 
 ### Changed

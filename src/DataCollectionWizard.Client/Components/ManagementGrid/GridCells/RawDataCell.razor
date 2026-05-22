@@ -1,4 +1,6 @@
-﻿<div class="raw-data-cell">
+﻿@using ViciOne.Ui.Localization.Resources
+
+<div class="raw-data-cell">
     <div class="row header">
         <div class="column status">
             <div class="@($"damage {(IsSupportedConnection() ? string.Empty : "disabled")}")"
@@ -6,7 +8,7 @@
                 <MonochromeIcon Name="MonochromeIconName.WarningSolid" Size="MonochromeIconSize.Small"/>
             </div>
             <div class="@($"warning {(IsSupportedConnection() ? string.Empty : "disabled")}")"
-                 title="@Localization.DataCollectionWizardPage.Warning">
+                 title="@CommonVocabulary.Warning">
                 <MonochromeIcon Name="MonochromeIconName.ErrorSolid" Size="MonochromeIconSize.Small"/>
             </div>
         </div>

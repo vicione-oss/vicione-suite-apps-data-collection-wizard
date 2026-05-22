@@ -1,5 +1,6 @@
 ﻿@using DataCollectionWizard.Client.Components.LiveGrid.GridCells
 @using DataCollectionWizard.Client.Extensions
+@using ViciOne.Ui.Localization.Resources
 
 <div @ref="@(_mainContainerRef)"
      class="live-view-grid">
@@ -15,7 +16,7 @@
                         <div class="header-template">
                             <span></span>
                             <div>
-                                <span>@Localization.LiveViewPage.Path</span>
+                                <span>@CommonVocabulary.Path</span>
                             </div>
                         </div>
                     </th>
@@ -53,7 +54,7 @@
                 <th class="value">
                     <div class="header-template">
                         <span></span>
-                        <div>@Localization.LiveViewPage.Value</div>
+                        <div>@CommonVocabulary.Value</div>
                     </div>
                 </th>
 

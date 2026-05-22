@@ -79,34 +79,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Collapse.
-        /// </summary>
-        internal static string Collapse {
-            get {
-                return ResourceManager.GetString("Collapse", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Devices.
-        /// </summary>
-        internal static string Devices {
-            get {
-                return ResourceManager.GetString("Devices", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Expand.
-        /// </summary>
-        internal static string Expand {
-            get {
-                return ResourceManager.GetString("Expand", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Last updated.
+        ///   Looks up a localized string similar to Last changed.
         /// </summary>
         internal static string LastChanged {
             get {
@@ -147,15 +120,6 @@ namespace DataCollectionWizard.Client.Components.Localization {
         internal static string LiveView {
             get {
                 return ResourceManager.GetString("LiveView", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Path.
-        /// </summary>
-        internal static string Path {
-            get {
-                return ResourceManager.GetString("Path", resourceCulture);
             }
         }
         
@@ -210,15 +174,6 @@ namespace DataCollectionWizard.Client.Components.Localization {
         internal static string Unit {
             get {
                 return ResourceManager.GetString("Unit", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Value.
-        /// </summary>
-        internal static string Value {
-            get {
-                return ResourceManager.GetString("Value", resourceCulture);
             }
         }
     }

@@ -20,7 +20,7 @@
 
         <button @onclick="@(OnSaveButtonClicked)"
                 disabled="@(!Service.DeviceTreeChanged || Service.DisableClusterActions)"
-                title="@(_showDebug ? SaveReasons : Localization.DataCollectionWizardPage.Save)">
+                title="@(_showDebug ? SaveReasons : CommonVocabulary.Save)">
 
             @((MarkupString)RoccoSvgIcons.save)
         </button>
