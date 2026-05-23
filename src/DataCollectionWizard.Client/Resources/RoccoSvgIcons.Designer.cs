@@ -61,42 +61,6 @@ namespace DataCollectionWizard.Client.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;svg viewBox=&quot;0 0 32 32&quot;&gt;&lt;path d=&quot;M12.283 9c4.013 0 5.295 2.091 5.458 2.39l.019.035.039-.011c.47-.135 5.064-1.306 6.742 3.503 0 0 4.459 0 4.459 4.304 0 2.759-1.865 4.442-4.065 4.442H7.455C3.448 22.85 3.02 20.433 3 19.549v-.113c.001-.12.01-.194.012-.211v-.022c-.01-.247-.032-2.922 3.203-3.961C6.216 13.554 7.744 9 12.283 9Zm-1.44 2.116c-1.6 1.117-2.401 2.678-2.401 4.684.001.001.084.002.186.002h.213c.102 0 .183 0 .183-.002-.013 0 0-2.817 2.137-4.057.015.01-.09-.199-.318-.627Z&quot; fill=&quot;#DEDEDE&quot; fill-rule=&quot;evenodd&quot; [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string cloud_service {
-            get {
-                return ResourceManager.GetString("cloud_service", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &lt;svg viewBox=&quot;0 0 32 32&quot;&gt;&lt;path d=&quot;m15.814 20.81.59 5.115c.212.039.422.115.619.232.92.543 1.232 1.753.696 2.703-.536.949-1.717 1.278-2.637.735-.92-.544-1.232-1.754-.696-2.703.186-.33.45-.585.755-.755l-.578-5.01a5.157 5.157 0 0 0 1.25-.317Zm-9.557-8.193c.303.331.477.744.522 1.169L9 14.33c-.1.424-.155.867-.157 1.324l-2.317-.568.015-.081a1.98 1.98 0 0 1-.326.44 1.827 1.827 0 0 1-2.68-.055c-.73-.795-.71-2.062.041-2.827a1.827 1.827 0 0 1 2.68.054Zm19.397-.888a2.048 2.048 0 0 0-.523 1.168L19 14.33c.1.424.155.867.1 [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string cluster {
-            get {
-                return ResourceManager.GetString("cluster", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &lt;svg viewBox=&quot;0 0 32 32&quot;&gt;&lt;path d=&quot;M29 13a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H19a1 1 0 0 1-1-1v-8h11v-3H18v-4a1 1 0 0 1 1-1h10Zm0 13H19v3h10v-3ZM24 4a2 2 0 0 1 2 2v6h-1V6a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v20a1 1 0 0 0 1 1h9v1H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h16Zm5 18H19v3h10v-3Zm-3-3.5v2H16v-2h10Zm3-4.5H19v3h10v-3Z&quot; fill=&quot;#DEDEDE&quot; fill-rule=&quot;evenodd&quot;/&gt;&lt;/svg&gt;.
-        /// </summary>
-        internal static string column_chooser {
-            get {
-                return ResourceManager.GetString("column_chooser", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M3.9 14.25v2.25a.6.6 0 0 0 .6.6H9v.9H4.5A1.5 1.5 0 0 1 3 16.5v-2.25h.9Zm17.1 0v2.25a1.5 1.5 0 0 1-1.5 1.5H15v-.9h4.5a.6.6 0 0 0 .6-.6v-2.25h.9Zm-4.22-.762c.311 0 .578.055.8.165.223.11.395.262.517.456.121.194.182.418.182.675 0 .261-.052.502-.155.722-.104.22-.253.438-.45.652l-.038.041h-.973c.115-.121.216-.232.303-.332.155-.177.27-.343.344-.496.075-.153.112-.32.112-.5 0-.22-.063-.385-.19-.495a.731.731 0 0 0-.499-.166c-.202 0-.391.042-.567.125a2.765 2.765 0 0 0-.546.354l-.466-. [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string counter {
-            get {
-                return ResourceManager.GetString("counter", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &lt;svg viewBox=&quot;0 0 32 32&quot;&gt;&lt;path d=&quot;M28 7.5v17H4v-17h24Zm-1 1H5v15h22v-15Zm-5.75 8.917c1.243 0 2.25.951 2.25 2.125 0 1.173-1.007 2.125-2.25 2.125S19 20.715 19 19.542c0-1.174 1.007-2.125 2.25-2.125Zm-7.65-6.73v10.626h-6V10.688h6Zm10.8 0v2.126h-7.2v-2.126h7.2Z&quot; fill=&quot;#DEDEDE&quot; fill-rule=&quot;evenodd&quot;/&gt;&lt;/svg&gt;.
         /// </summary>
         internal static string device {
@@ -115,11 +79,47 @@ namespace DataCollectionWizard.Client.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M3.9 14.25v2.25a.6.6 0 0 0 .6.6H9v.9H4.5A1.5 1.5 0 0 1 3 16.5v-2.25h.9Zm17.1 0v2.25a1.5 1.5 0 0 1-1.5 1.5H15v-.9h4.5a.6.6 0 0 0 .6-.6v-2.25h.9Zm-4.22-.762c.311 0 .578.055.8.165.223.11.395.262.517.456.121.194.182.418.182.675 0 .261-.052.502-.155.722-.104.22-.253.438-.45.652l-.038.041h-.973c.115-.121.216-.232.303-.332.155-.177.27-.343.344-.496.075-.153.112-.32.112-.5 0-.22-.063-.385-.19-.495a.731.731 0 0 0-.499-.166c-.202 0-.391.042-.567.125a2.765 2.765 0 0 0-.546.354l-.466-. [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string vse_counter {
+            get {
+                return ResourceManager.GetString("vse_counter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;svg viewBox=&quot;0 0 32 32&quot;&gt;&lt;path d=&quot;M29 13a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H19a1 1 0 0 1-1-1v-8h11v-3H18v-4a1 1 0 0 1 1-1h10Zm0 13H19v3h10v-3ZM24 4a2 2 0 0 1 2 2v6h-1V6a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v20a1 1 0 0 0 1 1h9v1H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h16Zm5 18H19v3h10v-3Zm-3-3.5v2H16v-2h10Zm3-4.5H19v3h10v-3Z&quot; fill=&quot;#DEDEDE&quot; fill-rule=&quot;evenodd&quot;/&gt;&lt;/svg&gt;.
+        /// </summary>
+        internal static string vse_input {
+            get {
+                return ResourceManager.GetString("vse_input", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;svg viewBox=&quot;0 0 32 32&quot;&gt;&lt;path d=&quot;M12.283 9c4.013 0 5.295 2.091 5.458 2.39l.019.035.039-.011c.47-.135 5.064-1.306 6.742 3.503 0 0 4.459 0 4.459 4.304 0 2.759-1.865 4.442-4.065 4.442H7.455C3.448 22.85 3.02 20.433 3 19.549v-.113c.001-.12.01-.194.012-.211v-.022c-.01-.247-.032-2.922 3.203-3.961C6.216 13.554 7.744 9 12.283 9Zm-1.44 2.116c-1.6 1.117-2.401 2.678-2.401 4.684.001.001.084.002.186.002h.213c.102 0 .183 0 .183-.002-.013 0 0-2.817 2.137-4.057.015.01-.09-.199-.318-.627Z&quot; fill=&quot;#DEDEDE&quot; fill-rule=&quot;evenodd&quot; [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string vse_object {
+            get {
+                return ResourceManager.GetString("vse_object", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;svg viewBox=&quot;0 0 32 32&quot;&gt;&lt;path d=&quot;m15.814 20.81.59 5.115c.212.039.422.115.619.232.92.543 1.232 1.753.696 2.703-.536.949-1.717 1.278-2.637.735-.92-.544-1.232-1.754-.696-2.703.186-.33.45-.585.755-.755l-.578-5.01a5.157 5.157 0 0 0 1.25-.317Zm-9.557-8.193c.303.331.477.744.522 1.169L9 14.33c-.1.424-.155.867-.157 1.324l-2.317-.568.015-.081a1.98 1.98 0 0 1-.326.44 1.827 1.827 0 0 1-2.68-.055c-.73-.795-.71-2.062.041-2.827a1.827 1.827 0 0 1 2.68.054Zm19.397-.888a2.048 2.048 0 0 0-.523 1.168L19 14.33c.1.424.155.867.1 [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string vse_rawdata {
+            get {
+                return ResourceManager.GetString("vse_rawdata", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M5.4 3.645a2.07 2.07 0 1 1 2.83 1.926l.006 1.716c0 2.22 1.688 3.998 3.742 3.998 2.809.003 5.062 2.376 5.062 5.278v1.441a2.07 2.07 0 1 1-1.321.062v-1.503c0-2.22-1.688-3.998-3.741-3.998-1.492-.001-2.827-.671-3.751-1.734l.001 7.237a2.07 2.07 0 1 1-1.321-.065V5.637A2.07 2.07 0 0 1 5.4 3.645Zm3.39 16.35a1.32 1.32 0 1 0-2.64 0 1.32 1.32 0 0 0 2.64 0Zm0-16.35a1.32 1.32 0 1 0-2.64 0 1.32 1.32 0 0 0 2.64 0Zm9 16.35a1.32 1.32 0 1 0-2.64 0 1.32 1.32 0 0 0 2.64 0Z&quot; fill=&quot;#DEDEDE&quot; fill- [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string recursive {
+        internal static string vse_variant {
             get {
-                return ResourceManager.GetString("recursive", resourceCulture);
+                return ResourceManager.GetString("vse_variant", resourceCulture);
             }
         }
     }

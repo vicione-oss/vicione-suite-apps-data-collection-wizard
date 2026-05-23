@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text.Json;
-using ViciOne.Ui.Localization.Resources;
 using ClusterManagement.Public.DataflowEvents;
 using ClusterManagement.Public.Services;
 using DataCollectionWizard.Client.Components.LiveGrid.Models;
@@ -18,6 +17,7 @@ using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
 using ViciOne.Ui.Blazor.Components.Dialog.Components;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Factories;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Models;
+using ViciOne.Ui.Localization.Resources;
 
 namespace DataCollectionWizard.Client.Components;
 

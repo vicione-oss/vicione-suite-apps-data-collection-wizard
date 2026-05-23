@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Components;
 using ViciOne.Ui.Blazor.Components.ExpandableMenu.Models;
 using ViciOne.Ui.Blazor.Components.Sidebar.Enums;
+using ViciOne.Ui.Localization.Resources;
 using ViciOne.Ui.MonochromeIcons.Core.Enums;
 using ViciOne.Ui.MonochromeIcons.Core.Extensions;
-using ViciOne.Ui.Localization.Resources;
 
 namespace DataCollectionWizard.Client.Components.LiveGrid.Sidebar;
 

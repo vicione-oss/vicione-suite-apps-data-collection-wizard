@@ -41,16 +41,16 @@ internal static class DeviceTreeNodeIconProvider
             return new SvgIcon(RoccoSvgIcons.device);
 
         if (treeDevice is DeviceTreeIoLinkMasterPort)
-            return new SvgIcon(SvgIcons.usb_port);
+            return new SvgIcon(SvgIcons.iolm_port);
 
         if (treeDevice is DeviceTreeDevice)
-            return new SvgIcon(SvgIcons.gauge);
+            return new SvgIcon(SvgIcons.iolm_sensor);
 
         if (treeDevice is DeviceTreeProcessData)
-            return new SvgIcon(SvgIcons.pulse);
+            return new SvgIcon(SvgIcons.iolm_processdata);
 
         if (treeDevice is IDeviceTreeSchedulableDataNode)
-            return new SvgIcon(RoccoSvgIcons.cluster);
+            return new SvgIcon(RoccoSvgIcons.vse_rawdata);
 
         if (treeDevice is DeviceTreeVseAlarm)
         {
@@ -61,16 +61,16 @@ internal static class DeviceTreeNodeIconProvider
         }
 
         if (treeDevice is DeviceTreeVseCounter)
-            return new SvgIcon(RoccoSvgIcons.counter);
+            return new SvgIcon(RoccoSvgIcons.vse_counter);
 
         if (treeDevice is DeviceTreeVseInput)
-            return new SvgIcon(RoccoSvgIcons.column_chooser);
+            return new SvgIcon(RoccoSvgIcons.vse_input);
 
         if (treeDevice is DeviceTreeVseObject)
-            return new SvgIcon(RoccoSvgIcons.cloud_service);
+            return new SvgIcon(RoccoSvgIcons.vse_object);
 
         if (treeDevice is DeviceTreeVseVariants)
-            return new SvgIcon(RoccoSvgIcons.recursive);
+            return new SvgIcon(RoccoSvgIcons.vse_variant);
 
         if (treeDevice is DeviceTreeStructureNode)
         {
@@ -86,6 +86,6 @@ internal static class DeviceTreeNodeIconProvider
             };
         }
 
-        return new SvgIcon(SvgIcons.progress_question);
+        return new SvgIcon(SvgIcons.iolm_unknown);
     }
 }
