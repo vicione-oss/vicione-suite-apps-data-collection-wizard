@@ -141,8 +141,8 @@
       <MonochromeIcon Include="cluster-2" Size="32" />
       <MonochromeIcon Include="dataflow-solid" Size="24" />
       <MonochromeIcon Include="data-switch" Size="32" />
-      <MonochromeIcon Include="delete" Size="24;32" />
-      <MonochromeIcon Include="edit" Size="24;32" />
+      <MonochromeIcon Include="delete" Size="16;32" />
+      <MonochromeIcon Include="edit" Size="16;32" />
       <MonochromeIcon Include="error-solid" Size="16" />
       <MonochromeIcon Include="expander-light-down" Size="24" />
       <MonochromeIcon Include="expander-light-top" Size="24" />

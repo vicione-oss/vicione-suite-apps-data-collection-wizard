@@ -80,9 +80,9 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                     NodeEdited?.Invoke(nodeBase);
                 },
                 Description = Localization.DeviceTreeAdapter.EditAlias,
-                Icon = new SvgIcon(MonochromeIconName.Edit.GetSvgMarkup(MonochromeIconSize.SmallMedium) ?? string.Empty)
+                Icon = new SvgIcon(MonochromeIconName.Edit.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
                 {
-                    CssClasses = MonochromeIconName.Edit.GetCssClasses(MonochromeIconSize.SmallMedium)
+                    CssClasses = MonochromeIconName.Edit.GetCssClasses(MonochromeIconSize.Small)
                 },
                 Index = 0,
             });
@@ -104,9 +104,9 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                     NodeDeleted?.Invoke(nodeBase, nodeBase.Parent);
                 },
                 Description = baseNode.Device is IDeviceTreeMasterNode ? Localization.DeviceTreeAdapter.DeleteDevice : Localization.DeviceTreeAdapter.DeleteNode,
-                Icon = new SvgIcon(MonochromeIconName.Delete.GetSvgMarkup(MonochromeIconSize.SmallMedium) ?? string.Empty)
+                Icon = new SvgIcon(MonochromeIconName.Delete.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
                 {
-                    CssClasses = MonochromeIconName.Delete.GetCssClasses(MonochromeIconSize.SmallMedium)
+                    CssClasses = MonochromeIconName.Delete.GetCssClasses(MonochromeIconSize.Small)
                 },
                 Index = 1,
             });
