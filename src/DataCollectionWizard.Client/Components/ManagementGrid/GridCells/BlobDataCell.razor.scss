@@ -2,8 +2,4 @@
 
 .blob-data-cell {
     @include base.cell-container;
-
-    > button {
-        padding: 1px 6px;
-    }
 }

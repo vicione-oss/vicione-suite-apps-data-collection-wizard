@@ -23,12 +23,4 @@
               Value="@(GetTimesADay())"
               ValueChanged="@(OnTimesADayChanged)"
               ValueSelector="@(s_timesADayValueSelector)" />
-
-    <button @onclick="@(async () => await DownloadButtonClicked.InvokeAsync((BlobDataNode!, Configuration!.Connection)))"
-            class="btn"
-            disabled="@(!IsSupportedConnection())"
-            hidden="@(!IsDownloadButtonSupported())">
-
-        <MonochromeIcon Name="MonochromeIconName.ArrowNavigationLightDown" Size="@MonochromeIconSize.SmallMedium"></MonochromeIcon>
-    </button>
 </div>
