@@ -92,10 +92,11 @@ table {
     }
 
     td {
-        align-content: start;
+        align-content: center;
         padding: 11px 0px 11px var(--width-padding);
 
         &.device-name {
+            align-items: center;
             display: flex;
             z-index: 10;
         }
@@ -114,7 +115,6 @@ table {
         }
 
         &.last-changed, &.unit, &.value {
-            align-content: center;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;

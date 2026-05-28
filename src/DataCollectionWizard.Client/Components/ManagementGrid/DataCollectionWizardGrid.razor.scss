@@ -111,12 +111,13 @@
 
 .grid-row {
     >div {
-        align-content: start;
+        align-content: center;
         padding: 11px 0px 11px var(--width-padding);
     }
 
     // Sticky left column — device name
     >.device-name {
+        align-items: center;
         display: flex;
         left: 0;
         max-width: 320px;
@@ -126,12 +127,14 @@
     }
 
     >.device-path {
+        align-content: start;
         max-width: 520px;
         min-width: 190px;
 
         .device-path-container {
             align-items: center;
             display: flex;
+            min-height: 24px;
 
             >span {
                 overflow: hidden;

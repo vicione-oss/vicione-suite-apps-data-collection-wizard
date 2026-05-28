@@ -144,7 +144,6 @@
                                 {
                                     <BlobDataCell BlobDataNode="@blobData"
                                                   Configuration="@targetInfo"
-                                                  DownloadButtonClicked="@(async args => await OnBlobDataDownloadButtonClick.InvokeAsync(args))"
                                                   MaxTimesADay="@RawDataPullingMaxTimesADay"
                                                   OnDeviceTreeChanged="@(() => OnDeviceTreeChanged.InvokeAsync(masterNode))" />
                                 }

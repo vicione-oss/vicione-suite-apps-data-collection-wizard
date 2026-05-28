@@ -44,9 +44,6 @@ public sealed partial class BlobDataCell : ComponentBase
     public PublishTargetInfo? Configuration { get; set; }
 
     [Parameter]
-    public EventCallback<(IDeviceTreeSchedulableDataNode BlobDataNode, Connection Configuration)> DownloadButtonClicked { get; set; }
-
-    [Parameter]
     public int MaxTimesADay { get; set; } = 12;
 
     [Parameter]
@@ -94,9 +91,6 @@ public sealed partial class BlobDataCell : ComponentBase
 
         return DaysOfWeek.Monday;
     }
-
-    private static bool IsDownloadButtonSupported()
-        => false;
 
     private bool IsRecordingEnabled()
         => SchedulerConfig.Enabled;

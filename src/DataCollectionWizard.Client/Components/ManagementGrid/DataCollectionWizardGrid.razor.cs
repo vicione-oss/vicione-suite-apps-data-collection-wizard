@@ -29,9 +29,6 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
     public Dictionary<string, IDeviceTreeBase> AllNodes { get; set; } = [];
 
     [Parameter]
-    public EventCallback<(IDeviceTreeSchedulableDataNode BlobDataNode, Connection Configuration)> OnBlobDataDownloadButtonClick { get; set; }
-
-    [Parameter]
     public EventCallback<IDeviceTreeMasterNode> OnDeviceTreeChanged { get; set; }
 
     [Parameter, EditorRequired]

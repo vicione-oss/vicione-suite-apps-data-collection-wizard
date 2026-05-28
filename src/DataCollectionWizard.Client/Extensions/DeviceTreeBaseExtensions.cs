@@ -11,7 +11,12 @@ internal static class DeviceTreeBaseExtensions
         if (device is IDeviceTreeConfigurableRawDataNode)
             count++;
 
-        if (device is IDeviceTreeSchedulableDataNode)
+        // DeviceTreeBlobData is an IDeviceTreeSchedulableDataNode but its scheduler
+        // caption is intentionally not rendered (see DeviceIdentifierCell.razor),
+        // so it must not be counted here either - otherwise the cell wrapper
+        // reserves an empty caption row plus grid-row-gap, making the row taller
+        // than the other grid rows.
+        if (device is IDeviceTreeSchedulableDataNode and not DeviceTreeBlobData)
             count++;
 
         if (device is IDeviceTreeEventTriggerDataNode)
