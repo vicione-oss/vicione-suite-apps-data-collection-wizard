@@ -109,7 +109,7 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
                 }
                 else if (changedEvent.Action == CrudAction.Deleted)
                 {
-                    var publishTargetsIds = cloudConnections.Select(t => t.Id).ToArray();
+                    var publishTargetsIds = cloudConnections.Select(t => t.Id).ToHashSet();
 
                     foreach (var dataNode in deviceTree.GetNodeAndDescendants().OfType<IDeviceTreeDataNode>())
                         dataNode.RemoveConfigurations(publishTargetsIds);

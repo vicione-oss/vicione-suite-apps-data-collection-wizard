@@ -1,4 +1,5 @@
-﻿using DataCollectionWizard.Internal.Extensions;
+﻿using System.Diagnostics;
+using DataCollectionWizard.Internal.Extensions;
 using Sdk.Connections.Contracts;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Comparer;
@@ -10,96 +11,109 @@ public static class DeviceTreeBuilder
 {
     public const string IdSeparatorNameAlias = "__!__";
 
-    private static void AddCloudConfigurations(IDeviceTreeBase deviceTree, IReadOnlyCollection<Connection> cloudConfigurations)
+    private static void AddElements(IDeviceTreeBase persistedDeviceTree, IDeviceTreeBase parsedDeviceTree, bool resetIsNew)
     {
-        var nodes = deviceTree.GetNodeAndDescendants().ToArray();
-        var dataNodes = nodes.OfType<IDeviceTreeDataNode>();
+        var currentMasterUrls = new HashSet<string>(StringComparer.Ordinal);
+        var currentNodes = new Dictionary<string, IDeviceTreeBase>(StringComparer.Ordinal);
 
-        foreach (var node in dataNodes)
-            node.AddConfigurations(cloudConfigurations);
-
-        var configurableBlobNodes = nodes.OfType<IDeviceTreeConfigurableRawDataNode>();
-
-        foreach (var node in configurableBlobNodes)
+        // Single pass over the persisted tree: index every node, collect master URLs
+        // and (optionally) reset IsNew, avoiding a separate full traversal.
+        foreach (var node in persistedDeviceTree.GetNodeAndDescendants())
         {
-            foreach (var cloudConfig in cloudConfigurations)
-            {
-                if (!node.RawDataConfigurations.ContainsKey(cloudConfig.Id))
-                {
-                    node.RawDataConfigurations.Add(cloudConfig.Id, new RawDataSettings
-                    {
-                        Duration = 4000,
-                        Frequency = 100000,
-                    });
-                }
-            }
+            if (resetIsNew)
+                node.IsNew = false;
+
+            currentNodes[node.Id] = node;
+
+            if (node is DeviceTreeIoLinkMaster master)
+                currentMasterUrls.Add(master.Url.AbsoluteUri);
         }
-    }
 
-    private static void AddElements(IDeviceTreeBase persistedDeviceTree, IDeviceTreeBase parsedDeviceTree)
-    {
-        AddNewElements<DeviceTreeIoLinkMaster>(persistedDeviceTree, parsedDeviceTree);
-        AddNewElements<DeviceTreeIoLinkMasterPort>(persistedDeviceTree, parsedDeviceTree);
-        AddNewElements<DeviceTreeDevice>(persistedDeviceTree, parsedDeviceTree);
-        AddNewElements<DeviceTreeVseDevice>(persistedDeviceTree, parsedDeviceTree);
-        AddNewElements<DeviceTreeStructureNode>(persistedDeviceTree, parsedDeviceTree);
-        AddNewElements<DeviceTreeVseObject>(persistedDeviceTree, parsedDeviceTree);
-        AddNewElements<DeviceTreeVseInput>(persistedDeviceTree, parsedDeviceTree);
-        AddNewElements<DeviceTreeVseAlarm>(persistedDeviceTree, parsedDeviceTree);
-        AddNewElements<DeviceTreeVseCounter>(persistedDeviceTree, parsedDeviceTree);
-        AddNewElements<DeviceTreeVseVariants>(persistedDeviceTree, parsedDeviceTree);
-        AddNewElements<DeviceTreeProcessData>(persistedDeviceTree, parsedDeviceTree);
-        AddNewElements<DeviceTreeConstantData>(persistedDeviceTree, parsedDeviceTree);
-        AddNewElements<DeviceTreeVseRawData>(persistedDeviceTree, parsedDeviceTree);
-    }
+        var parsedChildsParents = new Dictionary<string, string>(StringComparer.Ordinal);
 
-    private static void AddNewElements<T>(IDeviceTreeBase persistedDeviceTree, IDeviceTreeBase parsedDeviceTree) where T : class, IDeviceTreeBase
-    {
-        var currentNodes = persistedDeviceTree.GetNodeAndDescendants().ToDictionary(n => n.Id, n => n);
-        var currentMasterDevices = currentNodes.Values
-                                               .OfType<DeviceTreeIoLinkMaster>()
-                                               .GroupBy(m => m.Url.AbsoluteUri)
-                                               .ToDictionary(g => g.Key, g => g.ToArray());
-
-        var parsedNodes = parsedDeviceTree.GetNodeAndDescendants().ToArray();
-        var currentElements = currentNodes.Values.OfType<T>().ToDictionary(n => n.Id, n => n);
-        var newIoTCoreElements = parsedNodes.OfType<T>()
-            .Where(i => i is not DeviceTreeIoLinkMaster m || currentMasterDevices.ContainsKey(m.Url.AbsoluteUri))
-            .Where(i => !currentElements.ContainsKey(i.Id))
-            .ToArray();
-
-        var parsedChildsParents = new Dictionary<string, string>();
-
-        foreach (var parsedNode in parsedNodes)
+        // Single pass over the parsed tree: build the child->parent lookup and
+        // group nodes by type, avoiding a ToArray() of the whole parsed tree.
+        var nodesByType = new Dictionary<Type, List<IDeviceTreeBase>>(13);
+        foreach (var parsedNode in parsedDeviceTree.GetNodeAndDescendants())
         {
             foreach (var child in parsedNode.Children)
-                parsedChildsParents.Add(child.Id, parsedNode.Id);
+                parsedChildsParents[child.Id] = parsedNode.Id;
+
+            var type = parsedNode.GetType();
+            if (!nodesByType.TryGetValue(type, out var list))
+            {
+                list = [];
+                nodesByType[type] = list;
+            }
+
+            list.Add(parsedNode);
         }
 
-        foreach (var element in newIoTCoreElements)
+        // Process groups in hierarchical order (parents before children)
+        ReadOnlySpan<Type> typesToAdd =
+        [
+            typeof(DeviceTreeIoLinkMaster),
+            typeof(DeviceTreeIoLinkMasterPort),
+            typeof(DeviceTreeDevice),
+            typeof(DeviceTreeVseDevice),
+            typeof(DeviceTreeStructureNode),
+            typeof(DeviceTreeVseObject),
+            typeof(DeviceTreeVseInput),
+            typeof(DeviceTreeVseAlarm),
+            typeof(DeviceTreeVseCounter),
+            typeof(DeviceTreeVseVariants),
+            typeof(DeviceTreeProcessData),
+            typeof(DeviceTreeConstantData),
+            typeof(DeviceTreeVseRawData),
+        ];
+
+        foreach (var type in typesToAdd)
         {
-            var newElement = element.Clone();
+            if (nodesByType.TryGetValue(type, out var group))
+                AddNewElementsFromGroup(group, currentNodes, currentMasterUrls, parsedChildsParents);
+        }
+    }
+
+    private static void AddNewElementsFromGroup(List<IDeviceTreeBase> group, Dictionary<string, IDeviceTreeBase> currentNodes,
+        HashSet<string> currentMasterUrls, Dictionary<string, string> parsedChildsParents)
+    {
+        foreach (var parsedNode in group)
+        {
+            if (parsedNode is DeviceTreeIoLinkMaster master && !currentMasterUrls.Contains(master.Url.AbsoluteUri))
+                continue;
+
+            if (currentNodes.ContainsKey(parsedNode.Id))
+                continue;
+
+            if (!parsedChildsParents.TryGetValue(parsedNode.Id, out var parentId))
+            {
+                Debug.Fail($"Parsed node '{parsedNode.Id}' has no parent in lookup – node will be skipped.");
+                continue;
+            }
+
+            if (!currentNodes.TryGetValue(parentId, out var parent))
+                continue;
+
+            var newElement = parsedNode.Clone();
             foreach (var ele in newElement.GetNodeAndDescendants())
             {
                 ele.IsNew = true;
+                currentNodes[ele.Id] = ele;
             }
 
-            var parentId = parsedChildsParents[element.Id];
-            var parent = currentNodes[parentId];
-
-            if (!parent.Children.Any(c => c.Id == element.Id))
-            {
-                parent.Children.Add(newElement);
-                currentNodes[element.Id] = newElement;
-            }
+            parent.Children.Add(newElement);
         }
     }
 
     private static void AddNewSensors(IDeviceTreeEventTriggerDataNode persistetTriggerNode, IDeviceTreeEventTriggerDataNode parsedTriggerNode)
     {
+        var existingSensors = new HashSet<(string ReferenceNodeId, string Name)>(persistetTriggerNode.EventTriggerConfigurations.Count);
+        foreach (var t in persistetTriggerNode.EventTriggerConfigurations)
+            existingSensors.Add((t.ReferenceNodeId, t.Name));
+
         foreach (var sensor in parsedTriggerNode.EventTriggerConfigurations)
         {
-            if (!persistetTriggerNode.EventTriggerConfigurations.Any(t => t.ReferenceNodeId == sensor.ReferenceNodeId && t.Name == sensor.Name))
+            if (existingSensors.Add((sensor.ReferenceNodeId, sensor.Name)))
             {
                 persistetTriggerNode.EventTriggerConfigurations.Add(new EventTriggerConfiguration
                 {
@@ -113,20 +127,24 @@ public static class DeviceTreeBuilder
 
     public static Dictionary<IDeviceTreeBase, IDeviceTreeBase?> CorrelateParsedDevices(IDeviceTreeBase persistedDeviceTree, List<IDeviceTreeBase> parsedDevices)
     {
-        // Index der "parsed"-Knoten per Id
-        var parsedById = parsedDevices
-            .SelectMany(d => d.GetNodeAndDescendants())
-            .ToDictionary(n => n.Id, n => n, StringComparer.Ordinal);
+        var parsedById = new Dictionary<string, IDeviceTreeBase>(StringComparer.Ordinal);
+        foreach (var device in parsedDevices)
+        {
+            foreach (var node in device.GetNodeAndDescendants())
+                parsedById[node.Id] = node;
+        }
 
-        // Alle persistierten Knoten außer Root
-        var persisted = persistedDeviceTree
-            .GetNodeAndDescendants()
-            .Where(n => n is not DeviceTreeRoot);
+        var result = new Dictionary<IDeviceTreeBase, IDeviceTreeBase?>();
 
-        // Korrelieren in O(1) pro Knoten
-        return persisted.ToDictionary(
-            per => per,
-            per => parsedById.TryGetValue(per.Id, out var match) ? match : null);
+        foreach (var per in persistedDeviceTree.GetNodeAndDescendants())
+        {
+            if (per is DeviceTreeRoot)
+                continue;
+
+            result[per] = parsedById.TryGetValue(per.Id, out var match) ? match : null;
+        }
+
+        return result;
     }
 
     public static void ExtendCurrentDeviceTree(IDeviceTreeBase persistedDeviceTree, List<IDeviceTreeBase> parsedDevices, IReadOnlyCollection<Connection> cloudConfigurations, bool retainNewFlag = false)
@@ -136,117 +154,102 @@ public static class DeviceTreeBuilder
             Children = parsedDevices,
         };
 
-        if (!retainNewFlag)
-            SetIsNew(persistedDeviceTree, false);
-
-        AddElements(persistedDeviceTree, parsedDeviceTree);
+        AddElements(persistedDeviceTree, parsedDeviceTree, resetIsNew: !retainNewFlag);
         RemoveOnlineGenericMasterDevices(persistedDeviceTree);
 
         var persistentParsedDeviceData = CorrelateParsedDevices(persistedDeviceTree, parsedDevices);
 
-        UpdateVseNames(persistentParsedDeviceData);
-        UpdateTriggerNodes(persistentParsedDeviceData);
-        UpdateOnlineStatus(persistentParsedDeviceData);
-        UpdateUnknownStatus(persistentParsedDeviceData);
-        UpdateConstantNodes(persistentParsedDeviceData);
-        UpdateAliases(persistentParsedDeviceData);
-        UpdatePaths(persistentParsedDeviceData);
+        UpdateCorrelatedNodes(persistentParsedDeviceData);
         UpdateCloudConfigurations(persistedDeviceTree, cloudConfigurations);
-        UpdateStructureUnits(persistentParsedDeviceData);
-        UpdateRawDataIdices(persistentParsedDeviceData);
-        UpdateApplicationSpecificTag(persistentParsedDeviceData);
         RemoveEmptyStructureNodes(persistentParsedDeviceData, persistedDeviceTree);
     }
 
-    private static void UpdateApplicationSpecificTag(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> persistedDevicesParsedDevicess)
+    /// <summary>
+    /// Performs all property updates on correlated nodes in a single pass over the dictionary.
+    /// </summary>
+    private static void UpdateCorrelatedNodes(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> correlatedNodes)
     {
-        var relevantNodes = persistedDevicesParsedDevicess.Where(n => n.Key is DeviceTreeDevice)
-                                                          .Where(n => n.Value as DeviceTreeDevice is not null);
+        List<(DeviceTreeDevice Persisted, DeviceTreeDevice Parsed)>? deviceTreeDevices = null;
+        List<KeyValuePair<IDeviceTreeEventTriggerDataNode, IDeviceTreeEventTriggerDataNode>>? triggerNodes = null;
 
-        foreach (var node in relevantNodes)
+        foreach (var (persisted, parsed) in correlatedNodes)
         {
-            ((DeviceTreeDevice)node.Key).ApplicationSpecificTag = ((DeviceTreeDevice)node.Value!).ApplicationSpecificTag;
+            // Update online/offline status
+            if (persisted is not DeviceTreeRoot)
+                ApplyOnlineStatus(persisted, parsed);
+
+            if (parsed is null)
+                continue;
+
+            switch (persisted)
+            {
+                case DeviceTreeVseDevice vseDevice when parsed is DeviceTreeVseDevice parsedVse:
+                    vseDevice.Name = parsedVse.Name;
+                    break;
+
+                case DeviceTreeDevice device when parsed is DeviceTreeDevice parsedDevice:
+                    device.ApplicationSpecificTag = parsedDevice.ApplicationSpecificTag;
+                    deviceTreeDevices ??= [];
+                    deviceTreeDevices.Add((device, parsedDevice));
+                    break;
+
+                case DeviceTreeProcessData processData when parsed is DeviceTreeProcessData parsedProcess:
+                    processData.StructureUnit = parsedProcess.StructureUnit;
+                    break;
+
+                case DeviceTreeVseRawData rawData when parsed is DeviceTreeVseRawData parsedRaw:
+                    rawData.Index = parsedRaw.Index;
+                    break;
+
+                case DeviceTreeConstantData constantData when parsed is DeviceTreeConstantData parsedConstant:
+                    constantData.Value = parsedConstant.Value;
+                    break;
+            }
+
+            if (persisted is IAliasStructureNode aliasNode && parsed is IAliasStructureNode parsedAlias)
+                aliasNode.Alias = parsedAlias.Alias;
+
+            if (persisted is IDeviceTreeVseDataParent vseParent && parsed is IDeviceTreeVseDataParent parsedVseParent)
+                vseParent.Path = parsedVseParent.Path;
+
+            if (persisted is IDeviceTreeEventTriggerDataNode triggerNode && parsed is IDeviceTreeEventTriggerDataNode parsedTrigger)
+            {
+                triggerNodes ??= [];
+                triggerNodes.Add(new(triggerNode, parsedTrigger));
+            }
         }
-    }
 
-    private static void UpdateStructureUnits(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> persistedDevicesParsedDevicess)
-    {
-        var relevantNodes = persistedDevicesParsedDevicess.Where(n => n.Key is DeviceTreeProcessData)
-                                                          .Where(n => n.Value as DeviceTreeProcessData is not null);
+        // Unknown/Known status updates require filtered device pairs
+        if (deviceTreeDevices is not null)
+            UpdateUnknownStatus(deviceTreeDevices);
 
-        foreach (var node in relevantNodes)
+        // Trigger nodes need nodeNames which requires the full dictionary
+        if (triggerNodes is not null)
         {
-            ((DeviceTreeProcessData)node.Key).StructureUnit = ((DeviceTreeProcessData)node.Value!).StructureUnit;
-        }
-    }
+            var nodeNames = GetNodeNames(correlatedNodes);
 
-    private static void UpdateRawDataIdices(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> persistedDevicesParsedDevicess)
-    {
-        var relevantNodes = persistedDevicesParsedDevicess.Where(n => n.Key is DeviceTreeVseRawData)
-                                                          .Where(n => n.Value as DeviceTreeVseRawData is not null);
-
-        foreach (var node in relevantNodes)
-        {
-            ((DeviceTreeVseRawData)node.Key).Index = ((DeviceTreeVseRawData)node.Value!).Index;
-        }
-    }
-
-    private static void UpdatePaths(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> persistedDevicesParsedDevices)
-    {
-        var relevantNodes = persistedDevicesParsedDevices.Where(n => n.Key is IDeviceTreeVseDataParent)
-                                                         .Where(n => n.Value as IDeviceTreeVseDataParent is not null);
-
-        foreach (var node in relevantNodes)
-        {
-            ((IDeviceTreeVseDataParent)node.Key).Path = ((IDeviceTreeVseDataParent)node.Value!).Path;
+            foreach (var (persistedTrigger, parsedTrigger) in triggerNodes)
+            {
+                AddNewSensors(persistedTrigger, parsedTrigger);
+                SortSensors(persistedTrigger, nodeNames);
+                UpdateSensors(persistedTrigger, parsedTrigger);
+            }
         }
     }
 
     private static Dictionary<string, string> GetNodeNames(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> persistedDevicesParsedDevices)
     {
-        var persistedNodeNames = persistedDevicesParsedDevices.Keys.ToDictionary(n => n.Id, n =>
+        var nodeNames = new Dictionary<string, string>(persistedDevicesParsedDevices.Count, StringComparer.Ordinal);
+
+        foreach (var (persisted, parsed) in persistedDevicesParsedDevices)
         {
-            if (n is IAliasStructureNode aliasNode) return aliasNode.Alias;
-            return n.Name;
-        });
-
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-        var parsedNodeNames = persistedDevicesParsedDevices.Values
-                                                           .Where(n => n is not null)
-                                                           .ToDictionary(n => n.Id, n =>
-                                                            {
-                                                                if (n is IAliasStructureNode aliasNode)
-                                                                    return aliasNode.Alias;
-
-                                                                return n.Name;
-                                                            });
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-
-        foreach (var parsedNodeName in parsedNodeNames)
-        {
-            persistedNodeNames[parsedNodeName.Key] = parsedNodeName.Value;
+            // Correlation is by ID, so parsed.Id == persisted.Id when parsed is not null.
+            // We prefer the parsed node's Name/Alias as it reflects the current device state.
+            var source = parsed ?? persisted;
+            nodeNames[source.Id] = source is IAliasStructureNode { Alias: not null } alias ? alias.Alias : source.Name;
         }
 
-        return persistedNodeNames!;
-    }
-
-    private static void RemoveCloudConfigurations(IDeviceTreeBase deviceTree, IReadOnlyCollection<Connection> exisitingCloudConfigurations)
-    {
-        var nodes = deviceTree.GetNodeAndDescendants().ToArray();
-        var dataNodes = nodes.OfType<IDeviceTreeDataNode>().ToArray();
-        var cloudIds = exisitingCloudConfigurations.Select(c => c.Id).ToList();
-
-        foreach (var node in dataNodes)
-            node.RemoveConfigurations(cloudIds);
-
-        var configurableBlobNodes = nodes.OfType<IDeviceTreeConfigurableRawDataNode>();
-
-        foreach (var node in configurableBlobNodes)
-        {
-            node.RawDataConfigurations.Clear();
-            var newRawDataConfigs = node.RawDataConfigurations.Where(c => exisitingCloudConfigurations.Any(cc => cc.Id == c.Key)).ToDictionary(c => c.Key, c => c.Value);
-            newRawDataConfigs.CopyTo(node.RawDataConfigurations);
-        }
+        return nodeNames!;
     }
 
     private static void RemoveEmptyStructureNodes(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> nodes, IDeviceTreeBase current)
@@ -266,203 +269,184 @@ public static class DeviceTreeBuilder
     }
 
     public static void RemoveEmptyStructureNodes(IDeviceTreeBase deviceTree)
-        => RemoveEmptyStructureNodes(deviceTree.GetNodeAndDescendants().ToDictionary(n => n, n => (IDeviceTreeBase?)null), deviceTree);
+        => RemoveEmptyStructureNodesCore(deviceTree);
+
+    private static void RemoveEmptyStructureNodesCore(IDeviceTreeBase current)
+    {
+        for (var i = current.Children.Count - 1; i >= 0; i--)
+        {
+            var child = current.Children[i];
+
+            RemoveEmptyStructureNodesCore(child);
+
+            if (child is DeviceTreeStructureNode && child.Children.Count == 0)
+                current.Children.RemoveAt(i);
+        }
+    }
 
     public static void RemoveEventTriggers(DeviceTreeRoot tree, IDeviceTreeBase deletingNode)
     {
-        var eventTriggerNodes = tree.GetNodeAndDescendants().OfType<IDeviceTreeEventTriggerDataNode>();
-
-        foreach (var triggerNode in eventTriggerNodes)
+        var deletingId = deletingNode.Id;
+        foreach (var node in tree.GetNodeAndDescendants())
         {
-            triggerNode.EventTriggerConfigurations.RemoveAll(e => e.ReferenceNodeId == deletingNode.Id);
+            if (node is IDeviceTreeEventTriggerDataNode triggerNode)
+                triggerNode.EventTriggerConfigurations.RemoveAll(e => string.Equals(e.ReferenceNodeId, deletingId, StringComparison.Ordinal));
         }
     }
 
     private static void RemoveOnlineGenericMasterDevices(IDeviceTreeBase deviceTree)
     {
-        var currentMasterDeviceList = deviceTree.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>().ToArray();
-        var x = currentMasterDeviceList.Where(c => c.IsOffline);
-        var y = x.Where(c => currentMasterDeviceList.Any(cm => !cm.IsOffline && cm.Url == c.Url));
-        var mastersToRemove = y.ToArray();
+        var onlineMasterUrls = new HashSet<Uri>();
+        var offlineMasters = new List<IDeviceTreeMasterNode>();
+
+        // Masters are always direct children of deviceTree
+        foreach (var child in deviceTree.Children)
+        {
+            if (child is IDeviceTreeMasterNode master)
+            {
+                if (!master.IsOffline)
+                    onlineMasterUrls.Add(master.Url);
+                else
+                    offlineMasters.Add(master);
+            }
+        }
+
+        var mastersToRemove = new List<IDeviceTreeMasterNode>();
+        foreach (var master in offlineMasters)
+        {
+            if (onlineMasterUrls.Contains(master.Url))
+                mastersToRemove.Add(master);
+        }
+
+        if (mastersToRemove.Count == 0)
+            return;
 
         foreach (var master in mastersToRemove)
-        {
             deviceTree.Children.Remove(master);
+
+        // Remaining masters are direct children – no full tree traversal needed
+        var remainingMasters = new Dictionary<Uri, IDeviceTreeMasterNode>(onlineMasterUrls.Count);
+        foreach (var child in deviceTree.Children)
+        {
+            if (child is IDeviceTreeMasterNode remaining)
+                remainingMasters.TryAdd(remaining.Url, remaining);
         }
 
-        var currentMasterDevices = deviceTree.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>().ToArray();
         foreach (var master in mastersToRemove)
         {
-            currentMasterDevices.First(c => c.Url == master.Url).IsNew = master.IsNew;
+            if (remainingMasters.TryGetValue(master.Url, out var remaining))
+                remaining.IsNew = master.IsNew;
         }
     }
 
-    private static void SetIsNew(IDeviceTreeBase persistedDeviceTree, bool isNew)
+    private static void UpdateUnknownStatus(List<(DeviceTreeDevice Persisted, DeviceTreeDevice Parsed)> devices)
     {
-        var nodes = persistedDeviceTree.GetNodeAndDescendants();
-
-        foreach (var node in nodes)
+        foreach (var (device, parsedDevice) in devices)
         {
-            node.IsNew = isNew;
-        }
-    }
-
-    private static void SetKnownStatus(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> persistedDevicesParsedDevices)
-    {
-        var setKnownElements = persistedDevicesParsedDevices
-            .Where(c => ((DeviceTreeDevice)c.Key).IsUnknown)
-            .Where(c => c.Value is not null && !((DeviceTreeDevice)c.Value).IsUnknown)
-            .ToArray();
-
-        foreach (var element in setKnownElements)
-        {
-            var device = (DeviceTreeDevice)element.Key;
-            device.IsUnknown = false;
-            device.Description = element.Value!.Description;
-        }
-    }
-
-    private static void SetOfflineStatus(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> persistedDevicesParsedDevices)
-    {
-        var setOfflineElements = persistedDevicesParsedDevices
-            .Where(c => !c.Key.IsOffline)
-            .Where(c => c.Value?.IsOffline ?? true)
-            .Where(c => c.Key is not DeviceTreeRoot);
-
-        foreach (var element in setOfflineElements)
-        {
-            element.Key.IsOffline = true;
-        }
-    }
-
-    private static void SetOnlineStatus(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> persistedDevicesParsedDevices)
-    {
-        var setOnlineElements = persistedDevicesParsedDevices
-            .Where(c => c.Key.IsOffline)
-            .Where(c => !(c.Value?.IsOffline ?? true))
-            .Where(c => c.Key is not DeviceTreeRoot);
-
-        foreach (var element in setOnlineElements)
-        {
-            element.Key.IsOffline = false;
-        }
-    }
-
-    private static void SetUnknownStatus(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> persistedDevicesParsedDevices)
-    {
-        var setUnknownElements = persistedDevicesParsedDevices
-            .Where(c => !((DeviceTreeDevice)c.Key).IsUnknown)
-            .Where(c => c.Value is not null && ((DeviceTreeDevice)c.Value).IsUnknown);
-
-        foreach (var element in setUnknownElements)
-        {
-            var device = (DeviceTreeDevice)element.Key;
-            device.IsUnknown = true;
-            device.Description = element.Value!.Description;
+            if (device.IsUnknown && !parsedDevice.IsUnknown)
+            {
+                device.IsUnknown = false;
+                device.Description = parsedDevice.Description;
+            }
+            else if (!device.IsUnknown && parsedDevice.IsUnknown)
+            {
+                device.IsUnknown = true;
+                device.Description = parsedDevice.Description;
+            }
         }
     }
 
     public static void SortSensors(IDeviceTreeEventTriggerDataNode persistedTriggerNode, Dictionary<string, string> nodeNames)
     {
-        var newTriggerConfigurations = persistedTriggerNode.EventTriggerConfigurations
-            .OrderBy(t => !t.IsSensorConfigured)
-            .ThenBy(t =>
-            {
-                if (nodeNames.TryGetValue(t.ReferenceNodeId, out var nodeName))
-                {
-                    return nodeName;
-                }
+        var comparer = AlphaNumericComparer<string>.Default;
 
-                return t.ReferenceNodeId;
-            }, AlphaNumericComparer<string>.Default)
-            .ToList();
-
-        persistedTriggerNode.EventTriggerConfigurations.Clear();
-        persistedTriggerNode.EventTriggerConfigurations.AddRange(newTriggerConfigurations);
-    }
-
-    private static void UpdateAliases(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> persistedDevicesParsedDevices)
-    {
-        var relevantNodes = persistedDevicesParsedDevices.Where(n => n.Key is IAliasStructureNode)
-                                                         .Where(n => n.Value as IAliasStructureNode is not null);
-
-        foreach (var node in relevantNodes)
+        persistedTriggerNode.EventTriggerConfigurations.Sort((a, b) =>
         {
-            ((IAliasStructureNode)node.Key).Alias = ((IAliasStructureNode)node.Value!).Alias;
-        }
+            // Configured sensors first
+            var configCmp = b.IsSensorConfigured.CompareTo(a.IsSensorConfigured);
+            if (configCmp != 0)
+                return configCmp;
+
+            var nameA = nodeNames.TryGetValue(a.ReferenceNodeId, out var nA) ? nA : a.ReferenceNodeId;
+            var nameB = nodeNames.TryGetValue(b.ReferenceNodeId, out var nB) ? nB : b.ReferenceNodeId;
+
+            return comparer.Compare(nameA, nameB);
+        });
     }
 
     private static void UpdateCloudConfigurations(IDeviceTreeBase deviceTree, IReadOnlyCollection<Connection> connections)
     {
-        RemoveCloudConfigurations(deviceTree, connections);
-        AddCloudConfigurations(deviceTree, connections);
-    }
+        var cloudIds = new HashSet<Guid>(connections.Count);
+        foreach (var c in connections)
+            cloudIds.Add(c.Id);
 
-    private static void UpdateConstantNodes(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> persistedDevicesParsedDevices)
-    {
-        var relevantNodes = persistedDevicesParsedDevices.Where(n => n.Key is DeviceTreeConstantData)
-                                                         .Where(n => n.Value as DeviceTreeConstantData is not null);
-
-        foreach (var node in relevantNodes)
+        foreach (var node in deviceTree.GetNodeAndDescendants())
         {
-            ((DeviceTreeConstantData)node.Key).Value = ((DeviceTreeConstantData)node.Value!).Value;
+            if (node is IDeviceTreeDataNode dataNode)
+            {
+                dataNode.RemoveConfigurations(cloudIds);
+                dataNode.AddConfigurations(connections);
+            }
+
+            if (node is IDeviceTreeConfigurableRawDataNode configurableNode)
+            {
+                List<Guid>? keysToRemove = null;
+                foreach (var key in configurableNode.RawDataConfigurations.Keys)
+                {
+                    if (!cloudIds.Contains(key))
+                        (keysToRemove ??= []).Add(key);
+                }
+
+                if (keysToRemove is not null)
+                {
+                    foreach (var key in keysToRemove)
+                        configurableNode.RawDataConfigurations.Remove(key);
+                }
+
+                // Add missing cloud configurations
+                foreach (var cloudConfig in connections)
+                {
+                    if (!configurableNode.RawDataConfigurations.ContainsKey(cloudConfig.Id))
+                    {
+                        configurableNode.RawDataConfigurations.Add(cloudConfig.Id, new RawDataSettings
+                        {
+                            Duration = 4000,
+                            Frequency = 100000,
+                        });
+                    }
+                }
+            }
         }
     }
 
     public static void UpdateOnlineStatus(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> persistedDevicesParsedDevices)
     {
-        SetOnlineStatus(persistedDevicesParsedDevices);
-        SetOfflineStatus(persistedDevicesParsedDevices);
+        foreach (var (persisted, parsed) in persistedDevicesParsedDevices)
+        {
+            if (persisted is not DeviceTreeRoot)
+                ApplyOnlineStatus(persisted, parsed);
+        }
+    }
+
+    private static void ApplyOnlineStatus(IDeviceTreeBase persisted, IDeviceTreeBase? parsed)
+    {
+        var parsedIsOffline = parsed?.IsOffline ?? true;
+
+        if (persisted.IsOffline != parsedIsOffline)
+            persisted.IsOffline = parsedIsOffline;
     }
 
     private static void UpdateSensors(IDeviceTreeEventTriggerDataNode persistedTriggerNode, IDeviceTreeEventTriggerDataNode parsedTriggerNode)
     {
+        var parsedSensorsByRefId = new Dictionary<string, EventTriggerConfiguration>(
+            parsedTriggerNode.EventTriggerConfigurations.Count, StringComparer.Ordinal);
+        foreach (var parsed in parsedTriggerNode.EventTriggerConfigurations)
+            parsedSensorsByRefId[parsed.ReferenceNodeId] = parsed;
+
         foreach (var sensor in persistedTriggerNode.EventTriggerConfigurations)
         {
-            var parsedSensor = parsedTriggerNode.EventTriggerConfigurations.FirstOrDefault(n => n.ReferenceNodeId == sensor.ReferenceNodeId);
-
-            if (parsedSensor is not null)
-            {
+            if (parsedSensorsByRefId.TryGetValue(sensor.ReferenceNodeId, out var parsedSensor))
                 sensor.IsSensorConfigured = parsedSensor.IsSensorConfigured;
-            }
-        }
-    }
-
-    private static void UpdateTriggerNodes(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> persistedDevicesParsedDevices)
-    {
-
-        var relevantNodes = persistedDevicesParsedDevices.Where(n => n.Key is IDeviceTreeEventTriggerDataNode)
-                                                         .Where(n => n.Value as IDeviceTreeEventTriggerDataNode is not null);
-        var nodeNames = GetNodeNames(persistedDevicesParsedDevices);
-
-        foreach (var node in relevantNodes)
-        {
-            var persistedTriggerNode = (IDeviceTreeEventTriggerDataNode)node.Key;
-            var parsedTriggerNode = (IDeviceTreeEventTriggerDataNode)node.Value!;
-
-            AddNewSensors(persistedTriggerNode, parsedTriggerNode);
-            SortSensors(persistedTriggerNode, nodeNames);
-            UpdateSensors(persistedTriggerNode, parsedTriggerNode);
-        }
-    }
-
-    private static void UpdateUnknownStatus(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> persistedDevicesParsedDevices)
-    {
-        var deviceTreeDevices = persistedDevicesParsedDevices.Where(d => d.Key is DeviceTreeDevice && d.Value is DeviceTreeDevice)
-                                                             .ToDictionary(d => d.Key, d => d.Value);
-
-        SetKnownStatus(deviceTreeDevices);
-        SetUnknownStatus(deviceTreeDevices);
-    }
-
-    private static void UpdateVseNames(Dictionary<IDeviceTreeBase, IDeviceTreeBase?> persistedDevicesParsedDevices)
-    {
-        var relevantNodes = persistedDevicesParsedDevices.Where(n => n.Key is DeviceTreeVseDevice)
-                                                         .Where(n => n.Value as DeviceTreeVseDevice is not null);
-
-        foreach (var node in relevantNodes)
-        {
-            node.Key.Name = node.Value!.Name;
         }
     }
 }

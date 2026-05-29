@@ -75,18 +75,18 @@ public static class DeviceTreeDataNodeExtensions
         }
     }
 
-    public static void RemoveConfigurations(this IDeviceTreeDataNode dataNode, IEnumerable<Guid> existingConfigurations)
+    public static void RemoveConfigurations(this IDeviceTreeDataNode dataNode, IReadOnlySet<Guid> existingConfigurations)
     {
         if (dataNode is IDeviceTreeCompressableDataNode compressableDataNode)
-            compressableDataNode.CompressorConfigurations.RemoveAll(con => existingConfigurations.All(cfg => cfg != con.DataGroupIdentifier));
+            compressableDataNode.CompressorConfigurations.RemoveAll(con => !existingConfigurations.Contains(con.DataGroupIdentifier));
         else if (dataNode is IDeviceTreeSchedulableDataNode schedulableDataNode)
-            schedulableDataNode.SchedulerConfigurations.RemoveAll(con => existingConfigurations.All(cfg => cfg != con.DataGroupIdentifier));
+            schedulableDataNode.SchedulerConfigurations.RemoveAll(con => !existingConfigurations.Contains(con.DataGroupIdentifier));
 
         if (dataNode is IDeviceTreeEventTriggerDataNode triggerDataNode)
         {
             foreach (var sensor in triggerDataNode.EventTriggerConfigurations)
             {
-                sensor.Triggers.RemoveAll(t => existingConfigurations.All(cfg => cfg != t.DataGroupIdentifier));
+                sensor.Triggers.RemoveAll(t => !existingConfigurations.Contains(t.DataGroupIdentifier));
             }
         }
     }
