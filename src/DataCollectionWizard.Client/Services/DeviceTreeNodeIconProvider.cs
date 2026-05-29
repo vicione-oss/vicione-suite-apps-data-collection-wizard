@@ -31,46 +31,86 @@ internal static class DeviceTreeNodeIconProvider
 
     public static IIcon GetIcon(IDeviceTreeBase? treeDevice)
     {
-        if (treeDevice is DeviceTreeRoot)
-            return new SvgIcon(RoccoSvgIcons.device);
-
-        if (treeDevice is DeviceTreeIoLinkMaster)
-            return new SvgIcon(RoccoSvgIcons.device);
-
-        if (treeDevice is DeviceTreeVseDevice)
-            return new SvgIcon(RoccoSvgIcons.device);
+        if (treeDevice is DeviceTreeRoot or DeviceTreeIoLinkMaster or DeviceTreeVseDevice)
+        {
+            return new SvgIcon(MonochromeIconName.DeviceLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
+            {
+                CssClasses = MonochromeIconName.DeviceLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
+            };
+        }
 
         if (treeDevice is DeviceTreeIoLinkMasterPort)
-            return new SvgIcon(SvgIcons.iolm_port);
+        {
+            return new SvgIcon(MonochromeIconName.PortSolid.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
+            {
+                CssClasses = MonochromeIconName.PortSolid.GetCssClasses(MonochromeIconSize.Small)
+            };
+        }
 
         if (treeDevice is DeviceTreeDevice)
-            return new SvgIcon(SvgIcons.iolm_sensor);
+        {
+            return new SvgIcon(MonochromeIconName.SensorSolid.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
+            {
+                CssClasses = MonochromeIconName.SensorSolid.GetCssClasses(MonochromeIconSize.Small)
+            };
+        }
 
         if (treeDevice is DeviceTreeProcessData)
-            return new SvgIcon(SvgIcons.iolm_processdata);
+        {
+            return new SvgIcon(MonochromeIconName.ProcessDataPoint.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
+            {
+                CssClasses = MonochromeIconName.ProcessDataPoint.GetCssClasses(MonochromeIconSize.Small)
+            };
+        }
 
         if (treeDevice is IDeviceTreeSchedulableDataNode)
-            return new SvgIcon(RoccoSvgIcons.vse_rawdata);
+        {
+            return new SvgIcon(MonochromeIconName.RawDataLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
+            {
+                CssClasses = MonochromeIconName.RawDataLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
+            };
+        }
 
         if (treeDevice is DeviceTreeVseAlarm)
         {
-            return new SvgIcon(MonochromeIconName.AlarmLight.GetSvgMarkup(MonochromeIconSize.SmallMedium) ?? string.Empty)
+            return new SvgIcon(MonochromeIconName.AlarmLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
             {
-                CssClasses = MonochromeIconName.AlarmLight.GetCssClasses(MonochromeIconSize.SmallMedium)
+                CssClasses = MonochromeIconName.AlarmLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
             };
         }
 
         if (treeDevice is DeviceTreeVseCounter)
-            return new SvgIcon(RoccoSvgIcons.vse_counter);
+        {
+            return new SvgIcon(MonochromeIconName.CounterLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
+            {
+                CssClasses = MonochromeIconName.CounterLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
+            };
+        }
 
         if (treeDevice is DeviceTreeVseInput)
-            return new SvgIcon(RoccoSvgIcons.vse_input);
+        {
+            return new SvgIcon(MonochromeIconName.InputLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
+            {
+                CssClasses = MonochromeIconName.InputLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
+            };
+        }
 
         if (treeDevice is DeviceTreeVseObject)
-            return new SvgIcon(RoccoSvgIcons.vse_object);
+        {
+            return new SvgIcon(MonochromeIconName.ObjectLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
+            {
+                CssClasses = MonochromeIconName.ObjectLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
+            };
+        }
 
         if (treeDevice is DeviceTreeVseVariants)
-            return new SvgIcon(RoccoSvgIcons.vse_variant);
+        {
+            return new SvgIcon(MonochromeIconName.Recursive.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
+            {
+                CssClasses = MonochromeIconName.Recursive.GetCssClasses(MonochromeIconSize.SmallPlus2)
+            };
+        }
+
 
         if (treeDevice is DeviceTreeStructureNode)
         {
@@ -80,12 +120,15 @@ internal static class DeviceTreeNodeIconProvider
                 return GetIcon(relevantChild);
             }
 
-            return new SvgIcon(MonochromeIconName.Folder.GetSvgMarkup(MonochromeIconSize.SmallMedium) ?? string.Empty)
+            return new SvgIcon(MonochromeIconName.Folder.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
             {
-                CssClasses = MonochromeIconName.Folder.GetCssClasses(MonochromeIconSize.SmallMedium)
+                CssClasses = MonochromeIconName.Folder.GetCssClasses(MonochromeIconSize.SmallPlus2)
             };
         }
 
-        return new SvgIcon(SvgIcons.iolm_unknown);
+        return new SvgIcon(MonochromeIconName.UnknownKnotType.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
+        {
+            CssClasses = MonochromeIconName.UnknownKnotType.GetCssClasses(MonochromeIconSize.Small)
+        };
     }
 }

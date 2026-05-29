@@ -29,7 +29,7 @@
                 class="@(Service.PathVisible ? "active" : string.Empty)"
                 title="@Localization.DataCollectionWizardPage.PathVisible">
 
-            @((MarkupString)RoccoSvgIcons.path)
+            <MonochromeIcon Name="@MonochromeIconName.PathDetailsShow" Size="@MonochromeIconSize.SmallMedium" />
         </button>
 
         <button disabled="@(!Service.HasOfflineNodes)"
