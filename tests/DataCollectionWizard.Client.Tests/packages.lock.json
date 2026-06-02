@@ -1297,8 +1297,8 @@
       },
       "ViciOne.Ui.MonochromeIcons.Core": {
         "type": "Transitive",
-        "resolved": "4.11.0-ci2560961244",
-        "contentHash": "aaCTIxj+uZQpfYdek+ztKKglAVmoa3N+L8yWUYZgUBR7ed9I5HGTCfYBV7wc6VZ88aP7CTb0NMYHgYixfvjd5g=="
+        "resolved": "4.11.0-ci2579420634",
+        "contentHash": "8In2vIZFL22HkXlH3Y5ER/v6CUGXAWQYgeUmEB507uom5yjkb2drPo6VfHQtDYFVjyhvPALcvY76p7QXT3sJ0A=="
       },
       "ViciOne.Ui.TreeEditor.Builder": {
         "type": "Transitive",
@@ -1381,7 +1381,7 @@
           "ViciOne.Suite.DataCollectionWizard.Internal": "[1.0.0, )",
           "ViciOne.Suite.Sdk.Client": "[2.0.0, )",
           "ViciOne.Ui.Blazor.Components": "[5.9.0, )",
-          "ViciOne.Ui.MonochromeIcons.Assets": "[4.11.0-ci2560961244, )",
+          "ViciOne.Ui.MonochromeIcons.Assets": "[4.11.0-ci2579420634, )",
           "ViciOne.Ui.Shared.Dx": "[0.19.1, )",
           "ViciOne.Ui.TreeEditor": "[2.0.1, )"
         }
@@ -1501,11 +1501,11 @@
       },
       "ViciOne.Ui.MonochromeIcons.Assets": {
         "type": "CentralTransitive",
-        "requested": "[4.11.0-ci2560961244, )",
-        "resolved": "4.11.0-ci2560961244",
-        "contentHash": "WrFyDOHNkqAd7q1VstjE9MguzWcUwtc3BHYB1QAjHMEFg3a9ekBa3oSYzKzDCAyd/FQA9bywWZeOGqS2Y/osAg==",
+        "requested": "[4.11.0-ci2579420634, )",
+        "resolved": "4.11.0-ci2579420634",
+        "contentHash": "aJR5GP0hEpJhmjL7OAoFYSOYbFQyjSHfqDRgBc7HWbglQVLrks1ufEBVckLk16clOaxZxrhAkum+KHbEAtgzRA==",
         "dependencies": {
-          "ViciOne.Ui.MonochromeIcons.Core": "4.11.0-ci2560961244"
+          "ViciOne.Ui.MonochromeIcons.Core": "4.11.0-ci2579420634"
         }
       },
       "ViciOne.Ui.Shared.Dx": {

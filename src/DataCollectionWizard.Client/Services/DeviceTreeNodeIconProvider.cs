@@ -105,9 +105,9 @@ internal static class DeviceTreeNodeIconProvider
 
         if (treeDevice is DeviceTreeVseVariants)
         {
-            return new SvgIcon(MonochromeIconName.Recursive.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
+            return new SvgIcon(MonochromeIconName.Branch.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
             {
-                CssClasses = MonochromeIconName.Recursive.GetCssClasses(MonochromeIconSize.SmallPlus2)
+                CssClasses = MonochromeIconName.Branch.GetCssClasses(MonochromeIconSize.SmallPlus2)
             };
         }
 
@@ -126,9 +126,9 @@ internal static class DeviceTreeNodeIconProvider
             };
         }
 
-        return new SvgIcon(MonochromeIconName.UnknownKnotType.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
+        return new SvgIcon(MonochromeIconName.UnknownNodeType.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
         {
-            CssClasses = MonochromeIconName.UnknownKnotType.GetCssClasses(MonochromeIconSize.Small)
+            CssClasses = MonochromeIconName.UnknownNodeType.GetCssClasses(MonochromeIconSize.Small)
         };
     }
 }
