@@ -54,6 +54,6 @@ public sealed partial class LiveViewToolbar : IDisposable
     private void OnTogglePathVisible()
     {
         Service.PathVisible ^= true;
-        Service.Refresh();
+        Service.RefreshImmediate();
     }
 }

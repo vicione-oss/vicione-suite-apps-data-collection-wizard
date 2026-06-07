@@ -29,14 +29,12 @@
         width: 28px;
 
         &:disabled {
-            color: col.$content-dark-disabled;
+            ::deep .monochrome-icon::before {
+                background-color: col.$content-dark-disabled;
+            }
 
             &:hover {
                 background-color: transparent;
-            }
-
-            ::deep svg path {
-                fill: col.$content-dark-disabled;
             }
         }
 
@@ -45,17 +43,8 @@
         }
 
         &.active {
-            ::deep svg path {
-                fill: col.$accent;
-            }
-        }
-
-        ::deep svg {
-            height: 24px;
-            width: 24px;
-
-            path {
-                fill: col.$font;
+            ::deep .monochrome-icon::before {
+                background-color: col.$accent;
             }
         }
     }

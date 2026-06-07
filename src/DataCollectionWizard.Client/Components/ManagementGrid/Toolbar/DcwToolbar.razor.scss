@@ -35,14 +35,12 @@
         padding: 0;
 
         &:disabled {
-            color: col.$content-dark-disabled;
+            ::deep .monochrome-icon::before {
+                background-color: col.$content-dark-disabled;
+            }
 
             &:hover {
                 background-color: transparent;
-            }
-
-            ::deep svg path {
-                fill: col.$content-dark-disabled;
             }
         }
 
@@ -51,8 +49,8 @@
         }
 
         &.active {
-            ::deep svg path {
-                fill: col.$accent;
+            ::deep .monochrome-icon::before {
+                background-color: col.$accent;
             }
         }
 
@@ -60,13 +58,8 @@
             display: none;
         }
 
-        ::deep svg {
-            height: 24px;
-            width: 24px;
-
-            path {
-                fill: col.$font;
-            }
+        ::deep svg path {
+            fill: col.$font;
         }
     }
 
