@@ -18,6 +18,15 @@ namespace DataCollectionWizard.Client.Services;
 
 internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
 {
+    private static readonly IIcon s_deleteIcon = new SvgIcon(MonochromeIconName.Delete.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
+    {
+        CssClasses = MonochromeIconName.Delete.GetCssClasses(MonochromeIconSize.Small)
+    };
+    private static readonly IIcon s_editIcon = new SvgIcon(MonochromeIconName.Edit.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
+    {
+        CssClasses = MonochromeIconName.Edit.GetCssClasses(MonochromeIconSize.Small)
+    };
+
     private readonly List<string> _expandedNodes = [];
     private Root? _rootNode;
     private readonly Lock _setTreeLock = new();
@@ -80,10 +89,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                     NodeEdited?.Invoke(nodeBase);
                 },
                 Description = Localization.DeviceTreeAdapter.EditAlias,
-                Icon = new SvgIcon(MonochromeIconName.Edit.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
-                {
-                    CssClasses = MonochromeIconName.Edit.GetCssClasses(MonochromeIconSize.Small)
-                },
+                Icon = s_editIcon,
                 Index = 0,
             });
         }
@@ -104,10 +110,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                     NodeDeleted?.Invoke(nodeBase, nodeBase.Parent);
                 },
                 Description = baseNode.Device is IDeviceTreeMasterNode ? Localization.DeviceTreeAdapter.DeleteDevice : Localization.DeviceTreeAdapter.DeleteNode,
-                Icon = new SvgIcon(MonochromeIconName.Delete.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
-                {
-                    CssClasses = MonochromeIconName.Delete.GetCssClasses(MonochromeIconSize.Small)
-                },
+                Icon = s_deleteIcon,
                 Index = 1,
             });
         }

@@ -1,5 +1,4 @@
-﻿using DataCollectionWizard.Client.Resources;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+﻿using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 using ViciOne.Ui.MonochromeIcons.Assets.Extensions;
 using ViciOne.Ui.MonochromeIcons.Core.Enums;
 using ViciOne.Ui.MonochromeIcons.Core.Extensions;
@@ -9,6 +8,66 @@ namespace DataCollectionWizard.Client.Services;
 
 internal static class DeviceTreeNodeIconProvider
 {
+    private static readonly IIcon s_deviceIcon = new SvgIcon(MonochromeIconName.DeviceLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
+    {
+        CssClasses = MonochromeIconName.DeviceLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
+    };
+
+    private static readonly IIcon s_folderIcon = new SvgIcon(MonochromeIconName.Folder.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
+    {
+        CssClasses = MonochromeIconName.Folder.GetCssClasses(MonochromeIconSize.SmallPlus2)
+    };
+
+    private static readonly IIcon s_portIcon = new SvgIcon(MonochromeIconName.PortSolid.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
+    {
+        CssClasses = MonochromeIconName.PortSolid.GetCssClasses(MonochromeIconSize.Small)
+    };
+
+    private static readonly IIcon s_processDataPointIcon = new SvgIcon(MonochromeIconName.ProcessDataPoint.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
+    {
+        CssClasses = MonochromeIconName.ProcessDataPoint.GetCssClasses(MonochromeIconSize.Small)
+    };
+
+    private static readonly IIcon s_rawDataIcon = new SvgIcon(MonochromeIconName.RawDataLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
+    {
+        CssClasses = MonochromeIconName.RawDataLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
+    };
+
+    private static readonly IIcon s_sensorIcon = new SvgIcon(MonochromeIconName.SensorSolid.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
+    {
+        CssClasses = MonochromeIconName.SensorSolid.GetCssClasses(MonochromeIconSize.Small)
+    };
+
+    private static readonly IIcon s_unknownNodeTypeIcon = new SvgIcon(MonochromeIconName.UnknownNodeType.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
+    {
+        CssClasses = MonochromeIconName.UnknownNodeType.GetCssClasses(MonochromeIconSize.Small)
+    };
+
+    private static readonly IIcon s_vseAlarmIcon = new SvgIcon(MonochromeIconName.AlarmLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
+    {
+        CssClasses = MonochromeIconName.AlarmLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
+    };
+
+    private static readonly IIcon s_vseCounterIcon = new SvgIcon(MonochromeIconName.CounterLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
+    {
+        CssClasses = MonochromeIconName.CounterLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
+    };
+
+    private static readonly IIcon s_vseInputsIcon = new SvgIcon(MonochromeIconName.InputLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
+    {
+        CssClasses = MonochromeIconName.InputLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
+    };
+
+    private static readonly IIcon s_vseObjectIcon = new SvgIcon(MonochromeIconName.ObjectLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
+    {
+        CssClasses = MonochromeIconName.ObjectLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
+    };
+
+    private static readonly IIcon s_vseVariantsIcon = new SvgIcon(MonochromeIconName.Branch.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
+    {
+        CssClasses = MonochromeIconName.Branch.GetCssClasses(MonochromeIconSize.SmallPlus2)
+    };
+
     private static IDeviceTreeBase? GetFirstNonStructureChildRecursively(IDeviceTreeBase nodeContext)
     {
         if (nodeContext is not DeviceTreeStructureNode)
@@ -32,85 +91,34 @@ internal static class DeviceTreeNodeIconProvider
     public static IIcon GetIcon(IDeviceTreeBase? treeDevice)
     {
         if (treeDevice is DeviceTreeRoot or DeviceTreeIoLinkMaster or DeviceTreeVseDevice)
-        {
-            return new SvgIcon(MonochromeIconName.DeviceLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
-            {
-                CssClasses = MonochromeIconName.DeviceLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
-            };
-        }
+            return s_deviceIcon;
 
         if (treeDevice is DeviceTreeIoLinkMasterPort)
-        {
-            return new SvgIcon(MonochromeIconName.PortSolid.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
-            {
-                CssClasses = MonochromeIconName.PortSolid.GetCssClasses(MonochromeIconSize.Small)
-            };
-        }
+            return s_portIcon;
 
         if (treeDevice is DeviceTreeDevice)
-        {
-            return new SvgIcon(MonochromeIconName.SensorSolid.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
-            {
-                CssClasses = MonochromeIconName.SensorSolid.GetCssClasses(MonochromeIconSize.Small)
-            };
-        }
+            return s_sensorIcon;
 
         if (treeDevice is DeviceTreeProcessData)
-        {
-            return new SvgIcon(MonochromeIconName.ProcessDataPoint.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
-            {
-                CssClasses = MonochromeIconName.ProcessDataPoint.GetCssClasses(MonochromeIconSize.Small)
-            };
-        }
+            return s_processDataPointIcon;
 
         if (treeDevice is IDeviceTreeSchedulableDataNode)
-        {
-            return new SvgIcon(MonochromeIconName.RawDataLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
-            {
-                CssClasses = MonochromeIconName.RawDataLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
-            };
-        }
+            return s_rawDataIcon;
 
         if (treeDevice is DeviceTreeVseAlarm)
-        {
-            return new SvgIcon(MonochromeIconName.AlarmLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
-            {
-                CssClasses = MonochromeIconName.AlarmLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
-            };
-        }
+            return s_vseAlarmIcon;
 
         if (treeDevice is DeviceTreeVseCounter)
-        {
-            return new SvgIcon(MonochromeIconName.CounterLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
-            {
-                CssClasses = MonochromeIconName.CounterLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
-            };
-        }
+            return s_vseCounterIcon;
 
         if (treeDevice is DeviceTreeVseInput)
-        {
-            return new SvgIcon(MonochromeIconName.InputLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
-            {
-                CssClasses = MonochromeIconName.InputLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
-            };
-        }
+            return s_vseInputsIcon;
 
         if (treeDevice is DeviceTreeVseObject)
-        {
-            return new SvgIcon(MonochromeIconName.ObjectLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
-            {
-                CssClasses = MonochromeIconName.ObjectLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
-            };
-        }
+            return s_vseObjectIcon;
 
         if (treeDevice is DeviceTreeVseVariants)
-        {
-            return new SvgIcon(MonochromeIconName.Branch.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
-            {
-                CssClasses = MonochromeIconName.Branch.GetCssClasses(MonochromeIconSize.SmallPlus2)
-            };
-        }
-
+            return s_vseVariantsIcon;
 
         if (treeDevice is DeviceTreeStructureNode)
         {
@@ -120,15 +128,9 @@ internal static class DeviceTreeNodeIconProvider
                 return GetIcon(relevantChild);
             }
 
-            return new SvgIcon(MonochromeIconName.Folder.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
-            {
-                CssClasses = MonochromeIconName.Folder.GetCssClasses(MonochromeIconSize.SmallPlus2)
-            };
+            return s_folderIcon;
         }
 
-        return new SvgIcon(MonochromeIconName.UnknownNodeType.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
-        {
-            CssClasses = MonochromeIconName.UnknownNodeType.GetCssClasses(MonochromeIconSize.Small)
-        };
+        return s_unknownNodeTypeIcon;
     }
 }
