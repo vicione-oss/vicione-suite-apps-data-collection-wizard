@@ -6,7 +6,6 @@ using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
-using Sdk.Connections.Contracts;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid;
