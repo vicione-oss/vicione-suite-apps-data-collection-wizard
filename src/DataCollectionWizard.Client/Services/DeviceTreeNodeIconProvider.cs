@@ -8,65 +8,24 @@ namespace DataCollectionWizard.Client.Services;
 
 internal static class DeviceTreeNodeIconProvider
 {
-    private static readonly IIcon s_deviceIcon = new SvgIcon(MonochromeIconName.DeviceLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
-    {
-        CssClasses = MonochromeIconName.DeviceLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
-    };
+    private static readonly IIcon s_deviceIcon = CreateIcon(MonochromeIconName.DeviceLight, MonochromeIconSize.SmallPlus2);
+    private static readonly IIcon s_folderIcon = CreateIcon(MonochromeIconName.Folder, MonochromeIconSize.SmallPlus2);
+    private static readonly IIcon s_portIcon = CreateIcon(MonochromeIconName.PortSolid, MonochromeIconSize.Small);
+    private static readonly IIcon s_processDataPointIcon = CreateIcon(MonochromeIconName.ProcessDataPoint, MonochromeIconSize.Small);
+    private static readonly IIcon s_rawDataIcon = CreateIcon(MonochromeIconName.RawDataLight, MonochromeIconSize.SmallPlus2);
+    private static readonly IIcon s_sensorIcon = CreateIcon(MonochromeIconName.SensorSolid, MonochromeIconSize.Small);
+    private static readonly IIcon s_unknownNodeTypeIcon = CreateIcon(MonochromeIconName.UnknownNodeType, MonochromeIconSize.Small);
+    private static readonly IIcon s_vseAlarmIcon = CreateIcon(MonochromeIconName.AlarmLight, MonochromeIconSize.SmallPlus2);
+    private static readonly IIcon s_vseCounterIcon = CreateIcon(MonochromeIconName.CounterLight, MonochromeIconSize.SmallPlus2);
+    private static readonly IIcon s_vseInputsIcon = CreateIcon(MonochromeIconName.InputLight, MonochromeIconSize.SmallPlus2);
+    private static readonly IIcon s_vseObjectIcon = CreateIcon(MonochromeIconName.ObjectLight, MonochromeIconSize.SmallPlus2);
+    private static readonly IIcon s_vseVariantsIcon = CreateIcon(MonochromeIconName.Branch, MonochromeIconSize.SmallPlus2);
 
-    private static readonly IIcon s_folderIcon = new SvgIcon(MonochromeIconName.Folder.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
-    {
-        CssClasses = MonochromeIconName.Folder.GetCssClasses(MonochromeIconSize.SmallPlus2)
-    };
-
-    private static readonly IIcon s_portIcon = new SvgIcon(MonochromeIconName.PortSolid.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
-    {
-        CssClasses = MonochromeIconName.PortSolid.GetCssClasses(MonochromeIconSize.Small)
-    };
-
-    private static readonly IIcon s_processDataPointIcon = new SvgIcon(MonochromeIconName.ProcessDataPoint.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
-    {
-        CssClasses = MonochromeIconName.ProcessDataPoint.GetCssClasses(MonochromeIconSize.Small)
-    };
-
-    private static readonly IIcon s_rawDataIcon = new SvgIcon(MonochromeIconName.RawDataLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
-    {
-        CssClasses = MonochromeIconName.RawDataLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
-    };
-
-    private static readonly IIcon s_sensorIcon = new SvgIcon(MonochromeIconName.SensorSolid.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
-    {
-        CssClasses = MonochromeIconName.SensorSolid.GetCssClasses(MonochromeIconSize.Small)
-    };
-
-    private static readonly IIcon s_unknownNodeTypeIcon = new SvgIcon(MonochromeIconName.UnknownNodeType.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
-    {
-        CssClasses = MonochromeIconName.UnknownNodeType.GetCssClasses(MonochromeIconSize.Small)
-    };
-
-    private static readonly IIcon s_vseAlarmIcon = new SvgIcon(MonochromeIconName.AlarmLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
-    {
-        CssClasses = MonochromeIconName.AlarmLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
-    };
-
-    private static readonly IIcon s_vseCounterIcon = new SvgIcon(MonochromeIconName.CounterLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
-    {
-        CssClasses = MonochromeIconName.CounterLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
-    };
-
-    private static readonly IIcon s_vseInputsIcon = new SvgIcon(MonochromeIconName.InputLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
-    {
-        CssClasses = MonochromeIconName.InputLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
-    };
-
-    private static readonly IIcon s_vseObjectIcon = new SvgIcon(MonochromeIconName.ObjectLight.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
-    {
-        CssClasses = MonochromeIconName.ObjectLight.GetCssClasses(MonochromeIconSize.SmallPlus2)
-    };
-
-    private static readonly IIcon s_vseVariantsIcon = new SvgIcon(MonochromeIconName.Branch.GetSvgMarkup(MonochromeIconSize.SmallPlus2) ?? string.Empty)
-    {
-        CssClasses = MonochromeIconName.Branch.GetCssClasses(MonochromeIconSize.SmallPlus2)
-    };
+    internal static SvgIcon CreateIcon(MonochromeIconName iconName, MonochromeIconSize iconSize)
+        => new(iconName.GetSvgMarkup(iconSize) ?? string.Empty)
+        {
+            CssClasses = iconName.GetCssClasses(iconSize)
+        };
 
     private static IDeviceTreeBase? GetFirstNonStructureChildRecursively(IDeviceTreeBase nodeContext)
     {

@@ -5,9 +5,7 @@ using DataCollectionWizard.Client.Models.DeviceTree;
 using DataCollectionWizard.Internal.Services;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
-using ViciOne.Ui.MonochromeIcons.Assets.Extensions;
 using ViciOne.Ui.MonochromeIcons.Core.Enums;
-using ViciOne.Ui.MonochromeIcons.Core.Extensions;
 using ViciOne.Ui.TreeEditor.Builder.Interface;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Enums;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Icons;
@@ -18,14 +16,8 @@ namespace DataCollectionWizard.Client.Services;
 
 internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
 {
-    private static readonly IIcon s_deleteIcon = new SvgIcon(MonochromeIconName.Delete.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
-    {
-        CssClasses = MonochromeIconName.Delete.GetCssClasses(MonochromeIconSize.Small)
-    };
-    private static readonly IIcon s_editIcon = new SvgIcon(MonochromeIconName.Edit.GetSvgMarkup(MonochromeIconSize.Small) ?? string.Empty)
-    {
-        CssClasses = MonochromeIconName.Edit.GetCssClasses(MonochromeIconSize.Small)
-    };
+    private static readonly IIcon s_deleteIcon = DeviceTreeNodeIconProvider.CreateIcon(MonochromeIconName.Delete, MonochromeIconSize.Small);
+    private static readonly IIcon s_editIcon = DeviceTreeNodeIconProvider.CreateIcon(MonochromeIconName.Edit, MonochromeIconSize.Small);
 
     private readonly List<string> _expandedNodes = [];
     private Root? _rootNode;
