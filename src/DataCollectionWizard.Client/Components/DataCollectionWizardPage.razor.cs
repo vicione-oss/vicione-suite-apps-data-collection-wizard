@@ -1173,8 +1173,12 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
     private void SetGridItems()
     {
+        var nodePaths = _nodePaths;
+        if (nodePaths is null)
+            return;
+
         _service.GridItems = [.. _adapter.GetRelevantDataNodes()
-            .Where(dn => dn.Visible && dn.DataType.SupportedForLogging())
+            .Where(dn => dn.Visible && dn.DataType.SupportedForLogging() && nodePaths!.ContainsKey(dn))
             .Select(DataNodeToGridModel)
         ];
 
@@ -1182,7 +1186,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             => new()
             {
                 DataNode = dataNode,
-                PathToNode = _nodePaths![dataNode],
+                PathToNode = nodePaths![dataNode],
             };
     }
 
