@@ -1,11 +1,32 @@
-﻿using DataCollectionWizard.Client.Resources;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+﻿using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.Ui.MonochromeIcons.Assets.Extensions;
+using ViciOne.Ui.MonochromeIcons.Core.Enums;
+using ViciOne.Ui.MonochromeIcons.Core.Extensions;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Icons;
 
 namespace DataCollectionWizard.Client.Services;
 
 internal static class DeviceTreeNodeIconProvider
 {
+    private static readonly IIcon s_deviceIcon = CreateIcon(MonochromeIconName.DeviceLight, MonochromeIconSize.SmallPlus2);
+    private static readonly IIcon s_folderIcon = CreateIcon(MonochromeIconName.Folder, MonochromeIconSize.SmallPlus2);
+    private static readonly IIcon s_portIcon = CreateIcon(MonochromeIconName.PortSolid, MonochromeIconSize.Small);
+    private static readonly IIcon s_processDataPointIcon = CreateIcon(MonochromeIconName.ProcessDataPoint, MonochromeIconSize.Small);
+    private static readonly IIcon s_rawDataIcon = CreateIcon(MonochromeIconName.RawDataLight, MonochromeIconSize.SmallPlus2);
+    private static readonly IIcon s_sensorIcon = CreateIcon(MonochromeIconName.SensorSolid, MonochromeIconSize.Small);
+    private static readonly IIcon s_unknownNodeTypeIcon = CreateIcon(MonochromeIconName.UnknownNodeType, MonochromeIconSize.Small);
+    private static readonly IIcon s_vseAlarmIcon = CreateIcon(MonochromeIconName.AlarmLight, MonochromeIconSize.SmallPlus2);
+    private static readonly IIcon s_vseCounterIcon = CreateIcon(MonochromeIconName.CounterLight, MonochromeIconSize.SmallPlus2);
+    private static readonly IIcon s_vseInputsIcon = CreateIcon(MonochromeIconName.InputLight, MonochromeIconSize.SmallPlus2);
+    private static readonly IIcon s_vseObjectIcon = CreateIcon(MonochromeIconName.ObjectLight, MonochromeIconSize.SmallPlus2);
+    private static readonly IIcon s_vseVariantsIcon = CreateIcon(MonochromeIconName.Branch, MonochromeIconSize.SmallPlus2);
+
+    internal static SvgIcon CreateIcon(MonochromeIconName iconName, MonochromeIconSize iconSize)
+        => new(iconName.GetSvgMarkup(iconSize) ?? string.Empty)
+        {
+            CssClasses = iconName.GetCssClasses(iconSize)
+        };
+
     private static IDeviceTreeBase? GetFirstNonStructureChildRecursively(IDeviceTreeBase nodeContext)
     {
         if (nodeContext is not DeviceTreeStructureNode)
@@ -28,41 +49,35 @@ internal static class DeviceTreeNodeIconProvider
 
     public static IIcon GetIcon(IDeviceTreeBase? treeDevice)
     {
-        if (treeDevice is DeviceTreeRoot)
-            return new SvgIcon(RoccoSvgIcons.device);
-
-        if (treeDevice is DeviceTreeIoLinkMaster)
-            return new SvgIcon(RoccoSvgIcons.device);
-
-        if (treeDevice is DeviceTreeVseDevice)
-            return new SvgIcon(RoccoSvgIcons.device);
+        if (treeDevice is DeviceTreeRoot or DeviceTreeIoLinkMaster or DeviceTreeVseDevice)
+            return s_deviceIcon;
 
         if (treeDevice is DeviceTreeIoLinkMasterPort)
-            return new SvgIcon(SvgIcons.usb_port);
+            return s_portIcon;
 
         if (treeDevice is DeviceTreeDevice)
-            return new SvgIcon(SvgIcons.gauge);
+            return s_sensorIcon;
 
         if (treeDevice is DeviceTreeProcessData)
-            return new SvgIcon(SvgIcons.pulse);
+            return s_processDataPointIcon;
 
         if (treeDevice is IDeviceTreeSchedulableDataNode)
-            return new SvgIcon(RoccoSvgIcons.cluster);
+            return s_rawDataIcon;
 
         if (treeDevice is DeviceTreeVseAlarm)
-            return new SvgIcon(RoccoSvgIcons.alarm);
+            return s_vseAlarmIcon;
 
         if (treeDevice is DeviceTreeVseCounter)
-            return new SvgIcon(RoccoSvgIcons.counter);
+            return s_vseCounterIcon;
 
         if (treeDevice is DeviceTreeVseInput)
-            return new SvgIcon(RoccoSvgIcons.column_chooser);
+            return s_vseInputsIcon;
 
         if (treeDevice is DeviceTreeVseObject)
-            return new SvgIcon(RoccoSvgIcons.cloud_service);
+            return s_vseObjectIcon;
 
         if (treeDevice is DeviceTreeVseVariants)
-            return new SvgIcon(RoccoSvgIcons.recursive);
+            return s_vseVariantsIcon;
 
         if (treeDevice is DeviceTreeStructureNode)
         {
@@ -72,9 +87,9 @@ internal static class DeviceTreeNodeIconProvider
                 return GetIcon(relevantChild);
             }
 
-            return new SvgIcon(SvgIcons.layers_outline);
+            return s_folderIcon;
         }
 
-        return new SvgIcon(SvgIcons.progress_question);
+        return s_unknownNodeTypeIcon;
     }
 }

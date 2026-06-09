@@ -4,6 +4,7 @@
 
 ### Changed
 
+- Replaced local SVG resources with SVGs provided by the MonochromeIcon NuGet packages and removed unused resource files
 - Use text from ViciOne.Ui.Localization
 
 ## 2.1.1 - 2026-05-21

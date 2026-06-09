@@ -2,10 +2,10 @@
 using DataCollectionWizard.Client.Extensions;
 using DataCollectionWizard.Client.Models;
 using DataCollectionWizard.Client.Models.DeviceTree;
-using DataCollectionWizard.Client.Resources;
 using DataCollectionWizard.Internal.Services;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.Ui.MonochromeIcons.Core.Enums;
 using ViciOne.Ui.TreeEditor.Builder.Interface;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Enums;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Icons;
@@ -16,6 +16,9 @@ namespace DataCollectionWizard.Client.Services;
 
 internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
 {
+    private static readonly IIcon s_deleteIcon = DeviceTreeNodeIconProvider.CreateIcon(MonochromeIconName.Delete, MonochromeIconSize.Small);
+    private static readonly IIcon s_editIcon = DeviceTreeNodeIconProvider.CreateIcon(MonochromeIconName.Edit, MonochromeIconSize.Small);
+
     private readonly List<string> _expandedNodes = [];
     private Root? _rootNode;
     private readonly Lock _setTreeLock = new();
@@ -68,17 +71,6 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
 
         var result = new List<INodeAction>();
 
-        if (DeviceTreeNodeActionProvider.IsConfigurable(baseNode.Device))
-        {
-            result.Add(new NodeButton()
-            {
-                Action = (_, _) => Console.Out.WriteLine($"[configure] action invoked for [{baseNode.DisplayText}]"),
-                Description = Localization.DeviceTreeAdapter.ConfigureNode,
-                Icon = new SvgIcon(SvgIcons.cog_outline),
-                Index = 0,
-            });
-        }
-
         if (DeviceTreeNodeActionProvider.IsEditable(baseNode.Device))
         {
             result.Add(new NodeButton()
@@ -89,7 +81,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                     NodeEdited?.Invoke(nodeBase);
                 },
                 Description = Localization.DeviceTreeAdapter.EditAlias,
-                Icon = new SvgIcon(RoccoSvgIcons.edit),
+                Icon = s_editIcon,
                 Index = 0,
             });
         }
@@ -110,7 +102,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                     NodeDeleted?.Invoke(nodeBase, nodeBase.Parent);
                 },
                 Description = baseNode.Device is IDeviceTreeMasterNode ? Localization.DeviceTreeAdapter.DeleteDevice : Localization.DeviceTreeAdapter.DeleteNode,
-                Icon = new SvgIcon(RoccoSvgIcons.delete),
+                Icon = s_deleteIcon,
                 Index = 1,
             });
         }

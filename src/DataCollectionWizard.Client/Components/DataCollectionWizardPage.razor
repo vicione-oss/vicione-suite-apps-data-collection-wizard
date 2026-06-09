@@ -1,12 +1,11 @@
-﻿@using DataCollectionWizard.Client.Components.ManagementGrid.Sidebar
+﻿@using DataCollectionWizard.Client.Components.ManagementGrid
+@using DataCollectionWizard.Client.Components.ManagementGrid.Sidebar
 @using DataCollectionWizard.Client.Components.ManagementGrid.Toolbar
-@using DevExpress.Blazor
-@using DataCollectionWizard.Client.Components.ManagementGrid
 @using DataCollectionWizard.Public
+@using DevExpress.Blazor
 @using Microsoft.AspNetCore.Components.Routing
 @using Sdk.Authorization
 @using Sdk.Client.Modules
-@using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions
 @using ViciOne.Ui.Blazor.Components.Dialog.Components
 @using ViciOne.Ui.Blazor.Components.EditorLayout
 @using ViciOne.Ui.Blazor.Components.SearchBox
@@ -212,7 +211,7 @@
 
                         <button title="@Localization.DataCollectionWizardPage.Rescan"
                                 @onclick="@OnRescanIoLinkDevicesClicked">
-                            @((MarkupString)RoccoSvgIcons.refresh)
+                            <MonochromeIcon Name="@MonochromeIconName.Refresh" Size="@MonochromeIconSize.SmallMedium" />
                         </button>
                     </div>
                 }

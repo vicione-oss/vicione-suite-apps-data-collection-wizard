@@ -22,14 +22,14 @@
                 disabled="@(!Service.DeviceTreeChanged || Service.DisableClusterActions)"
                 title="@(_showDebug ? SaveReasons : CommonVocabulary.Save)">
 
-            @((MarkupString)RoccoSvgIcons.save)
+            <MonochromeIcon Name="@MonochromeIconName.SaveOutline" Size="@MonochromeIconSize.SmallMedium" />
         </button>
 
         <button @onclick="@(OnTogglePathVisible)"
                 class="@(Service.PathVisible ? "active" : string.Empty)"
                 title="@Localization.DataCollectionWizardPage.PathVisible">
 
-            @((MarkupString)RoccoSvgIcons.path)
+            <MonochromeIcon Name="@MonochromeIconName.PathDetailsShow" Size="@MonochromeIconSize.SmallMedium" />
         </button>
 
         <button disabled="@(!Service.HasOfflineNodes)"
@@ -37,7 +37,7 @@
                 title="@Localization.DataCollectionWizardPage.DeleteAllOfflineNodes">
 
             <!--Todo: Icon? Papierkorb mit offline symbol drin?-->
-            @((MarkupString)RoccoSvgIcons.delete)
+            <MonochromeIcon Name="@MonochromeIconName.Delete" Size="@MonochromeIconSize.SmallMedium" />
         </button>
 
         <span class="separator"></span>
@@ -46,14 +46,14 @@
                 title="@Localization.DataCollectionWizardPage.Rescan"
                 @onclick="@OnRebrowseClicked">
 
-            @((MarkupString)RoccoSvgIcons.refresh)
+            <MonochromeIcon Name="@MonochromeIconName.Refresh" Size="@MonochromeIconSize.SmallMedium" />
         </button>
 
         <button class="debug-button @(_showDebug ? "active" : string.Empty)"
                 title="@Localization.DataCollectionWizardPage.ShowDebugTooling"
                 @onclick="@(() => _showDebug ^= true)">
 
-            @((MarkupString)SvgIcons.bug)
+            <MonochromeIcon Name="@MonochromeIconName.BugLight" Size="@MonochromeIconSize.SmallMedium" />
         </button>
 
         @if (_showDebug)
@@ -72,7 +72,7 @@
             <button @onclick="@(() => SetAllDatapointsCompression(_debugPoolingGrid))"
                     title="@Localization.DataCollectionWizardPage.SetAllDatapointsCompression">
 
-                @((MarkupString)SvgIcons.check)
+                <MonochromeIcon Name="@MonochromeIconName.Check" Size="@MonochromeIconSize.SmallMedium" />
             </button>
 
             <span class="separator"></span>
@@ -80,13 +80,13 @@
             <button @onclick="@(() => SetAllDatapointsEnabled(true))"
                     title="@Localization.DataCollectionWizardPage.SetAllDatapointsEnabled">
 
-                @((MarkupString)SvgIcons.checkbox_outline)
+                <MonochromeIcon Name="@MonochromeIconName.Toggle" Size="@MonochromeIconSize.SmallMedium" />
             </button>
 
             <button @onclick="@(() => SetAllDatapointsEnabled(false))"
                     title="@Localization.DataCollectionWizardPage.SetAllDatapointsDisabled">
 
-                @((MarkupString)SvgIcons.checkbox_blank_outline)
+                <MonochromeIcon Name="@MonochromeIconName.Clear" Size="@MonochromeIconSize.SmallMedium" />
             </button>
 
             <span class="separator"></span>
@@ -94,7 +94,7 @@
             <button @onclick="@(() => SetDebugRawDataGrid())"
                     title="@Localization.DataCollectionWizardPage.SetDebugRawDataGrid">
 
-                @((MarkupString)SvgIcons.raw)
+                @((MarkupString)SvgIcons.debug_raw)
             </button>
 
             <span class="separator"></span>

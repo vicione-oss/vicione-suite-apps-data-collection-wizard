@@ -906,7 +906,6 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     }
 
     private void OnTreeSelectionChangedAsync()
-    {
         // SelectionChanged can fire from a background thread (e.g. DataflowEventBroker
         // calling SetDeviceTree inside UpdateDeviceTreeAsync), so InvokeAsync is required
         // to marshal back to the Blazor circuit dispatcher before touching component state.
@@ -921,13 +920,12 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         // Note: if Blazor coalesces this StateHasChanged with another pending render
         // (e.g. a simultaneous node-online event), Phase 1 and Phase 2 may still appear
         // together. This is expected Blazor Server batching behaviour.
-        _ = InvokeAsync(() =>
+        => _ = InvokeAsync(() =>
         {
             _service.GridItems = [];
             _gridNeedsRebuild = true;
             StateHasChanged();
         });
-    }
 
     protected override Task OnAfterRenderedAsync(bool firstRender)
     {
@@ -1314,7 +1312,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         // Remove port (but not from IPv6 addresses)
         if (!host.StartsWith('['))
         {
-            var lastColon = host.LastIndexOf(":", StringComparison.Ordinal);
+            var lastColon = host.LastIndexOf(':');
             if (lastColon >= 0)
                 host = host[..lastColon];
         }

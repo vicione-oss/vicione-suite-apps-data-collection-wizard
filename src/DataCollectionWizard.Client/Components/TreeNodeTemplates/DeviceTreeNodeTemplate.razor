@@ -38,7 +38,14 @@
                 var iconCount = 0;
                 foreach (var icon in Node.Icons)
                 {
-                    <div class="icon"
+                    var cssClasses = new List<string> { "icon" };
+
+                    if (string.IsNullOrWhiteSpace(icon.MarkupString))
+                    {
+                        cssClasses.AddRange(icon.CssClasses.Where(x => !string.IsNullOrWhiteSpace(x)));
+                    }
+
+                    <div class="@string.Join(" ", cssClasses)"
                          style="--icon-index: @(++iconCount)">
 
                         @((MarkupString)icon.MarkupString)

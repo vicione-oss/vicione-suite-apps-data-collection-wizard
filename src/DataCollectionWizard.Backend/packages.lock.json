@@ -363,7 +363,7 @@
           "ViciOne.Cluster.Builder": "[1.0.0, )",
           "ViciOne.Driver.IoTCore.Contracts": "[2.0.1, )",
           "ViciOne.Suite.ClusterManagement.Public": "[2.1.0, )",
-          "ViciOne.Suite.DataCollectionWizard.Public": "[2.1.0, )",
+          "ViciOne.Suite.DataCollectionWizard.Public": "[1.0.0, )",
           "ViciOne.Suite.DataPort.Anna.Contracts": "[1.0.0, )",
           "ViciOne.Suite.Sdk": "[2.0.0, )"
         }
