@@ -294,13 +294,13 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
         foreach (var node in nodesToExpandTo)
             Builder.Expansion.ExpandToNode(node);
 
-        SelectionChanged?.Invoke();
         var nodeAndDescendants = _rootNode.GetNodeAndDescendants().ToArray();
-
         foreach (var selectedNodeId in selectedNodeIds)
         {
             SelectNode(selectedNodeId, nodeAndDescendants);
         }
+
+        SelectionChanged?.Invoke();
 
         IEnumerable<NodeBase> ResolveChildrenRecursive(IDeviceTreeBase device, NodeBase parent, bool expandAnyOfflineNodes, bool expandToOfflineNodes = false)
         {
