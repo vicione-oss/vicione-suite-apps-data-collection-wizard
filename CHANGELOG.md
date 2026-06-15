@@ -7,6 +7,13 @@
 - Replaced local SVG resources with SVGs provided by the MonochromeIcon NuGet packages and removed unused resource files
 - Use text from ViciOne.Ui.Localization
 
+### Dependencies
+
+- `ViciOne.Ui.Blazor.Components` package, update version to `5.14.0`
+- `ViciOne.Ui.Design` package, update version to `2.1.0`
+- `ViciOne.Suite.ClusterManagement.Public` package, update version to `2.2.0`
+- `ViciOne.Suite.Sdk` package, update version to `2.1.0`
+
 ## 2.1.1 - 2026-05-21
 
 ### Changed
