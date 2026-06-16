@@ -4,52 +4,55 @@
     align-items: center;
     display: grid;
     grid-column: 1;
-    grid-column-gap: 0px;
-    grid-template-columns: 8px repeat(var(--icon-count), 24px);
-
-    ::deep svg path {
-        fill: #dedede;
-    }
+    grid-column-gap: 4px;
+    grid-template-columns: repeat(var(--icon-count), 24px);
 
     .icon {
-        grid-column: calc(var(--icon-index) + 1);
+        grid-column: var(--icon-index);
         grid-row: 1;
         height: 20px;
         justify-self: center;
         position: relative;
         width: 20px;
-    }
 
-    .status-bar {
-        width: 1px;
-        height: 100%;
-        border-radius: 1px;
-
-        &.error {
-            background-color: col.$error;
-        }
-
-        &.warning {
-            background-color: col.$warning;
-        }
-
-        &.new {
-            background-color: col.$add;
-        }
-
-        &.inherited {
-            opacity: 1;
+        ::deep svg path {
+            fill: #dedede;
         }
     }
 
-    .status-bar-container {
-        display: flex;
-        flex-direction: row;
-        gap: 1px;
+    .status-bracket {
         grid-column: 1;
         grid-row: 1;
-        height: 20px;
-        align-items: stretch;
+        justify-self: start;
+        align-self: center;
+        margin-left: -2px;
+        z-index: 0;
+
+        ::deep svg {
+            width: 10px;
+            height: 24px;
+            overflow: visible;
+
+            .error {
+                fill: col.$error !important;
+            }
+
+            .warning {
+                fill: col.$warning !important;
+            }
+
+            .new {
+                fill: col.$add !important;
+            }
+
+            .inherited {
+                opacity: 1.0;
+            }
+
+            .hidden {
+                fill: transparent !important;
+            }
+        }
     }
 }
 

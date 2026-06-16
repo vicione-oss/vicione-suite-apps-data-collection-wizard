@@ -68,5 +68,14 @@ namespace DataCollectionWizard.Client.Resources {
                 return ResourceManager.GetString("debug_raw", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;svg width=&quot;10&quot; height=&quot;27&quot; viewBox=&quot;0 0 10 27&quot; ...&gt;.
+        /// </summary>
+        internal static string status_bracket {
+            get {
+                return ResourceManager.GetString("status_bracket", resourceCulture);
+            }
+        }
     }
 }

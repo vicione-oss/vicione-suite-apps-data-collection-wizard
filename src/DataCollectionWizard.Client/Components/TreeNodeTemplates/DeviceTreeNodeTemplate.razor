@@ -36,33 +36,19 @@
 
             @if (hasAdditionalStatus)
             {
-                <div class="status-bar-container">
-                    @if (DeviceNode.HasError())
-                    {
-                        <div class="status-bar error"></div>
-                    }
-                    else if (DeviceNode.HasInheritedError())
-                    {
-                        <div class="status-bar error inherited"></div>
-                    }
+                var hasError = DeviceNode.HasError();
+                var hasInheritedError = DeviceNode.HasInheritedError();
+                var hasWarning = DeviceNode.HasWarning();
+                var hasInheritedWarning = DeviceNode.HasInheritedWarning();
+                var isNew = DeviceNode.IsNew();
+                var isInheritedNew = DeviceNode.IsInheritedNew();
 
-                    @if (DeviceNode.HasWarning())
-                    {
-                        <div class="status-bar warning"></div>
-                    }
-                    else if (DeviceNode.HasInheritedWarning())
-                    {
-                        <div class="status-bar warning inherited"></div>
-                    }
+                var topClass = hasError ? "error" : hasInheritedError ? "error inherited" : "hidden";
+                var centerClass = hasWarning ? "warning" : hasInheritedWarning ? "warning inherited" : "hidden";
+                var bottomClass = isNew ? "new" : isInheritedNew ? "new inherited" : "hidden";
 
-                    @if (DeviceNode.IsNew())
-                    {
-                        <div class="status-bar new"></div>
-                    }
-                    else if (DeviceNode.IsInheritedNew())
-                    {
-                        <div class="status-bar new inherited"></div>
-                    }
+                <div class="status-bracket">
+                    @((MarkupString)string.Format(SvgIcons.status_bracket, topClass, centerClass, bottomClass))
                 </div>
             }
 
