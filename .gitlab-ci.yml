@@ -127,6 +127,29 @@ include:
         - *update_nuget_source_ro
       tags:
         - ${RUNNER_TAG}
+  ### Pack & Push NuGet ###
+  - component: $CI_SERVER_FQDN/vicione-oss/tooling/dotnet-component/dotnet-pack@2
+    inputs:
+      name: "Pack NuGet DataCollectionWizard.Public"
+      stage: "publish"
+      image: ${IMAGE_NAME}
+      project: "src/DataCollectionWizard.Public/DataCollectionWizard.Public.csproj"
+      rules: *rules
+      before_script:
+        - *activate_mise
+        - *update_nuget_source_ro
+  - component: $CI_SERVER_FQDN/vicione-oss/tooling/dotnet-component/dotnet-nuget-push@2
+    inputs:
+      pack_job_name: "Pack NuGet DataCollectionWizard.Public"
+      name: "Push NuGet DataCollectionWizard.Public"
+      stage: "release-dev"
+      image: ${IMAGE_NAME}
+      source: "JFrogViciOne"
+      filename_pattern: "./src/DataCollectionWizard.Public/*"
+      rules: *rules
+      before_script: 
+        - *activate_mise
+        - *update_nuget_source_rw
   ### Publish Module ###
   - component: $CI_SERVER_FQDN/vicione-oss/tooling/components/module-packaging/publish-module@v0.1.0
     inputs:
@@ -184,3 +207,9 @@ include:
       destination_repository: "vicione-suite"
       artifacts:
         - "build/**/*"
+
+### Override needs for "Pack NuGet DataCollectionWizard.Public"
+Pack NuGet DataCollectionWizard.Public:
+  needs:
+    - "dotnet Build"
+    - "Publish Module"
