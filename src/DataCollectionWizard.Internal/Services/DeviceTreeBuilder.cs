@@ -95,10 +95,10 @@ public static class DeviceTreeBuilder
                 continue;
 
             var newElement = parsedNode.Clone();
-            foreach (var ele in newElement.GetNodeAndDescendants())
+            foreach (var node in newElement.GetNodeAndDescendants())
             {
-                ele.IsNew = true;
-                currentNodes[ele.Id] = ele;
+                node.IsNew = true;
+                currentNodes[node.Id] = node;
             }
 
             parent.Children.Add(newElement);
@@ -108,8 +108,8 @@ public static class DeviceTreeBuilder
     private static void AddNewSensors(IDeviceTreeEventTriggerDataNode persistetTriggerNode, IDeviceTreeEventTriggerDataNode parsedTriggerNode)
     {
         var existingSensors = new HashSet<(string ReferenceNodeId, string Name)>(persistetTriggerNode.EventTriggerConfigurations.Count);
-        foreach (var t in persistetTriggerNode.EventTriggerConfigurations)
-            existingSensors.Add((t.ReferenceNodeId, t.Name));
+        foreach (var configuration in persistetTriggerNode.EventTriggerConfigurations)
+            existingSensors.Add((configuration.ReferenceNodeId, configuration.Name));
 
         foreach (var sensor in parsedTriggerNode.EventTriggerConfigurations)
         {
@@ -136,12 +136,12 @@ public static class DeviceTreeBuilder
 
         var result = new Dictionary<IDeviceTreeBase, IDeviceTreeBase?>();
 
-        foreach (var per in persistedDeviceTree.GetNodeAndDescendants())
+        foreach (var persistedNode in persistedDeviceTree.GetNodeAndDescendants())
         {
-            if (per is DeviceTreeRoot)
+            if (persistedNode is DeviceTreeRoot)
                 continue;
 
-            result[per] = parsedById.TryGetValue(per.Id, out var match) ? match : null;
+            result[persistedNode] = parsedById.TryGetValue(persistedNode.Id, out var match) ? match : null;
         }
 
         return result;
@@ -367,8 +367,8 @@ public static class DeviceTreeBuilder
             if (configCmp != 0)
                 return configCmp;
 
-            var nameA = nodeNames.TryGetValue(a.ReferenceNodeId, out var nA) ? nA : a.ReferenceNodeId;
-            var nameB = nodeNames.TryGetValue(b.ReferenceNodeId, out var nB) ? nB : b.ReferenceNodeId;
+            var nameA = nodeNames.TryGetValue(a.ReferenceNodeId, out var resolvedNameA) ? resolvedNameA : a.ReferenceNodeId;
+            var nameB = nodeNames.TryGetValue(b.ReferenceNodeId, out var resolvedNameB) ? resolvedNameB : b.ReferenceNodeId;
 
             return comparer.Compare(nameA, nameB);
         });
@@ -377,8 +377,8 @@ public static class DeviceTreeBuilder
     private static void UpdateCloudConfigurations(IDeviceTreeBase deviceTree, IReadOnlyCollection<Connection> connections)
     {
         var cloudIds = new HashSet<Guid>(connections.Count);
-        foreach (var c in connections)
-            cloudIds.Add(c.Id);
+        foreach (var connection in connections)
+            cloudIds.Add(connection.Id);
 
         foreach (var node in deviceTree.GetNodeAndDescendants())
         {
