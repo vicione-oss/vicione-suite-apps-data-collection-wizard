@@ -19,5 +19,5 @@ public class StringTreeNodeIdentifier : INodeIdentifier, IEquatable<string>
         => Value.Equals(other, StringComparison.Ordinal);
 
     public override int GetHashCode()
-        => Value.GetHashCode();
+        => Value.GetHashCode(StringComparison.Ordinal);
 }

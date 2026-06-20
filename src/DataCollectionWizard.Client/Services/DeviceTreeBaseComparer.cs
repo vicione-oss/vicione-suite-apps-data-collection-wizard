@@ -62,8 +62,6 @@ internal sealed class AlphanumericComparer(StringComparison textComparison = Str
             // KATEGORIEN: Separator < Letter < Digit
             var sx = IsSeparator(cx);
             var sy = IsSeparator(cy);
-            var lx = char.IsLetter(cx);
-            var ly = char.IsLetter(cy);
             var dx = char.IsDigit(cx);
             var dy = char.IsDigit(cy);
 

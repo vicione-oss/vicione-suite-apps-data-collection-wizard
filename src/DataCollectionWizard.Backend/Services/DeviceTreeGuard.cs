@@ -73,7 +73,7 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
 
         lock (_untrackedNodesLock)
         {
-            lastUntrackedNodes = _untrackedNodes.ToArray();
+            lastUntrackedNodes = [.. _untrackedNodes];
             _untrackedNodes = untrackedNodes;
         }
 
@@ -98,19 +98,17 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
 
         lock (_lastOfflineNodesLock)
         {
-            newOnlineNodes = nodeAndDescendants.Union(lastUntrackedNodes)
+            newOnlineNodes = [.. nodeAndDescendants.Union(lastUntrackedNodes)
                                                .Where(n => !n.IsOffline)
                                                .Where(n => _lastOfflineNodes.Contains(n.Id))
                                                .Union(untrackedNodes.ExceptBy(lastUntrackedNodes.Select(n => n.Id), n => n.Id)
-                                                                    .ExceptBy(nodeAndDescendants.Where(n => !n.IsOffline).Select(n => n.Id), n => n.Id))
-                                               .ToArray();
+                                                                    .ExceptBy(nodeAndDescendants.Where(n => !n.IsOffline).Select(n => n.Id), n => n.Id))];
 
-            newOfflineNodes = nodeAndDescendants.Union(lastUntrackedNodes)
+            newOfflineNodes = [.. nodeAndDescendants.Union(lastUntrackedNodes)
                                                 .Where(n => n.IsOffline)
                                                 .Where(n => !_lastOfflineNodes.Contains(n.Id))
                                                 .Union(lastUntrackedNodes.ExceptBy(untrackedNodes.Select(n => n.Id), n => n.Id)
-                                                                            .ExceptBy(nodeAndDescendants.Select(n => n.Id), n => n.Id))
-                                                .ToArray();
+                                                                         .ExceptBy(nodeAndDescendants.Select(n => n.Id), n => n.Id))];
 
             _lastOfflineNodes.AddRange(newOfflineNodes.Select(n => n.Id));
 
@@ -191,7 +189,7 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
 
         lock (_deviceTreeLock)
         {
-            masterDevices = _deviceTree!.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>().ToList();
+            masterDevices = [.. _deviceTree!.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>()];
         }
 
         var eventBroker = _eventBrokerScope.ServiceProvider.GetRequiredService<IEventBroker>();

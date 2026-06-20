@@ -674,7 +674,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
         if (!compressorFbs.TryGetValue(node, out var compressorFbsOfNewNode))
         {
-            compressorFbsOfNewNode = new Dictionary<string, FunctionBlock>();
+            compressorFbsOfNewNode = [];
             compressorFbs[node] = compressorFbsOfNewNode;
         }
 

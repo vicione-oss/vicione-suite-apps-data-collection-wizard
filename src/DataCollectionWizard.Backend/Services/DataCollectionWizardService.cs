@@ -317,8 +317,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
         var application = node.Applications.FirstOrDefault() ?? clusterBuilder.Editors.Node.AddApplication(node, ClusterApplicationType.CoreOsStandalone);
 
         var engineHost = clusterBuilder.Cluster.GetAllEngineHosts().FirstOrDefault(e => e.Name == EngineHostName);
-        if (engineHost is null)
-            engineHost = clusterBuilder.Editors.Application.AddEngineHost(application, EngineHostName);
+        engineHost ??= clusterBuilder.Editors.Application.AddEngineHost(application, EngineHostName);
 
         return engineHost;
     }
