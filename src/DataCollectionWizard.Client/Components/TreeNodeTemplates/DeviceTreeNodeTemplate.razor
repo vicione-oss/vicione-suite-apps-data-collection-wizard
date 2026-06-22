@@ -18,7 +18,7 @@
     </ChildContent>
 
     <TooltipContent>
-        <DeviceTreeNodeTooltip Device="@(DeviceNode.Device)" IsLiveView="@(DeviceNode.IsLiveView)" />
+        <DeviceTreeNodeTooltip Device="@(DeviceNode.Device)" IsLiveView="@(DeviceNode.IsLiveView)" InheritedStatus="@((int)DeviceNode.InheritedStatus)" />
     </TooltipContent>
 </TooltipContainer>
 

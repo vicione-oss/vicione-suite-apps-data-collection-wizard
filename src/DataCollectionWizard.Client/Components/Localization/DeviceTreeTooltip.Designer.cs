@@ -275,5 +275,41 @@ namespace DataCollectionWizard.Client.Components.Localization {
                 return ResourceManager.GetString("InfoPropertyVendorId", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contains newly added nodes.
+        /// </summary>
+        internal static string InheritedStatusNewlyCreated {
+            get {
+                return ResourceManager.GetString("InheritedStatusNewlyCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contains unsupported process values.
+        /// </summary>
+        internal static string InheritedStatusNotSupported {
+            get {
+                return ResourceManager.GetString("InheritedStatusNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contains offline devices.
+        /// </summary>
+        internal static string InheritedStatusOffline {
+            get {
+                return ResourceManager.GetString("InheritedStatusOffline", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contains unknown devices.
+        /// </summary>
+        internal static string InheritedStatusUnknown {
+            get {
+                return ResourceManager.GetString("InheritedStatusUnknown", resourceCulture);
+            }
+        }
     }
 }

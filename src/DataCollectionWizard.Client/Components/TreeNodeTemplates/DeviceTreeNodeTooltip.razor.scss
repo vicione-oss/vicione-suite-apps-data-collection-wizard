@@ -65,6 +65,10 @@
             }
         }
 
+        &.inherited {
+            opacity: 1.0;
+        }
+
         > .status-dot {
             background-color: rebeccapurple;
             border-radius: 8px;

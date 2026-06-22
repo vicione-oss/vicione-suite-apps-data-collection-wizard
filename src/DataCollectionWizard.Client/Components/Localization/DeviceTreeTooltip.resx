@@ -129,6 +129,18 @@
   <data name="DeviceStatusUnknown" xml:space="preserve">
     <value>unknown device</value>
   </data>
+  <data name="InheritedStatusOffline" xml:space="preserve">
+    <value>Contains offline devices</value>
+  </data>
+  <data name="InheritedStatusNotSupported" xml:space="preserve">
+    <value>Contains unsupported process values</value>
+  </data>
+  <data name="InheritedStatusUnknown" xml:space="preserve">
+    <value>Contains unknown devices</value>
+  </data>
+  <data name="InheritedStatusNewlyCreated" xml:space="preserve">
+    <value>Contains newly added nodes</value>
+  </data>
   <data name="InfoPropertyApplicationSpecificTag" xml:space="preserve">
     <value>App specific tag</value>
   </data>

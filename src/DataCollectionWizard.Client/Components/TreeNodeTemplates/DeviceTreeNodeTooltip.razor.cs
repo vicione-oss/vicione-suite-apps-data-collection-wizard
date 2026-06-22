@@ -22,6 +22,9 @@ public sealed partial class DeviceTreeNodeTooltip
     [Parameter]
     public bool IsLiveView { get; set; }
 
+    [Parameter]
+    public int InheritedStatus { get; set; }
+
     private async Task<string> GetDeviceImage()
     {
         if (Device is not DeviceTreeDevice treeDevice)

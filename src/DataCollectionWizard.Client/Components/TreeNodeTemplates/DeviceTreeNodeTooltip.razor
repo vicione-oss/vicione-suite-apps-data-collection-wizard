@@ -1,4 +1,5 @@
 ﻿@using DataCollectionWizard.Client.Components.Localization
+@using DataCollectionWizard.Client.Models
 @using ViciOne.Driver.IoTCore.Contracts.DeviceTree
 
 @{
@@ -7,9 +8,11 @@
 
     var hasImage = !string.IsNullOrWhiteSpace(_deviceImageDataBase64);
     var nodeStatus = Device.GetStatus(IsLiveView);
+    var inheritedStatus = (NodeStatus)InheritedStatus & ~nodeStatus;
+    var hasInheritedStatus = inheritedStatus != NodeStatus.None;
 }
 
-<div class="tooltip-container @(hasImage ? string.Empty : "no-image") @(hasInfo ? string.Empty : "no-info") @(nodeStatus == NodeStatus.None ? "no-status" : string.Empty)">
+<div class="tooltip-container @(hasImage ? string.Empty : "no-image") @(hasInfo ? string.Empty : "no-info") @(nodeStatus == NodeStatus.None && !hasInheritedStatus ? "no-status" : string.Empty)">
     <div class="tooltip-header">
         @(Device.Name)
     </div>
@@ -39,7 +42,7 @@
         </div>
     }
 
-    @if (nodeStatus != NodeStatus.None)
+    @if (nodeStatus != NodeStatus.None || hasInheritedStatus)
     {
         <div class="device-status">
             @if (nodeStatus.HasFlag(NodeStatus.Offline))
@@ -72,6 +75,41 @@
                     <div class="status-dot"></div>
                     <span>@(DeviceTreeTooltip.DeviceStatusNewlyCreated)</span>
                 </div>
+            }
+
+            @if (hasInheritedStatus)
+            {
+                @if (inheritedStatus.HasFlag(NodeStatus.Offline))
+                {
+                    <div class="status error inherited">
+                        <div class="status-dot"></div>
+                        <span>@(DeviceTreeTooltip.InheritedStatusOffline)</span>
+                    </div>
+                }
+
+                @if (inheritedStatus.HasFlag(NodeStatus.NotSupported))
+                {
+                    <div class="status warning inherited">
+                        <div class="status-dot"></div>
+                        <span>@(DeviceTreeTooltip.InheritedStatusNotSupported)</span>
+                    </div>
+                }
+
+                @if (inheritedStatus.HasFlag(NodeStatus.Unknown))
+                {
+                    <div class="status warning inherited">
+                        <div class="status-dot"></div>
+                        <span>@(DeviceTreeTooltip.InheritedStatusUnknown)</span>
+                    </div>
+                }
+
+                @if (inheritedStatus.HasFlag(NodeStatus.New))
+                {
+                    <div class="status info inherited">
+                        <div class="status-dot"></div>
+                        <span>@(DeviceTreeTooltip.InheritedStatusNewlyCreated)</span>
+                    </div>
+                }
             }
         </div>
     }
