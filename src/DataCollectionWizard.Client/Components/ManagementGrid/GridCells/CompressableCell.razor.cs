@@ -89,9 +89,11 @@ public sealed partial class CompressableCell : ComponentBase
 
     protected override void OnParametersSet()
     {
-        if (ReferenceEquals(_previousDataNode, CompressableDataNode)
-            && ReferenceEquals(_previousConfiguration, Configuration))
+        if (ReferenceEquals(_previousDataNode, CompressableDataNode) &&
+            ReferenceEquals(_previousConfiguration, Configuration))
+        {
             return;
+        }
 
         _previousDataNode = CompressableDataNode;
         _previousConfiguration = Configuration;

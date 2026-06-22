@@ -13,7 +13,7 @@ public sealed partial class UpdateDeviceTreeConsumer(IDeviceTreeUpdater updater,
             nameof(UpsertDeviceConnectorIds),
             context.CorrelationId);
 
-        await updater.UpdateDeviceTreeAsync(context.Message.Token, context.Message.DeviceTree, context.Message.DeletedNodes.ToArray(), context.Message.MasterNodesToUpdate, context.Message.LogLevel);
+        await updater.UpdateDeviceTreeAsync(context.Message.Token, context.Message.DeviceTree, [.. context.Message.DeletedNodes], context.Message.MasterNodesToUpdate, context.Message.LogLevel);
     }
 
     [LoggerMessage(LogLevel.Debug, "Consume {command} CorrelationId:{correlationId}")]

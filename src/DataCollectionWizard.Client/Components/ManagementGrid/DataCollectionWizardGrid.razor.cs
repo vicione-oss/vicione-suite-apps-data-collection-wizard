@@ -120,12 +120,10 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
         => _indexedItems = [.. Service.FilteredGridItems.Select((item, idx) => new IndexedItem<ManagementGridRowModel>(idx, item))];
 
     private async void RefreshAsync()
-    {
-        await InvokeAsync(async () =>
-        {
-            StateHasChanged();
-            if (_virtualizeRef is not null)
-                await _virtualizeRef.RefreshDataAsync();
-        });
-    }
+        => await InvokeAsync(async () =>
+            {
+                StateHasChanged();
+                if (_virtualizeRef is not null)
+                    await _virtualizeRef.RefreshDataAsync();
+            });
 }

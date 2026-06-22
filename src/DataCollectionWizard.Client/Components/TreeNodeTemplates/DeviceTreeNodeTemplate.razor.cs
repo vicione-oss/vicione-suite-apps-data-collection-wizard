@@ -32,7 +32,7 @@ public sealed partial class DeviceTreeNodeTemplate : NodeTemplate
         if (!string.IsNullOrWhiteSpace(DeviceNode.Subtitle))
             resCssClasses.Add("has-subtitle");
 
-        if (Node.Actions.OfType<IVisibleNodeAction>().Count() > 0)
+        if (Node.Actions.OfType<IVisibleNodeAction>().Any())
             resCssClasses.Add("has-buttons");
 
         cssClasses = resCssClasses;

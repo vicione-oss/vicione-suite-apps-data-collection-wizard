@@ -27,7 +27,7 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
     {
         _state = state;
         _serviceScope = serviceProvider.CreateScope();
-        _cloudFilters = cloudFilters.ToArray();
+        _cloudFilters = [.. cloudFilters];
         _logger = logger;
 
         _state.Timer.Interval = 500;
@@ -71,7 +71,7 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
 
         lock (_queuedEventsLock)
         {
-            events = _queuedEvents.ToArray();
+            events = [.. _queuedEvents];
             _queuedEvents.Clear();
         }
 
@@ -98,7 +98,7 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
                 if (cloudConnections.Length == 0)
                     continue;
 
-                if (changedEvent.Action == CrudAction.Created || changedEvent.Action == CrudAction.Updated)
+                if (changedEvent.Action is CrudAction.Created or CrudAction.Updated)
                 {
                     foreach (var dataNode in deviceTree.GetNodeAndDescendants().OfType<IDeviceTreeDataNode>())
                         dataNode.AddConfigurations(cloudConnections);
@@ -107,9 +107,9 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
                     relevantDevices.AddRange(deviceTree.Children.OfType<IDeviceTreeMasterNode>()
                                                                 .Select(m => m.Id));
                 }
-                else if (changedEvent.Action == CrudAction.Deleted)
+                else if (changedEvent.Action is CrudAction.Deleted)
                 {
-                    var publishTargetsIds = cloudConnections.Select(t => t.Id).ToArray();
+                    var publishTargetsIds = cloudConnections.Select(t => t.Id).ToHashSet();
 
                     foreach (var dataNode in deviceTree.GetNodeAndDescendants().OfType<IDeviceTreeDataNode>())
                         dataNode.RemoveConfigurations(publishTargetsIds);
