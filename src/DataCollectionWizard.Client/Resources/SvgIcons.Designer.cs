@@ -68,9 +68,9 @@ namespace DataCollectionWizard.Client.Resources {
                 return ResourceManager.GetString("debug_raw", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to &lt;svg width=&quot;10&quot; height=&quot;27&quot; viewBox=&quot;0 0 10 27&quot; ...&gt;.
+        ///   Looks up a localized string similar to &lt;svg width=&quot;10&quot; height=&quot;27&quot; viewBox=&quot;0 0 10 27&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;&lt;path class=&quot;{0}&quot; fill-rule=&quot;nonzero&quot; d=&quot;M10,0 L10,1.499 L2.99821951,1.5 C2.50520247,1.50042576 2.24655176,1.50681209 2.0460095,1.60899348 C1.85784741,1.70486685 1.70486685,1.85784741 1.60899348,2.0460095 C1.5,2.25992124 1.5,2.53994749 1.5,3.1 L1.5,7 L0,7 L0,3.1 C0,2.66678055 0.0022964717,2.52067108 0.0186058206,2.32105414 C0.0473168491,1.96964785 0.118563855,1.66710843 0.27248369,1.36502375 C0.512167127,0.894618518 0.8946185 [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string status_bracket {
             get {
