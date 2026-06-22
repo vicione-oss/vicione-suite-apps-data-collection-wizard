@@ -19,7 +19,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class DeviceTreeTooltip {
@@ -70,7 +70,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to not supported.
+        ///   Looks up a localized string similar to Process value not supported for logging.
         /// </summary>
         internal static string DeviceStatusNotSupported {
             get {
@@ -273,6 +273,42 @@ namespace DataCollectionWizard.Client.Components.Localization {
         internal static string InfoPropertyVendorId {
             get {
                 return ResourceManager.GetString("InfoPropertyVendorId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contains newly added nodes.
+        /// </summary>
+        internal static string InheritedStatusNewlyCreated {
+            get {
+                return ResourceManager.GetString("InheritedStatusNewlyCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contains unsupported process values.
+        /// </summary>
+        internal static string InheritedStatusNotSupported {
+            get {
+                return ResourceManager.GetString("InheritedStatusNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contains offline devices.
+        /// </summary>
+        internal static string InheritedStatusOffline {
+            get {
+                return ResourceManager.GetString("InheritedStatusOffline", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contains unknown devices.
+        /// </summary>
+        internal static string InheritedStatusUnknown {
+            get {
+                return ResourceManager.GetString("InheritedStatusUnknown", resourceCulture);
             }
         }
     }

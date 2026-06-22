@@ -18,21 +18,39 @@
     </ChildContent>
 
     <TooltipContent>
-        <DeviceTreeNodeTooltip Device="@(DeviceNode.Device)" IsLiveView="@(DeviceNode.IsLiveView)" />
+        <DeviceTreeNodeTooltip Device="@(DeviceNode.Device)" IsLiveView="@(DeviceNode.IsLiveView)" InheritedStatus="@((int)DeviceNode.InheritedStatus)" />
     </TooltipContent>
 </TooltipContainer>
 
 @code {
     private RenderFragment _contentFragment => __builder =>
     {
-        var hasAdditionalStatus = DeviceNode.Status > 0;
+        var hasAdditionalStatus = DeviceNode.Status > 0 || DeviceNode.InheritedStatus > 0;
         var hasSubtitle = !string.IsNullOrEmpty(DeviceNode.Subtitle);
 
         <div @onpointerenter:stopPropagation
              @onpointerleave:stopPropagation
              @onpointermove:stopPropagation
-             class="icon-container @(hasAdditionalStatus ? "display-status" : string.Empty)"
+             class="icon-container"
              style="--icon-count: @(Node.Icons.Count());">
+
+            @if (hasAdditionalStatus)
+            {
+                var hasError = DeviceNode.HasError();
+                var hasInheritedError = DeviceNode.HasInheritedError();
+                var hasWarning = DeviceNode.HasWarning();
+                var hasInheritedWarning = DeviceNode.HasInheritedWarning();
+                var isNew = DeviceNode.IsNew();
+                var isInheritedNew = DeviceNode.IsInheritedNew();
+
+                var topClass = hasError ? "error" : hasInheritedError ? "error inherited" : "hidden";
+                var centerClass = hasWarning ? "warning" : hasInheritedWarning ? "warning inherited" : "hidden";
+                var bottomClass = isNew ? "new" : isInheritedNew ? "new inherited" : "hidden";
+
+                <div class="status-bracket">
+                    @((MarkupString)string.Format(SvgIcons.status_bracket, topClass, centerClass, bottomClass))
+                </div>
+            }
 
             @{
                 var iconCount = 0;
@@ -51,26 +69,6 @@
                         @((MarkupString)icon.MarkupString)
                     </div>
                 }
-            }
-
-            @if (hasAdditionalStatus)
-            {
-                <div class="status-icon-container">
-                    @if (DeviceNode.HasError())
-                    {
-                        <div class="status-icon error"></div>
-                    }
-
-                    @if (DeviceNode.HasWarning())
-                    {
-                        <div class="status-icon warning"></div>
-                    }
-
-                    @if (DeviceNode.IsNew())
-                    {
-                        <div class="status-icon new"></div>
-                    }
-                </div>
             }
         </div>
 

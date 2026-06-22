@@ -121,13 +121,25 @@
     <value>Neu hinzugefügt</value>
   </data>
   <data name="DeviceStatusNotSupported" xml:space="preserve">
-    <value>Prozesswert wird nicht unterstützt</value>
+    <value>Prozesswert wird für das Logging nicht unterstützt</value>
   </data>
   <data name="DeviceStatusOffline" xml:space="preserve">
     <value>Gerät nicht erreichbar</value>
   </data>
   <data name="DeviceStatusUnknown" xml:space="preserve">
     <value>Unbekanntes Gerät</value>
+  </data>
+  <data name="InheritedStatusOffline" xml:space="preserve">
+    <value>Enthält nicht erreichbare Geräte</value>
+  </data>
+  <data name="InheritedStatusNotSupported" xml:space="preserve">
+    <value>Enthält nicht unterstützte Prozesswerte</value>
+  </data>
+  <data name="InheritedStatusUnknown" xml:space="preserve">
+    <value>Enthält unbekannte Geräte</value>
+  </data>
+  <data name="InheritedStatusNewlyCreated" xml:space="preserve">
+    <value>Enthält neu hinzugefügte Knoten</value>
   </data>
   <data name="InfoPropertyApplicationSpecificTag" xml:space="preserve">
     <value>App spezifischer Tag</value>
