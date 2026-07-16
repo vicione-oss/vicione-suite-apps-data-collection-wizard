@@ -3,7 +3,6 @@
     $svg-base-url: "./icons/monochrome-icons",
     $base-selector: "::deep"
 );
-@use "./../Styles/tabs/_mixins.scss" as tabs;
 
 ::deep .loading-spinner {
     z-index: 100;
@@ -185,10 +184,6 @@
             }
         }
     }
-}
-
-.tab-control-container {
-    @include tabs.styles($tab-size: "large");
 }
 
 .validation-message {

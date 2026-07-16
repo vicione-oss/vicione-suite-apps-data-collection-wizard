@@ -2,13 +2,14 @@
 @using DataCollectionWizard.Client.Components.ManagementGrid.Sidebar
 @using DataCollectionWizard.Client.Components.ManagementGrid.Toolbar
 @using DataCollectionWizard.Public
-@using DevExpress.Blazor
 @using Microsoft.AspNetCore.Components.Routing
 @using Sdk.Authorization
 @using Sdk.Client.Modules
 @using ViciOne.Ui.Blazor.Components.Dialog.Components
 @using ViciOne.Ui.Blazor.Components.EditorLayout
 @using ViciOne.Ui.Blazor.Components.SearchBox
+@using ViciOne.Ui.Blazor.Components.TabStrip.Components
+@using ViciOne.Ui.Blazor.Components.TabStrip.Enums
 @using ViciOne.Ui.Blazor.Components.TextBox
 @using ViciOne.Ui.Localization.Resources
 
@@ -194,10 +195,10 @@
         <div class="dialog-content dialog-content-iolink">
             <div class="toolbar-container">
                 <div class="tab-control-container">
-                    <DxTabs @bind-ActiveTabIndex="_ioLinkMasterTabIndex">
-                        <DxTab Text="@Localization.DataCollectionWizardPage.Manual" Click="@((i) => SetIoLinkMasterDialogScanHeight(i.TabIndex))" />
-                        <DxTab Text="@Localization.DataCollectionWizardPage.Scan" Click="@((i) => SetIoLinkMasterDialogScanHeight(i.TabIndex))" />
-                    </DxTabs>
+                    <TabStrip @bind-ActiveTabIndex="_ioLinkMasterTabIndex" TabSize="TabSize.Large">
+                        <Tab Text="@Localization.DataCollectionWizardPage.Manual" OnSelected="@((i) => SetIoLinkMasterDialogScanHeight(i.TabIndex))" />
+                        <Tab Text="@Localization.DataCollectionWizardPage.Scan" OnSelected="@((i) => SetIoLinkMasterDialogScanHeight(i.TabIndex))" />
+                    </TabStrip>
                 </div>
 
                 @if (_ioLinkMasterTabIndex == 1)

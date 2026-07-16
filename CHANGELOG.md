@@ -7,10 +7,11 @@
 - Replaced local SVG resources with SVGs provided by the MonochromeIcon NuGet packages and removed unused resource files
 - Use text from ViciOne.Ui.Localization
 - Replace circle indicators with a 3-segment SVG bracket (top=error, center=warning, bottom=new)
+- Replaced `DxTabs` with `ViciOne.Ui.Blazor.Components.TabStrip`
 
 ### Dependencies
 
-- `ViciOne.Ui.Blazor.Components` package, update version to `5.14.0`
+- `ViciOne.Ui.Blazor.Components` package, update version to `5.16.0`
 - `ViciOne.Ui.Design` package, update version to `2.1.0`
 - `ViciOne.Suite.ClusterManagement.Public` package, update version to `2.2.0`
 - `ViciOne.Suite.Sdk` package, update version to `2.1.0`
