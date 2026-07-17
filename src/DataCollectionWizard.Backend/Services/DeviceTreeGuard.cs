@@ -21,7 +21,7 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
     private readonly Lock _deviceTreeConnectorsLock = new();
     private readonly Dictionary<Uri, (Guid deviceTreeTrigger, Guid deviceTreeOutput)> _deviceTreeConnectors = [];
     private readonly AsyncServiceScope _eventBrokerScope;
-    private readonly List<string> _lastOfflineNodes = [];
+    private readonly HashSet<string> _lastOfflineNodes = [];
     private readonly Lock _lastOfflineNodesLock = new();
     private readonly ILogger<DeviceTreeGuard> _logger;
     private readonly IServiceProvider _serviceProvider;
@@ -80,12 +80,18 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
         if (masterNode.IsOffline)
         {
             var allOfflineNodes = currentDevice.GetNodeAndDescendants().Union(lastUntrackedNodes).ToArray();
+            foreach (var node in allOfflineNodes)
+            {
+                if (node is not DeviceTreeRoot)
+                    node.IsOffline = true;
+            }
+
             LogTriggeringNodesOfflineMasterOffline(_logger, allOfflineNodes.Length);
             await mediator.Publish(new NodesOfflineEvent(allOfflineNodes));
 
             lock (_lastOfflineNodesLock)
             {
-                _lastOfflineNodes.AddRange(allOfflineNodes.Select(n => n.Id));
+                _lastOfflineNodes.UnionWith(allOfflineNodes.Select(n => n.Id));
             }
 
             return;
@@ -110,7 +116,7 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
                                                 .Union(lastUntrackedNodes.ExceptBy(untrackedNodes.Select(n => n.Id), n => n.Id)
                                                                          .ExceptBy(nodeAndDescendants.Select(n => n.Id), n => n.Id))];
 
-            _lastOfflineNodes.AddRange(newOfflineNodes.Select(n => n.Id));
+            _lastOfflineNodes.UnionWith(newOfflineNodes.Select(n => n.Id));
 
             foreach (var newOnlineNode in newOnlineNodes)
             {
@@ -251,7 +257,10 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
     }
 
     public async Task OnDeviceConnectorIdsChanged(List<DeviceConnectorIdsChangeItem> changedItems)
-        => await LoadDeviceConnectorsAsync();
+    {
+        await LoadDeviceConnectorsAsync();
+        await UpdateSubscriptionsAsync();
+    }
 
     public async Task OnDeviceTreeApplication()
     {
