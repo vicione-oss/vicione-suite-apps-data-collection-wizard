@@ -1,7 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <ViciOneSuiteSdkVersion>2.1.0</ViciOneSuiteSdkVersion>
+    <ViciOneSuiteSdkVersion>2.2.0-ci2689717416</ViciOneSuiteSdkVersion>
   </PropertyGroup>
   <ItemGroup>
     <GlobalPackageReference Include="ViciOne.CodeAnalysis" Version="1.6.0" />
@@ -12,14 +12,14 @@
     <PackageVersion Include="ViciOne.Core.Dataflow.DataModel.Generation" Version="1.0.0" />
     <PackageVersion Include="ViciOne.Cluster.Builder" Version="1.0.0" />
     <PackageVersion Include="ViciOne.Driver.IoTCore.Contracts" Version="2.0.1" />
-    <PackageVersion Include="ViciOne.Suite.ClusterManagement.Public" Version="2.2.0" />
+    <PackageVersion Include="ViciOne.Suite.ClusterManagement.Public" Version="2.4.0-ci2691137235" />
     <PackageVersion Include="ViciOne.Suite.DataPort.Anna.Contracts" Version="1.0.0" />
     <PackageVersion Include="ViciOne.Suite.Sdk" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="ViciOne.Suite.Sdk.Backend" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="ViciOne.Suite.Sdk.Deployment" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="ViciOne.Suite.Sdk.Client" Version="$(ViciOneSuiteSdkVersion)" />
-    <PackageVersion Include="ViciOne.Ui.Blazor.Components" Version="5.16.0" />
-    <PackageVersion Include="ViciOne.Ui.MonochromeIcons.Assets" Version="4.11.0" />
+    <PackageVersion Include="ViciOne.Ui.Blazor.Components" Version="5.18.0" />
+    <PackageVersion Include="ViciOne.Ui.MonochromeIcons.Components" Version="4.14.0" />
     <PackageVersion Include="ViciOne.Ui.Design" Version="2.1.0" />
     <PackageVersion Include="ViciOne.Ui.Shared.Dx" Version="0.19.1" />
     <PackageVersion Include="ViciOne.Ui.TreeEditor" Version="2.0.1" />

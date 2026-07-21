@@ -1,31 +1,30 @@
-﻿using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Ui.MonochromeIcons.Assets.Extensions;
+﻿using System.Collections.Concurrent;
+using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.Ui.MonochromeIcons.Assets.Services;
 using ViciOne.Ui.MonochromeIcons.Core.Enums;
 using ViciOne.Ui.MonochromeIcons.Core.Extensions;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Icons;
 
 namespace DataCollectionWizard.Client.Services;
 
-internal static class DeviceTreeNodeIconProvider
+internal sealed class DeviceTreeNodeIconProvider(IMonochromeIconSvgMarkupProvider monochromeIconSvgMarkupProvider)
 {
-    private static readonly IIcon s_deviceIcon = CreateIcon(MonochromeIconName.DeviceLight, MonochromeIconSize.SmallPlus2);
-    private static readonly IIcon s_folderIcon = CreateIcon(MonochromeIconName.Folder, MonochromeIconSize.SmallPlus2);
-    private static readonly IIcon s_portIcon = CreateIcon(MonochromeIconName.PortSolid, MonochromeIconSize.Small);
-    private static readonly IIcon s_processDataPointIcon = CreateIcon(MonochromeIconName.ProcessDataPoint, MonochromeIconSize.Small);
-    private static readonly IIcon s_rawDataIcon = CreateIcon(MonochromeIconName.RawDataLight, MonochromeIconSize.SmallPlus2);
-    private static readonly IIcon s_sensorIcon = CreateIcon(MonochromeIconName.SensorSolid, MonochromeIconSize.Small);
-    private static readonly IIcon s_unknownNodeTypeIcon = CreateIcon(MonochromeIconName.UnknownNodeType, MonochromeIconSize.Small);
-    private static readonly IIcon s_vseAlarmIcon = CreateIcon(MonochromeIconName.AlarmLight, MonochromeIconSize.SmallPlus2);
-    private static readonly IIcon s_vseCounterIcon = CreateIcon(MonochromeIconName.CounterLight, MonochromeIconSize.SmallPlus2);
-    private static readonly IIcon s_vseInputsIcon = CreateIcon(MonochromeIconName.InputLight, MonochromeIconSize.SmallPlus2);
-    private static readonly IIcon s_vseObjectIcon = CreateIcon(MonochromeIconName.ObjectLight, MonochromeIconSize.SmallPlus2);
-    private static readonly IIcon s_vseVariantsIcon = CreateIcon(MonochromeIconName.Branch, MonochromeIconSize.SmallPlus2);
+    private readonly ConcurrentDictionary<(MonochromeIconName Name, MonochromeIconSize Size), IIcon> _icons = new();
 
-    internal static SvgIcon CreateIcon(MonochromeIconName iconName, MonochromeIconSize iconSize)
-        => new(iconName.GetSvgMarkup(iconSize) ?? string.Empty)
-        {
-            CssClasses = iconName.GetCssClasses(iconSize)
-        };
+    internal IIcon GetOrCreateIcon(MonochromeIconName iconName, MonochromeIconSize iconSize)
+    {
+        var key = (iconName, iconSize);
+        if (_icons.TryGetValue(key, out var icon))
+            return icon;
+
+        var svgMarkup = monochromeIconSvgMarkupProvider.GetSvgMarkup(iconName, iconSize);
+        icon = string.IsNullOrEmpty(svgMarkup)
+            ? new SvgIcon(string.Empty) { CssClasses = iconName.GetCssClasses(iconSize) }
+            : new SvgIcon(svgMarkup);
+
+        _icons[key] = icon;
+        return icon;
+    }
 
     private static IDeviceTreeBase? GetFirstNonStructureChildRecursively(IDeviceTreeBase nodeContext)
     {
@@ -47,37 +46,37 @@ internal static class DeviceTreeNodeIconProvider
         return result;
     }
 
-    public static IIcon GetIcon(IDeviceTreeBase? treeDevice)
+    public IIcon GetIcon(IDeviceTreeBase? treeDevice)
     {
         if (treeDevice is DeviceTreeRoot or DeviceTreeIoLinkMaster or DeviceTreeVseDevice)
-            return s_deviceIcon;
+            return GetOrCreateIcon(MonochromeIconName.DeviceLight, MonochromeIconSize.SmallPlus2);
 
         if (treeDevice is DeviceTreeIoLinkMasterPort)
-            return s_portIcon;
+            return GetOrCreateIcon(MonochromeIconName.PortSolid, MonochromeIconSize.Small);
 
         if (treeDevice is DeviceTreeDevice)
-            return s_sensorIcon;
+            return GetOrCreateIcon(MonochromeIconName.SensorSolid, MonochromeIconSize.Small);
 
         if (treeDevice is DeviceTreeProcessData)
-            return s_processDataPointIcon;
+            return GetOrCreateIcon(MonochromeIconName.ProcessDataPoint, MonochromeIconSize.Small);
 
         if (treeDevice is IDeviceTreeSchedulableDataNode)
-            return s_rawDataIcon;
+            return GetOrCreateIcon(MonochromeIconName.RawDataLight, MonochromeIconSize.SmallPlus2);
 
         if (treeDevice is DeviceTreeVseAlarm)
-            return s_vseAlarmIcon;
+            return GetOrCreateIcon(MonochromeIconName.AlarmLight, MonochromeIconSize.SmallPlus2);
 
         if (treeDevice is DeviceTreeVseCounter)
-            return s_vseCounterIcon;
+            return GetOrCreateIcon(MonochromeIconName.CounterLight, MonochromeIconSize.SmallPlus2);
 
         if (treeDevice is DeviceTreeVseInput)
-            return s_vseInputsIcon;
+            return GetOrCreateIcon(MonochromeIconName.InputLight, MonochromeIconSize.SmallPlus2);
 
         if (treeDevice is DeviceTreeVseObject)
-            return s_vseObjectIcon;
+            return GetOrCreateIcon(MonochromeIconName.ObjectLight, MonochromeIconSize.SmallPlus2);
 
         if (treeDevice is DeviceTreeVseVariants)
-            return s_vseVariantsIcon;
+            return GetOrCreateIcon(MonochromeIconName.Branch, MonochromeIconSize.SmallPlus2);
 
         if (treeDevice is DeviceTreeStructureNode)
         {
@@ -87,9 +86,9 @@ internal static class DeviceTreeNodeIconProvider
                 return GetIcon(relevantChild);
             }
 
-            return s_folderIcon;
+            return GetOrCreateIcon(MonochromeIconName.Folder, MonochromeIconSize.SmallPlus2);
         }
 
-        return s_unknownNodeTypeIcon;
+        return GetOrCreateIcon(MonochromeIconName.UnknownNodeType, MonochromeIconSize.Small);
     }
 }

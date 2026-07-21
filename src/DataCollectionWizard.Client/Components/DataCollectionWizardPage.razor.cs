@@ -40,7 +40,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private const int MaxRecommendedDataPoints = 100;
     private const double MaxRecommendedMessageDisplayBoundary = 0.6;
 
-    private readonly DeviceTreeAdapter _adapter = new(false);
+    private DeviceTreeAdapter _adapter = default!;
     private Dictionary<string, IDeviceTreeBase> _allNodes = [];
     private readonly List<IDeviceTreeMasterNode> _changedMasterDevices = [];
     private int _currentlyEnabledDataPoints;
@@ -191,6 +191,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     [Inject] private IJSRuntime Js { get; set; } = default!;
     [Inject] private IMessageBannerService MessageBannerService { get; set; } = default!;
     [Inject] private IUiMediator Mediator { get; set; } = default!;
+    [Inject] private DeviceTreeNodeIconProvider IconProvider { get; set; } = default!;
 
     public Task Consume(ClientContext<DeviceTreeApplicationEvent> context, CancellationToken cancellationToken)
     {
@@ -849,6 +850,8 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
     protected override async Task OnInitializedAsync()
     {
+        _adapter = new DeviceTreeAdapter(false, IconProvider);
+
         _loadingSpinnerMessages = _loadingSpinnerMessagesInitializing;
         _displayLoadingSpinner = true;
 

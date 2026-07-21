@@ -14,10 +14,10 @@ using ViciOne.Ui.TreeEditor.Builder.Interface.Nodes;
 
 namespace DataCollectionWizard.Client.Services;
 
-internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
+internal sealed class DeviceTreeAdapter(bool isLiveView, DeviceTreeNodeIconProvider iconProvider) : TreeAdapter
 {
-    private static readonly IIcon s_deleteIcon = DeviceTreeNodeIconProvider.CreateIcon(MonochromeIconName.Delete, MonochromeIconSize.Small);
-    private static readonly IIcon s_editIcon = DeviceTreeNodeIconProvider.CreateIcon(MonochromeIconName.Edit, MonochromeIconSize.Small);
+    private readonly IIcon _deleteIcon = iconProvider.GetOrCreateIcon(MonochromeIconName.Delete, MonochromeIconSize.Small);
+    private readonly IIcon _editIcon = iconProvider.GetOrCreateIcon(MonochromeIconName.Edit, MonochromeIconSize.Small);
 
     private readonly List<string> _expandedNodes = [];
     private Root? _rootNode;
@@ -81,7 +81,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                     NodeEdited?.Invoke(nodeBase);
                 },
                 Description = Localization.DeviceTreeAdapter.EditAlias,
-                Icon = s_editIcon,
+                Icon = _editIcon,
                 Index = 0,
             });
         }
@@ -102,7 +102,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
                     NodeDeleted?.Invoke(nodeBase, nodeBase.Parent);
                 },
                 Description = baseNode.Device is IDeviceTreeMasterNode ? Localization.DeviceTreeAdapter.DeleteDevice : Localization.DeviceTreeAdapter.DeleteNode,
-                Icon = s_deleteIcon,
+                Icon = _deleteIcon,
                 Index = 1,
             });
         }
@@ -131,7 +131,7 @@ internal sealed class DeviceTreeAdapter(bool isLiveView) : TreeAdapter
         if (node is not NodeBase baseNode)
             return [];
 
-        return [DeviceTreeNodeIconProvider.GetIcon(baseNode.Device)];
+        return [iconProvider.GetIcon(baseNode.Device)];
     }
 
     private static string GetPathToNode(NodeBase node)
