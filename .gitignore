@@ -409,10 +409,6 @@ tests/ComponentTest/Test.Client/wwwroot/*
 # css files
 **/*.razor.css
 
-# monochrome icons
-**/wwwroot/icons/monochrome-icons
-**/Styles/icons/monochrome-icons
-
 # shared folder
 shared/
 

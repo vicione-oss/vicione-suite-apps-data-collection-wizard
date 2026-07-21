@@ -1,8 +1,4 @@
 ﻿@use "./../Styles/_colours.scss" as col;
-@use "./../Styles/icons/monochrome-icons" with (
-    $svg-base-url: "./icons/monochrome-icons",
-    $base-selector: "::deep"
-);
 
 ::deep .loading-spinner {
     z-index: 100;

@@ -23,7 +23,7 @@ namespace DataCollectionWizard.Client.Components;
 
 public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardClientModule>
 {
-    private readonly DeviceTreeAdapter _adapter = new(true);
+    private DeviceTreeAdapter _adapter = default!;
     private CancellationTokenSource _cancelSubscribing = new();
     private bool _displayLoadingSpinner;
     private List<IDeviceTreeLiveDataNode> _gridNodes = [];
@@ -65,6 +65,8 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
     [Inject(Key = Sdk.Constants.ClientTimeProviderServiceKey)]
     private TimeProvider TimeProvider { get; set; } = default!;
+
+    [Inject] private DeviceTreeNodeIconProvider IconProvider { get; set; } = default!;
 
     private LiveGridRowModel[] CalculateGridItems(List<IDeviceTreeLiveDataNode> _)
     {
@@ -173,6 +175,8 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
     protected override async Task OnInitializedAsync()
     {
+        _adapter = new DeviceTreeAdapter(true, IconProvider);
+
         _displayLoadingSpinner = true;
 
         _service.TreeBuilder.SetAdapter(_adapter);

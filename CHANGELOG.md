@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.2.0 - Unreleased
+
+- Required SVG icons from the MonochromeIcon repository are now provided at runtime through the ViciOne.Ui.MonochromeIcons.Assets package
+
+### Dependencies
+
+- `ViciOne.Ui.MonochromeIcons.Components` package, update version to `4.14.0`
+- `ViciOne.Ui.Blazor.Components` package, update version to `5.18.0`
+- `ViciOne.Suite.ClusterManagement.Public` package, update version to `2.4.0`
+- `ViciOne.Suite.Sdk` package, update version to `2.2.0-ci2689717416`
+
 ## 2.1.2 - 2026-06-23
 
 ### Changed
