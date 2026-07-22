@@ -1240,8 +1240,14 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                 {
 
                     var oldStructureUnits = _tree.GetNodeAndDescendants().OfType<DeviceTreeProcessData>().ToDictionary(n => n.Id, n => n.StructureUnit);
+                    var freshOrUnchangedDevices = receivedDevices
+                        .Select(r => r.device is not null && !r.device.IsOffline
+                            ? r.device
+                            : devices.FirstOrDefault(m => m.Url == r.address) as IDeviceTreeBase)
+                        .Where(d => d is not null)
+                        .Cast<IDeviceTreeBase>();
 
-                    DeviceTreeBuilder.ExtendCurrentDeviceTree(_tree, [.. receivedDevices.Select(d => d.device).Where(d => d is not null && !d.IsOffline).Cast<IDeviceTreeBase>()], _publishTargets, retainNewFlags);
+                    DeviceTreeBuilder.ExtendCurrentDeviceTree(_tree, [.. freshOrUnchangedDevices], _publishTargets, retainNewFlags);
 
                     _tree.Name = CommonVocabulary.DevicePlural;
                     SetTreeCore(_tree, true);

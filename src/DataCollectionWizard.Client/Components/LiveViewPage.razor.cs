@@ -422,7 +422,14 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
             await DataCollectionWizardService.RequestExistingDevicesAsync(masterDevices.Where(v => v.Children.Count > 0), false, async receivedDevices =>
             {
-                DeviceTreeBuilder.ExtendCurrentDeviceTree(_tree, [.. receivedDevices.Select(d => d.device).Where(d => d is not null && !d.IsOffline).Cast<IDeviceTreeBase>()], []);
+                var freshOrUnchangedDevices = receivedDevices
+                    .Select(r => r.device is not null && !r.device.IsOffline
+                        ? r.device
+                        : masterDevices.FirstOrDefault(m => m.Url == r.address) as IDeviceTreeBase)
+                    .Where(d => d is not null)
+                    .Cast<IDeviceTreeBase>();
+
+                DeviceTreeBuilder.ExtendCurrentDeviceTree(_tree, [.. freshOrUnchangedDevices], []);
 
                 RemoveNewNodesRecursively(_tree);
 
