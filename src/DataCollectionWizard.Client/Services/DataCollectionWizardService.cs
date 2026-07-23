@@ -606,7 +606,11 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
         if (stateResponse.State is null)
             return false;
 
-        return true;
+        // A non-null State alone does not mean a deployment is currently running - the server
+        // keeps reporting the last known DeploymentState even once it's finished. The active and
+        // target version only differ while a deployment to reach TargetVersion is actually in
+        // progress; once it lands, ActiveVersion catches up and they match again.
+        return stateResponse.State.ActiveVersion != stateResponse.State.TargetVersion;
     }
 
     /// <summary>
