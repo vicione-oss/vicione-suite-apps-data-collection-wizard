@@ -28,9 +28,11 @@ public sealed class DataCollectionWizardBackendModule : BackendModule
 
         services.AddTransient<ICloudDataflowGenerator, AnnaCloudDataflowGenerator>();
         services.AddTransient<ICloudDataflowGenerator, MoneoCloudDataflowGenerator>();
+        services.AddTransient<ICloudDataflowGenerator, MqttCloudDataflowGenerator>();
 
         services.AddTransient<ICloudFilter, AnnaCloudFilter>();
         services.AddTransient<ICloudFilter, MoneoCloudFilter>();
+        services.AddTransient<ICloudFilter, MqttCloudFilter>();
 
         services.AddSingleton<DataCollectionWizardState>();
 
