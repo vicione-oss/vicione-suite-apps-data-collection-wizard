@@ -116,12 +116,13 @@ include:
         - *update_nuget_source_ro
       tags:
         - ${RUNNER_TAG}
-  - component: $CI_SERVER_FQDN/vicione-oss/tooling/dotnet-component/dotnet-test@1.1.0
+  - component: $CI_SERVER_FQDN/vicione-oss/tooling/dotnet-component/dotnet-test@2
     inputs:
       image: ${IMAGE_NAME}
       rules: *rules
       no_build: false
-      build_job_name: "dotnet Build"
+      filter: "/[(Category!=System)]"
+      coverage: true
       before_script:
         - *activate_mise
         - *update_nuget_source_ro

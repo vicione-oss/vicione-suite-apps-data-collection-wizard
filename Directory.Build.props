@@ -1,4 +1,4 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <Nullable>enable</Nullable>
         <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
@@ -37,20 +37,38 @@
         <None Include="$(MsBuildThisFileDirectory)\LICENSE.txt" Pack="true" PackagePath="" />
     </ItemGroup>
 
+    <!-- Configure xunit runner for test projects -->
+    <ItemGroup Condition="$(MSBuildProjectName.EndsWith('Tests'))">
+        <Content Include="$(MSBuildThisFileDirectory)/tests/xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
     <!-- Don't publish test projects -->
-    <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('Tests')) Or $(MSBuildProjectDirectory.Contains('tests'))">
-        <IsPackable>false</IsPackable>
-        <IsPublishable>false</IsPublishable>
+    <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('Tests')) And $(MSBuildProjectDirectory.Contains('tests'))">
         <NoWarn>$(NoWarn);IDE1006</NoWarn>
         <NoWarn>$(NoWarn);VO2006</NoWarn>
-        <RunSettingsFilePath>$(MsBuildThisFileDirectory)\tests.runsettings</RunSettingsFilePath>
+        <OutputType>Exe</OutputType>
+        <IsPackable>false</IsPackable>
+        <IsPublishable>true</IsPublishable>
+        <!-- Microsoft Testing Platform command line experience -->
+        <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+        <!-- Emit test results per project to match with 'tests/**/TestResults/*.cobertura.xml' expected in CI -->
+        <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --results-directory "$(MSBuildProjectDirectory)/bin/$(Configuration)/$(TargetFramework)/TestResults"</TestingPlatformCommandLineArguments>
+        <TestingPlatformConfigurationFilePath>$(MSBuildThisFileDirectory)/tests/testconfig.json</TestingPlatformConfigurationFilePath>
     </PropertyGroup>
 
-    <!-- Remove SDK files from backend -->
-    <Target Name="EnsureSdkGetsRemovedIssue" AfterTargets="GenerateDepsFile" Condition="'$(Configuration)' == 'Release' And $(ProjectName.EndsWith('.Backend'))">
-        <ItemGroup>
-            <FilesToClean Include="$(TargetDir)ViciOne.Suite.Sdk.*" />
-        </ItemGroup>
-        <Delete Files="@(FilesToClean)"></Delete>
-    </Target>
+    <ItemGroup Condition="$(MSBuildProjectName.EndsWith('Tests'))">
+        <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+        <PackageReference Include="NSubstitute" />
+        <PackageReference Include="NSubstitute.Analyzers.CSharp">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>        
+        <PackageReference Include="ViciOne.Suite.Sdk.Testing" />
+        <PackageReference Include="xunit.v3.mtp-v2" />
+
+        <!-- Global usings for all test projects -->
+        <Using Include="Xunit" />
+        <Using Include="NSubstitute" />
+    </ItemGroup>
+
 </Project>
