@@ -3,10 +3,9 @@ using ClusterManagement.Public.DataflowEvents;
 using ClusterManagement.Public.Services;
 using DataCollectionWizard.Client.Components;
 using DataCollectionWizard.Client.Services;
-using DataCollectionWizard.Client.Tests.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
 using Sdk.Client.Modules.Localization;
+using Sdk.Testing.Client;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 using ViciOne.Ui.Blazor.Components.Dialog.Extensions;
 using ViciOne.Ui.Blazor.Components.ExpandableMenu.Extensions;
@@ -21,8 +20,7 @@ public class DataCollectionWizardPageTests
     {
         // Arrange
         await using var ctx = new BunitContext();
-
-        ctx.SetupSuiteServicesWithBlazorDx(setup =>
+        ctx.SetupSuiteServices(setup =>
         {
             setup.UseNavigationManager = false;
         });

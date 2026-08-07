@@ -10,14 +10,14 @@
       },
       "ViciOne.Suite.Sdk.Backend": {
         "type": "Direct",
-        "requested": "[2.2.0-ci2689717416, )",
-        "resolved": "2.2.0-ci2689717416",
-        "contentHash": "uZ+tQxA2Wk40LLCHiKlGfCc7tIHbp475uDOO4/mt9EhX4r0ZFflS6qrWY+xSzNf+/es+BWwDBy9gWbFOpIZdiA==",
+        "requested": "[2.2.0, )",
+        "resolved": "2.2.0",
+        "contentHash": "AA/0gTiUFq6r72eVA2CfyWPSqPtuzXbIcBSW4Ady6rW6FlRy3qKgViPCsI6rnSsZ7AD5UnS7Dl/Hlt/1qDv6Qw==",
         "dependencies": {
           "Microsoft.EntityFrameworkCore.Relational": "10.0.10",
           "Microsoft.EntityFrameworkCore.Sqlite": "10.0.10",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.3",
-          "ViciOne.Suite.Sdk": "2.2.0-ci2689717416"
+          "ViciOne.Suite.Sdk": "2.2.0"
         }
       },
       "FastCloner": {
@@ -362,17 +362,17 @@
         "dependencies": {
           "ViciOne.Cluster.Builder": "[1.0.0, )",
           "ViciOne.Driver.IoTCore.Contracts": "[2.0.1, )",
-          "ViciOne.Suite.ClusterManagement.Public": "[2.4.0-ci2691137235, )",
+          "ViciOne.Suite.ClusterManagement.Public": "[2.4.0-ci2729942661, )",
           "ViciOne.Suite.DataCollectionWizard.Public": "[1.0.0, )",
           "ViciOne.Suite.DataPort.Anna.Contracts": "[1.0.0, )",
-          "ViciOne.Suite.Sdk": "[2.2.0-ci2689717416, )"
+          "ViciOne.Suite.Sdk": "[2.2.0, )"
         }
       },
       "ViciOne.Suite.DataCollectionWizard.Public": {
         "type": "Project",
         "dependencies": {
           "ViciOne.Driver.IoTCore.Contracts": "[2.0.1, )",
-          "ViciOne.Suite.Sdk": "[2.2.0-ci2689717416, )"
+          "ViciOne.Suite.Sdk": "[2.2.0, )"
         }
       },
       "ViciOne.Cluster.Builder": {
@@ -394,12 +394,12 @@
       },
       "ViciOne.Suite.ClusterManagement.Public": {
         "type": "CentralTransitive",
-        "requested": "[2.4.0-ci2691137235, )",
-        "resolved": "2.4.0-ci2691137235",
-        "contentHash": "i5l/gX+OARUxmACyzMaclN+yx4NzfvBIPkfMbEmcFzKbSYYXNsMf5F/WM8F6VSd/CxxUfI6hZXEBtH+EU/ETFA==",
+        "requested": "[2.4.0-ci2729942661, )",
+        "resolved": "2.4.0-ci2729942661",
+        "contentHash": "RV2Efc0nwzi01tMmY+7lCP3gGzWFqaVj8W3IiBnIf+2zuLOz79lOY0o+a8Rm07l9KGT6r024jq1qo/Uu3pSKSw==",
         "dependencies": {
           "ViciOne.Cluster.Builder": "1.0.0",
-          "ViciOne.Suite.Sdk": "2.2.0-ci2689717416"
+          "ViciOne.Suite.Sdk": "2.2.0"
         }
       },
       "ViciOne.Suite.DataPort.Anna.Contracts": {
@@ -410,9 +410,9 @@
       },
       "ViciOne.Suite.Sdk": {
         "type": "CentralTransitive",
-        "requested": "[2.2.0-ci2689717416, )",
-        "resolved": "2.2.0-ci2689717416",
-        "contentHash": "ScrVBoA8fNRdfdB//Wix97EkYJl0YET2URtdaSytPJIuXOMVJabhcVk7EQDOwtx4i7f4JOUTxQYyFr3ex0Bc+w==",
+        "requested": "[2.2.0, )",
+        "resolved": "2.2.0",
+        "contentHash": "fsu9C+yhGdZHZPlBTSNt0R5LIYiitmYvkNa+qqmKRNZXESEbYCjwczmoQ9WmnPKVVb+8N4xqzzP169lXKcB57A==",
         "dependencies": {
           "MassTransit.Abstractions": "8.5.10",
           "Microsoft.AspNetCore.Authorization": "10.0.10",

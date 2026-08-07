@@ -2,7 +2,6 @@
 using Bunit;
 using DataCollectionWizard.Client.Components.NavTiles;
 using DataCollectionWizard.Internal.Requests;
-using NSubstitute;
 using Sdk.Client.NavTiles.Components;
 using Sdk.Testing.Client;
 
