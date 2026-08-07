@@ -27,12 +27,12 @@
       },
       "ViciOne.Suite.ClusterManagement.Public": {
         "type": "Direct",
-        "requested": "[2.4.0-ci2691137235, )",
-        "resolved": "2.4.0-ci2691137235",
-        "contentHash": "i5l/gX+OARUxmACyzMaclN+yx4NzfvBIPkfMbEmcFzKbSYYXNsMf5F/WM8F6VSd/CxxUfI6hZXEBtH+EU/ETFA==",
+        "requested": "[2.4.0-ci2729942661, )",
+        "resolved": "2.4.0-ci2729942661",
+        "contentHash": "RV2Efc0nwzi01tMmY+7lCP3gGzWFqaVj8W3IiBnIf+2zuLOz79lOY0o+a8Rm07l9KGT6r024jq1qo/Uu3pSKSw==",
         "dependencies": {
           "ViciOne.Cluster.Builder": "1.0.0",
-          "ViciOne.Suite.Sdk": "2.2.0-ci2689717416"
+          "ViciOne.Suite.Sdk": "2.2.0"
         }
       },
       "ViciOne.Suite.DataPort.Anna.Contracts": {
@@ -43,9 +43,9 @@
       },
       "ViciOne.Suite.Sdk": {
         "type": "Direct",
-        "requested": "[2.2.0-ci2689717416, )",
-        "resolved": "2.2.0-ci2689717416",
-        "contentHash": "ScrVBoA8fNRdfdB//Wix97EkYJl0YET2URtdaSytPJIuXOMVJabhcVk7EQDOwtx4i7f4JOUTxQYyFr3ex0Bc+w==",
+        "requested": "[2.2.0, )",
+        "resolved": "2.2.0",
+        "contentHash": "fsu9C+yhGdZHZPlBTSNt0R5LIYiitmYvkNa+qqmKRNZXESEbYCjwczmoQ9WmnPKVVb+8N4xqzzP169lXKcB57A==",
         "dependencies": {
           "MassTransit.Abstractions": "8.5.10",
           "Microsoft.AspNetCore.Authorization": "10.0.10",
@@ -238,7 +238,7 @@
         "type": "Project",
         "dependencies": {
           "ViciOne.Driver.IoTCore.Contracts": "[2.0.1, )",
-          "ViciOne.Suite.Sdk": "[2.2.0-ci2689717416, )"
+          "ViciOne.Suite.Sdk": "[2.2.0, )"
         }
       }
     },

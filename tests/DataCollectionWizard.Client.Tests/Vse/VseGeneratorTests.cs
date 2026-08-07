@@ -5,7 +5,6 @@ using ClusterManagement.Public.Iodds;
 using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using Microsoft.Extensions.Logging.Abstractions;
-using NSubstitute;
 using Sdk.Connections.Contracts;
 using Sdk.Connections.Extensions;
 using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
