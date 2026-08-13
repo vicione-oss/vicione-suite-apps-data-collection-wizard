@@ -410,7 +410,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         }
         catch (Exception ex)
         {
-            LogInitDcwError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace);
+            LogInitDcwError(Logger, ex);
             await InvokeAsync(() => MessageBannerService.ShowMessageBanner(MessageType.Warning, CommonVocabulary.Error));
         }
     }
@@ -778,7 +778,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             }
             catch (Exception ex)
             {
-                LogAwaitingDeploymentWarning(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+                LogAwaitingDeploymentWarning(Logger, ex);
             }
         });
 
@@ -961,7 +961,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         }
         catch (Exception ex)
         {
-            LogRebrowseButtonError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogRebrowseButtonError(Logger, ex);
         }
     }
 
@@ -1069,13 +1069,13 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                 }
                 catch (Exception ex)
                 {
-                    LogWhileSaveDeviceTreeError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+                    LogWhileSaveDeviceTreeError(Logger, ex);
                 }
             });
         }
         catch (Exception ex)
         {
-            LogWhileSaveDeviceTreeError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogWhileSaveDeviceTreeError(Logger, ex);
         }
     }
 
@@ -1290,7 +1290,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         }
         catch (Exception ex)
         {
-            LogUpdateDeviceTreeError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogUpdateDeviceTreeError(Logger, ex);
         }
     }
 

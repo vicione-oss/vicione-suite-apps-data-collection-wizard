@@ -107,22 +107,4 @@ public sealed partial class DataCollectionWizardConsumer(DataCollectionWizardSta
         await context.Publish(new DeviceTreeApplicationEvent(new ErrorInfo(-1, "Cluster update was rejected")) { CorrelationId = context.Message.CorrelationId }, context.CancellationToken);
         LogClusterUpdateRejected(logger, context.Message.RejectedVersion, context.Message.ClusterId);
     }
-
-    [LoggerMessage(LogLevel.Warning, "Failed to commit cluster {ClusterVersion}({ClusterId}): {Error}({ErrorCode})")]
-    static partial void LogClusterCommitFailed(ILogger logger, Version clusterVersion, Guid clusterId, string? error, int errorCode);
-
-    [LoggerMessage(LogLevel.Warning, "Failed to update cluster {ClusterVersion}({ClusterId}): {Errors}")]
-    static partial void LogClusterUpdateFailed(ILogger logger, Version clusterVersion, Guid clusterId, string errors);
-
-    [LoggerMessage(LogLevel.Debug, "DCW received cluster update completed {ClusterVersion} {CorrelationId}")]
-    static partial void LogDcwReceivedClusterUpdateCompleted(ILogger<DataCollectionWizardConsumer> logger, Version ClusterVersion, Guid? CorrelationId);
-
-    [LoggerMessage(LogLevel.Debug, "DCW received cluster changed {ClusterVersion} {CorrelationId}")]
-    static partial void LogDcwReceivedClusterChanged(ILogger<DataCollectionWizardConsumer> logger, Version? ClusterVersion, Guid? CorrelationId);
-
-    [LoggerMessage(LogLevel.Debug, "DCW received cluster not deleted")]
-    static partial void LogDcwReceivedClusterNotDeleted(ILogger<DataCollectionWizardConsumer> logger);
-
-    [LoggerMessage(LogLevel.Debug, "Attempt to update cluster {ClusterVersion}({ClusterId}) was rejected")]
-    static partial void LogClusterUpdateRejected(ILogger<DataCollectionWizardConsumer> logger, Version? ClusterVersion, Guid? ClusterId);
 }

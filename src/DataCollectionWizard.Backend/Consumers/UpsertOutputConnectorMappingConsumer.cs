@@ -49,7 +49,4 @@ public sealed partial class UpsertOutputConnectorMappingConsumer(IDataCollection
             await context.Publish(new OutputConnectorMappingChangedErrorEvent(new ErrorInfo(ErrorCodes.DbUpdateFailed, e.Message)));
         }
     }
-
-    [LoggerMessage(LogLevel.Debug, "Consume {command} CorrelationId:{correlationId} DeviceConnectorIds.Count:{count}")]
-    public static partial void LogConsume(ILogger logger, string command, Guid? correlationId, int count);
 }

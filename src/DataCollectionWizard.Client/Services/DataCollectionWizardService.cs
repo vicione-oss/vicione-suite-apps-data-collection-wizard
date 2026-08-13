@@ -110,7 +110,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
             }
             catch (Exception ex)
             {
-                LogRequestExistingDeviceFailedWarning(_logger, deviceUri, ex.Message, ex.StackTrace);
+                LogRequestExistingDeviceFailedWarning(_logger, deviceUri, ex);
             }
             finally
             {
@@ -186,66 +186,6 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
         LogReturnsIdsDebug(_logger, nameof(LoadDeviceConnectorsAsync), deviceConnectorsResponse.Ids.Count);
     }
 
-    [LoggerMessage(LogLevel.Warning, "Failed to subscribe to DeviceTree output: {exceptionType} {exceptionMessage} {stackTrace}")]
-    public static partial void LogClusterSubscriptionFailed(ILogger logger, Type exceptionType, string exceptionMessage, string? stackTrace);
-
-    [LoggerMessage(LogLevel.Error, "Failed to deserialize DCP scan result: {exceptionType} {exceptionMessage} {stackTrace}")]
-    public static partial void LogDcpResultSerializationFailed(ILogger logger, Type exceptionType, string exceptionMessage, string? stackTrace);
-
-    [LoggerMessage(LogLevel.Warning, "Did not receive DCP scan data.")]
-    public static partial void LogNoDcpDataReceived(ILogger logger);
-
-    [LoggerMessage(LogLevel.Warning, "Timeout while adding IO-Link scan engine.")]
-    public static partial void LogIoLinkScanEngineTimeoutCreatingDataflow(ILogger logger);
-
-    [LoggerMessage(LogLevel.Information, "Skipping first scan message - retained message.")]
-    public static partial void LogIoLinkScanReceivedFirstMessage(ILogger logger);
-
-    [LoggerMessage(LogLevel.Information, "Skipping scan message - output is null.")]
-    public static partial void LogIoLinkScanReceivedNullMessage(ILogger logger);
-
-    [LoggerMessage(LogLevel.Information, "Received second scan message.")]
-    public static partial void LogIoLinkScanReceivedSecondMessage(ILogger logger);
-
-    [LoggerMessage(LogLevel.Warning, "Failed to subscribe to scan devices output, creating dataflow.")]
-    public static partial void LogIoLinkScannerSubscriptionFailedCreatingDataflow(ILogger logger);
-
-    [LoggerMessage(LogLevel.Error, "Unexpectedly failed to subscribe to scan output: {exceptionType} {exceptionMessage} {stackTrace}.")]
-    public static partial void LogIoLinkScannerSubscriptionFailedUnexpectedly(ILogger logger, Type exceptionType, string exceptionMessage, string? stackTrace);
-
-    [LoggerMessage(LogLevel.Warning, "Did not receive second message: {url} - device is offline.")]
-    public static partial void LogTimeoutDidNotReceiveDeviceMessage(ILogger logger, string url);
-
-    [LoggerMessage(LogLevel.Information, "Subscribing DeviceTree for device at {deviceAddress}: {deviceTreeOutputId}, trigger: {deviceTreeTriggerId}")]
-    public static partial void LogSubscribingDeviceTree(ILogger logger, Uri deviceAddress, Guid deviceTreeOutputId, Guid deviceTreeTriggerId);
-
-    [LoggerMessage(LogLevel.Information, "Subscribing DCP scan output.")]
-    public static partial void LogSubscribingIoLinkScanOutput(ILogger logger);
-
-    [LoggerMessage(LogLevel.Information, "Sending trigger for device at {deviceAddress}: {deviceTreeTriggerId}")]
-    public static partial void LogSendingDeviceTrigger(ILogger logger, Uri deviceAddress, Guid deviceTreeTriggerId);
-
-    [LoggerMessage(LogLevel.Information, "Received first message - retained message, waiting for second message: {url}")]
-    public static partial void LogSkipFirstMessageInformation(ILogger logger, Uri url);
-
-    [LoggerMessage(LogLevel.Warning, "Received null device, waiting for second message: {url}")]
-    public static partial void LogSkipFirstMessageWarning(ILogger logger, Uri url);
-
-    [LoggerMessage(LogLevel.Information, "Received device message: {url}")]
-    public static partial void LogReceivedDeviceMessageInfo(ILogger logger, Uri url);
-
-    [LoggerMessage(LogLevel.Information, "An error occured requesting Device {url}: {message} {stackTrace}")]
-    public static partial void LogRequestExistingDeviceFailedWarning(ILogger logger, Uri url, string message, string? stackTrace);
-
-    [LoggerMessage(LogLevel.Debug, "{Name} returns {Count} ids")]
-    public static partial void LogReturnsIdsDebug(ILogger logger, string name, int count);
-
-    [LoggerMessage(LogLevel.Debug, "Triggering IO-Link master scan.")]
-    public static partial void LogTriggeringIoLinkMasterScan(ILogger logger);
-
-    [LoggerMessage(LogLevel.Warning, "Failed to apply device tree: timeout while waiting for ticket")]
-    partial void LogFailedToApplyDeviceTreeTimeoutWhileWaitingForTicket();
-
     public async Task RequestExistingDevicesAsync(IEnumerable<IDeviceTreeMasterNode> devices, bool triggerSubscriber, Func<IReadOnlyCollection<(IDeviceTreeMasterNode? device, Uri address, bool success)>, Task> callback)
     {
         var devicesArray = devices.ToArray();
@@ -274,7 +214,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
             }
             catch (Exception ex)
             {
-                LogRequestExistingDeviceFailedWarning(_logger, new UriBuilder(device.Url).Uri, ex.Message, ex.StackTrace);
+                LogRequestExistingDeviceFailedWarning(_logger, new UriBuilder(device.Url).Uri, ex);
                 errorDevices++;
 
                 if (devicesArray.Length <= receivedDevices.Count + errorDevices)
@@ -378,14 +318,14 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
                     _ = Task.Run(async () =>
                     {
                         try { await handleToDispose.DisposeAsync(); }
-                        catch (Exception ex) { LogClusterSubscriptionFailed(_logger, ex.GetType(), ex.Message, ex.StackTrace); }
+                        catch (Exception ex) { LogClusterSubscriptionFailed(_logger, ex); }
                     });
                 }
             });
         }
         catch (Exception ex)
         {
-            LogClusterSubscriptionFailed(_logger, ex.GetType(), ex.Message, ex.StackTrace);
+            LogClusterSubscriptionFailed(_logger, ex);
             await callback(null, false, deviceAddress);
             return;
         }
@@ -508,7 +448,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
             }
             catch (Exception ex)
             {
-                LogIoLinkScannerSubscriptionFailedUnexpectedly(_logger, ex.GetType(), ex.Message, ex.StackTrace);
+                LogIoLinkScannerSubscriptionFailedUnexpectedly(_logger, ex);
                 resetEvent.Dispose();
                 await (subscription?.DisposeAsync() ?? ValueTask.CompletedTask);
 
@@ -544,7 +484,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
                 }
                 catch (Exception ex)
                 {
-                    LogDcpResultSerializationFailed(_logger, ex.GetType(), ex.Message, ex.StackTrace);
+                    LogDcpResultSerializationFailed(_logger, ex);
                 }
             }
         }
@@ -581,7 +521,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
             }
             catch (Exception ex)
             {
-                LogDcpResultSerializationFailed(_logger, ex.GetType(), ex.Message, ex.StackTrace);
+                LogDcpResultSerializationFailed(_logger, ex);
             }
         }
 

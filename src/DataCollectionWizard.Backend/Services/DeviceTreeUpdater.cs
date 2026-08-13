@@ -81,13 +81,10 @@ public sealed partial class DeviceTreeUpdater(
         {
             DiscardUpdateRequest(ticketId);
             await mediator.Publish(new DeviceTreeApplicationEvent(new ErrorInfo(-1, ex.Message)) { CorrelationId = correlationId }, ct);
-            LogApplicationFailedError(logger, ex.Message, ex.StackTrace ?? string.Empty);
+            LogApplicationFailedError(logger, ex);
         }
     }
 
     public void DiscardUpdateRequest(Guid ticketId)
         => clusterService.DiscardUpdateRequest(ticketId);
-
-    [LoggerMessage(LogLevel.Error, "Failed to apply DeviceTree: {message} {stackTrace}")]
-    public static partial void LogApplicationFailedError(ILogger logger, string message, string stackTrace);
 }

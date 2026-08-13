@@ -169,7 +169,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
             }
             catch (Exception ex)
             {
-                LogAwaitingDeploymentWarning(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+                LogAwaitingDeploymentWarning(Logger, ex);
             }
         });
 
@@ -216,7 +216,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         }
         catch (Exception ex)
         {
-            LogSubscribeAllError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogSubscribeAllError(Logger, ex);
         }
         finally
         {
@@ -256,7 +256,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         }
         catch (Exception ex)
         {
-            LogSubscribeAllError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogSubscribeAllError(Logger, ex);
         }
         finally
         {
@@ -373,7 +373,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         }
         catch (Exception ex)
         {
-            LogSubscribeTopicError(Logger, mapData.ValueOutputIdUI, node.Id, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogSubscribeTopicError(Logger, mapData.ValueOutputIdUI, node.Id, ex);
         }
 
         IAsyncDisposable? unitHandle = null;
@@ -400,7 +400,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
             }
             catch (Exception ex)
             {
-                LogSubscribeTopicError(Logger, mapData.ValueOutputIdUI, $"{node.Id} (Unit)", ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+                LogSubscribeTopicError(Logger, mapData.ValueOutputIdUI, $"{node.Id} (Unit)", ex);
             }
         }
 
@@ -442,7 +442,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         }
         catch (Exception ex)
         {
-            LogUpdateDeviceTreeError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogUpdateDeviceTreeError(Logger, ex);
         }
     }
 

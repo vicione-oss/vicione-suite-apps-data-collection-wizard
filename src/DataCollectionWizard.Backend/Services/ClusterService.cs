@@ -80,7 +80,7 @@ public sealed partial class ClusterService(
         {
             DiscardUpdateRequest(ticketId);
             await mediator.Publish(new DeviceTreeApplicationEvent(new ErrorInfo(-1, ex.Message)) { CorrelationId = correlationId }, ct);
-            LogApplicationFailedError(logger, ex.Message, ex.StackTrace ?? string.Empty);
+            LogApplicationFailedError(logger, ex);
         }
     }
 
@@ -121,16 +121,4 @@ public sealed partial class ClusterService(
         => (await QueryClusterInfosAsync())
         .GroupBy(n => n.Id, n => n.Version)
         .ToDictionary(g => g.Key, g => g.ToList());
-
-    [LoggerMessage(LogLevel.Error, "Failed to apply DeviceTree: {Message} {StackTrace}")]
-    public static partial void LogApplicationFailedError(ILogger logger, string message, string stackTrace);
-
-    [LoggerMessage(LogLevel.Debug, "Discarding update request for ticket {TicketId}")]
-    partial void LogDiscardingUpdateRequestForTicket(Guid ticketId);
-
-    [LoggerMessage(LogLevel.Debug, "Cluster service issued ticket: {TicketId}")]
-    partial void LogIssuedTicket(Guid ticketId);
-
-    [LoggerMessage(LogLevel.Debug, "Ticket timer elapsed")]
-    partial void LogTicketTimerElapsed();
 }

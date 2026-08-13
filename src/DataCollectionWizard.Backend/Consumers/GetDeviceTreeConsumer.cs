@@ -9,7 +9,7 @@ using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 
 namespace DataCollectionWizard.Backend.Consumers;
 
-public sealed class GetDeviceTreeConsumer(IDataCollectionWizardService dataCollectionWizard, ILogger<GetDeviceTreeConsumer> logger) : RequestConsumer<GetDeviceTree, GetDeviceTreeResponse>
+public sealed partial class GetDeviceTreeConsumer(IDataCollectionWizardService dataCollectionWizard, ILogger<GetDeviceTreeConsumer> logger) : RequestConsumer<GetDeviceTree, GetDeviceTreeResponse>
 {
     public override Task<GetDeviceTreeResponse> HandleException(GetDeviceTree message, Exception e, CancellationToken cancellationToken)
         => Task.FromResult(new GetDeviceTreeResponse
@@ -35,7 +35,7 @@ public sealed class GetDeviceTreeConsumer(IDataCollectionWizardService dataColle
         }
 
         var tree = await dataCollectionWizard.RequestDeviceTreeAsync(cancellationToken);
-        logger.LogDebug("Respond with DeviceTree from database with {Count} children", tree.Children.Count);
+        LogRespondWithDeviceTree(logger, tree.Children.Count);
 
         return new GetDeviceTreeResponse
         {

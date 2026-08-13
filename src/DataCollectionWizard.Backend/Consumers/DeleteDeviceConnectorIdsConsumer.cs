@@ -43,7 +43,4 @@ public sealed partial class DeleteDeviceConnectorIdsConsumer(IDataCollectionWiza
             await context.Publish(new DeviceConnectorIdsChangeErrorEvent(new ErrorInfo(ErrorCodes.DbUpdateFailed, e.Message)));
         }
     }
-
-    [LoggerMessage(LogLevel.Debug, "Consume {command} CorrelationId:{correlationId} DeviceConnectorIds.Count:{count}")]
-    public static partial void LogConsume(ILogger logger, string command, Guid? correlationId, int count);
 }

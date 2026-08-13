@@ -15,7 +15,7 @@ public sealed partial class DeleteOutputConnectorMappingConsumer(IDataCollection
     public async Task Consume(ConsumeContext<DeleteOutputConnectorMapping> context)
     {
         LogConsume(logger,
-            nameof(DeleteDeviceConnectorIds),
+            nameof(DeleteOutputConnectorMapping),
             context.CorrelationId,
             context.Message.ProcessDataIds.Count);
 
@@ -43,7 +43,4 @@ public sealed partial class DeleteOutputConnectorMappingConsumer(IDataCollection
             await context.Publish(new OutputConnectorMappingChangedErrorEvent(new ErrorInfo(ErrorCodes.DbUpdateFailed, e.Message)));
         }
     }
-
-    [LoggerMessage(LogLevel.Debug, "Consume {command} CorrelationId:{correlationId} DeviceConnectorIds.Count:{count}")]
-    public static partial void LogConsume(ILogger logger, string command, Guid? correlationId, int count);
 }

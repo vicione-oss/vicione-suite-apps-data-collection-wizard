@@ -33,13 +33,7 @@ public sealed partial class AddDeviceTreeEngineConsumer(IDataCollectionWizardSer
         {
             if (ticket is not null)
                 clusterService.DiscardUpdateRequest(ticket.Value);
-            LogError(logger, ex.Message, ex.StackTrace);
+            LogError(logger, ex);
         }
     }
-
-    [LoggerMessage(LogLevel.Debug, "Consume {command} CorrelationId:{correlationId} {deviceEngineInfos}")]
-    public static partial void LogConsume(ILogger logger, string command, Guid? correlationId, string deviceEngineInfos);
-
-    [LoggerMessage(LogLevel.Error, "Error trying to add DeviceTreeRequestEngine: {message} {stackTrace}")]
-    public static partial void LogError(ILogger logger, string message, string? stackTrace);
 }
