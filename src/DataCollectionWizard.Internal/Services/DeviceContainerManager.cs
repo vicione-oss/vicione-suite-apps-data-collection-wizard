@@ -3,8 +3,8 @@ using DataCollectionWizard.Internal.Services.DesignIds;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Builder.Extensions;
 using ViciOne.Cluster.Model;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.DeviceTree.Contracts;
+using ViciOne.DeviceTree.Contracts.Extensions;
 
 namespace DataCollectionWizard.Internal.Services;
 

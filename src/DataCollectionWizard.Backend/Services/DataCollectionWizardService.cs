@@ -18,8 +18,8 @@ using Sdk.Instance;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Model;
 using ViciOne.Cluster.Model.Extensions;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.DeviceTree.Contracts;
+using ViciOne.DeviceTree.Contracts.Extensions;
 
 namespace DataCollectionWizard.Backend.Services;
 
@@ -81,18 +81,18 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
         {
             { } deviceTreeVseDeviceType when deviceTreeVseDeviceType == typeof(DeviceTreeVseDevice) => new DeviceTreeVseDevice
             {
+                Alias = $"VSE-{address}",
                 Id = "placeholder",
                 MacAddress = "ff:ff:ff:ff:ff",
                 Name = $"VSE-{address}",
-                NameAlias = $"VSE-{address}",
                 Url = address,
             },
             { } deviceTreeIoLinkMasterType when deviceTreeIoLinkMasterType == typeof(DeviceTreeIoLinkMaster) => new DeviceTreeIoLinkMaster
             {
+                Alias = $"IO-Link-{address}",
                 Id = "placeholder",
                 MacAddress = "ff:ff:ff:ff:ff",
                 Name = $"IO-Link-{address}",
-                NameAlias = $"IO-Link-{address}",
                 Url = new UriBuilder(address).Uri,
             },
             _ => throw new ArgumentException($"Invalid device type encountered, {type} is not currently supported", type.Name),

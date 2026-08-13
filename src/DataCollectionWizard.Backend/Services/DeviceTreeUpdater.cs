@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sdk.Backend.Messaging;
 using Sdk.Messaging;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Backend.Services;
 

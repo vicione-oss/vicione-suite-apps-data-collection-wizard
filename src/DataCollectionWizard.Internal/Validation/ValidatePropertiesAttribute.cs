@@ -3,7 +3,7 @@
 namespace DataCollectionWizard.Internal.Validation;
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public class ValidatePropertiesAttribute : ValidationAttribute
+internal class ValidatePropertiesAttribute : ValidationAttribute
 {
     protected override ValidationResult IsValid(object? value, ValidationContext validationContext)
     {

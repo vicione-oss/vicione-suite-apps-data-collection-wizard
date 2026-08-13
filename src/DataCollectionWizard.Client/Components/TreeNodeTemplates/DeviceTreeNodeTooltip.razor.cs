@@ -2,7 +2,7 @@
 using DataCollectionWizard.Client.Components.Localization;
 using DataCollectionWizard.Client.Services;
 using Microsoft.AspNetCore.Components;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Client.Components.TreeNodeTemplates;
 
@@ -40,21 +40,10 @@ public sealed partial class DeviceTreeNodeTooltip
     {
         var result = new List<(string Key, string Value)>();
 
-        if (Device is IDeviceTreeAliasNode aliasNode)
+        // only show properties if an alias is set
+        if (Device is IDeviceTreeAliasNode aliasNode && !string.IsNullOrWhiteSpace(aliasNode.Alias))
         {
-            // only show properties if an alias is set
-            if (!string.IsNullOrWhiteSpace(aliasNode.NameAlias))
-            {
-                AddInfo(DeviceTreeTooltip.InfoPropertyAlias, aliasNode.NameAlias);
-            }
-        }
-        else if (Device is IAliasStructureNode aliasStructureNode)
-        {
-            // only show properties if an alias is set
-            if (!string.IsNullOrWhiteSpace(aliasStructureNode.Alias))
-            {
-                AddInfo(DeviceTreeTooltip.InfoPropertyAlias, aliasStructureNode.Alias);
-            }
+            AddInfo(DeviceTreeTooltip.InfoPropertyAlias, aliasNode.Alias);
         }
 
         if (Device.Description is not null && !string.IsNullOrWhiteSpace(Device.Description.Text))
@@ -82,11 +71,9 @@ public sealed partial class DeviceTreeNodeTooltip
             AddInfo(DeviceTreeTooltip.InfoPropertySoftwareRevision, masterNode.SoftwareRevision);
             AddSeparator();
             AddInfo(DeviceTreeTooltip.InfoPropertyProductName, masterNode.ProductName);
-            AddInfo(DeviceTreeTooltip.InfoPropertyProductCode, masterNode.ProductCode);
             AddInfo(DeviceTreeTooltip.InfoPropertyDeviceFamily, masterNode.DeviceFamily);
             AddSeparator();
             AddInfo(DeviceTreeTooltip.InfoPropertyManufacturer, masterNode.Manufacturer);
-            AddInfo(DeviceTreeTooltip.InfoPropertyManufacturerId, masterNode.ManufacturerId);
         }
 
         if (Device is DeviceTreeDevice treeDevice)
@@ -133,7 +120,6 @@ public sealed partial class DeviceTreeNodeTooltip
             AddSeparatorIfNeeded();
             AddInfo(DeviceTreeTooltip.InfoPropertyIsWritable, vseRawData.IsWriteable.ToString().ToLowerInvariant());
             AddInfo(DeviceTreeTooltip.InfoPropertySensorType, vseRawData.SensorType);
-            AddInfo(DeviceTreeTooltip.InfoPropertyUnit, vseRawData.Unit);
         }
 
         return result;

@@ -4,7 +4,7 @@ using ViciOne.Cluster.Model;
 
 namespace DataCollectionWizard.Internal.Extensions;
 
-public static class ContainerEditorExtensions
+internal static class ContainerEditorExtensions
 {
     private const string NotGiven = "not given";
 

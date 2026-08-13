@@ -1,5 +1,5 @@
 ﻿using Sdk.Connections.Contracts;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 

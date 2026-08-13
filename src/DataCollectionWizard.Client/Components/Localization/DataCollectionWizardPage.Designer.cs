@@ -304,6 +304,15 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This device requires authentication.
+        /// </summary>
+        internal static string IoLinkScanRequiresAuthentication {
+            get {
+                return ResourceManager.GetString("IoLinkScanRequiresAuthentication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Log Level.
         /// </summary>
         internal static string LogLevel {

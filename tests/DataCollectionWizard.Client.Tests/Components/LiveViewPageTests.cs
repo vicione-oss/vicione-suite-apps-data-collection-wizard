@@ -5,16 +5,17 @@ using DataCollectionWizard.Client.Components;
 using DataCollectionWizard.Client.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Sdk.Testing.Client;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 using ViciOne.Ui.Blazor.Components.Dialog.Extensions;
 using ViciOne.Ui.Blazor.Components.ExpandableMenu.Extensions;
 using ViciOne.Ui.Blazor.Components.Tooltip.Extensions;
+using ViciOne.Ui.MonochromeIcons.Assets.Services;
 
 namespace DataCollectionWizard.Client.Tests.Components;
 
 public class LiveViewPageTests
 {
-    [Fact(Skip = "Temporarily disabled")]
+    [Fact]
     public async Task Init_module_should_register_and_configure_services()
     {
         // Arrange
@@ -36,6 +37,8 @@ public class LiveViewPageTests
         ctx.Services.AddScoped(_ => Substitute.For<IEventBroker>());
         ctx.Services.AddScoped(_ => Substitute.For<IResourceDownloadStateService>());
         ctx.Services.AddKeyedScoped(Sdk.Constants.ClientTimeProviderServiceKey, (_, __) => timeProvider);
+        ctx.Services.AddScoped(_ => Substitute.For<IMonochromeIconSvgMarkupProvider>());
+        ctx.Services.AddScoped<DeviceTreeNodeIconProvider>();
 
         ctx.JSInterop.Mode = JSRuntimeMode.Loose;
         ctx.JSInterop.SetupModule("init", _ => true);

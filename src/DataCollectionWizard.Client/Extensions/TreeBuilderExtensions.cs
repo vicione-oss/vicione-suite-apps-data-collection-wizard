@@ -1,5 +1,5 @@
 ﻿using DataCollectionWizard.Client.Models.DeviceTree;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 using ViciOne.Ui.TreeEditor.Builder;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Nodes;
 

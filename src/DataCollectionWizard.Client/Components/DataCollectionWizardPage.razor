@@ -283,14 +283,20 @@
                                     {
                                         <div class="device-list-entry">
                                             <input @onchange="@((e) => OnScannedDeviceSelectionChanged((bool)e.Value!, device))"
-                                                    checked="@_selectedIoLinkDevices.Contains(device.Address!.ToString())"
+                                                    checked="@_selectedIoLinkDevices.Contains(device.Network.Address!.ToString())"
                                                     type="checkbox" />
                                             <div class="device-list-entry-name">
-                                                @device.DeviceName
+                                                @device.Identity.Name
+                                                @if (device.Security.RequiresAuthentication)
+                                                {
+                                                    <span title="@Localization.DataCollectionWizardPage.IoLinkScanRequiresAuthentication">
+                                                        <MonochromeIcon Name="@MonochromeIconName.LockActive" Size="@MonochromeIconSize.Small" />
+                                                    </span>
+                                                }
                                             </div>
 
                                             <div class="device-list-entry-info">
-                                                @($"{device.Address!.DnsSafeHost}:{device.Address.Port} | {device.MacAddress} | {device.VendorId}-{device.DeviceId}")
+                                                @($"{device.Network.Address!.DnsSafeHost}:{device.Network.Address.Port} | {device.Network.MacAddress} | {device.Identity.VendorId}-{device.Identity.DeviceId}")
                                             </div>
                                         </div>
                                     }

@@ -2,7 +2,7 @@
 using DataCollectionWizard.Public.Services;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Backend.Consumers;
 

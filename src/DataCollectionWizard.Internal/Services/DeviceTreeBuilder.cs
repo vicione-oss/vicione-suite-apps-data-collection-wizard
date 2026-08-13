@@ -1,9 +1,10 @@
 ﻿using System.Diagnostics;
 using DataCollectionWizard.Internal.Extensions;
+using DataCollectionWizard.Public.Extensions;
 using Sdk.Connections.Contracts;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Comparer;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.DeviceTree.Contracts;
+using ViciOne.DeviceTree.Contracts.Comparer;
+using ViciOne.DeviceTree.Contracts.Extensions;
 
 namespace DataCollectionWizard.Internal.Services;
 
@@ -63,7 +64,7 @@ public static class DeviceTreeBuilder
             typeof(DeviceTreeVseCounter),
             typeof(DeviceTreeVseVariants),
             typeof(DeviceTreeProcessData),
-            typeof(DeviceTreeConstantData),
+            typeof(DeviceTreeAssignedName),
             typeof(DeviceTreeVseRawData),
         ];
 
@@ -194,19 +195,19 @@ public static class DeviceTreeBuilder
                     break;
 
                 case DeviceTreeProcessData processData when parsed is DeviceTreeProcessData parsedProcess:
-                    processData.StructureUnit = parsedProcess.StructureUnit;
+                    processData.Unit = parsedProcess.Unit;
                     break;
 
                 case DeviceTreeVseRawData rawData when parsed is DeviceTreeVseRawData parsedRaw:
                     rawData.Index = parsedRaw.Index;
                     break;
 
-                case DeviceTreeConstantData constantData when parsed is DeviceTreeConstantData parsedConstant:
+                case DeviceTreeAssignedName constantData when parsed is DeviceTreeAssignedName parsedConstant:
                     constantData.Value = parsedConstant.Value;
                     break;
             }
 
-            if (persisted is IAliasStructureNode aliasNode && parsed is IAliasStructureNode parsedAlias)
+            if (persisted is IDeviceTreeDeviceAliasNode aliasNode && parsed is IDeviceTreeDeviceAliasNode parsedAlias)
                 aliasNode.Alias = parsedAlias.Alias;
 
             if (persisted is IDeviceTreeVseDataParent vseParent && parsed is IDeviceTreeVseDataParent parsedVseParent)
@@ -246,7 +247,7 @@ public static class DeviceTreeBuilder
             // Correlation is by ID, so parsed.Id == persisted.Id when parsed is not null.
             // We prefer the parsed node's Name/Alias as it reflects the current device state.
             var source = parsed ?? persisted;
-            nodeNames[source.Id] = source is IAliasStructureNode { Alias: not null } alias ? alias.Alias : source.Name;
+            nodeNames[source.Id] = source is IDeviceTreeDeviceAliasNode { Alias: not null } alias ? alias.Alias : source.Name;
         }
 
         return nodeNames!;
@@ -304,7 +305,7 @@ public static class DeviceTreeBuilder
         {
             if (child is IDeviceTreeMasterNode master)
             {
-                if (!master.IsOffline)
+                if (master.Status == ConnectionStatus.Online)
                     onlineMasterUrls.Add(master.Url);
                 else
                     offlineMasters.Add(master);
@@ -430,10 +431,10 @@ public static class DeviceTreeBuilder
 
     private static void ApplyOnlineStatus(IDeviceTreeBase persisted, IDeviceTreeBase? parsed)
     {
-        var parsedIsOffline = parsed?.IsOffline ?? true;
+        var parsedStatus = parsed?.Status ?? ConnectionStatus.Offline;
 
-        if (persisted.IsOffline != parsedIsOffline)
-            persisted.IsOffline = parsedIsOffline;
+        if (persisted.Status != parsedStatus)
+            persisted.Status = parsedStatus;
     }
 
     private static void UpdateSensors(IDeviceTreeEventTriggerDataNode persistedTriggerNode, IDeviceTreeEventTriggerDataNode parsedTriggerNode)

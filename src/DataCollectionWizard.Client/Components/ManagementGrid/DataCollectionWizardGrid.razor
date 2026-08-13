@@ -1,11 +1,11 @@
 ﻿@using DataCollectionWizard.Client.Components.ManagementGrid.GridCells
-@using ViciOne.Ui.Localization.Resources
 @using DataCollectionWizard.Client.Components.ManagementGrid.Models
 @using DataCollectionWizard.Client.Extensions
 @using DataCollectionWizard.Client.Models
 @using DataCollectionWizard.Public.Extensions
 @using Microsoft.AspNetCore.Components.Web.Virtualization
-@using ViciOne.Driver.IoTCore.Contracts.DeviceTree
+@using ViciOne.DeviceTree.Contracts
+@using ViciOne.Ui.Localization.Resources
 
 <div @ref="@(_mainContainerRef)"
      class="data-collection-wizard-grid"
@@ -157,9 +157,9 @@
                                                  RawDataNode="@rawData" />
                                 }
 
-                                if (item.DataNode is IDeviceTreeCompressableDataNode dataNode && dataNode.DataType.SupportedForLogging())
+                                if (item.DataNode is IDeviceTreeCompressableDataNode dataNode && dataNode.DataType.SupportsLogging)
                                 {
-                                    if (dataNode.DataType.SupportedForCompression())
+                                    if (dataNode.DataType.SupportsCompression)
                                     {
                                         <CompressableCell CompressableDataNode="@dataNode"
                                                           Configuration="@targetInfo"

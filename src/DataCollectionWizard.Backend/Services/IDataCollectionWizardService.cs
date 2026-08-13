@@ -1,7 +1,7 @@
 ﻿using DataCollectionWizard.Internal.Commands;
 using Microsoft.Extensions.Logging;
 using ViciOne.Cluster.Model;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Backend.Services;
 

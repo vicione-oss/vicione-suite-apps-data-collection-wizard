@@ -1,11 +1,11 @@
 ﻿using System.Globalization;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 
-public class SchedulerConfigurationComparerIgnoreDataGroupIdentifier : IEqualityComparer<SchedulerConfiguration>
+internal class SchedulerConfigurationIgnoreDataGroupEqualityComparer : IEqualityComparer<SchedulerConfiguration>
 {
-    public static readonly SchedulerConfigurationComparerIgnoreDataGroupIdentifier Instance = new();
+    public static readonly SchedulerConfigurationIgnoreDataGroupEqualityComparer Instance = new();
 
     private static bool AreTimesEqual(Dictionary<DayOfWeek, TimeSpan[]> x, Dictionary<DayOfWeek, TimeSpan[]> y)
     {

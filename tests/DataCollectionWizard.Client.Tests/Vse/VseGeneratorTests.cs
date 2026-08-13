@@ -7,7 +7,7 @@ using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using Microsoft.Extensions.Logging.Abstractions;
 using Sdk.Connections.Contracts;
 using Sdk.Connections.Extensions;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Client.Tests.Vse;
 
@@ -18,6 +18,7 @@ public class VseGeneratorTests
 
     private readonly DeviceTreeVseDevice _vse = new()
     {
+        Alias = "VSE100 - 00179322",
         Children =
         {
             new DeviceTreeStructureNode
@@ -29,9 +30,8 @@ public class VseGeneratorTests
                         Alias = "OU02_Warning_02",
                         Children =
                         {
-                            new DeviceTreeConstantData
+                            new DeviceTreeAssignedName
                             {
-                                DataType = DataType.StringT,
                                 Id = "vse@127.0.0.1//Alarms/Alarm02__!__OU02_Warning_02/Name",
                                 Name = "Name",
                                 Value = "OU02_Warning_02",
@@ -42,15 +42,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.BooleanT,
+                                DataType = DataType.Flag,
                                 Id = "vse@127.0.0.1//Alarms/Alarm02__!__OU02_Warning_02/Value",
                                 Name = "Value",
-                                Visible = true,
                             }
                         },
                         Id = "vse@127.0.0.1//Alarms//Alarm02__!__OU02_Warning_02",
@@ -63,9 +62,8 @@ public class VseGeneratorTests
                         Alias = "IO01_Damage_03",
                         Children =
                         {
-                            new DeviceTreeConstantData
+                            new DeviceTreeAssignedName
                             {
-                                DataType = DataType.StringT,
                                 Id = "vse@127.0.0.1//Alarms//Alarm03__!__IO01_Damage_03/Name",
                                 Name = "Name",
                                 Value = "IO01_Damage_03",
@@ -76,16 +74,15 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
                                         Enabled = true,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.BooleanT,
+                                DataType = DataType.Flag,
                                 Id = "vse@127.0.0.1//Alarms//Alarm03__!__IO01_Damage_03/Value",
                                 Name = "Value",
-                                Visible = true,
                             }
                         },
                         Id = "vse@127.0.0.1//Alarms//Alarm03__!__IO01_Damage_03",
@@ -112,20 +109,18 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
                                         Enabled = true,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Counters/Counter01__!__OB01_ObjectState_01/Limit",
                                 Name = "Limit",
-                                Visible = true,
                             },
-                            new DeviceTreeConstantData
+                            new DeviceTreeAssignedName
                             {
-                                DataType = DataType.StringT,
                                 Id = "vse@127.0.0.1//Counters/Counter01__!__OB01_ObjectState_01/Name",
                                 Name = "Name",
                                 Value = "OB01_ObjectState_01",
@@ -136,16 +131,15 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
                                         Enabled = true,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.StringT,
+                                DataType = DataType.Text,
                                 Id = "vse@127.0.0.1//Counters/Counter01__!__OB01_ObjectState_01/State",
                                 Name = "State",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -153,16 +147,15 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
                                         Enabled = true,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.StringT,
+                                DataType = DataType.Text,
                                 Id = "vse@127.0.0.1//Counters/Counter01__!__OB01_ObjectState_01/Unit",
                                 Name = "Unit",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -170,16 +163,15 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
                                         Enabled = true,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Counters/Counter01__!__OB01_ObjectState_01/Value",
                                 Name = "Value",
-                                Visible = true,
                             }
                         },
                         Id = "vse@127.0.0.1//Counters/Counter01__!__OB01_ObjectState_01",
@@ -199,20 +191,18 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
                                         Enabled = true,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Counters/Counter02__!__OB01_ObjectState_02/Limit",
                                 Name = "Limit",
-                                Visible = true,
                             },
-                            new DeviceTreeConstantData
+                            new DeviceTreeAssignedName
                             {
-                                DataType = DataType.StringT,
                                 Id = "vse@127.0.0.1//Counters/Counter02__!__OB01_ObjectState_02/Name",
                                 Name = "Name",
                                 Value = "OB01_ObjectState_02",
@@ -223,16 +213,15 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
                                         Enabled = true,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.StringT,
+                                DataType = DataType.Text,
                                 Id = "vse@127.0.0.1//Counters/Counter02__!__OB01_ObjectState_02/State",
                                 Name = "State",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -240,16 +229,15 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
                                         Enabled = true,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.StringT,
+                                DataType = DataType.Text,
                                 Id = "vse@127.0.0.1//Counters/Counter02__!__OB01_ObjectState_02/Unit",
                                 Name = "Unit",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -257,16 +245,15 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
                                         Enabled = true,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Counters/Counter02__!__OB01_ObjectState_02/Value",
                                 Name = "Value",
-                                Visible = true,
                             }
                         },
                         Id = "vse@127.0.0.1//Counters/Counter02__!__OB01_ObjectState_02",
@@ -286,20 +273,18 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
                                         Enabled = true,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Counters/Counter03__!__OB01_ObjectState_03/Limit",
                                 Name = "Limit",
-                                Visible = true,
                             },
-                            new DeviceTreeConstantData
+                            new DeviceTreeAssignedName
                             {
-                                DataType = DataType.StringT,
                                 Id = "vse@127.0.0.1//Counters/Counter03__!__OB01_ObjectState_03/Name",
                                 Name = "Name",
                                 Value = "OB01_ObjectState_03",
@@ -310,16 +295,15 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
                                         Enabled = true,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.StringT,
+                                DataType = DataType.Text,
                                 Id = "vse@127.0.0.1//Counters/Counter03__!__OB01_ObjectState_03/State",
                                 Name = "State",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -327,16 +311,15 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
                                         Enabled = true,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.StringT,
+                                DataType = DataType.Text,
                                 Id = "vse@127.0.0.1//Counters/Counter03__!__OB01_ObjectState_03/Unit",
                                 Name = "Unit",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -344,16 +327,15 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
                                         Enabled = true,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Counters/Counter03__!__OB01_ObjectState_02/Value",
                                 Name = "Value",
-                                Visible = true,
                             }
                         },
                         Id = "vse@127.0.0.1//Counters/Counter03__!__OB01_ObjectState_03",
@@ -379,9 +361,8 @@ public class VseGeneratorTests
                                 Alias = "External_01",
                                 Children =
                                 {
-                                    new DeviceTreeConstantData
+                                    new DeviceTreeAssignedName
                                     {
-                                        DataType = DataType.StringT,
                                         Id = "vse@127.0.0.1//Inputs/External/Input01__!__External_01/Name",
                                         Name = "Name",
                                         Value = "External_01",
@@ -392,15 +373,14 @@ public class VseGeneratorTests
                                         {
                                             new CompressorConfiguration
                                             {
+                                                Aggregation = AggregationFunction.MinMaxAvg,
                                                 CompressionTime = 10000,
                                                 DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                PoolingMode = PoolingMode.MinMaxAvg,
                                             }
                                         },
-                                        DataType = DataType.StringT,
+                                        DataType = DataType.Text,
                                         Id = "vse@127.0.0.1//Inputs/External/Input01__!__External_01/Unit",
                                         Name = "Unit",
-                                        Visible = true,
                                     },
                                     new DeviceTreeProcessData
                                     {
@@ -408,16 +388,15 @@ public class VseGeneratorTests
                                         {
                                             new CompressorConfiguration
                                             {
+                                                Aggregation = AggregationFunction.MinMaxAvg,
                                                 CompressionTime = 10000,
                                                 DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                PoolingMode = PoolingMode.MinMaxAvg,
                                             }
                                         },
-                                        DataType = DataType.Float32T,
+                                        DataType = DataType.Real,
                                         Id = "vse@127.0.0.1//Inputs/External/Input01__!__External_01/Value",
                                         IsWriteable = true,
                                         Name = "Value",
-                                        Visible = true,
                                     }
                                 },
                                 Id = "vse@127.0.0.1//Inputs/External/Input01__!__External_01",
@@ -431,9 +410,8 @@ public class VseGeneratorTests
                                 Alias = "External_02",
                                 Children =
                                 {
-                                    new DeviceTreeConstantData
+                                    new DeviceTreeAssignedName
                                     {
-                                        DataType = DataType.StringT,
                                         Id = "vse@127.0.0.1//Inputs/External/Input02__!__External_02/Name",
                                         Name = "Name",
                                         Value = "External_02",
@@ -444,15 +422,14 @@ public class VseGeneratorTests
                                         {
                                             new CompressorConfiguration
                                             {
+                                                Aggregation = AggregationFunction.MinMaxAvg,
                                                 CompressionTime = 10000,
                                                 DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                PoolingMode = PoolingMode.MinMaxAvg,
                                             }
                                         },
-                                        DataType = DataType.StringT,
+                                        DataType = DataType.Text,
                                         Id = "vse@127.0.0.1//Inputs/External/Input02__!__External_02/Unit",
                                         Name = "Unit",
-                                        Visible = true,
                                     },
                                     new DeviceTreeProcessData
                                     {
@@ -460,15 +437,14 @@ public class VseGeneratorTests
                                         {
                                             new CompressorConfiguration
                                             {
+                                                Aggregation = AggregationFunction.MinMaxAvg,
                                                 CompressionTime = 10000,
                                                 DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                PoolingMode = PoolingMode.MinMaxAvg,
                                             }
                                         },
-                                        DataType = DataType.Float32T,
+                                        DataType = DataType.Real,
                                         Id = "vse@127.0.0.1//Inputs/External/Input02__!__External_02/Value",
                                         Name = "Value",
-                                        Visible = true,
                                     }
                                 },
                                 Id = "vse@127.0.0.1//Inputs/External/Input02__!__External_02",
@@ -482,9 +458,8 @@ public class VseGeneratorTests
                                 Alias = "External_03",
                                 Children =
                                 {
-                                    new DeviceTreeConstantData
+                                    new DeviceTreeAssignedName
                                     {
-                                        DataType = DataType.StringT,
                                         Id = "vse@127.0.0.1//Inputs/External/Input03__!__External_03/Name",
                                         Name = "Name",
                                         Value = "External_03",
@@ -495,15 +470,14 @@ public class VseGeneratorTests
                                         {
                                             new CompressorConfiguration
                                             {
+                                                Aggregation = AggregationFunction.MinMaxAvg,
                                                 CompressionTime = 10000,
                                                 DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                PoolingMode = PoolingMode.MinMaxAvg,
                                             }
                                         },
-                                        DataType = DataType.StringT,
+                                        DataType = DataType.Text,
                                         Id = "vse@127.0.0.1//Inputs/External/Input03__!__External_03/Unit",
                                         Name = "Unit",
-                                        Visible = true,
                                     },
                                     new DeviceTreeProcessData
                                     {
@@ -511,15 +485,14 @@ public class VseGeneratorTests
                                         {
                                             new CompressorConfiguration
                                             {
+                                                Aggregation = AggregationFunction.MinMaxAvg,
                                                 CompressionTime = 10000,
                                                 DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                PoolingMode = PoolingMode.MinMaxAvg,
                                             }
                                         },
-                                        DataType = DataType.Float32T,
+                                        DataType = DataType.Real,
                                         Id = "vse@127.0.0.1//Inputs/External/Input03__!__External_03/Value",
                                         Name = "Value",
-                                        Visible = true,
                                     }
                                 },
                                 Id = "vse@127.0.0.1//Inputs/External/Input03__!__External_03",
@@ -533,9 +506,8 @@ public class VseGeneratorTests
                                 Alias = "External_04",
                                 Children =
                                 {
-                                    new DeviceTreeConstantData
+                                    new DeviceTreeAssignedName
                                     {
-                                        DataType = DataType.StringT,
                                         Id = "vse@127.0.0.1//Inputs/External/Input04__!__External_04/Name",
                                         Name = "Name",
                                         Value = "External_04",
@@ -546,15 +518,14 @@ public class VseGeneratorTests
                                         {
                                             new CompressorConfiguration
                                             {
+                                                Aggregation = AggregationFunction.MinMaxAvg,
                                                 CompressionTime = 10000,
                                                 DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                PoolingMode = PoolingMode.MinMaxAvg,
                                             }
                                         },
-                                        DataType = DataType.StringT,
+                                        DataType = DataType.Text,
                                         Id = "vse@127.0.0.1//Inputs/External/Input04__!__External_04/Unit",
                                         Name = "Unit",
-                                        Visible = true,
                                     },
                                     new DeviceTreeProcessData
                                     {
@@ -562,15 +533,14 @@ public class VseGeneratorTests
                                         {
                                             new CompressorConfiguration
                                             {
+                                                Aggregation = AggregationFunction.MinMaxAvg,
                                                 CompressionTime = 10000,
                                                 DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                PoolingMode = PoolingMode.MinMaxAvg,
                                             }
                                         },
-                                        DataType = DataType.Float32T,
+                                        DataType = DataType.Real,
                                         Id = "vse@127.0.0.1//Inputs/External/Input04__!__External_04/Value",
                                         Name = "Value",
-                                        Visible = true,
                                     }
                                 },
                                 Id = "vse@127.0.0.1//Inputs/External/Input04__!__External_04",
@@ -602,15 +572,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/Average",
                                 Name = "Average",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -618,15 +587,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/AveragingPeriod",
                                 Name = "AveragingPeriod",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -634,15 +602,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/BaseLine",
                                 Name = "BaseLine",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -650,15 +617,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/Damage",
                                 Name = "Damage",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -666,15 +632,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/Error",
                                 Name = "Error",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -682,15 +647,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/Maximum",
                                 Name = "Maximum",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -698,19 +662,17 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/Minimum",
                                 Name = "Minimum",
-                                Visible = true,
                             },
-                            new DeviceTreeConstantData
+                            new DeviceTreeAssignedName
                             {
-                                DataType = DataType.StringT,
                                 Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/Name",
                                 Name = "Name",
                                 Value = "EX01_UpperLimit_01",
@@ -721,15 +683,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/RefValue",
                                 Name = "RefValue",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -737,15 +698,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/RotSpeed",
                                 Name = "RotSpeed",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -753,15 +713,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.StringT,
+                                DataType = DataType.Text,
                                 Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/Unit",
                                 Name = "Unit",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -769,15 +728,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/Warning",
                                 Name = "Warning",
-                                Visible = true,
                             },
                         },
                         Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01",
@@ -800,15 +758,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/Average",
                                 Name = "Average",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -816,15 +773,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/AveragingPeriod",
                                 Name = "AveragingPeriod",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -832,15 +788,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/BaseLine",
                                 Name = "BaseLine",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -848,15 +803,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/Damage",
                                 Name = "Damage",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -864,15 +818,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/Error",
                                 Name = "Error",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -880,15 +833,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/Maximum",
                                 Name = "Maximum",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -896,19 +848,17 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/Minimum",
                                 Name = "Minimum",
-                                Visible = true,
                             },
-                            new DeviceTreeConstantData
+                            new DeviceTreeAssignedName
                             {
-                                DataType = DataType.StringT,
                                 Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/Name",
                                 Name = "Name",
                                 Value = "EX02_UpperLimit_02",
@@ -919,15 +869,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/RefValue",
                                 Name = "RefValue",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -935,15 +884,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/RotSpeed",
                                 Name = "RotSpeed",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -951,15 +899,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.StringT,
+                                DataType = DataType.Text,
                                 Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/Unit",
                                 Name = "Unit",
-                                Visible = true,
                             },
                             new DeviceTreeProcessData
                             {
@@ -967,15 +914,14 @@ public class VseGeneratorTests
                                 {
                                     new CompressorConfiguration
                                     {
+                                        Aggregation = AggregationFunction.MinMaxAvg,
                                         CompressionTime = 10000,
                                         DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                        PoolingMode = PoolingMode.MinMaxAvg,
                                     }
                                 },
-                                DataType = DataType.Float32T,
+                                DataType = DataType.Real,
                                 Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/Warning",
                                 Name = "Warning",
-                                Visible = true,
                             },
                         },
                         Id = "vse@127.0.0.1//Objects/Object02__!__EX01_UpperLimit_02",
@@ -1061,7 +1007,6 @@ public class VseGeneratorTests
                                 DataGroupIdentifier = s_annaDataGroupIdentifier,
                             }
                         },
-                        Unit = "m/s²",
                     },
                     new DeviceTreeVseRawData
                     {
@@ -1128,7 +1073,6 @@ public class VseGeneratorTests
                                 DataGroupIdentifier = s_annaDataGroupIdentifier,
                             }
                         },
-                        Unit = "m/s²",
                     }
                 },
                 Id = "vse@127.0.0.1//RawData",
@@ -1144,17 +1088,16 @@ public class VseGeneratorTests
                         {
                             new CompressorConfiguration
                             {
+                                Aggregation = AggregationFunction.MinMaxAvg,
                                 CompressionTime = 10000,
                                 DataGroupIdentifier = s_annaDataGroupIdentifier,
                                 Enabled = true,
-                                PoolingMode = PoolingMode.MinMaxAvg,
                             }
                         },
-                        DataType = DataType.IntegerT,
+                        DataType = DataType.Whole,
                         Id = "vse@127.0.0.1//Variants/ActiveVariant",
                         IsWriteable = true,
                         Name = "ActiveVariant",
-                        Visible = true,
                     }
                 },
                 Id = "vse@127.0.0.1//Variants",
@@ -1169,7 +1112,6 @@ public class VseGeneratorTests
         Id = "vse@127.0.0.1/",
         MacAddress = "aa:bb:cc::ff",
         Name = "VSE100 - 00179322",
-        NameAlias = "VSE100 - 00179322",
         Url = new Uri("http://127.0.0.1")
     };
 
@@ -1301,7 +1243,7 @@ public class VseGeneratorTests
         var generator = new DataflowGenerator(builder, new NullLogger<DataflowGenerator>(), "mid", [new VseDataflowGenerator(new NullLogger<VseDataflowGenerator>())], [], []);
         var dataflow = builder.Cluster.Dataflows.First();
         // Act
-        generator.Generate(new DeviceTreeVseDevice { Id = "id", MacAddress = "ab:cd:de:fe:dc", Name = "VSE", NameAlias = "VSE", Url = new Uri("http://10.45.24.101") },
+        generator.Generate(new DeviceTreeVseDevice { Alias = "VSE", Id = "id", MacAddress = "ab:cd:de:fe:dc", Name = "VSE", Url = new Uri("http://10.45.24.101") },
                            [],
                            dataflow,
                            new(),

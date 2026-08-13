@@ -6,7 +6,7 @@ using DataCollectionWizard.Internal.Contracts;
 using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using Microsoft.AspNetCore.Components;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.GridCells;
 
@@ -32,24 +32,24 @@ public sealed partial class CompressableCell : ComponentBase
         new() { Text = PoolingGrid.SecondsTen.PoolingGridToString(), Value = PoolingGrid.SecondsTen, },
         new() { Text = PoolingGrid.MinutesOne.PoolingGridToString(), Value = PoolingGrid.MinutesOne, },
     ];
-    private static readonly ComboBoxOption<PoolingMode>[] s_poolingModesAnna =
+    private static readonly ComboBoxOption<AggregationFunction>[] s_aggregationFunctionsAnna =
     [
-        new() { Text = PoolingMode.MinMaxAvg.PoolingModeToString(), Value = PoolingMode.MinMaxAvg, },
-        new() { Text = PoolingMode.Avg.PoolingModeToString(), Value = PoolingMode.Avg, },
-        new() { Text = PoolingMode.Min.PoolingModeToString(), Value = PoolingMode.Min, },
-        new() { Text = PoolingMode.Max.PoolingModeToString(), Value = PoolingMode.Max, },
+        new() { Text = AggregationFunction.MinMaxAvg.AggregationFunctionToString(), Value = AggregationFunction.MinMaxAvg, },
+        new() { Text = AggregationFunction.Avg.AggregationFunctionToString(), Value = AggregationFunction.Avg, },
+        new() { Text = AggregationFunction.Min.AggregationFunctionToString(), Value = AggregationFunction.Min, },
+        new() { Text = AggregationFunction.Max.AggregationFunctionToString(), Value = AggregationFunction.Max, },
     ];
-    private static readonly ComboBoxOption<PoolingMode>[] s_poolingModesMoneo =
+    private static readonly ComboBoxOption<AggregationFunction>[] s_aggregationFunctionsMoneo =
     [
-        new() { Text = PoolingMode.Last.PoolingModeToString(), Value = PoolingMode.Last, },
-        new() { Text = PoolingMode.Avg.PoolingModeToString(), Value = PoolingMode.Avg, },
-        new() { Text = PoolingMode.Min.PoolingModeToString(), Value = PoolingMode.Min, },
-        new() { Text = PoolingMode.Max.PoolingModeToString(), Value = PoolingMode.Max, },
+        new() { Text = AggregationFunction.Last.AggregationFunctionToString(), Value = AggregationFunction.Last, },
+        new() { Text = AggregationFunction.Avg.AggregationFunctionToString(), Value = AggregationFunction.Avg, },
+        new() { Text = AggregationFunction.Min.AggregationFunctionToString(), Value = AggregationFunction.Min, },
+        new() { Text = AggregationFunction.Max.AggregationFunctionToString(), Value = AggregationFunction.Max, },
     ];
     private static readonly Expression<Func<ComboBoxOption<PoolingGrid>, string>> s_poolingGridTextSelector = e => e.Text;
     private static readonly Expression<Func<ComboBoxOption<PoolingGrid>, PoolingGrid>> s_poolingGridValueSelector = e => e.Value;
-    private static readonly Expression<Func<ComboBoxOption<PoolingMode>, string>> s_poolingModeTextSelector = e => e.Text;
-    private static readonly Expression<Func<ComboBoxOption<PoolingMode>, PoolingMode>> s_poolingModeValueSelector = e => e.Value;
+    private static readonly Expression<Func<ComboBoxOption<AggregationFunction>, string>> s_aggregationFunctionTextSelector = e => e.Text;
+    private static readonly Expression<Func<ComboBoxOption<AggregationFunction>, AggregationFunction>> s_aggregationFunctionValueSelector = e => e.Value;
     private CompressorConfiguration? _cachedConfig;
     private bool _shouldRender = true;
     private IDeviceTreeCompressableDataNode? _previousDataNode;
@@ -79,11 +79,11 @@ public sealed partial class CompressableCell : ComponentBase
             _ => [],
         };
 
-    private ComboBoxOption<PoolingMode>[] PoolingModes
+    private ComboBoxOption<AggregationFunction>[] AggregationFunctions
         => Configuration.Kind switch
         {
-            ConnectionKind.Anna => s_poolingModesAnna,
-            ConnectionKind.Moneo => s_poolingModesMoneo,
+            ConnectionKind.Anna => s_aggregationFunctionsAnna,
+            ConnectionKind.Moneo => s_aggregationFunctionsMoneo,
             _ => [],
         };
 
@@ -113,19 +113,19 @@ public sealed partial class CompressableCell : ComponentBase
     private PoolingGrid GetSelectedPoolingGrid()
         => Config.CompressionTime.ToPoolingGrid();
 
-    private PoolingMode GetSelectedPoolingMode()
-        => Config.PoolingMode;
+    private AggregationFunction GetSelectedAggregationFunction()
+        => Config.Aggregation;
 
     public bool IsOnChange()
         => Config.CompressionTime == -1;
 
-    private bool IsPoolingEnabled()
+    private bool IsCompressionEnabled()
         => Config.Enabled;
 
     private bool IsSupportedConnection()
         => Configuration?.IsSupportedForConfiguration(CompressableDataNode) ?? false;
 
-    private void PoolingEnabledChanged(bool isEnabled)
+    private void CompressionEnabledChanged(bool isEnabled)
     {
         Config.Enabled = isEnabled;
         _shouldRender = true;
@@ -142,9 +142,9 @@ public sealed partial class CompressableCell : ComponentBase
         OnDeviceTreeChanged.InvokeAsync();
     }
 
-    private void PoolingModeChanged(PoolingMode poolingMode)
+    private void AggregationFunctionChanged(AggregationFunction aggregationFunction)
     {
-        Config.PoolingMode = poolingMode;
+        Config.Aggregation = aggregationFunction;
         _shouldRender = true;
 
         OnDeviceTreeChanged.InvokeAsync();

@@ -6,7 +6,7 @@ using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid;
 
@@ -24,8 +24,10 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
 
+#pragma warning disable CA2227 // Collection properties should be read only - required for Blazor parameter binding
     [Parameter, EditorRequired]
     public Dictionary<string, IDeviceTreeBase> AllNodes { get; set; } = [];
+#pragma warning restore CA2227 // Collection properties should be read only - required for Blazor parameter binding
 
     [Parameter]
     public EventCallback<IDeviceTreeMasterNode> OnDeviceTreeChanged { get; set; }

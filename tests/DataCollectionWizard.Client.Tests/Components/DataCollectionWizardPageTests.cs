@@ -6,16 +6,17 @@ using DataCollectionWizard.Client.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Sdk.Client.Modules.Localization;
 using Sdk.Testing.Client;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 using ViciOne.Ui.Blazor.Components.Dialog.Extensions;
 using ViciOne.Ui.Blazor.Components.ExpandableMenu.Extensions;
 using ViciOne.Ui.Blazor.Components.Tooltip.Extensions;
+using ViciOne.Ui.MonochromeIcons.Assets.Services;
 
 namespace DataCollectionWizard.Client.Tests.Components;
 
 public class DataCollectionWizardPageTests
 {
-    [Fact(Skip = "Temporarily disabled")]
+    [Fact]
     public async Task Init_module_should_register_and_configure_services()
     {
         // Arrange
@@ -37,6 +38,8 @@ public class DataCollectionWizardPageTests
         ctx.Services.AddScoped(_ => Substitute.For<IClientModuleLocalizer<DataCollectionWizardClientModule>>());
         ctx.Services.AddScoped(_ => Substitute.For<IEventBroker>());
         ctx.Services.AddScoped(_ => Substitute.For<IResourceDownloadStateService>());
+        ctx.Services.AddScoped(_ => Substitute.For<IMonochromeIconSvgMarkupProvider>());
+        ctx.Services.AddScoped<DeviceTreeNodeIconProvider>();
         ctx.Services.AddDialog();
 
         // Act

@@ -12,8 +12,8 @@ using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Public.Extensions;
 using Microsoft.AspNetCore.Components;
 using Sdk.Client.Modules;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.DeviceTree.Contracts;
+using ViciOne.DeviceTree.Contracts.Extensions;
 using ViciOne.Ui.Blazor.Components.Dialog.Components;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Factories;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Models;
@@ -71,7 +71,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
     private LiveGridRowModel[] CalculateGridItems(List<IDeviceTreeLiveDataNode> _)
     {
         return [.. _adapter.GetRelevantDataNodes()
-            .Where(n => n.Visible && n.DataType.SupportedForLiveView())
+            .Where(n => n is not IDeviceTreeHiddenNode && n.DataType.SupportsLiveView)
             .Select(DataNodeToGridModel)
             .Distinct()];
 
@@ -129,7 +129,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         if (_tree is null)
             return;
 
-        SetNodesIsOffline(arg, true);
+        SetNodesStatus(arg, ConnectionStatus.Offline);
         SetTree(_tree, true);
         await InvokeAsync(StateHasChanged);
     }
@@ -139,7 +139,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         if (_tree is null)
             return;
 
-        SetNodesIsOffline(arg, false);
+        SetNodesStatus(arg, ConnectionStatus.Online);
         SetTree(_tree, false);
         await InvokeAsync(StateHasChanged);
     }
@@ -249,7 +249,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
             _cancelSubscribing.Dispose();
             _cancelSubscribing = new();
             await UnsubscribeAllAsync();
-            _gridNodes = [.. _adapter.GetRelevantDataNodes().OfType<IDeviceTreeLiveDataNode>().Where(n => n.Visible)];
+            _gridNodes = [.. _adapter.GetRelevantDataNodes().OfType<IDeviceTreeLiveDataNode>().Where(n => n is not IDeviceTreeHiddenNode)];
             _service.SetGridItems(CalculateGridItems(_gridNodes), false);
             await SubscribeAllAsync(_cancelSubscribing.Token);
             _service.RefreshImmediate();
@@ -286,7 +286,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         }
     }
 
-    private void SetNodesIsOffline(string[] nodeIds, bool isOffline)
+    private void SetNodesStatus(string[] nodeIds, ConnectionStatus status)
     {
         if (_tree is null)
             return;
@@ -297,7 +297,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         {
             if (allNodes.TryGetValue(nodeId, out var node))
             {
-                node.IsOffline = isOffline;
+                node.Status = status;
             }
         }
     }
@@ -423,7 +423,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
             await DataCollectionWizardService.RequestExistingDevicesAsync(masterDevices.Where(v => v.Children.Count > 0), false, async receivedDevices =>
             {
                 var freshOrUnchangedDevices = receivedDevices
-                    .Select(r => r.device is not null && !r.device.IsOffline
+                    .Select(r => r.device is not null && r.device.Status == ConnectionStatus.Online
                         ? r.device
                         : masterDevices.FirstOrDefault(m => m.Url == r.address) as IDeviceTreeBase)
                     .Where(d => d is not null)

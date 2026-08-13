@@ -4,8 +4,6 @@ using Sdk.Client.Modules;
 using Sdk.Client.NavTiles.Extensions;
 using ViciOne.Ui.Blazor.Components.Dialog.Extensions;
 using ViciOne.Ui.Blazor.Components.ExpandableMenu.Extensions;
-using ViciOne.Ui.MonochromeIcons.Assets.Extensions;
-using ViciOne.Ui.MonochromeIcons.Assets.Services;
 
 namespace DataCollectionWizard.Client;
 

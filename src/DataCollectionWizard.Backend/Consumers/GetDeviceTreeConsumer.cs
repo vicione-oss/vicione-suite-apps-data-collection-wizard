@@ -5,7 +5,7 @@ using DataCollectionWizard.Public.Requests;
 using Microsoft.Extensions.Logging;
 using Sdk.Backend.Messaging;
 using Sdk.Messaging;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Backend.Consumers;
 
@@ -14,7 +14,7 @@ public sealed partial class GetDeviceTreeConsumer(IDataCollectionWizardService d
     public override Task<GetDeviceTreeResponse> HandleException(GetDeviceTree message, Exception e, CancellationToken cancellationToken)
         => Task.FromResult(new GetDeviceTreeResponse
         {
-            DeviceTree = new DeviceTreeRoot { IsOffline = true },
+            DeviceTree = new DeviceTreeRoot { Status = ConnectionStatus.Offline },
             RequestError = new ErrorInfo(ErrorCodes.GetDeviceTreeFailed, e.Message),
         });
 

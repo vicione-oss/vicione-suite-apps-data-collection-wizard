@@ -1,8 +1,8 @@
 ﻿using DataCollectionWizard.Internal.Commands;
 using DataCollectionWizard.Internal.Contracts;
 using Microsoft.Extensions.Logging;
-using ViciOne.Driver.IoTCore.Contracts.Dcp;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
+using ViciOne.DeviceTree.Contracts.Scanning;
 
 namespace DataCollectionWizard.Client.Services;
 

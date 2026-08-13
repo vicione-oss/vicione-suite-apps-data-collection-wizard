@@ -1,7 +1,7 @@
 ﻿
 namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
-public sealed class PoolingModesCloudInput
+public sealed class AggregationFunctionCloudInputs
 {
     public CloudInput Avg { get; set; } = new();
     public CloudInput Last { get; set; } = new();

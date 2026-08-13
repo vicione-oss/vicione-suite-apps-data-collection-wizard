@@ -1,6 +1,6 @@
 ﻿using DataCollectionWizard.Client.Models;
 using DataCollectionWizard.Public.Extensions;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Client.Extensions;
 
@@ -18,11 +18,11 @@ internal static class IDeviceTreeBaseExtensions
 
     public static string GetBreadcrumbDisplayText(this IDeviceTreeBase deviceTreeNode)
     {
-        if (deviceTreeNode is IDeviceTreeAliasNode aliasNode && !string.IsNullOrWhiteSpace(aliasNode.NameAlias))
-            return $"{aliasNode.NameAlias}";
+        if (deviceTreeNode is IDeviceTreeDeviceAliasNode deviceAliasNode)
+            return $"{deviceAliasNode.Alias}";
 
-        if (deviceTreeNode is IAliasStructureNode aliasStructureNode)
-            return $"{aliasStructureNode.Alias}";
+        if (deviceTreeNode is IDeviceTreeUserAliasNode { Alias: var alias } && !string.IsNullOrWhiteSpace(alias))
+            return $"{alias}";
 
         return $"{deviceTreeNode.Name}";
     }
@@ -31,7 +31,7 @@ internal static class IDeviceTreeBaseExtensions
     {
         var deviceStatus = NodeStatus.None;
 
-        if (device.IsOffline)
+        if (device.Status != ConnectionStatus.Online)
             deviceStatus |= NodeStatus.Offline;
 
         if (device.IsNew)
@@ -52,7 +52,7 @@ internal static class IDeviceTreeBaseExtensions
             return true;
 
         return isLiveView
-            ? dataNodeDevice.DataType.SupportedForLiveView()
-            : dataNodeDevice.DataType.SupportedForLogging();
+            ? dataNodeDevice.DataType.SupportsLiveView
+            : dataNodeDevice.DataType.SupportsLogging;
     }
 }

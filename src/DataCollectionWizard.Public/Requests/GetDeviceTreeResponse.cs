@@ -1,5 +1,5 @@
 ﻿using Sdk.Messaging;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Public.Requests;
 

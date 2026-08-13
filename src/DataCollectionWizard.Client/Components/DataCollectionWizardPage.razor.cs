@@ -12,6 +12,7 @@ using DataCollectionWizard.Internal.Events;
 using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
+using DataCollectionWizard.Public;
 using DataCollectionWizard.Public.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
@@ -21,10 +22,9 @@ using Sdk.Client.Modules;
 using Sdk.Client.Services;
 using Sdk.Connections.Contracts;
 using Sdk.MessageBanner.Contracts;
-using ViciOne.Driver.IoTCore.Contracts.Constants;
-using ViciOne.Driver.IoTCore.Contracts.Dcp;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.DeviceTree.Contracts;
+using ViciOne.DeviceTree.Contracts.Extensions;
+using ViciOne.DeviceTree.Contracts.Scanning;
 using ViciOne.Ui.Blazor.Components.Dialog.Components;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Factories;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Models;
@@ -329,11 +329,11 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             if (string.IsNullOrWhiteSpace(_ioLinkMasterFilter))
                 return true;
 
-            return (d.Address?.ToString()?.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase) ?? false)
-                || d.DeviceName.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
-                || d.MacAddress.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
-                || d.VendorId.ToString(CultureInfo.InvariantCulture).Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
-                || d.DeviceId.ToString(CultureInfo.InvariantCulture).Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase);
+            return (d.Network.Address?.ToString()?.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase) ?? false)
+                || d.Identity.Name.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
+                || d.Network.MacAddress.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
+                || d.Identity.VendorId.ToString(CultureInfo.InvariantCulture).Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
+                || d.Identity.DeviceId.ToString(CultureInfo.InvariantCulture).Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase);
         });
 
     protected override ValueTask DisposeInternal()
@@ -364,11 +364,11 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         return base.DisposeInternal();
     }
 
-    private static bool HasChangedUnits(IDeviceTreeMasterNode masterNode, Dictionary<string, string?> oldStructureUnits)
+    private static bool HasChangedUnits(IDeviceTreeMasterNode masterNode, Dictionary<string, string> oldStructureUnits)
     {
         foreach (var processData in masterNode.GetNodeAndDescendants().OfType<DeviceTreeProcessData>())
         {
-            if (oldStructureUnits.TryGetValue(processData.Id, out var oldUnit) && oldUnit != processData.StructureUnit)
+            if (oldStructureUnits.TryGetValue(processData.Id, out var oldUnit) && oldUnit != processData.Unit)
             {
                 return true;
             }
@@ -452,7 +452,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
         _nodePaths = GetNodePaths([_tree]);
         _adapter.SetDeviceTree(_tree, expandToOfflineNodes);
-        _service.HasOfflineNodes = _tree.GetNodeAndDescendants().Any(n => n.IsOffline && n is not IDeviceTreeMasterNode);
+        _service.HasOfflineNodes = _tree.GetNodeAndDescendants().Any(n => n.Status != ConnectionStatus.Online && n is not IDeviceTreeMasterNode);
 
         foreach (var dataNode in treeNodes.OfType<IDeviceTreeDataNode>())
             dataNode.AddConfigurations(_publishTargets);
@@ -472,7 +472,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         if (_tree is null)
             return;
 
-        SetNodesIsOffline(arg, true);
+        SetNodesStatus(arg, ConnectionStatus.Offline);
         SetTree(_tree, true);
         await InvokeAsync(StateHasChanged);
     }
@@ -482,7 +482,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         if (_tree is null)
             return;
 
-        SetNodesIsOffline(arg, false);
+        SetNodesStatus(arg, ConnectionStatus.Online);
         SetTree(_tree, false);
         await InvokeAsync(StateHasChanged);
     }
@@ -503,10 +503,10 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
     private void OnAdapterNodeEdited(NodeBase node)
     {
-        if (node.Device is not IDeviceTreeAliasNode aliasNode)
+        if (node.Device is not IDeviceTreeUserAliasNode aliasNode)
             return;
 
-        _deviceAlias = aliasNode.NameAlias ?? string.Empty;
+        _deviceAlias = aliasNode.Alias ?? string.Empty;
         _editingNode = node;
         _refAliasDialog!.ShowAsync();
     }
@@ -640,9 +640,9 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                             Text = "an ifm IO-Link device",
                         },
                         Id = $"IoLink@{uri.DnsSafeHost}:{uri.Port}",
-                        IsOffline = true,
                         MacAddress = "ff:ff:ff:ff:ff",
                         Name = "IO-Link Master",
+                        Status = ConnectionStatus.Offline,
                         Url = uri,
                     };
                 }
@@ -710,9 +710,9 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                         Text = "an ifm VSE device",
                     },
                     Id = $"vse@{vseAddress}",
-                    IsOffline = true,
                     MacAddress = "ff:ff:ff:ff:ff",
                     Name = "VSE Device",
+                    Status = ConnectionStatus.Offline,
                     Url = VseAddresses.GetVseAddressWithPort(vseAddress.DnsSafeHost),
                 };
             }
@@ -730,13 +730,13 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     {
         await _refAliasDialog!.CloseAsync();
 
-        if (_editingNode!.Device is not IDeviceTreeAliasNode aliasNode)
+        if (_editingNode!.Device is not IDeviceTreeUserAliasNode aliasNode)
             return;
 
-        if (_deviceAlias == aliasNode.NameAlias)
+        if (_deviceAlias == aliasNode.Alias)
             return;
 
-        aliasNode.NameAlias = string.IsNullOrWhiteSpace(_deviceAlias) ? null : _deviceAlias.Trim();
+        aliasNode.Alias = string.IsNullOrWhiteSpace(_deviceAlias) ? null : _deviceAlias.Trim();
         _service.DeviceTreeChanged = true;
 
         _editingNode.DisplayText = DeviceTreeNodeNameProvider.GetTreeDisplayText(_editingNode.Device);
@@ -894,7 +894,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
     private void OnScannedDeviceSelectionChanged(bool selected, DcpDevice device)
     {
-        var deviceAddress = device.Address?.ToString();
+        var deviceAddress = device.Network.Address?.ToString();
 
         if (deviceAddress is null)
         {
@@ -909,20 +909,6 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     }
 
     private void OnTreeSelectionChangedAsync()
-        // SelectionChanged can fire from a background thread (e.g. DataflowEventBroker
-        // calling SetDeviceTree inside UpdateDeviceTreeAsync), so InvokeAsync is required
-        // to marshal back to the Blazor circuit dispatcher before touching component state.
-        //
-        // Two-phase render to show the tree selection highlight before the grid is rebuilt:
-        //   Phase 1 — clear the grid and queue a render via StateHasChanged. Blazor will
-        //             include both the empty grid and the sidebar's own selection-highlight
-        //             render in the same batch and send it to the browser.
-        //   Phase 2 — OnAfterRenderedAsync is invoked only after that batch has been sent,
-        //             so SetGridItems() always runs in a subsequent render cycle.
-        //
-        // Note: if Blazor coalesces this StateHasChanged with another pending render
-        // (e.g. a simultaneous node-online event), Phase 1 and Phase 2 may still appear
-        // together. This is expected Blazor Server batching behaviour.
         => _ = InvokeAsync(() =>
         {
             _service.GridItems = [];
@@ -973,7 +959,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         {
             var child = tree.Children[i];
 
-            if (child.IsOffline && child is not IDeviceTreeMasterNode)
+            if (child.Status != ConnectionStatus.Online && child is not IDeviceTreeMasterNode)
             {
                 result.Add(child);
                 tree.Children.RemoveAt(i);
@@ -1100,8 +1086,8 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                 _scannedIoLinkDevices = [.. scanResult.Devices
                                                       .Where(d => !d.IsUnreachable)
                                                       // Todo: Vergleich zuverlässiger machen
-                                                      .Where(d => !currentIoLinkMasters.Any(m => m.Url == d.Address))
-                                                      .OrderBy(d => d.Address.ToString())];
+                                                      .Where(d => !currentIoLinkMasters.Any(m => m.Url == d.Network.Address))
+                                                      .OrderBy(d => d.Network.Address.ToString())];
 
                 _scanIoLinkErrors = scanResult.Messages;
 
@@ -1109,7 +1095,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             }
             catch (Exception ex)
             {
-                _scanIoLinkErrors.Add($"An error occured while trying to scan for IO-Link Masters: {ex.GetType()}: {ex.Message}");
+                _scanIoLinkErrors.Add($"An error occurred while trying to scan for IO-Link Masters: {ex.GetType()}: {ex.Message}");
             }
         }, cancellationToken);
     }
@@ -1181,7 +1167,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             return;
 
         _service.GridItems = [.. _adapter.GetRelevantDataNodes()
-            .Where(dn => dn.Visible && dn.DataType.SupportedForLogging() && nodePaths!.ContainsKey(dn))
+            .Where(dn => dn is not IDeviceTreeHiddenNode && dn.DataType.SupportsLogging && nodePaths!.ContainsKey(dn))
             .Select(DataNodeToGridModel)
         ];
 
@@ -1193,7 +1179,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             };
     }
 
-    private void SetNodesIsOffline(string[] nodeIds, bool isOffline)
+    private void SetNodesStatus(string[] nodeIds, ConnectionStatus status)
     {
         if (_tree is null)
             return;
@@ -1206,7 +1192,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             {
                 if (allNodes.TryGetValue(nodeId, out var node))
                 {
-                    node.IsOffline = isOffline;
+                    node.Status = status;
                 }
             }
         }
@@ -1239,9 +1225,9 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                 lock (_treeLock)
                 {
 
-                    var oldStructureUnits = _tree.GetNodeAndDescendants().OfType<DeviceTreeProcessData>().ToDictionary(n => n.Id, n => n.StructureUnit);
+                    var oldStructureUnits = _tree.GetNodeAndDescendants().OfType<DeviceTreeProcessData>().ToDictionary(n => n.Id, n => n.Unit);
                     var freshOrUnchangedDevices = receivedDevices
-                        .Select(r => r.device is not null && !r.device.IsOffline
+                        .Select(r => r.device is not null && r.device.Status == ConnectionStatus.Online
                             ? r.device
                             : devices.FirstOrDefault(m => m.Url == r.address) as IDeviceTreeBase)
                         .Where(d => d is not null)

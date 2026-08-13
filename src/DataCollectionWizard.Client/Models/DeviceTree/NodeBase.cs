@@ -1,4 +1,4 @@
-﻿using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+﻿using ViciOne.DeviceTree.Contracts;
 using ViciOne.Ui.TreeEditor.Builder.Interface.NodeIdentifier;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Nodes;
 

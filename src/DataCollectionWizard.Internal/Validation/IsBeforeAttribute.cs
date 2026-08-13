@@ -3,7 +3,7 @@
 namespace DataCollectionWizard.Internal.Validation;
 
 [AttributeUsage(AttributeTargets.Property)]
-public sealed class IsBeforeAttribute(string otherDateTimeMemberName) : ValidationAttribute
+internal sealed class IsBeforeAttribute(string otherDateTimeMemberName) : ValidationAttribute
 {
     public string OtherDateTimeMemberName { get; internal set; } = string.IsNullOrWhiteSpace(otherDateTimeMemberName)
             ? throw new ArgumentNullException(nameof(otherDateTimeMemberName))

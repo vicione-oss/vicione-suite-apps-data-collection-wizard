@@ -1,6 +1,6 @@
 ﻿using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Model;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 

@@ -11,8 +11,8 @@ using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Builder.Extensions;
 using ViciOne.Cluster.Model;
 using ViciOne.Cluster.Model.Extensions;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.DeviceTree.Contracts;
+using ViciOne.DeviceTree.Contracts.Extensions;
 
 namespace DataCollectionWizard.Internal.Services;
 
@@ -26,8 +26,8 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
     // TODO: im Anna dataport yaml und attribut gleich schreiben
 
-    private const string UnexpectedPoolingModeErrorMessage = "Encountered unexpected PoolingMode.";
-    private const string UnexpectedCombinationPoolingModeAndCloudErrorMessage = "Unexpected combination between PoolingMode and Cloud connection occurred.";
+    private const string UnexpectedAggregationFunctionErrorMessage = "Encountered unexpected AggregationFunction.";
+    private const string UnexpectedCombinationAggregationFunctionAndCloudErrorMessage = "Unexpected combination between AggregationFunction and Cloud connection occurred.";
 
     private const string WrongDesignIdErrorMessage = "FunctionBlock has wrong DesignId.";
 
@@ -93,7 +93,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
     }
 
     private static string GetCompressorFbName(IDeviceTreeBase node, CompressorConfiguration configuration)
-        => $"{node.Name}-{configuration.PoolingMode}-{configuration.CompressionTime}";
+        => $"{node.Name}-{configuration.Aggregation}-{configuration.CompressionTime}";
 
     private static Dictionary<ConnectorOutput, IEnumerable<IGrouping<EventTrigger, ErrorStateGuardTuple>>> GetErrorStateGuardGrouping(IEnumerable<ErrorStateGuardTuple> eventTriggerTuples)
         => eventTriggerTuples
@@ -164,7 +164,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         => $"Guard-{vseObjectIdentifier}-{(eventTriggerConfiguration.OnDamage ? "Damage" : string.Empty)}{(eventTriggerConfiguration.OnWarning ? "Warning" : string.Empty)}-{eventTriggerConfiguration.Delay}h";
 
     private static string GetRpmMinMaxTrackerFbName(string suffix, CompressorConfiguration configuration)
-        => $"{suffix}-{configuration.PoolingMode}-{configuration.CompressionTime}";
+        => $"{suffix}-{configuration.Aggregation}-{configuration.CompressionTime}";
 
     private static string GetSchedulerFbName(SchedulerConfiguration configuration)
         => $"{string.Join(' ', configuration.Times.Keys.Select(k => k.ToString()[..3]))} {configuration.Times.First().Value.Length}x";
@@ -190,7 +190,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
             builder.Editors.Connector.AddLink(guard.GetOutputByDesignId(FunctionBlocks.ErrorStateGuard.Outputs.ErrorState), errorStateTuple.BlobSensorErrorStateTriggerInput, false);
     }
 
-    private void ConnectCompressedSourceToCloud(FunctionBlock compressorFb, PoolingModesCloudInput cloudInput, CompressorConfiguration compressorConfiguration)
+    private void ConnectCompressedSourceToCloud(FunctionBlock compressorFb, AggregationFunctionCloudInputs cloudInput, CompressorConfiguration compressorConfiguration)
     {
         if (compressorFb.DesignId != FunctionBlocks.IntervalStatistic.DesignId && compressorFb.DesignId != FunctionBlocks.RpmAtMinMaxTracker.DesignId)
             throw new ArgumentException(WrongDesignIdErrorMessage, nameof(compressorFb));
@@ -200,25 +200,25 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         var compressorOutputs = FunctionBlocks.IntervalStatistic.Outputs;
         var minMaxTrackerOutputs = FunctionBlocks.RpmAtMinMaxTracker.Outputs;
 
-        Guid[] outputIds = compressorConfiguration.PoolingMode switch
+        Guid[] outputIds = compressorConfiguration.Aggregation switch
         {
-            PoolingMode.Avg => isDataCompressor ? [compressorOutputs.Average] : [minMaxTrackerOutputs.Average],
-            PoolingMode.Last => isDataCompressor ? [compressorOutputs.Last] : throw new NotImplementedException(UnexpectedCombinationPoolingModeAndCloudErrorMessage),
-            PoolingMode.Max => isDataCompressor ? [compressorOutputs.Maximum] : [minMaxTrackerOutputs.Maximum],
-            PoolingMode.Min => isDataCompressor ? [compressorOutputs.Minimum] : [minMaxTrackerOutputs.Minimum],
-            PoolingMode.MinMaxAvg => isDataCompressor ? [compressorOutputs.Average, compressorOutputs.Maximum, compressorOutputs.Minimum]
+            AggregationFunction.Avg => isDataCompressor ? [compressorOutputs.Average] : [minMaxTrackerOutputs.Average],
+            AggregationFunction.Last => isDataCompressor ? [compressorOutputs.Last] : throw new NotImplementedException(UnexpectedCombinationAggregationFunctionAndCloudErrorMessage),
+            AggregationFunction.Max => isDataCompressor ? [compressorOutputs.Maximum] : [minMaxTrackerOutputs.Maximum],
+            AggregationFunction.Min => isDataCompressor ? [compressorOutputs.Minimum] : [minMaxTrackerOutputs.Minimum],
+            AggregationFunction.MinMaxAvg => isDataCompressor ? [compressorOutputs.Average, compressorOutputs.Maximum, compressorOutputs.Minimum]
                                                       : [minMaxTrackerOutputs.Average, minMaxTrackerOutputs.Maximum, minMaxTrackerOutputs.Minimum],
-            _ => throw new NotImplementedException(UnexpectedPoolingModeErrorMessage),
+            _ => throw new NotImplementedException(UnexpectedAggregationFunctionErrorMessage),
         };
 
-        CloudInput[] inputs = compressorConfiguration.PoolingMode switch
+        CloudInput[] inputs = compressorConfiguration.Aggregation switch
         {
-            PoolingMode.Avg => [cloudInput.Avg],
-            PoolingMode.Last => [cloudInput.Last],
-            PoolingMode.Max => [cloudInput.Max],
-            PoolingMode.Min => [cloudInput.Min],
-            PoolingMode.MinMaxAvg => [cloudInput.Avg, cloudInput.Max, cloudInput.Min],
-            _ => throw new NotImplementedException(UnexpectedPoolingModeErrorMessage),
+            AggregationFunction.Avg => [cloudInput.Avg],
+            AggregationFunction.Last => [cloudInput.Last],
+            AggregationFunction.Max => [cloudInput.Max],
+            AggregationFunction.Min => [cloudInput.Min],
+            AggregationFunction.MinMaxAvg => [cloudInput.Avg, cloudInput.Max, cloudInput.Min],
+            _ => throw new NotImplementedException(UnexpectedAggregationFunctionErrorMessage),
         };
 
         for (var i = 0; i < outputIds.Length; i++)
@@ -272,9 +272,9 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
     private void ConnectProcessDataToCloud(Dataflow dataflow, IDeviceTreeCompressableDataNode compressableDataNode,
         CompressorConfiguration configuration, DataOutputInfo outputInfo, Dictionary<FunctionBlock, FunctionBlock> minMaxTrackerFbsByCompressor,
         FunctionBlock compressorFb, IDeviceTreeBase parent, DeviceDataflowGeneratorResult generateDataflowResult,
-        Dictionary<Guid, Dictionary<string, PoolingModesCloudInput>> cloudInputs, Dictionary<Guid, string> connectionNames)
+        Dictionary<Guid, Dictionary<string, AggregationFunctionCloudInputs>> cloudInputs, Dictionary<Guid, string> connectionNames)
     {
-        if (!cloudInputs.TryGetValue(configuration.DataGroupIdentifier, out var inputs) || !inputs.TryGetValue(compressableDataNode.Id, out var poolingModesInput))
+        if (!cloudInputs.TryGetValue(configuration.DataGroupIdentifier, out var inputs) || !inputs.TryGetValue(compressableDataNode.Id, out var aggregationFunctionInput))
         {
             LogMissingCloudInputForDatapoint(logger, compressableDataNode.Id, connectionNames[configuration.DataGroupIdentifier]);
             return;
@@ -290,19 +290,19 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
         if (configuration.CompressionTime == -1)
         {
-            poolingModesInput.Value.Connect(outputInfo.Output, builder);
+            aggregationFunctionInput.Value.Connect(outputInfo.Output, builder);
         }                                   // evtl. durch exception ersetzen wenn annaDataPublishers.TryGetValue aktiv ist
         else if (rpmMinMaxTrackerFb is not null)
         {
-            ConnectRpmMinMaxTrackerToCloud(rpmMinMaxTrackerFb!, poolingModesInput, configuration);
+            ConnectRpmMinMaxTrackerToCloud(rpmMinMaxTrackerFb!, aggregationFunctionInput, configuration);
         }
         else
         {
-            ConnectCompressedSourceToCloud(compressorFb, poolingModesInput, configuration);
+            ConnectCompressedSourceToCloud(compressorFb, aggregationFunctionInput, configuration);
         }
     }
 
-    private void ConnectRpmMinMaxTrackerToCloud(FunctionBlock rpmMinMaxTrackerFb, PoolingModesCloudInput cloudInput, CompressorConfiguration configuration)
+    private void ConnectRpmMinMaxTrackerToCloud(FunctionBlock rpmMinMaxTrackerFb, AggregationFunctionCloudInputs cloudInput, CompressorConfiguration configuration)
     {
         if (rpmMinMaxTrackerFb.DesignId != FunctionBlocks.RpmAtMinMaxTracker.DesignId)
             throw new ArgumentException(WrongDesignIdErrorMessage, nameof(rpmMinMaxTrackerFb));
@@ -353,16 +353,16 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
     }
 
     private void ConnectUncompressedProcessDataToCloud(IDeviceTreeCompressableDataNode compressableDataNode, CompressorConfiguration compressorConfiguration,
-        DataOutputInfo dataOutput, Dictionary<Guid, Dictionary<string, PoolingModesCloudInput>> cloudInputs, Dictionary<Guid, string> connectionNames)
+        DataOutputInfo dataOutput, Dictionary<Guid, Dictionary<string, AggregationFunctionCloudInputs>> cloudInputs, Dictionary<Guid, string> connectionNames)
     {
-        if (!cloudInputs.TryGetValue(compressorConfiguration.DataGroupIdentifier, out var inputs) || !inputs.TryGetValue(compressableDataNode.Id, out var poolingModesInput))
+        if (!cloudInputs.TryGetValue(compressorConfiguration.DataGroupIdentifier, out var inputs) || !inputs.TryGetValue(compressableDataNode.Id, out var aggregationFunctionInput))
         {
             LogMissingCloudInputForDatapoint(logger, compressableDataNode.Id, connectionNames[compressorConfiguration.DataGroupIdentifier]);
             return;
         }
 
         var output = dataOutput.Output;
-        poolingModesInput.Value.Connect(output, builder);
+        aggregationFunctionInput.Value.Connect(output, builder);
     }
 
     public void Generate(IDeviceTreeMasterNode master, IReadOnlyCollection<Connection> publishTargets, Dataflow dataflow, Engine engine,
@@ -379,7 +379,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
             .ToArray();
 
         var compressorFbs = new Dictionary<IDeviceTreeBase, Dictionary<string, FunctionBlock>>();
-        var schedulerFbs = new Dictionary<SchedulerConfiguration, FunctionBlock>(SchedulerConfigurationComparerIgnoreDataGroupIdentifier.Instance);
+        var schedulerFbs = new Dictionary<SchedulerConfiguration, FunctionBlock>(SchedulerConfigurationIgnoreDataGroupEqualityComparer.Instance);
 
         var enabledConfigs = activePublishTargets.Select(c => c.Id).ToArray();
 
@@ -433,9 +433,9 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         clusterBuilder.Editors.FunctionBlockDesign.AddFunctionBlockDesign(s_designIdSystemDataPort);
     }
 
-    private Dictionary<Guid, Dictionary<string, PoolingModesCloudInput>> GenerateClouds(IDeviceTreeMasterNode master, Engine engine, Dataflow dataflow, Connection[] activePublishTargets, DeviceDataflowGeneratorResult generateDataflowResult)
+    private Dictionary<Guid, Dictionary<string, AggregationFunctionCloudInputs>> GenerateClouds(IDeviceTreeMasterNode master, Engine engine, Dataflow dataflow, Connection[] activePublishTargets, DeviceDataflowGeneratorResult generateDataflowResult)
     {
-        var cloudInputs = new Dictionary<Guid, Dictionary<string, PoolingModesCloudInput>>();
+        var cloudInputs = new Dictionary<Guid, Dictionary<string, AggregationFunctionCloudInputs>>();
         var cloudsContainer = builder.Editors.Container.AddSubContainer(dataflow, "Clouds", dataflow.Root, FunctionBlocks.DefaultHorizontalSeparation * 2, 0);
 
         foreach (var cloudDataflowGenerator in cloudDataflowGenerators.DistinctBy(c => c.GetType()))
@@ -463,7 +463,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
     }
 
     private void GenerateEventTriggerBlobLogging(Dataflow dataflow, IDeviceTreeBase[] nodeAndDescendants, Guid[] enabledConfigs,
-        Dictionary<Guid, Dictionary<string, PoolingModesCloudInput>> cloudInputsByCloud,
+        Dictionary<Guid, Dictionary<string, AggregationFunctionCloudInputs>> cloudInputsByCloud,
         Dictionary<Guid, string> connectionNames, DeviceDataflowGeneratorResult generateDataflowResult)
     {
         var eventTriggerTuples = new List<ErrorStateGuardTuple>();
@@ -505,7 +505,6 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
                             Configuration = eventTriggerConfiguration,
                             ErrorStateOutput = errorStateOutput,
                             Sensor = sensor,
-                            Unit = rawDataInfo.Unit,
                         });
                     }
                 }
@@ -546,14 +545,14 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         Dictionary<IDeviceTreeBase, IDeviceTreeBase> parents,
         Dictionary<IDeviceTreeBase, Dictionary<string, FunctionBlock>> compressorFbs, Guid[] enabledConfigs,
         DeviceDataflowGeneratorResult generateDataflowResult,
-        Dictionary<Guid, Dictionary<string, PoolingModesCloudInput>> cloudInputs,
+        Dictionary<Guid, Dictionary<string, AggregationFunctionCloudInputs>> cloudInputs,
         Dictionary<Guid, string> connectionNames)
     {
         var compressorContainerManager = new DeviceContainerManager(deviceNode, compressorsContainer, builder);
 
         foreach (var compressableDataNode in nodeAndDescendants.OfType<IDeviceTreeCompressableDataNode>())
         {
-            if (!compressableDataNode.DataType.SupportedForLogging())
+            if (!compressableDataNode.DataType.SupportsLogging)
                 continue;
 
             if (!generateDataflowResult.DataOutputs.TryGetValue(compressableDataNode.Id, out var dataOutput))
@@ -565,7 +564,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
             foreach (var configuration in activeConfigs)
             {
-                if (compressableDataNode.DataType.SupportedForCompression())
+                if (compressableDataNode.DataType.SupportsCompression)
                 {
                     if (configuration.CompressionTime > 0)
                     {
@@ -588,7 +587,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
     private void GenerateSchedulableBlobLogging(Dataflow dataflow, IDeviceTreeBase[] nodeAndDescendants,
         Dictionary<SchedulerConfiguration, FunctionBlock> schedulerFbs, Guid[] enabledConfigs,
-        Dictionary<Guid, Dictionary<string, PoolingModesCloudInput>> cloudInputs,
+        Dictionary<Guid, Dictionary<string, AggregationFunctionCloudInputs>> cloudInputs,
         Dictionary<Guid, string> connectionNames, DeviceDataflowGeneratorResult generateDataflowResult)
     {
         var measurementPublisherFbY = 0;
@@ -620,14 +619,14 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
                     if (cloudInputs.TryGetValue(schedulerConfig.DataGroupIdentifier, out var currentCloudInputs))
                     {
-                        if (!currentCloudInputs.TryGetValue(schedulableDataNode.Id, out var poolingModesCloudInput))
+                        if (!currentCloudInputs.TryGetValue(schedulableDataNode.Id, out var aggregationFunctionCloudInput))
                         {
                             throw new InvalidOperationException($"Cloud input for cloud {connectionNames[schedulerConfig.DataGroupIdentifier]} ({schedulerConfig.DataGroupIdentifier}) an device {schedulableDataNode.Id} is missing.");
                         }
 
                         measurementPublisherFbY++;
 
-                        poolingModesCloudInput.RawData.Connect(rawDataInfo.SchedulerSensors[schedulerConfig.DataGroupIdentifier].MeasurementOutput, builder);
+                        aggregationFunctionCloudInput.RawData.Connect(rawDataInfo.SchedulerSensors[schedulerConfig.DataGroupIdentifier].MeasurementOutput, builder);
                     }
                 }
             }

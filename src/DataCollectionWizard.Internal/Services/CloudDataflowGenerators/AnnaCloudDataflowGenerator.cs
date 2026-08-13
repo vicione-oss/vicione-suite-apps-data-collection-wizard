@@ -5,7 +5,7 @@ using Sdk.Connections.Contracts;
 using Sdk.Connections.Extensions;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Model;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
@@ -26,14 +26,14 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
         var parentContainer = containerManager.GetParentContainer(node);
 
         var objectDataFb = builder.Editors.Container.AddSubFunctionBlock(dataflow, FunctionBlocks.AnnaObjectData.DesignId, name, parentContainer, 0, FunctionBlocks.DefaultVerticalSeparation + 20);
-        var poolingMode = configuration.PoolingMode;
+        var aggregationFunction = configuration.Aggregation;
         var isOnChange = configuration.CompressionTime == -1;
-        var isMinMaxAvg = configuration.PoolingMode == PoolingMode.MinMaxAvg;
+        var isMinMaxAvg = configuration.Aggregation == AggregationFunction.MinMaxAvg;
 
         builder.Editors.Setting.SetFunctionBlockSetting(objectDataFb, FunctionBlocks.AnnaObjectData.Settings.DatapointIdentifier, datapointIdentifier);
-        builder.Editors.Setting.SetFunctionBlockSetting(objectDataFb, FunctionBlocks.AnnaObjectData.Settings.InsertAverage, (isMinMaxAvg || poolingMode == PoolingMode.Avg) && !isOnChange);
-        builder.Editors.Setting.SetFunctionBlockSetting(objectDataFb, FunctionBlocks.AnnaObjectData.Settings.InsertMaximum, (isMinMaxAvg || poolingMode == PoolingMode.Max) && !isOnChange);
-        builder.Editors.Setting.SetFunctionBlockSetting(objectDataFb, FunctionBlocks.AnnaObjectData.Settings.InsertMinimum, (isMinMaxAvg || poolingMode == PoolingMode.Min) && !isOnChange);
+        builder.Editors.Setting.SetFunctionBlockSetting(objectDataFb, FunctionBlocks.AnnaObjectData.Settings.InsertAverage, (isMinMaxAvg || aggregationFunction == AggregationFunction.Avg) && !isOnChange);
+        builder.Editors.Setting.SetFunctionBlockSetting(objectDataFb, FunctionBlocks.AnnaObjectData.Settings.InsertMaximum, (isMinMaxAvg || aggregationFunction == AggregationFunction.Max) && !isOnChange);
+        builder.Editors.Setting.SetFunctionBlockSetting(objectDataFb, FunctionBlocks.AnnaObjectData.Settings.InsertMinimum, (isMinMaxAvg || aggregationFunction == AggregationFunction.Min) && !isOnChange);
         builder.Editors.Setting.SetFunctionBlockSetting(objectDataFb, FunctionBlocks.AnnaObjectData.Settings.InsertRefValue, insertRefValue && !isOnChange);
         builder.Editors.Setting.SetFunctionBlockSetting(objectDataFb, FunctionBlocks.AnnaObjectData.Settings.InsertRotSpeed, insertRotSpeed && !isOnChange);
 
@@ -72,12 +72,12 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
         return annaRawDataFb;
     }
 
-    public Dictionary<string, PoolingModesCloudInput> GenerateCloudDataflow(Connection connection, IDeviceTreeMasterNode deviceTreeMaster, ClusterBuilder builder,
+    public Dictionary<string, AggregationFunctionCloudInputs> GenerateCloudDataflow(Connection connection, IDeviceTreeMasterNode deviceTreeMaster, ClusterBuilder builder,
                                                                             Dataflow dataflow, string machineIdentifier, Dictionary<string, DataOutputInfo> dataOutputs, uint engineCycleInterval,
                                                                             ChildContainer cloudContainer, Dictionary<string, RotationalFrequencyOutputs> rotationalFrequencyOutputs,
                                                                             List<ProcessDataConfiguration> loggedProcessDataNodes, List<IDeviceTreeDataNode> loggedRawDataNodes)
     {
-        var result = new Dictionary<string, PoolingModesCloudInput>();
+        var result = new Dictionary<string, AggregationFunctionCloudInputs>();
 
         if (!AnnaCloudFilter.IsAnnaConnection(connection))
         {
@@ -115,7 +115,7 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
     private static void GenerateObjectData(Connection connection, ClusterBuilder builder, Dataflow dataflow, List<ProcessDataConfiguration> loggedProcessDataNodes,
                                     Dictionary<string, DataOutputInfo> dataOutputs,
                                     Dictionary<string, RotationalFrequencyOutputs> rotationalFrequencyOutputs,
-                                    Dictionary<string, PoolingModesCloudInput> result,
+                                    Dictionary<string, AggregationFunctionCloudInputs> result,
                                     DataPortTreeNode objectDataTreeNode, ChildContainer cloudContainer, IDeviceTreeMasterNode deviceTreeMaster)
     {
         var deviceContainerManager = new DeviceContainerManager(deviceTreeMaster, cloudContainer, builder);
@@ -133,7 +133,7 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
                     insertRotSpeedAndRefValue, insertRotSpeedAndRefValue, dataNode.Node);
             builder.Editors.DataPortTreeNode.AssignConnector(objectDataTreeNode, annaObjectDataFb.GetOutputByDesignId(FunctionBlocks.AnnaObjectData.Outputs.Value));
 
-            result[dataNode.Node.Id] = new PoolingModesCloudInput()
+            result[dataNode.Node.Id] = new AggregationFunctionCloudInputs()
             {
                 Avg = new CloudInput() { InputConnector = annaObjectDataFb.GetInputByDesignId(FunctionBlocks.AnnaObjectData.Inputs.Average) },
                 Max = new CloudInput() { InputConnector = annaObjectDataFb.GetInputByDesignId(FunctionBlocks.AnnaObjectData.Inputs.Maximum) },
@@ -149,7 +149,7 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
 
     private static void GenerateRawData(Connection connection, ClusterBuilder builder, Dataflow dataflow, List<IDeviceTreeDataNode> loggedRawDataNodes, Container cloudContainer,
                          Dictionary<string, RotationalFrequencyOutputs> rotationalFrequencyOutputs,
-                         DataPortTreeNode rawDataNode, Dictionary<string, PoolingModesCloudInput> result)
+                         DataPortTreeNode rawDataNode, Dictionary<string, AggregationFunctionCloudInputs> result)
     {
         var rawDataFbsByUnit = new Dictionary<string, FunctionBlock>();
 
@@ -157,14 +157,9 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
         {
             var unit = string.Empty;
 
-            if (dataNode is DeviceTreeVseRawData vseRawData)
-            {
-                unit = vseRawData.Unit;
-            }
-
             var rawDataFb = GetOrAddAnnaRawDataFb(builder, dataflow, unit, rawDataFbsByUnit, [.. rotationalFrequencyOutputs.Values.Select(r => r.RotationalFrequencyTuple)], connection.Name ?? "unknown", rawDataNode, cloudContainer);
 
-            result[dataNode.Id] = new PoolingModesCloudInput()
+            result[dataNode.Id] = new AggregationFunctionCloudInputs()
             {
                 RawData = new CloudInput() { InputConnector = rawDataFb.GetInputByDesignId(FunctionBlocks.AnnaRawData.Inputs.Data) },
                 RotationalFrequencies = new CloudInput() { InputConnector = rawDataFb.GetInputByDesignId(FunctionBlocks.AnnaRawData.Inputs.RotationalFrequencies) },

@@ -1,4 +1,4 @@
-using Timer = System.Timers.Timer;
+﻿using Timer = System.Timers.Timer;
 
 namespace DataCollectionWizard.Backend.Services;
 

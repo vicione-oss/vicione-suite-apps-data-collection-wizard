@@ -10,14 +10,15 @@ using DataCollectionWizard.Internal.Requests;
 using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Public.Events;
+using DataCollectionWizard.Public.Extensions;
 using DataCollectionWizard.Public.Requests;
 using Microsoft.Extensions.Logging;
 using Sdk.Client.Infrastructure;
 using Sdk.Messaging;
 using Sdk.Utils;
-using ViciOne.Driver.IoTCore.Contracts.Dcp;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.DeviceTree.Contracts;
+using ViciOne.DeviceTree.Contracts.Extensions;
+using ViciOne.DeviceTree.Contracts.Scanning;
 
 namespace DataCollectionWizard.Client.Services;
 
@@ -274,7 +275,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
                                 foreach (var node in nodes)
                                 {
-                                    node.IsOffline = true;
+                                    node.Status = ConnectionStatus.Offline;
                                 }
                             }
 

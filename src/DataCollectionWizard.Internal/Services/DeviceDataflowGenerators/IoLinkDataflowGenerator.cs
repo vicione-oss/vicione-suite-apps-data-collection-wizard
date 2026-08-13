@@ -6,8 +6,8 @@ using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Public.Extensions;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Model;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.DeviceTree.Contracts;
+using ViciOne.DeviceTree.Contracts.Extensions;
 
 namespace DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 
@@ -79,10 +79,7 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
                 throw new ArgumentException($"{nodeBlobLoggingConfigurations.Key.Id} is not a {nameof(DeviceTreeVseRawData)}");
             }
 
-            var rawDataInfo = new RawDataInfo
-            {
-                Unit = string.Empty,
-            };
+            RawDataInfo rawDataInfo = new();
 
             result.RawData[nodeBlobLoggingConfigurations.Key.Id] = rawDataInfo;
 
@@ -185,7 +182,7 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
         {
             foreach (var compressorConfiguration in compressableDataNode.CompressorConfigurations)
             {
-                outputInfo.DataPointIdentifiers[compressorConfiguration.DataGroupIdentifier] = IdentifierHelper.GetIoLinkIdentifier(ioLinkMaster, ioLinkPort, device, processData, compressorConfiguration.PoolingMode, compressorConfiguration.CompressionTime);
+                outputInfo.DataPointIdentifiers[compressorConfiguration.DataGroupIdentifier] = IdentifierHelper.GetIoLinkIdentifier(ioLinkMaster, ioLinkPort, device, processData, compressorConfiguration.Aggregation, compressorConfiguration.CompressionTime);
             }
         }
 
@@ -202,8 +199,8 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
         {
             if (child is IDeviceTreeDataNode node && device is not null && port is not null)
             {
-                if (!node.DataType.SupportedForLiveView() &&
-                    !node.DataType.SupportedForLogging())
+                if (!node.DataType.SupportsLiveView &&
+                    !node.DataType.SupportsLogging)
                 {
                     continue;
                 }
@@ -247,14 +244,14 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
 
         return processData.DataType switch
         {
-            DataType.BlobT => throw new ArgumentException($"Datatype {nameof(DataType.BlobT)} is no supported process datatype."),
-            DataType.BooleanT => booleanSubscriber,
-            DataType.IntegerT => doubleSubscriber,
-            DataType.UIntegerT => doubleSubscriber,
-            DataType.Float32T => doubleSubscriber,
-            DataType.StringT => stringSubscriber,
-            DataType.Invalid => throw new ArgumentException($"Datatype {nameof(DataType.Invalid)} is no supported process datatype."),
-            DataType.OctetStringT => throw new ArgumentException($"Datatype {nameof(DataType.OctetStringT)} is no supported process datatype."),
+            DataType.Blob => throw new ArgumentException($"Datatype {nameof(DataType.Blob)} is no supported process datatype."),
+            DataType.Flag => booleanSubscriber,
+            DataType.Whole => doubleSubscriber,
+            DataType.UnsignedWhole => doubleSubscriber,
+            DataType.Real => doubleSubscriber,
+            DataType.Text => stringSubscriber,
+            DataType.Unknown => throw new ArgumentException($"Datatype {nameof(DataType.Unknown)} is no supported process datatype."),
+            DataType.Octets => throw new ArgumentException($"Datatype {nameof(DataType.Octets)} is no supported process datatype."),
             _ => throw new ArgumentException($"Datatype {processData.DataType} is no supported process datatype."),
         };
     }

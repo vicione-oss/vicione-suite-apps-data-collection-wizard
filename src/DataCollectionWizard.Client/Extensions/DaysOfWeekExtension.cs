@@ -1,6 +1,4 @@
-﻿using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-
-namespace DataCollectionWizard.Client.Extensions;
+﻿namespace DataCollectionWizard.Client.Extensions;
 
 internal static class DaysOfWeekExtension
 {

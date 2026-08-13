@@ -3,8 +3,8 @@ using DataCollectionWizard.Client.Extensions;
 using DataCollectionWizard.Client.Models;
 using DataCollectionWizard.Client.Models.DeviceTree;
 using DataCollectionWizard.Internal.Services;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.DeviceTree.Contracts;
+using ViciOne.DeviceTree.Contracts.Extensions;
 using ViciOne.Ui.MonochromeIcons.Core.Enums;
 using ViciOne.Ui.TreeEditor.Builder.Interface;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Enums;
@@ -205,8 +205,8 @@ internal sealed class DeviceTreeAdapter(bool isLiveView, DeviceTreeNodeIconProvi
 
     private bool IsRelevantChild(IDeviceTreeBase node)
          => isLiveView
-             ? node.Visible && node.GetNodeAndDescendants().OfType<IDeviceTreeLiveDataNode>().Any(n => n.Visible)
-             : node.Visible;
+             ? node is not IDeviceTreeHiddenNode && node.GetNodeAndDescendants().OfType<IDeviceTreeLiveDataNode>().Any(n => n is not IDeviceTreeHiddenNode)
+             : node is not IDeviceTreeHiddenNode;
 
     private void OnExpansionChanged(ITreeNode node, bool expanded)
     {

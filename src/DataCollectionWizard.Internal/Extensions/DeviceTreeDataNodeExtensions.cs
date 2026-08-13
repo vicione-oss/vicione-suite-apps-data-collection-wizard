@@ -1,7 +1,7 @@
 ﻿using DataCollectionWizard.Internal.Contracts;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using Sdk.Connections.Contracts;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Extensions;
 
@@ -19,10 +19,10 @@ public static class DeviceTreeDataNodeExtensions
             {
                 compressableDataNode.CompressorConfigurations.Add(new CompressorConfiguration
                 {
+                    Aggregation = annaCloudfilter.GetCloudConnections([config]).Any() ? AggregationFunction.MinMaxAvg : AggregationFunction.Last,
                     CompressionTime = annaCloudfilter.GetCloudConnections([config]).Any() ? (int)PoolingGrid.SecondsTen : (int)PoolingGrid.MinutesOne,
                     DataGroupIdentifier = config.Id,
                     Enabled = false,
-                    PoolingMode = annaCloudfilter.GetCloudConnections([config]).Any() ? PoolingMode.MinMaxAvg : PoolingMode.Last,
                 });
             }
         }

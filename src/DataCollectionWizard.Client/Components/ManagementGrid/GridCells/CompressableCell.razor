@@ -1,10 +1,10 @@
-﻿@using ViciOne.Driver.IoTCore.Contracts.DeviceTree
-@using DataCollectionWizard.Internal.Contracts
+﻿@using DataCollectionWizard.Internal.Contracts
+@using ViciOne.DeviceTree.Contracts
 
 <div class="compressable-cell">
     <Switch Enabled="@(IsSupportedConnection())"
-            Value="@(IsPoolingEnabled())"
-            ValueChanged="@(PoolingEnabledChanged)" />
+            Value="@(IsCompressionEnabled())"
+            ValueChanged="@(CompressionEnabledChanged)" />
 
     <ComboBox Enabled="@(IsSupportedConnection())"
               Items="@(PoolingGrids)"
@@ -16,11 +16,11 @@
               ValueSelector="@(s_poolingGridValueSelector)" />
 
     <ComboBox Enabled="@(!IsOnChange() && IsSupportedConnection())"
-              Items="@(PoolingModes)"
-              TextSelector="@(s_poolingModeTextSelector)"
-              TItem="@(ComboBoxOption<PoolingMode>)"
-              TValue="@(PoolingMode)"
-              Value="@(GetSelectedPoolingMode())"
-              ValueChanged="@(PoolingModeChanged)"
-              ValueSelector="@(s_poolingModeValueSelector)" />
+              Items="@(AggregationFunctions)"
+              TextSelector="@(s_aggregationFunctionTextSelector)"
+              TItem="@(ComboBoxOption<AggregationFunction>)"
+              TValue="@(AggregationFunction)"
+              Value="@(GetSelectedAggregationFunction())"
+              ValueChanged="@(AggregationFunctionChanged)"
+              ValueSelector="@(s_aggregationFunctionValueSelector)" />
 </div>

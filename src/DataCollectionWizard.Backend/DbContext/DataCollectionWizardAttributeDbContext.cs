@@ -11,9 +11,9 @@ public class DataCollectionWizardAttributeDbContext : ModuleDbContext, IDataColl
 
     public override string DefaultSchemaName => DbSchemaName;
 
-    public DbSet<DeviceConnectorIds> DeviceConnectorIds { get; set; }
-    public DbSet<DeviceTreeDbModel> Devices { get; set; }
-    public DbSet<ValueMappingEntry> ValueMappings { get; set; }
+    public DbSet<DeviceConnectorIds> DeviceConnectorIds { get; set; } = null!;
+    public DbSet<DeviceTreeDbModel> Devices { get; set; } = null!;
+    public DbSet<ValueMappingEntry> ValueMappings { get; set; } = null!;
 
     internal DataCollectionWizardAttributeDbContext(DbContextOptions options) : base(options)
     {

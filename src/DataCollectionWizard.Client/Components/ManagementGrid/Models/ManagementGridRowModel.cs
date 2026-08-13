@@ -1,5 +1,5 @@
 ﻿using DataCollectionWizard.Client.Extensions;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.Models;
 

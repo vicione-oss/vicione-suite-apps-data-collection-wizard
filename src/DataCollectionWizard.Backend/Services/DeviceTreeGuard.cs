@@ -6,11 +6,12 @@ using DataCollectionWizard.Internal.Events;
 using DataCollectionWizard.Internal.Requests;
 using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Public.Events;
+using DataCollectionWizard.Public.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sdk.Backend.Messaging;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.DeviceTree.Contracts;
+using ViciOne.DeviceTree.Contracts.Extensions;
 
 namespace DataCollectionWizard.Backend.Services;
 
@@ -77,13 +78,13 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
             _untrackedNodes = untrackedNodes;
         }
 
-        if (masterNode.IsOffline)
+        if (masterNode.Status != ConnectionStatus.Online)
         {
             var allOfflineNodes = currentDevice.GetNodeAndDescendants().Union(lastUntrackedNodes).ToArray();
             foreach (var node in allOfflineNodes)
             {
                 if (node is not DeviceTreeRoot)
-                    node.IsOffline = true;
+                    node.Status = ConnectionStatus.Offline;
             }
 
             LogTriggeringNodesOfflineMasterOffline(_logger, allOfflineNodes.Length);
@@ -105,13 +106,13 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
         lock (_lastOfflineNodesLock)
         {
             newOnlineNodes = [.. nodeAndDescendants.Union(lastUntrackedNodes)
-                                               .Where(n => !n.IsOffline)
+                                               .Where(n => n.Status == ConnectionStatus.Online)
                                                .Where(n => _lastOfflineNodes.Contains(n.Id))
                                                .Union(untrackedNodes.ExceptBy(lastUntrackedNodes.Select(n => n.Id), n => n.Id)
-                                                                    .ExceptBy(nodeAndDescendants.Where(n => !n.IsOffline).Select(n => n.Id), n => n.Id))];
+                                                                    .ExceptBy(nodeAndDescendants.Where(n => n.Status == ConnectionStatus.Online).Select(n => n.Id), n => n.Id))];
 
             newOfflineNodes = [.. nodeAndDescendants.Union(lastUntrackedNodes)
-                                                .Where(n => n.IsOffline)
+                                                .Where(n => n.Status != ConnectionStatus.Online)
                                                 .Where(n => !_lastOfflineNodes.Contains(n.Id))
                                                 .Union(lastUntrackedNodes.ExceptBy(untrackedNodes.Select(n => n.Id), n => n.Id)
                                                                          .ExceptBy(nodeAndDescendants.Select(n => n.Id), n => n.Id))];
@@ -284,7 +285,7 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
         DeviceTreeBuilder.UpdateOnlineStatus(DeviceTreeBuilder.CorrelateParsedDevices(currentDeviceTree!, newDeviceTree!.Children));
 
         var offlineNodes = currentDeviceTree!.GetNodeAndDescendants()
-                                             .Where(n => n.IsOffline)
+                                             .Where(n => n.Status != ConnectionStatus.Online)
                                              .ToArray();
 
         if (offlineNodes.Length > 0)

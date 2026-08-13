@@ -1,7 +1,7 @@
 ﻿using DataCollectionWizard.Client.Components.ManagementGrid.Models;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using Microsoft.AspNetCore.Components;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.GridCells;
 
@@ -10,8 +10,10 @@ public sealed partial class DeviceIdentifierCell : ComponentBase
     private readonly ExternalParameters _externalParameters = new();
     private IEnumerable<EventTriggerConfiguration> _visibleTriggers = null!;
 
+#pragma warning disable CA2227 // Collection properties should be read only - required for Blazor parameter binding
     [Parameter, EditorRequired]
     public Dictionary<string, IDeviceTreeBase> AllNodes { get; set; } = null!;
+#pragma warning restore CA2227 // Collection properties should be read only - required for Blazor parameter binding
 
     [Parameter]
     public EventCallback<ManagementGridRowModel> ExpandedChanged { get; set; }

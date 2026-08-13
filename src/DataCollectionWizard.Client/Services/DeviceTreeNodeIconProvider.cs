@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 using ViciOne.Ui.MonochromeIcons.Assets.Services;
 using ViciOne.Ui.MonochromeIcons.Core.Enums;
 using ViciOne.Ui.MonochromeIcons.Core.Extensions;

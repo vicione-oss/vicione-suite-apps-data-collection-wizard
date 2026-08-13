@@ -5,7 +5,7 @@ using DataCollectionWizard.Internal.Services.DesignIds;
 using Microsoft.Extensions.Logging;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Model;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 
@@ -32,28 +32,28 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
         if (alarmsNode is not null)
         {
             var alarms = alarmsNode.Children.OfType<DeviceTreeVseAlarm>();
-            AddVseAlarms(builder, dataflow, processDataContainer, vseDevice, alarms.Where(o => o.Children.Any(c => enabledDataIds[c.Id])), device.Url, result);
+            AddVseAlarms(builder, dataflow, processDataContainer, vseDevice, alarms.Where(o => o.Children.Any(c => enabledDataIds.TryGetValue(c.Id, out var enabled) && enabled)), device.Url, result);
         }
 
         var countersNode = vseDevice.Children.FirstOrDefault(c => c.Name == NodeNames.Counters);
         if (countersNode is not null)
         {
             var counters = countersNode.Children.OfType<DeviceTreeVseCounter>();
-            AddVseCounters(builder, dataflow, processDataContainer, vseDevice, counters.Where(n => n.Children.Any(c => enabledDataIds[c.Id])), device.Url, result);
+            AddVseCounters(builder, dataflow, processDataContainer, vseDevice, counters.Where(n => n.Children.Any(c => enabledDataIds.TryGetValue(c.Id, out var enabled) && enabled)), device.Url, result);
         }
 
         var inputsNode = vseDevice.Children.FirstOrDefault(c => c.Name == NodeNames.Inputs)?.Children.FirstOrDefault(c => c.Name == NodeNames.External);
         if (inputsNode is not null)
         {
             var inputs = inputsNode.Children.OfType<DeviceTreeVseInput>();
-            AddVseInputs(builder, dataflow, processDataContainer, vseDevice, inputs.Where(o => o.Children.Any(c => enabledDataIds[c.Id])), device.Url, result);
+            AddVseInputs(builder, dataflow, processDataContainer, vseDevice, inputs.Where(o => o.Children.Any(c => enabledDataIds.TryGetValue(c.Id, out var enabled) && enabled)), device.Url, result);
         }
 
         var objectsNode = vseDevice.Children.FirstOrDefault(c => c.Name == NodeNames.Objects);
         if (objectsNode is not null)
         {
             var objects = objectsNode.Children.OfType<DeviceTreeVseObject>();
-            AddVseObjects(builder, dataflow, processDataContainer, vseDevice, objects.Where(o => o.Children.Any(c => enabledDataIds[c.Id])), device.Url, result);
+            AddVseObjects(builder, dataflow, processDataContainer, vseDevice, objects.Where(o => o.Children.Any(c => enabledDataIds.TryGetValue(c.Id, out var enabled) && enabled)), device.Url, result);
         }
 
         var rawDataNode = vseDevice.Children.FirstOrDefault(c => c.Name == NodeNames.RawData);
@@ -129,7 +129,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
                 }
 
                 builder.Editors.Connector.SetEventEnabled(true, uiOutput);
-                result.DataOutputs[child.Id] = GetOutputInfo(child, alarm.Name, output, null, availableOutput, (poolingMode, compressionGrid) => IdentifierHelper.GetVseAlarmIdentifier(vseDevice, alarm, child, poolingMode, compressionGrid));
+                result.DataOutputs[child.Id] = GetOutputInfo(child, alarm.Name, output, null, availableOutput, (aggregationFunction, compressionGrid) => IdentifierHelper.GetVseAlarmIdentifier(vseDevice, alarm, child, aggregationFunction, compressionGrid));
 
                 result.OutputMapping.Add(new ValueMappingEntry
                 {
@@ -169,7 +169,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
                     continue;
                 }
 
-                result.DataOutputs[child.Id] = GetOutputInfo(child, counter.Name, output, null, availableOutput, (poolingMode, compressionGrid) => IdentifierHelper.GetVseCounterIdentifier(vseDevice, counter, child, poolingMode, compressionGrid));
+                result.DataOutputs[child.Id] = GetOutputInfo(child, counter.Name, output, null, availableOutput, (aggregationFunction, compressionGrid) => IdentifierHelper.GetVseCounterIdentifier(vseDevice, counter, child, aggregationFunction, compressionGrid));
 
                 result.OutputMapping.Add(new ValueMappingEntry
                 {
@@ -243,7 +243,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
                         builder.Editors.Connector.SetEventEnabled(true, inputInput);
                 }
 
-                result.DataOutputs[child.Id] = GetOutputInfo(child, input.Name, output, null, availableOutput, (poolingMode, compressionGrid) => IdentifierHelper.GetVseInputIdentifier(vseDevice, input, child, poolingMode, compressionGrid, "External"));
+                result.DataOutputs[child.Id] = GetOutputInfo(child, input.Name, output, null, availableOutput, (aggregationFunction, compressionGrid) => IdentifierHelper.GetVseInputIdentifier(vseDevice, input, child, aggregationFunction, compressionGrid, "External"));
 
                 result.OutputMapping.Add(new ValueMappingEntry
                 {
@@ -327,7 +327,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
                                                              output,
                                                              validOutput,
                                                              availableOutput,
-                                                             (poolingMode, compressionGrid) => IdentifierHelper.GetVseObjectIdentifier(vseDevice, obj, child, poolingMode, compressionGrid));
+                                                             (aggregationFunction, compressionGrid) => IdentifierHelper.GetVseObjectIdentifier(vseDevice, obj, child, aggregationFunction, compressionGrid));
             }
 
             result.ErrorStateOutputs[obj.Id] = objectFb.GetOutputByDesignId(objectSubscriberOutputIds.ErrorState);
@@ -346,10 +346,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
                 throw new ArgumentException($"{nodeBlobLoggingConfigurations.Key.Id} is not a {nameof(DeviceTreeVseRawData)}");
             }
 
-            var rawDataInfo = new RawDataInfo
-            {
-                Unit = sensor.Unit,
-            };
+            RawDataInfo rawDataInfo = new();
 
             result.RawData[sensor.Id] = rawDataInfo;
 
@@ -410,7 +407,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
                     builder.Editors.Connector.SetEventEnabled(true, inputInput);
             }
 
-            result.DataOutputs[child.Id] = GetOutputInfo(child, "Variant", output, null, availableOutput, (poolingMode, compressionGrid) => IdentifierHelper.GetVseVariantIdentifier(vseDevice, poolingMode, compressionGrid));
+            result.DataOutputs[child.Id] = GetOutputInfo(child, "Variant", output, null, availableOutput, (aggregationFunction, compressionGrid) => IdentifierHelper.GetVseVariantIdentifier(vseDevice, aggregationFunction, compressionGrid));
 
             result.OutputMapping.Add(new ValueMappingEntry
             {
@@ -422,7 +419,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
     }
 
     private static DataOutputInfo GetOutputInfo(IDeviceTreeCompressableDataNode child, string parentName, ConnectorOutput output, ConnectorOutput? validOutput, ConnectorOutput availableOutput,
-                                                Func<PoolingMode, int, string> getDatpointIdentifier)
+                                                Func<AggregationFunction, int, string> getDatpointIdentifier)
     {
         var outputInfo = new DataOutputInfo
         {
@@ -434,7 +431,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
 
         foreach (var compressorConfig in child.CompressorConfigurations)
         {
-            outputInfo.DataPointIdentifiers[compressorConfig.DataGroupIdentifier] = getDatpointIdentifier(compressorConfig.PoolingMode, compressorConfig.CompressionTime);
+            outputInfo.DataPointIdentifiers[compressorConfig.DataGroupIdentifier] = getDatpointIdentifier(compressorConfig.Aggregation, compressorConfig.CompressionTime);
         }
 
         return outputInfo;

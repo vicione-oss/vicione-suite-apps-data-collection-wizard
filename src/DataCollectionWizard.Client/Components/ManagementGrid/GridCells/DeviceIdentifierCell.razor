@@ -1,6 +1,6 @@
-﻿@using DataCollectionWizard.Client.Extensions
-@using ViciOne.Driver.IoTCore.Contracts.DeviceTree
-@using DataCollectionWizard.Client.Components.Localization
+﻿@using DataCollectionWizard.Client.Components.Localization
+@using DataCollectionWizard.Client.Extensions
+@using ViciOne.DeviceTree.Contracts
 
 <div class="device-identifier-cell">
     <div class="device-name-container"
@@ -42,7 +42,7 @@
                     {
                         var canGetName = AllNodes.TryGetValue(trigger.ReferenceNodeId, out var node);
                         var nodeNew = node?.IsNew ?? false;
-                        var nodeOffline = node?.IsOffline ?? false;
+                        var nodeOffline = node is not null && node.Status != ConnectionStatus.Online;
 
                         <TooltipContainer>
                             <ChildContent>

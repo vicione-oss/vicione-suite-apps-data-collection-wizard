@@ -55,11 +55,12 @@ public sealed partial class ClusterService(
 
         try
         {
+            var compressedCluster = await ClusterSerializer.CompressAsync(cluster, cancellationToken: ct);
             var command = new DeployCluster(cluster.Id, null)
             {
                 CorrelationId = correlationId,
                 DeletePreviousVersionOnSuccess = true,
-                Options = new DeployClusterOptions(ClusterSerializer.Compress(cluster))
+                Options = new DeployClusterOptions(compressedCluster)
             };
             var taskCompletionSource = new TaskCompletionSource<ErrorInfo?>();
             state.TaskCompletionSourceMap[correlationId] = taskCompletionSource;

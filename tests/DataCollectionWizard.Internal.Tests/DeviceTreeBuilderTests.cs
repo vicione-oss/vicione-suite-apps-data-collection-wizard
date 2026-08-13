@@ -1,8 +1,9 @@
 ﻿using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Public;
+using DataCollectionWizard.Public.Extensions;
 using Sdk.Connections.Contracts;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.DeviceTree.Contracts;
+using ViciOne.DeviceTree.Contracts.Extensions;
 
 namespace DataCollectionWizard.Internal.Tests;
 
@@ -19,10 +20,10 @@ public class DeviceTreeBuilderTests
     ///
     ///   alter DeviceTree | IoT Core Tree | neuer DeviceTree
     ///   -------------------------------------------------------------------------------------------------------------------
-    ///          o         |        o      | IsNew = keine Änderung, IsOffline = false
-    ///          o         |        x      | IsNew = keine Änderung, IsOffline = true
-    ///          x         |        o      | IsNew = true          , IsOffline = false, neu dem Tree hinzufügen
-    ///          !=        |        !=     | IsNew = true          , IsOffline = false, altes Gerät löschen, Neues hinzufügen
+    ///          o         |        o      | IsNew = keine Änderung, Status = Online
+    ///          o         |        x      | IsNew = keine Änderung, Status = Offline
+    ///          x         |        o      | IsNew = true          , Status = Online, neu dem Tree hinzufügen
+    ///          !=        |        !=     | IsNew = true          , Status = Online, altes Gerät löschen, Neues hinzufügen
     ///          x         |        x      | keine Aktion
     ///
     ///   o/x = Ein Device ist (nicht) vorhanden. Wenn ein Device vorhanden ist, dann die *Id* stimmt überein.
@@ -33,10 +34,10 @@ public class DeviceTreeBuilderTests
     ///
     ///   Remote Devices | alter DeviceTree | IoT Core Tree | neuer DeviceTree
     ///   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    ///         o        |       o          |        o      | IsNew = keine Änderung, IsOffline = false
-    ///         o        |       o          |        x      | IsNew = keine Änderung, IsOffline = true
-    ///         o        |       x          |        o      | IsNew = true          , IsOffline = false, neu dem Tree hinzufügen
-    ///         o        |       x          |        x      | IsNew = true          , IsOffline = true , als Generic MasterDevice Dummy dem Tree hinzufügen
+    ///         o        |       o          |        o      | IsNew = keine Änderung, Status = Online
+    ///         o        |       o          |        x      | IsNew = keine Änderung, Status = Offline
+    ///         o        |       x          |        o      | IsNew = true          , Status = Online, neu dem Tree hinzufügen
+    ///         o        |       x          |        x      | IsNew = true          , Status = Offline , als Generic MasterDevice Dummy dem Tree hinzufügen
     ///         x        |       o          |        o      | aus dem Tree entfernen                   , (Zustand sollte nicht vorkommen, nur RemoteDevices werden im IoT Core mirrored)
     ///         x        |       o          |        x      | aus dem Tree entfernen
     ///         x        |       x          |        o      | keine Aktion                             , (Zustand sollte nicht vorkommen, nur RemoteDevices werden im IoT Core mirrored)
@@ -50,9 +51,9 @@ public class DeviceTreeBuilderTests
     ///
     ///   alter DeviceTree | IoT Core Tree | neuer DeviceTree
     ///   ---------------------------------------------------------------------------------------------------------------------------------
-    ///          o         |        o      | IsNew = keine Änderung, IsOffline = false
-    ///          o         |        x      | IsNew = keine Änderung, IsOffline = true , (Ports sollten aber theoretisch nicht verschwinden)
-    ///          x         |        o      | IsNew = true          , IsOffline = false, neu dem Tree hinzufügen
+    ///          o         |        o      | IsNew = keine Änderung, Status = Online
+    ///          o         |        x      | IsNew = keine Änderung, Status = Offline , (Ports sollten aber theoretisch nicht verschwinden)
+    ///          x         |        o      | IsNew = true          , Status = Online, neu dem Tree hinzufügen
     ///          x         |        x      | keine Aktion
     /// 
     ///   o/x = Die *Id* des Ports ist (nicht) vorhanden.
@@ -90,7 +91,6 @@ public class DeviceTreeBuilderTests
                                                 DataGroupIdentifier = connectionId,
                                             }
                                         ],
-                                        Unit = "m/s²"
                                     }
                                 ],
                                 Id = "TestVse/RawData",
@@ -119,7 +119,6 @@ public class DeviceTreeBuilderTests
                                 {
                                     Id = "TestVse/RawData/RawData1",
                                     Name =  "RawData1",
-                                    Unit = "m/s²",
                                 }
                             ],
                             Id = "TestVse/RawData",
@@ -158,7 +157,6 @@ public class DeviceTreeBuilderTests
                                     {
                                         Id = "TestVse/RawData/RawData1",
                                         Name =  "RawData1",
-                                        Unit = "m/s²",
                                     }
                                 ],
                                 Id = "TestVse/RawData",
@@ -187,7 +185,6 @@ public class DeviceTreeBuilderTests
                                 {
                                     Id = "TestVse/RawData/RawData1",
                                     Name =  "RawData1",
-                                    Unit = "m/s²",
                                 }
                             ],
                             Id = "TestVse/RawData",
@@ -205,19 +202,14 @@ public class DeviceTreeBuilderTests
 
             DeviceTreeBuilder.ExtendCurrentDeviceTree(currentTree, iotCoreTree, [new() { Id = connectionId, Name = "anna", Tags = [Constants.AnnaCloud], Type = ConnectionType.Http }]);
 
-            Assert.Collection(((DeviceTreeVseRawData)currentTree.Children[0].Children[0].Children[0]).SchedulerConfigurations,
-                e =>
-                {
-                    Assert.Equal(connectionId, e.DataGroupIdentifier);
-                });
-            Assert.Collection(((DeviceTreeVseRawData)currentTree.Children[0].Children[0].Children[0]).RawDataConfigurations,
-                e =>
-                {
-                    Assert.Equal(connectionId, e.Key);
-                    //Todo: sind 10 sek der richtige standard?
-                    Assert.Equal(10000, e.Value.Duration);
-                    Assert.Equal(100000, e.Value.Frequency);
-                });
+            var schedulerConfiguration = Assert.Single(((DeviceTreeVseRawData)currentTree.Children[0].Children[0].Children[0]).SchedulerConfigurations);
+            Assert.Equal(connectionId, schedulerConfiguration.DataGroupIdentifier);
+
+            var rawDataConfiguration = Assert.Single(((DeviceTreeVseRawData)currentTree.Children[0].Children[0].Children[0]).RawDataConfigurations);
+            Assert.Equal(connectionId, rawDataConfiguration.Key);
+            //Todo: sind 10 sek der richtige standard?
+            Assert.Equal(10000, rawDataConfiguration.Value.Duration);
+            Assert.Equal(100000, rawDataConfiguration.Value.Frequency);
         }
 
         [Fact]
@@ -245,8 +237,8 @@ public class DeviceTreeBuilderTests
                                             }
                                         ],
                                         Id = "TestDevice 1",
-                                        IsOffline = true,
                                         Name =  "TestDevice 1",
+                                        Status = ConnectionStatus.Offline,
                                     }
                                 ],
                                 Id = "TestPort 1",
@@ -282,8 +274,8 @@ public class DeviceTreeBuilderTests
                                         }
                                     ],
                                     Id = "TestDevice 1",
-                                    IsOffline = true,
                                     Name =  "TestDevice 1",
+                                    Status = ConnectionStatus.Offline,
                                 }
                             ],
                             Id = "TestPort 1",
@@ -302,11 +294,8 @@ public class DeviceTreeBuilderTests
 
             DeviceTreeBuilder.ExtendCurrentDeviceTree(currentTree, iotCoreTree, [new() { Id = connectionId, Name = "anna", Tags = [Constants.AnnaCloud], Type = ConnectionType.Http }]);
 
-            Assert.Collection(((DeviceTreeBlobData)currentTree.Children[0].Children[0].Children[0].Children[0]).SchedulerConfigurations,
-                e =>
-                {
-                    Assert.Equal(connectionId, e.DataGroupIdentifier);
-                });
+            var schedulerConfiguration = Assert.Single(((DeviceTreeBlobData)currentTree.Children[0].Children[0].Children[0].Children[0]).SchedulerConfigurations);
+            Assert.Equal(connectionId, schedulerConfiguration.DataGroupIdentifier);
         }
 
         [Fact]
@@ -334,8 +323,8 @@ public class DeviceTreeBuilderTests
                                             }
                                         ],
                                         Id = "TestDevice 1",
-                                        IsOffline = true,
                                         Name =  "TestDevice 1",
+                                        Status = ConnectionStatus.Offline,
                                     }
                                 ],
                                 Id = "TestPort 1",
@@ -371,8 +360,8 @@ public class DeviceTreeBuilderTests
                                         }
                                     ],
                                     Id = "TestDevice 1",
-                                    IsOffline = true,
                                     Name =  "TestDevice 1",
+                                    Status = ConnectionStatus.Offline,
                                 }
                             ],
                             Id = "TestPort 1",
@@ -391,11 +380,8 @@ public class DeviceTreeBuilderTests
 
             DeviceTreeBuilder.ExtendCurrentDeviceTree(currentTree, iotCoreTree, [new() { Id = connectionId, Name = "anna", Tags = [Constants.AnnaCloud], Type = ConnectionType.Http }]);
 
-            Assert.Collection(((DeviceTreeProcessData)currentTree.Children[0].Children[0].Children[0].Children[0]).CompressorConfigurations,
-                e =>
-                {
-                    Assert.Equal(connectionId, e.DataGroupIdentifier);
-                });
+            var compressorConfiguration = Assert.Single(((DeviceTreeProcessData)currentTree.Children[0].Children[0].Children[0].Children[0]).CompressorConfigurations);
+            Assert.Equal(connectionId, compressorConfiguration.DataGroupIdentifier);
         }
 
         [Fact]
@@ -416,13 +402,13 @@ public class DeviceTreeBuilderTests
                                     new DeviceTreeProcessData()
                                     {
                                         Id = "TestDevice1/Data",
-                                        IsOffline = true,
                                         Name = "Data",
+                                        Status = ConnectionStatus.Offline,
                                     }
                                 ],
                                 Id = "TestDevice 1",
-                                IsOffline = true,
                                 Name =  "TestDevice 1",
+                                Status = ConnectionStatus.Offline,
                             }
                         ],
                         Id = "TestPort 1",
@@ -439,13 +425,13 @@ public class DeviceTreeBuilderTests
                                     new DeviceTreeProcessData()
                                     {
                                         Id = "TestDevice2/Data",
-                                        IsOffline = true,
                                         Name = "Data",
+                                        Status = ConnectionStatus.Offline,
                                     }
                                 ],
                                 Id = "TestDevice 2",
-                                IsOffline = false,
                                 Name =  "TestDevice 1",
+                                Status = ConnectionStatus.Online,
                             }
                         ],
                         Id = "TestPort 2",
@@ -523,35 +509,35 @@ public class DeviceTreeBuilderTests
 
             Assert.Equal("TestDevice 1", currentTree.Children[0].Children[0].Children[0].Id);
             Assert.False(currentTree.Children[0].Children[0].Children[0].IsNew);
-            Assert.True(currentTree.Children[0].Children[0].Children[0].IsOffline);
+            Assert.Equal(ConnectionStatus.Offline, currentTree.Children[0].Children[0].Children[0].Status);
 
             Assert.Equal("TestDevice1/Data", currentTree.Children[0].Children[0].Children[0].Children[0].Id);
             Assert.False(currentTree.Children[0].Children[0].Children[0].Children[0].IsNew);
-            Assert.True(currentTree.Children[0].Children[0].Children[0].Children[0].IsOffline);
+            Assert.Equal(ConnectionStatus.Offline, currentTree.Children[0].Children[0].Children[0].Children[0].Status);
 
             Assert.Equal("TestDevice 1 changed", currentTree.Children[0].Children[0].Children[1].Id);
             Assert.True(currentTree.Children[0].Children[0].Children[1].IsNew);
-            Assert.False(currentTree.Children[0].Children[0].Children[1].IsOffline);
+            Assert.Equal(ConnectionStatus.Online, currentTree.Children[0].Children[0].Children[1].Status);
 
             Assert.Equal("TestDevice 1 changed/Data", currentTree.Children[0].Children[0].Children[1].Children[0].Id);
             Assert.True(currentTree.Children[0].Children[0].Children[1].Children[0].IsNew);
-            Assert.False(currentTree.Children[0].Children[0].Children[1].Children[0].IsOffline);
+            Assert.Equal(ConnectionStatus.Online, currentTree.Children[0].Children[0].Children[1].Children[0].Status);
 
             Assert.Equal("TestDevice 2", currentTree.Children[0].Children[1].Children[0].Id);
             Assert.False(currentTree.Children[0].Children[1].Children[0].IsNew);
-            Assert.True(currentTree.Children[0].Children[1].Children[0].IsOffline);
+            Assert.Equal(ConnectionStatus.Offline, currentTree.Children[0].Children[1].Children[0].Status);
 
             Assert.Equal("TestDevice2/Data", currentTree.Children[0].Children[1].Children[0].Children[0].Id);
             Assert.False(currentTree.Children[0].Children[1].Children[0].Children[0].IsNew);
-            Assert.True(currentTree.Children[0].Children[1].Children[0].Children[0].IsOffline);
+            Assert.Equal(ConnectionStatus.Offline, currentTree.Children[0].Children[1].Children[0].Children[0].Status);
 
             Assert.Equal("TestDevice 2 changed", currentTree.Children[0].Children[1].Children[1].Id);
             Assert.True(currentTree.Children[0].Children[1].Children[1].IsNew);
-            Assert.False(currentTree.Children[0].Children[1].Children[1].IsOffline);
+            Assert.Equal(ConnectionStatus.Online, currentTree.Children[0].Children[1].Children[1].Status);
 
             Assert.Equal("TestDevice 2 changed/Data", currentTree.Children[0].Children[1].Children[1].Children[0].Id);
             Assert.True(currentTree.Children[0].Children[1].Children[1].Children[0].IsNew);
-            Assert.False(currentTree.Children[0].Children[1].Children[1].Children[0].IsOffline);
+            Assert.Equal(ConnectionStatus.Online, currentTree.Children[0].Children[1].Children[1].Children[0].Status);
         }
 
         [Fact]
@@ -632,8 +618,8 @@ public class DeviceTreeBuilderTests
                                 {
                                     Id = "TestDevice",
                                     IsNew = true,
-                                    IsOffline = false,
                                     Name =  "TestDevice 1",
+                                    Status = ConnectionStatus.Online,
                                 }
                             ],
                             Id = "TestPort",
@@ -651,7 +637,7 @@ public class DeviceTreeBuilderTests
 
             Assert.Single(currentTree.Children[0].Children[0].Children);
             Assert.True(currentTree.Children[0].Children[0].Children[0].IsNew);
-            Assert.False(currentTree.Children[0].Children[0].Children[0].IsOffline);
+            Assert.Equal(ConnectionStatus.Online, currentTree.Children[0].Children[0].Children[0].Status);
         }
 
         [Fact]
@@ -669,8 +655,8 @@ public class DeviceTreeBuilderTests
                             new DeviceTreeDevice
                             {
                                 Id = "TestDevice",
-                                IsOffline = false,
                                 Name =  "TestDevice 1",
+                                Status = ConnectionStatus.Online,
                             }
                         ],
                         Id = "TestPort",
@@ -705,7 +691,7 @@ public class DeviceTreeBuilderTests
             DeviceTreeBuilder.ExtendCurrentDeviceTree(currentTree, iotCoreTree, []);
 
             Assert.Single(currentTree.Children[0].Children[0].Children);
-            Assert.True(currentTree.Children[0].Children[0].Children[0].IsOffline);
+            Assert.Equal(ConnectionStatus.Offline, currentTree.Children[0].Children[0].Children[0].Status);
         }
 
         [Fact]
@@ -723,8 +709,8 @@ public class DeviceTreeBuilderTests
                             new DeviceTreeDevice
                             {
                                 Id = "TestDevice",
-                                IsOffline = true,
                                 Name =  "TestDevice 1",
+                                Status = ConnectionStatus.Offline,
                             }
                         ],
                         Id = "TestPort",
@@ -767,7 +753,7 @@ public class DeviceTreeBuilderTests
             DeviceTreeBuilder.ExtendCurrentDeviceTree(currentTree, iotCoreTree, []);
 
             Assert.Single(currentTree.Children[0].Children[0].Children);
-            Assert.False(currentTree.Children[0].Children[0].Children[0].IsOffline);
+            Assert.Equal(ConnectionStatus.Online, currentTree.Children[0].Children[0].Children[0].Status);
         }
 
         [Fact]
@@ -829,9 +815,9 @@ public class DeviceTreeBuilderTests
             currentTree.Children.Add(new DeviceTreeIoLinkMaster
             {
                 Id = "TestMaster",
-                IsOffline = false,
                 MacAddress = "ab:ab:ab:ab:ab",
                 Name = "TestMaster",
+                Status = ConnectionStatus.Online,
                 Url = new Uri("http://127.0.0.1")
             });
 
@@ -840,7 +826,7 @@ public class DeviceTreeBuilderTests
             DeviceTreeBuilder.ExtendCurrentDeviceTree(currentTree, iotCoreTree, []);
 
             Assert.Single(currentTree.Children);
-            Assert.True(currentTree.Children[0].IsOffline);
+            Assert.Equal(ConnectionStatus.Offline, currentTree.Children[0].Status);
         }
 
         [Fact]
@@ -850,9 +836,9 @@ public class DeviceTreeBuilderTests
             currentTree.Children.Add(new DeviceTreeIoLinkMaster
             {
                 Id = "TestMaster",
-                IsOffline = true,
                 MacAddress = "ab:ab:ab:ab:ab",
                 Name = "TestMaster",
+                Status = ConnectionStatus.Offline,
                 Url = new Uri("http://127.0.0.1")
             });
 
@@ -870,7 +856,7 @@ public class DeviceTreeBuilderTests
             DeviceTreeBuilder.ExtendCurrentDeviceTree(currentTree, iotCoreTree, []);
 
             Assert.Single(currentTree.Children);
-            Assert.False(currentTree.Children[0].IsOffline);
+            Assert.Equal(ConnectionStatus.Online, currentTree.Children[0].Status);
         }
 
         [Fact]
@@ -936,7 +922,7 @@ public class DeviceTreeBuilderTests
 
             Assert.Single(currentTree.Children[0].Children);
             Assert.True(currentTree.Children[0].Children[0].IsNew);
-            Assert.False(currentTree.Children[0].Children[0].IsOffline);
+            Assert.Equal(ConnectionStatus.Online, currentTree.Children[0].Children[0].Status);
         }
 
         [Fact]
@@ -950,8 +936,8 @@ public class DeviceTreeBuilderTests
                     new DeviceTreeIoLinkMasterPort
                     {
                         Id = "TestPort",
-                        IsOffline = false,
                         Name = "TestPort",
+                        Status = ConnectionStatus.Online,
                     }
                 ],
                 Id = "TestMaster",
@@ -974,7 +960,7 @@ public class DeviceTreeBuilderTests
             DeviceTreeBuilder.ExtendCurrentDeviceTree(currentTree, iotCoreTree, []);
 
             Assert.Single(currentTree.Children[0].Children);
-            Assert.True(currentTree.Children[0].Children[0].IsOffline);
+            Assert.Equal(ConnectionStatus.Offline, currentTree.Children[0].Children[0].Status);
         }
 
         [Fact]
@@ -988,8 +974,8 @@ public class DeviceTreeBuilderTests
                     new DeviceTreeIoLinkMasterPort
                     {
                         Id = "TestPort",
-                        IsOffline = true,
                         Name = "TestPort",
+                        Status = ConnectionStatus.Offline,
                     }
                 ],
                 Id = "TestMaster",
@@ -1020,7 +1006,7 @@ public class DeviceTreeBuilderTests
             DeviceTreeBuilder.ExtendCurrentDeviceTree(currentTree, iotCoreTree, []);
 
             Assert.Single(currentTree.Children[0].Children);
-            Assert.False(currentTree.Children[0].Children[0].IsOffline);
+            Assert.Equal(ConnectionStatus.Online, currentTree.Children[0].Children[0].Status);
         }
 
         [Fact]
@@ -1094,11 +1080,8 @@ public class DeviceTreeBuilderTests
             DeviceTreeBuilder.ExtendCurrentDeviceTree(currentTree, iotCoreTree, []);
 
             Assert.False(((DeviceTreeDevice)currentTree.Children[0].Children[0].Children[0]).IsUnknown);
-            Assert.Collection(currentTree.Children[0].Children[0].Children[0].Children,
-                e =>
-                {
-                    Assert.True(e.IsNew);
-                });
+            var child = Assert.Single(currentTree.Children[0].Children[0].Children[0].Children);
+            Assert.True(child.IsNew);
         }
 
         [Fact]
@@ -1172,11 +1155,8 @@ public class DeviceTreeBuilderTests
             DeviceTreeBuilder.ExtendCurrentDeviceTree(currentTree, iotCoreTree, []);
 
             Assert.True(((DeviceTreeDevice)currentTree.Children[0].Children[0].Children[0]).IsUnknown);
-            Assert.Collection(currentTree.Children[0].Children[0].Children[0].Children,
-                e =>
-                {
-                    Assert.True(e.IsOffline);
-                });
+            var child = Assert.Single(currentTree.Children[0].Children[0].Children[0].Children);
+            Assert.Equal(ConnectionStatus.Offline, child.Status);
         }
 
         [Fact]
@@ -1189,7 +1169,7 @@ public class DeviceTreeBuilderTests
                     {
                         Children =
                         [
-                            new DeviceTreeConstantData()
+                            new DeviceTreeAssignedName()
                             {
                                 Id = "TestMaster/Constant",
                                 Name = "Constant",
@@ -1210,7 +1190,7 @@ public class DeviceTreeBuilderTests
                 {
                     Children =
                     [
-                        new DeviceTreeConstantData()
+                        new DeviceTreeAssignedName()
                         {
                             Id = "TestMaster/Constant",
                             Name = "Constant",
@@ -1226,7 +1206,7 @@ public class DeviceTreeBuilderTests
 
             DeviceTreeBuilder.ExtendCurrentDeviceTree(currentTree, iotCoreTree, []);
 
-            Assert.Equal("new", ((DeviceTreeConstantData)currentTree.Children[0].Children[0]).Value);
+            Assert.Equal("new", ((DeviceTreeAssignedName)currentTree.Children[0].Children[0]).Value);
         }
 
         [Fact]
@@ -1331,25 +1311,25 @@ public class DeviceTreeBuilderTests
             currentTree.Children.Add(new DeviceTreeIoLinkMaster
             {
                 Id = "TestMaster 1 Offline Random GUID",
-                IsOffline = true,
                 MacAddress = "ab:ab:ab:ab:ab",
                 Name = "IO-Link Master",
+                Status = ConnectionStatus.Offline,
                 Url = new Uri("http://127.0.0.1"),
             });
             currentTree.Children.Add(new DeviceTreeIoLinkMaster
             {
                 Id = "TestMaster 2 Offline Random GUID",
-                IsOffline = true,
                 MacAddress = "ab:ab:ab:ab:ab",
                 Name = "IO-Link Master",
+                Status = ConnectionStatus.Offline,
                 Url = new Uri("http://127.0.0.2"),
             });
             currentTree.Children.Add(new DeviceTreeIoLinkMaster
             {
                 Id = "TestMaster 3 Offline Random GUID",
-                IsOffline = true,
                 MacAddress = "ab:ab:ab:ab:ab",
                 Name = "IO-Link Master",
+                Status = ConnectionStatus.Offline,
                 Url = new Uri("http://127.0.0.3"),
             });
 
@@ -1422,18 +1402,18 @@ public class DeviceTreeBuilderTests
             Assert.Equal(3, currentTree.Children.Count);
 
             var testMaster1 = currentTree.GetNodeAndDescendants().First(n => n.Id == "TestMaster 1 Online IoTCore ID");
-            Assert.False(testMaster1.IsOffline);
+            Assert.Equal(ConnectionStatus.Online, testMaster1.Status);
             Assert.Equal(2, testMaster1.Children.Count);
             foreach (var port in testMaster1.Children)
                 Assert.Single(port.Children);
 
             var testMaster2 = currentTree.GetNodeAndDescendants().First(n => n.Id == "TestMaster 2 Online IoTCore ID");
-            Assert.False(testMaster2.IsOffline);
+            Assert.Equal(ConnectionStatus.Online, testMaster2.Status);
             Assert.Single(testMaster2.Children);
             Assert.Single(testMaster2.Children[0].Children);
 
             var testMaster3 = currentTree.GetNodeAndDescendants().First(n => n.Id == "TestMaster 3 Offline Random GUID");
-            Assert.True(testMaster3.IsOffline);
+            Assert.Equal(ConnectionStatus.Offline, testMaster3.Status);
             Assert.Empty(testMaster3.Children);
         }
     }

@@ -273,6 +273,9 @@
   <data name="IoLinkScanFilterNoResult" xml:space="preserve">
     <value>Der verwendete Filter hat keine Ergebnisse geliefert...</value>
   </data>
+  <data name="IoLinkScanRequiresAuthentication" xml:space="preserve">
+    <value>Dieses Gerät erfordert eine Authentifizierung</value>
+  </data>
   <data name="SpinnerMessageAwaitingCurrentDeployments" xml:space="preserve">
     <value>Warte auf bestehende Deployments</value>
   </data>
