@@ -413,8 +413,8 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
     public Task<DcpScanningResult> ScanIoLinkDevicesAsync(LogLevel logLevel, CancellationToken cancellationToken)
         => ScanDevicesAsync(
-            FunctionBlocks.IoLinkMasterFinder.Outputs.DevicesNodeId,
-            FunctionBlocks.IoLinkMasterFinder.Inputs.TriggerNodeId,
+            FunctionBlocks.IoLinkMasterScanner.Outputs.DevicesNodeId,
+            FunctionBlocks.IoLinkMasterScanner.Inputs.TriggerNodeId,
             ParseIoLinkScanResult,
             messages => new DcpScanningResult { Devices = [], Messages = [.. messages] },
             logLevel,
@@ -422,8 +422,8 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
     public Task<VseScanningResult> ScanVseDevicesAsync(LogLevel logLevel, CancellationToken cancellationToken)
         => ScanDevicesAsync(
-            FunctionBlocks.VseFinder.Outputs.DevicesNodeId,
-            FunctionBlocks.VseFinder.Inputs.TriggerNodeId,
+            FunctionBlocks.VseScanner.Outputs.DevicesNodeId,
+            FunctionBlocks.VseScanner.Inputs.TriggerNodeId,
             ParseVseScanResult,
             messages => new VseScanningResult { Devices = [], Messages = [.. messages] },
             logLevel,

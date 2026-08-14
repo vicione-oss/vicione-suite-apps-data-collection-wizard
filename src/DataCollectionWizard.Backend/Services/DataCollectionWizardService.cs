@@ -70,17 +70,17 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
     private static readonly DeviceScanner[] s_deviceScanners =
     [
         new("IO-Link Scan",
-            FunctionBlocks.IoLinkMasterFinder.DesignId,
-            FunctionBlocks.IoLinkMasterFinder.Inputs.Trigger,
-            FunctionBlocks.IoLinkMasterFinder.Inputs.TriggerNodeId,
-            FunctionBlocks.IoLinkMasterFinder.Outputs.Devices,
-            FunctionBlocks.IoLinkMasterFinder.Outputs.DevicesNodeId),
+            FunctionBlocks.IoLinkMasterScanner.DesignId,
+            FunctionBlocks.IoLinkMasterScanner.Inputs.Trigger,
+            FunctionBlocks.IoLinkMasterScanner.Inputs.TriggerNodeId,
+            FunctionBlocks.IoLinkMasterScanner.Outputs.Devices,
+            FunctionBlocks.IoLinkMasterScanner.Outputs.DevicesNodeId),
         new("VSE Scan",
-            FunctionBlocks.VseFinder.DesignId,
-            FunctionBlocks.VseFinder.Inputs.Trigger,
-            FunctionBlocks.VseFinder.Inputs.TriggerNodeId,
-            FunctionBlocks.VseFinder.Outputs.Devices,
-            FunctionBlocks.VseFinder.Outputs.DevicesNodeId),
+            FunctionBlocks.VseScanner.DesignId,
+            FunctionBlocks.VseScanner.Inputs.Trigger,
+            FunctionBlocks.VseScanner.Inputs.TriggerNodeId,
+            FunctionBlocks.VseScanner.Outputs.Devices,
+            FunctionBlocks.VseScanner.Outputs.DevicesNodeId),
     ];
 
     public async Task<Cluster?> AddDeviceTreeEnginesAsync(IEnumerable<DeviceEngineInfo> deviceEngineInfos, Guid correlationId, bool allowUseExistingEngine, LogLevel logLevel)
