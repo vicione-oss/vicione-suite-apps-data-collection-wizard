@@ -133,7 +133,7 @@
     <value>Der neueste Cluster ist inaktiv</value>
   </data>
   <data name="LatestClusterNotRunningDialogText" xml:space="preserve">
-    <value>Möglicherweise können keine Live Prozessdaten angezeigt werden. Sollte dies der Fall sein können Sie mit dem Cluster Manager versuchen die letzte Cluster Version zu starten. Sollte das nicht funktionieren kontaktieren Sie bitte einen Administrator.</value>
+    <value>Möglicherweise können keine Live Prozessdaten angezeigt werden. Sollte dies der Fall sein, können Sie mit dem Cluster Manager versuchen, die letzte Cluster Version zu starten. Sollte das nicht funktionieren, kontaktieren Sie bitte einen Administrator.</value>
   </data>
   <data name="LiveView" xml:space="preserve">
     <value>Live Prozessdatenansicht</value>

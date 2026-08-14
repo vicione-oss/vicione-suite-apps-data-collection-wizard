@@ -124,7 +124,7 @@
     <value>VSE hinzufügen</value>
   </data>
   <data name="AliasDialogHeader" xml:space="preserve">
-    <value>Alias editieren</value>
+    <value>Alias bearbeiten</value>
   </data>
   <data name="Collapse" xml:space="preserve">
     <value>Einklappen</value>
@@ -136,7 +136,7 @@
     <value>Gerät löschen?</value>
   </data>
   <data name="DeleteDialogText" xml:space="preserve">
-    <value>Die gelöschten Geräte werden erst nach dem Speichern übernommen.</value>
+    <value>Die Löschung wird erst nach dem Speichern übernommen.</value>
   </data>
   <data name="DeleteOfflineNodes" xml:space="preserve">
     <value>Offline Knoten löschen</value>
@@ -202,7 +202,7 @@
     <value>Alle offline Knoten löschen?</value>
   </data>
   <data name="DeleteAllOfflineNodesDialogText" xml:space="preserve">
-    <value>Möchten Sie wirklich alle aktuellen nicht erreichbaren (offline) Knoten löschen?</value>
+    <value>Möchten Sie wirklich alle aktuell nicht erreichbaren (offline) Knoten löschen?</value>
   </data>
   <data name="Damage" xml:space="preserve">
     <value>Beschädigung</value>
@@ -229,7 +229,7 @@
     <value>Alle ungespeicherten Änderungen gehen verloren.</value>
   </data>
   <data name="DataPointLimitApproaching" xml:space="preserve">
-    <value>Sie erreichen in kürze das empfohlene Limit für aktivierte Datenpunkte ({0} von {1}).</value>
+    <value>Sie erreichen in Kürze das empfohlene Limit für aktivierte Datenpunkte ({0} von {1}).</value>
   </data>
   <data name="DataPointLimitReached" xml:space="preserve">
     <value>Sie haben das empfohlene Limit für aktivierte Datenpunkte erreicht ({0} von {1}). Das Aktivieren weiterer Datenpunkte kann zu Systeminstabilität führen.</value>
@@ -247,7 +247,7 @@
     <value>Starte Gerätescan</value>
   </data>
   <data name="SpinnerMessageWaitingForScanResult" xml:space="preserve">
-    <value>Warte auf Antwort</value>
+    <value>Warte auf Scanergebnis</value>
   </data>
   <data name="SpinnerMessageGeneratingDataflow" xml:space="preserve">
     <value>Generiere Dataflow</value>
@@ -256,7 +256,7 @@
     <value>Starte DeviceTree Scan</value>
   </data>
   <data name="SpinnerMessageDeployingDataflow" xml:space="preserve">
-    <value>Setze Dataflow auf</value>
+    <value>Verteile Dataflow</value>
   </data>
   <data name="SpinnerMessageSubscribingResultOutput" xml:space="preserve">
     <value>Abonniere den Ausgang für das Scanergebnis</value>
@@ -286,6 +286,6 @@
     <value>Konfigurationsänderung</value>
   </data>
   <data name="ClusterOutOfDateDialogText" xml:space="preserve">
-    <value>Jemand anderes hat eine Konfiguration gespeichert. Wenn Sie die aktuelle Konfiguration speichern, werden alle Änderungen überschrieben, die von dieser anderen Partei vorgenommen wurden. Falls das kein Problem ist, können sie diese Meldung ignorieren, andernfalls schließen Sie bitte den Data Collection Wizard und öffnen ihn erneut, um die aktuellste Konfiguration zu bearbeiten.</value>
+    <value>Jemand anderes hat eine Konfiguration gespeichert. Wenn Sie die aktuelle Konfiguration speichern, werden alle Änderungen überschrieben, die von dieser anderen Partei vorgenommen wurden. Falls das kein Problem ist, können Sie diese Meldung ignorieren, andernfalls schließen Sie bitte den Data Collection Wizard und öffnen ihn erneut, um die aktuellste Konfiguration zu bearbeiten.</value>
   </data>
 </root>

@@ -154,7 +154,7 @@
     <value>Geräte ID</value>
   </data>
   <data name="InfoPropertyHardwareRevision" xml:space="preserve">
-    <value>Geräteversion</value>
+    <value>Hardware Revision</value>
   </data>
   <data name="InfoPropertyInputType" xml:space="preserve">
     <value>Input Typ</value>
@@ -190,7 +190,7 @@
     <value>Seriennummer</value>
   </data>
   <data name="InfoPropertySoftwareRevision" xml:space="preserve">
-    <value>Software Version</value>
+    <value>Software Revision</value>
   </data>
   <data name="InfoPropertyType" xml:space="preserve">
     <value>Typ</value>
@@ -199,6 +199,6 @@
     <value>Einheit</value>
   </data>
   <data name="InfoPropertyVendorId" xml:space="preserve">
-    <value>Hersteller ID</value>
+    <value>Vendor ID</value>
   </data>
 </root>

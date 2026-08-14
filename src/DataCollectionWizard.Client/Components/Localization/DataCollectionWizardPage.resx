@@ -124,7 +124,7 @@
     <value>Add VSE</value>
   </data>
   <data name="AliasDialogHeader" xml:space="preserve">
-    <value>Edit Alias</value>
+    <value>Edit alias</value>
   </data>
   <data name="Collapse" xml:space="preserve">
     <value>Collapse</value>
@@ -136,7 +136,7 @@
     <value>Delete device?</value>
   </data>
   <data name="DeleteDialogText" xml:space="preserve">
-    <value>The deleted device will only be applied after clicking "Save".</value>
+    <value>The deletion will only take effect after clicking "Save".</value>
   </data>
   <data name="DeleteOfflineNodes" xml:space="preserve">
     <value>Delete offline nodes</value>
@@ -169,16 +169,16 @@
     <value>Hide</value>
   </data>
   <data name="SetAllDatapointsCompression" xml:space="preserve">
-    <value>Set Compression Time</value>
+    <value>Set compression time</value>
   </data>
   <data name="SetAllDatapointsDisabled" xml:space="preserve">
-    <value>Disable All</value>
+    <value>Disable all</value>
   </data>
   <data name="SetAllDatapointsEnabled" xml:space="preserve">
-    <value>Enable All</value>
+    <value>Enable all</value>
   </data>
   <data name="SetDebugRawDataGrid" xml:space="preserve">
-    <value>Debug Raw Data Intervall</value>
+    <value>Debug raw data interval</value>
   </data>
   <data name="IoLinkMasterName" xml:space="preserve">
     <value>IO-Link Master</value>
@@ -229,13 +229,13 @@
     <value>Unsaved changes may be lost.</value>
   </data>
   <data name="DataPointLimitApproaching" xml:space="preserve">
-    <value>You are approaching the recommended limit of enabled datapoints ({0} of {1}).</value>
+    <value>You are approaching the recommended limit of enabled data points ({0} of {1}).</value>
   </data>
   <data name="DataPointLimitReached" xml:space="preserve">
-    <value>You reached the recommended limit of enabled datapoints ({0} of {1}). Further enabling data points may result in system instability.</value>
+    <value>You reached the recommended limit of enabled data points ({0} of {1}). Further enabling data points may result in system instability.</value>
   </data>
   <data name="LogLevel" xml:space="preserve">
-    <value>Log Level</value>
+    <value>Log level</value>
   </data>
   <data name="Manual" xml:space="preserve">
     <value>Manual</value>

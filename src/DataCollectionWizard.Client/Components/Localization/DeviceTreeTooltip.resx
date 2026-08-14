@@ -118,16 +118,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DeviceStatusNewlyCreated" xml:space="preserve">
-    <value>newly added</value>
+    <value>Newly added</value>
   </data>
   <data name="DeviceStatusNotSupported" xml:space="preserve">
     <value>Process value not supported for logging</value>
   </data>
   <data name="DeviceStatusOffline" xml:space="preserve">
-    <value>device is offline</value>
+    <value>Device is offline</value>
   </data>
   <data name="DeviceStatusUnknown" xml:space="preserve">
-    <value>unknown device</value>
+    <value>Unknown device</value>
   </data>
   <data name="InheritedStatusOffline" xml:space="preserve">
     <value>Contains offline devices</value>
@@ -160,7 +160,7 @@
     <value>Input type</value>
   </data>
   <data name="InfoPropertyIsWritable" xml:space="preserve">
-    <value>Is writeable</value>
+    <value>Is writable</value>
   </data>
   <data name="InfoPropertyMacAddress" xml:space="preserve">
     <value>MAC address</value>

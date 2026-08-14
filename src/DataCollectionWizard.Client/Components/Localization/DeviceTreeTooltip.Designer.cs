@@ -61,7 +61,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to newly added.
+        ///   Looks up a localized string similar to Newly added.
         /// </summary>
         internal static string DeviceStatusNewlyCreated {
             get {
@@ -79,7 +79,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to device is offline.
+        ///   Looks up a localized string similar to Device is offline.
         /// </summary>
         internal static string DeviceStatusOffline {
             get {
@@ -88,7 +88,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to unknown device.
+        ///   Looks up a localized string similar to Unknown device.
         /// </summary>
         internal static string DeviceStatusUnknown {
             get {
@@ -160,7 +160,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Is writeable.
+        ///   Looks up a localized string similar to Is writable.
         /// </summary>
         internal static string InfoPropertyIsWritable {
             get {

@@ -97,7 +97,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Edit Alias.
+        ///   Looks up a localized string similar to Edit alias.
         /// </summary>
         internal static string AliasDialogHeader {
             get {
@@ -142,7 +142,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are approaching the recommended limit of enabled datapoints ({0} of {1})..
+        ///   Looks up a localized string similar to You are approaching the recommended limit of enabled data points ({0} of {1})..
         /// </summary>
         internal static string DataPointLimitApproaching {
             get {
@@ -151,7 +151,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You reached the recommended limit of enabled datapoints ({0} of {1}). Further enabling data points may result in system instability..
+        ///   Looks up a localized string similar to You reached the recommended limit of enabled data points ({0} of {1}). Further enabling data points may result in system instability..
         /// </summary>
         internal static string DataPointLimitReached {
             get {
@@ -196,7 +196,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The deleted device will only be applied after clicking &quot;Save&quot;..
+        ///   Looks up a localized string similar to The deletion will only take effect after clicking &quot;Save&quot;..
         /// </summary>
         internal static string DeleteDialogText {
             get {
@@ -313,7 +313,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Log Level.
+        ///   Looks up a localized string similar to Log level.
         /// </summary>
         internal static string LogLevel {
             get {
@@ -412,7 +412,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Set Compression Time.
+        ///   Looks up a localized string similar to Set compression time.
         /// </summary>
         internal static string SetAllDatapointsCompression {
             get {
@@ -421,7 +421,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Disable All.
+        ///   Looks up a localized string similar to Disable all.
         /// </summary>
         internal static string SetAllDatapointsDisabled {
             get {
@@ -430,7 +430,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable All.
+        ///   Looks up a localized string similar to Enable all.
         /// </summary>
         internal static string SetAllDatapointsEnabled {
             get {
@@ -439,7 +439,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Debug Raw Data Intervall.
+        ///   Looks up a localized string similar to Debug raw data interval.
         /// </summary>
         internal static string SetDebugRawDataGrid {
             get {

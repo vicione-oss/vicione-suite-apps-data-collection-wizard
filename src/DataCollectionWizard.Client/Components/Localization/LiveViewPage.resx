@@ -130,10 +130,10 @@
     <value>This column is updated only if the value has actually changed.</value>
   </data>
   <data name="LatestClusterNotRunningDialogHeader" xml:space="preserve">
-    <value>Latest Cluster is not Active</value>
+    <value>Latest cluster is not active</value>
   </data>
   <data name="LatestClusterNotRunningDialogText" xml:space="preserve">
-    <value>Live process data may not be able to be displayed. If that is the case, an error may have occurred during the deployment. Please use the Cluster Manager to check if the latest cluster can be started. If not, contact an administrator.</value>
+    <value>Live process data may not be displayed. If that is the case, an error may have occurred during the deployment. Please use the Cluster Manager to check if the latest cluster can be started. If not, contact an administrator.</value>
   </data>
   <data name="LiveView" xml:space="preserve">
     <value>Live process data view</value>

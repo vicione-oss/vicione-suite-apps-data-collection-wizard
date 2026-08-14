@@ -97,7 +97,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Latest Cluster is not Active.
+        ///   Looks up a localized string similar to Latest cluster is not active.
         /// </summary>
         internal static string LatestClusterNotRunningDialogHeader {
             get {
@@ -106,7 +106,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Live process data may not be able to be displayed. If that is the case, an error may have occurred during the deployment. Please use the Cluster Manager to check if the latest cluster can be started. If not, contact an administrator..
+        ///   Looks up a localized string similar to Live process data may not be displayed. If that is the case, an error may have occurred during the deployment. Please use the Cluster Manager to check if the latest cluster can be started. If not, contact an administrator..
         /// </summary>
         internal static string LatestClusterNotRunningDialogText {
             get {
