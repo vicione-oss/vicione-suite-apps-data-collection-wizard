@@ -1,0 +1,28 @@
+﻿@use "./../../Styles/_colours.scss" as col;
+
+// The dialog places this next to its tab strip and supplies the surrounding padding; everything inside the
+// toolbar itself is styled here, because CSS isolation scopes it to this component.
+.toolbar {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-columns: 250px 22px auto;
+
+    button {
+        padding: 0;
+
+        ::deep svg {
+            height: 24px;
+        }
+    }
+
+    ::deep .search-box {
+        width: 250px;
+    }
+
+    .separator {
+        background-color: col.$border;
+        justify-self: end;
+        margin: 0px 8px;
+        width: 1px;
+    }
+}

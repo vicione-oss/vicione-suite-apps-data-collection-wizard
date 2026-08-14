@@ -48,16 +48,6 @@
 
     .toolbar-container {
         padding: 15px 25px 5px 32px;
-
-        .toolbar {
-            display: grid;
-            grid-auto-flow: column;
-            grid-template-columns: 250px 22px auto;
-
-            .separator {
-                justify-self: end;
-            }
-        }
     }
 
     .content-container {
@@ -88,29 +78,6 @@
         }
     }
 
-    .device-list {
-        display: flex;
-        flex-direction: column;
-        gap: 9px;
-        height: 87%;
-        overflow-y: scroll;
-
-        .device-list-entry {
-            display: grid;
-            grid-template-columns: 25px auto;
-
-            .device-list-entry-name {
-                font-size: 15px;
-                font-weight: normal;
-            }
-
-            .device-list-entry-info {
-                font-size: 11px;
-                grid-column: 2;
-            }
-        }
-    }
-
     .input {
         display: grid;
         grid-column-gap: 16px;
@@ -125,59 +92,10 @@
         }
     }
 
-    input[type="checkbox"] {
-        align-content: center;
-        appearance: none;
-        border: 1px solid col.$border;
-        border-radius: 4px;
-        display: grid;
-        height: 16px;
-        justify-content: center;
-        margin-top: 3px;
-        outline: none;
-        width: 16px;
-
-        &:before {
-            background-color: col.$accent;
-            clip-path: polygon(0 50%, 35% 86%, 100% 21%, 85% 6%, 35% 60%, 13% 38%);
-            content: "";
-            display: block;
-            height: 9px;
-            transform: scale(0);
-            transition: 40ms transform ease-in;
-            width: 9px;
-        }
-
-        &:checked::before {
-            transform: scale(1);
-        }
-    }
-
+    // Holds the dialog's tab strip on the left and the scan toolbar on the right; the toolbar styles itself.
     .toolbar-container {
         display: flex;
         justify-content: space-between;
-
-        .toolbar {
-            display: flex;
-
-            button {
-                padding: 0;
-
-                ::deep svg {
-                    height: 24px;
-                }
-            }
-
-            ::deep .search-box-container {
-                width: 250px;
-            }
-
-            > span.separator {
-                background-color: col.$border;
-                margin: 0px 8px;
-                width: 1px;
-            }
-        }
     }
 }
 

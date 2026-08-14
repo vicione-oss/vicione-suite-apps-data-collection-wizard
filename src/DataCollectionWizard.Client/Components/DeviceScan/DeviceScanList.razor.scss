@@ -1,0 +1,64 @@
+﻿@use "./../../Styles/_colours.scss" as col;
+
+.device-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    height: 87%;
+    overflow-y: scroll;
+
+    .device-list-entry {
+        display: grid;
+        grid-template-columns: 25px auto;
+
+        input[type="checkbox"] {
+            align-content: center;
+            appearance: none;
+            border: 1px solid col.$border;
+            border-radius: 4px;
+            display: grid;
+            height: 16px;
+            justify-content: center;
+            margin-top: 3px;
+            outline: none;
+            width: 16px;
+
+            &:before {
+                background-color: col.$accent;
+                clip-path: polygon(0 50%, 35% 86%, 100% 21%, 85% 6%, 35% 60%, 13% 38%);
+                content: "";
+                display: block;
+                height: 9px;
+                transform: scale(0);
+                transition: 40ms transform ease-in;
+                width: 9px;
+            }
+
+            &:checked::before {
+                transform: scale(1);
+            }
+        }
+
+        // A found device is rendered by the dialog that owns the list, so its markup carries that
+        // component's scope and only ::deep reaches it from here.
+        ::deep .device-list-entry-name {
+            font-size: 15px;
+            font-weight: normal;
+        }
+
+        ::deep .device-list-entry-info {
+            font-size: 11px;
+            grid-column: 2;
+        }
+    }
+}
+
+.validation-message {
+    overflow: hidden;
+    padding-top: 6px;
+    font-size: 14px;
+
+    &.validation-message-info {
+        color: col.$font;
+    }
+}
