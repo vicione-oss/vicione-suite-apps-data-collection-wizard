@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Drawing;
+using System.Text.Json;
 using DataCollectionWizard.Backend.DbContext;
 using DataCollectionWizard.Internal;
 using DataCollectionWizard.Internal.Commands;
@@ -47,26 +48,35 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
     /// write its trigger to start a scan, read its result from the devices connector - so they only differ in
     /// which design they instantiate and which ids their two connectors are pinned to.
     /// </summary>
+    /// <param name="Name">The name the scanner's FunctionBlock carries in the dataflow.</param>
     /// <param name="DesignId">The scanner FunctionBlock design to instantiate.</param>
     /// <param name="TriggerDesignId">The design id of the scanner's trigger connector.</param>
     /// <param name="TriggerNodeId">The id the trigger connector is pinned to, so clients can address it.</param>
     /// <param name="DevicesDesignId">The design id of the scanner's result connector.</param>
     /// <param name="DevicesNodeId">The id the result connector is pinned to, so clients can subscribe to it.</param>
     private sealed record DeviceScanner(
+        string Name,
         Guid DesignId,
         Guid TriggerDesignId,
         Guid TriggerNodeId,
         Guid DevicesDesignId,
         Guid DevicesNodeId);
 
+    /// <summary>
+    /// The scanners the device scanner dataflow holds. A scanner keeps its place in this list, because the
+    /// place decides where its FunctionBlock sits in the dataflow - stacked one below the other rather than
+    /// all on the same spot, and staying put when another scanner is added later.
+    /// </summary>
     private static readonly DeviceScanner[] s_deviceScanners =
     [
-        new(FunctionBlocks.IoLinkMasterFinder.DesignId,
+        new("IO-Link Scan",
+            FunctionBlocks.IoLinkMasterFinder.DesignId,
             FunctionBlocks.IoLinkMasterFinder.Inputs.Trigger,
             FunctionBlocks.IoLinkMasterFinder.Inputs.TriggerNodeId,
             FunctionBlocks.IoLinkMasterFinder.Outputs.Devices,
             FunctionBlocks.IoLinkMasterFinder.Outputs.DevicesNodeId),
-        new(FunctionBlocks.VseFinder.DesignId,
+        new("VSE Scan",
+            FunctionBlocks.VseFinder.DesignId,
             FunctionBlocks.VseFinder.Inputs.Trigger,
             FunctionBlocks.VseFinder.Inputs.TriggerNodeId,
             FunctionBlocks.VseFinder.Outputs.Devices,
@@ -178,12 +188,14 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
 
         // A scanner added later must end up in the dataflow of a cluster that already carries the earlier ones,
         // so every scanner is checked on its own rather than the dataflow as a whole.
-        foreach (var scanner in s_deviceScanners)
+        for (var index = 0; index < s_deviceScanners.Length; index++)
         {
+            var scanner = s_deviceScanners[index];
+
             if (scanDataflow.Root.GetAllNestedFunctionBlocks().Any(f => f.DesignId == scanner.DesignId))
                 continue;
 
-            AddDeviceScanner(clusterBuilder, scanDataflow, scanner);
+            AddDeviceScanner(clusterBuilder, scanDataflow, scanner, index);
             changed = true;
         }
 
@@ -206,9 +218,14 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
     /// Adds one scanner FunctionBlock to the device scanner dataflow and pins its trigger and result connectors
     /// to the ids clients address them by.
     /// </summary>
-    private static void AddDeviceScanner(ClusterBuilder clusterBuilder, Dataflow scanDataflow, DeviceScanner scanner)
+    /// <param name="position">
+    /// The scanner's place in <see cref="s_deviceScanners"/>, which decides how far down its FunctionBlock
+    /// sits. Without a location of their own the blocks all land on the same spot and hide each other.
+    /// </param>
+    private static void AddDeviceScanner(ClusterBuilder clusterBuilder, Dataflow scanDataflow, DeviceScanner scanner, int position)
     {
-        var scanFunctionBlock = clusterBuilder.Editors.Container.AddFunctionBlock(scanDataflow.Root, scanner.DesignId);
+        var location = new Point(0, position * FunctionBlocks.DefaultVerticalSeparation);
+        var scanFunctionBlock = clusterBuilder.Editors.Container.AddFunctionBlock(scanDataflow.Root, scanner.DesignId, scanner.Name, null, location);
 
         var devicesConnector = scanFunctionBlock.GetConnectorByDesignId(scanner.DevicesDesignId)!;
         var triggerConnector = scanFunctionBlock.GetConnectorByDesignId(scanner.TriggerDesignId)!;
