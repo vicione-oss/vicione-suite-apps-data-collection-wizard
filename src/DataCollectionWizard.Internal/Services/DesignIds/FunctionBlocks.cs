@@ -27,6 +27,7 @@ public static class FunctionBlocks
     public static VseAlarmSubscriber VseAlarmSubscriber { get; } = new();
     public static VseCounterSubscriber VseCounterSubscriber { get; } = new();
     public static VseDeviceTreeSubscriber VseDeviceTreeSubscriber { get; } = new();
+    public static VseFinder VseFinder { get; } = new();
     public static VseInputSubscriber VseInputSubscriber { get; } = new();
     public static VseObjectSubscriber VseObjectSubscriber { get; } = new();
     public static VseRawDataSubscriber VseRawDataSubscriber { get; } = new();

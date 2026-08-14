@@ -12,7 +12,7 @@ public interface IDataCollectionWizardService : IDisposable
     event Func<string[], Task> NodesOffline;
     event Func<string[], Task> NodesOnline;
 
-    Task<bool> AddIoLinkScannerDataflow(LogLevel logLevel);
+    Task<bool> AddDeviceScannerDataflow(LogLevel logLevel);
     Task<List<ValueMappingEntry>> GetOutputConnectorMappingAsync();
     Task<bool> IsClusterRunningAsync();
     Task<bool> IsDeployInProgressAsync();
@@ -26,5 +26,7 @@ public interface IDataCollectionWizardService : IDisposable
                              IReadOnlyCollection<IDeviceTreeBase> deletedNodes,
                              DeviceTreeRoot deviceTree, LogLevel logLevel);
     Task<DcpScanningResult> ScanIoLinkDevicesAsync(LogLevel logLevel, CancellationToken cancellationToken);
+
+    Task<VseScanningResult> ScanVseDevicesAsync(LogLevel logLevel, CancellationToken cancellationToken);
     Task<bool> WaitForCurrentDeployment(TimeSpan timeout);
 }

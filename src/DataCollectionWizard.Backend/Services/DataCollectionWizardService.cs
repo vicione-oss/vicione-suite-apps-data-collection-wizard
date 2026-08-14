@@ -37,10 +37,41 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
 {
     private const string EngineHostName = "DCW-Host";
     private const int EngineMinCycleTime = 500;
-    private const string EngineNameIoLinkScanner = "IO-Link-Scanner";
+    private const string EngineNameDeviceScanner = "DCW-Device-Scanner";
     private const string EngineNameKeyIoLink = "IO-Link";
     private const string EngineNameKeyVse = "VSE";
     private const string EngineNamePrefix = "DCW";
+
+    /// <summary>
+    /// One kind of device scanner living in the device scanner dataflow. Every scanner works the same way -
+    /// write its trigger to start a scan, read its result from the devices connector - so they only differ in
+    /// which design they instantiate and which ids their two connectors are pinned to.
+    /// </summary>
+    /// <param name="DesignId">The scanner FunctionBlock design to instantiate.</param>
+    /// <param name="TriggerDesignId">The design id of the scanner's trigger connector.</param>
+    /// <param name="TriggerNodeId">The id the trigger connector is pinned to, so clients can address it.</param>
+    /// <param name="DevicesDesignId">The design id of the scanner's result connector.</param>
+    /// <param name="DevicesNodeId">The id the result connector is pinned to, so clients can subscribe to it.</param>
+    private sealed record DeviceScanner(
+        Guid DesignId,
+        Guid TriggerDesignId,
+        Guid TriggerNodeId,
+        Guid DevicesDesignId,
+        Guid DevicesNodeId);
+
+    private static readonly DeviceScanner[] s_deviceScanners =
+    [
+        new(FunctionBlocks.IoLinkMasterFinder.DesignId,
+            FunctionBlocks.IoLinkMasterFinder.Inputs.Trigger,
+            FunctionBlocks.IoLinkMasterFinder.Inputs.TriggerNodeId,
+            FunctionBlocks.IoLinkMasterFinder.Outputs.Devices,
+            FunctionBlocks.IoLinkMasterFinder.Outputs.DevicesNodeId),
+        new(FunctionBlocks.VseFinder.DesignId,
+            FunctionBlocks.VseFinder.Inputs.Trigger,
+            FunctionBlocks.VseFinder.Inputs.TriggerNodeId,
+            FunctionBlocks.VseFinder.Outputs.Devices,
+            FunctionBlocks.VseFinder.Outputs.DevicesNodeId),
+    ];
 
     public async Task<Cluster?> AddDeviceTreeEnginesAsync(IEnumerable<DeviceEngineInfo> deviceEngineInfos, Guid correlationId, bool allowUseExistingEngine, LogLevel logLevel)
     {
@@ -112,7 +143,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
         dataCollectionWizardState.DeviceTreeConnectors[address] = deviceConnectorIds;
     }
 
-    public async Task<Cluster?> AddIoLinkScannerAsync(LogLevel logLevel)
+    public async Task<Cluster?> AddDeviceScannerAsync(LogLevel logLevel)
     {
         await LoadLatestClusterAsync();
         var clusterBuilder = dataCollectionWizardState.ClusterBuilder ?? throw new InvalidOperationException("Cluster Builder is not initialized.");
@@ -122,35 +153,74 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
         clusterBuilder.Editors.EngineHost.SetElevatedPrivileges(engineHost, true);
         DataflowGenerator.AddDesigns(clusterBuilder);
 
-        return AddIoLinkScannerEngineIfNecessary(clusterBuilder, engineHost, logLevel)
+        return AddDeviceScannerEngineIfNecessary(clusterBuilder, engineHost, logLevel)
             ? clusterBuilder.Cluster
             : null;
     }
 
-    private static bool AddIoLinkScannerEngineIfNecessary(ClusterBuilder clusterBuilder, EngineHost engineHost, LogLevel? logLevel = null)
+    /// <summary>
+    /// Makes sure the cluster holds a device scanner engine that carries every scanner in
+    /// <see cref="s_deviceScanners"/>, adding whatever is missing.
+    /// </summary>
+    /// <returns>True if the cluster was changed and needs deploying; false if it already had everything.</returns>
+    private static bool AddDeviceScannerEngineIfNecessary(ClusterBuilder clusterBuilder, EngineHost engineHost, LogLevel? logLevel = null)
     {
-        var ioLinkScannerEngine = clusterBuilder.Cluster.GetAllEngines().FirstOrDefault(e => e.Name == EngineNameIoLinkScanner);
-        if (ioLinkScannerEngine is not null)
+        var changed = false;
+
+        var scannerEngine = clusterBuilder.Cluster.GetAllEngines().FirstOrDefault(e => e.Name == EngineNameDeviceScanner);
+        var scanDataflow = clusterBuilder.Cluster.Dataflows.FirstOrDefault(d => d.Name == EngineNameDeviceScanner);
+
+        if (scanDataflow is null)
+        {
+            scanDataflow = clusterBuilder.Editors.Cluster.AddDataflow(EngineNameDeviceScanner, new Version(0, 1));
+            changed = true;
+        }
+
+        // A scanner added later must end up in the dataflow of a cluster that already carries the earlier ones,
+        // so every scanner is checked on its own rather than the dataflow as a whole.
+        foreach (var scanner in s_deviceScanners)
+        {
+            if (scanDataflow.Root.GetAllNestedFunctionBlocks().Any(f => f.DesignId == scanner.DesignId))
+                continue;
+
+            AddDeviceScanner(clusterBuilder, scanDataflow, scanner);
+            changed = true;
+        }
+
+        if (!changed)
             return false;
 
-        var scanDataflow = clusterBuilder.Editors.Cluster.AddDataflow(EngineNameIoLinkScanner, new Version(0, 1));
-        var scanFunctionBlock = clusterBuilder.Editors.Container.AddFunctionBlock(scanDataflow.Root, FunctionBlocks.IoLinkMasterFinder.DesignId);
+        if (scannerEngine is null)
+        {
+            scannerEngine = clusterBuilder.Editors.EngineHost.AddEngine(engineHost, EngineNameDeviceScanner);
+            clusterBuilder.Editors.Engine.SetLogLevel(scannerEngine, logLevel ?? LogLevel.Error);
+            clusterBuilder.Editors.Engine.SetMinCycleTime(scannerEngine, EngineMinCycleTime);
+        }
 
-        var devicesConnector = scanFunctionBlock.GetConnectorByDesignId(FunctionBlocks.IoLinkMasterFinder.Outputs.Devices)!;
-        var triggerConnector = scanFunctionBlock.GetConnectorByDesignId(FunctionBlocks.IoLinkMasterFinder.Inputs.Trigger)!;
-
-        clusterBuilder.Editors.Connector.SetId(devicesConnector, FunctionBlocks.IoLinkMasterFinder.Outputs.DevicesNodeId);
-        clusterBuilder.Editors.Connector.SetId(triggerConnector, FunctionBlocks.IoLinkMasterFinder.Inputs.TriggerNodeId);
-
-        clusterBuilder.Editors.Connector.SetEventEnabled(true, devicesConnector, triggerConnector);
-        clusterBuilder.Editors.Connector.SetMarkAsChangedOnlyIfNotEqual(triggerConnector, false);
-
-        ioLinkScannerEngine = clusterBuilder.Editors.EngineHost.AddEngine(engineHost, EngineNameIoLinkScanner);
-        clusterBuilder.Editors.Engine.SetLogLevel(ioLinkScannerEngine, logLevel ?? LogLevel.Error);
-        clusterBuilder.Editors.Engine.SetMinCycleTime(ioLinkScannerEngine, EngineMinCycleTime);
-        clusterBuilder.Editors.FunctionBlock.AssignEngine(ioLinkScannerEngine, [.. scanDataflow.Root.GetAllNestedFunctionBlocks()]);
+        clusterBuilder.Editors.FunctionBlock.AssignEngine(scannerEngine, [.. scanDataflow.Root.GetAllNestedFunctionBlocks()]);
 
         return true;
+    }
+
+    /// <summary>
+    /// Adds one scanner FunctionBlock to the device scanner dataflow and pins its trigger and result connectors
+    /// to the ids clients address them by.
+    /// </summary>
+    private static void AddDeviceScanner(ClusterBuilder clusterBuilder, Dataflow scanDataflow, DeviceScanner scanner)
+    {
+        var scanFunctionBlock = clusterBuilder.Editors.Container.AddFunctionBlock(scanDataflow.Root, scanner.DesignId);
+
+        var devicesConnector = scanFunctionBlock.GetConnectorByDesignId(scanner.DevicesDesignId)!;
+        var triggerConnector = scanFunctionBlock.GetConnectorByDesignId(scanner.TriggerDesignId)!;
+
+        clusterBuilder.Editors.Connector.SetId(devicesConnector, scanner.DevicesNodeId);
+        clusterBuilder.Editors.Connector.SetId(triggerConnector, scanner.TriggerNodeId);
+
+        clusterBuilder.Editors.Connector.SetEventEnabled(true, devicesConnector, triggerConnector);
+
+        // A scan is started by writing the trigger, not by changing it, so writing the same value again has to
+        // count as a change - otherwise only the first scan would ever run.
+        clusterBuilder.Editors.Connector.SetMarkAsChangedOnlyIfNotEqual(triggerConnector, false);
     }
 
     private async Task AddOrUpdateDeviceEngines(ClusterBuilder clusterBuilder, IEnumerable<string> masterNodesToUpdate, IDeviceTreeBase[] deletedNodes,
@@ -307,7 +377,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
 
         dataflowGenerator.Generate(deviceTreeMasterNode, publishTargets, dataflow, engine, out deviceTreeTrigger, out deviceTreeOutput, out outputMapping);
 
-        AddIoLinkScannerEngineIfNecessary(clusterBuilder, engineHost);
+        AddDeviceScannerEngineIfNecessary(clusterBuilder, engineHost);
     }
 
     private static EngineHost GetEngineHost(ClusterBuilder clusterBuilder)
@@ -370,7 +440,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
     private static bool RemoveLegacyEngines(ClusterBuilder clusterBuilder)
     {
         var engineHosts = clusterBuilder.Cluster.GetAllEngineHosts().Where(e => e.Name != EngineHostName);
-        var legacyEngines = engineHosts.SelectMany(h => h.Engines).Where(e => e.Name == EngineNameIoLinkScanner || e.Name.StartsWith(EngineNamePrefix, StringComparison.Ordinal)).ToArray();
+        var legacyEngines = engineHosts.SelectMany(h => h.Engines).Where(e => e.Name.StartsWith(EngineNamePrefix, StringComparison.Ordinal)).ToArray();
         if (legacyEngines.Length == 0)
             return false;
 

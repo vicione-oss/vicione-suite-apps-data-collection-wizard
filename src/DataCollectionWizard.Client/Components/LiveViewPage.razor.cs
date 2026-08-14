@@ -39,7 +39,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         new()
         {
             DisplayDuration = 3,
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceTreeScan,
         },
         TimedMessageFactory.CreateGap(1),
         new()

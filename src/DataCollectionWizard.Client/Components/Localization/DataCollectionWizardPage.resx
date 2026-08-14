@@ -229,7 +229,7 @@
     <value>Unsaved changes may be lost.</value>
   </data>
   <data name="DataPointLimitApproaching" xml:space="preserve">
-    <value>You are approaching the recommended limit of enabled data points ({0} of {1}).</value>
+    <value>You are approaching the recommended limit of enabled datapoints ({0} of {1}).</value>
   </data>
   <data name="DataPointLimitReached" xml:space="preserve">
     <value>You reached the recommended limit of enabled datapoints ({0} of {1}). Further enabling data points may result in system instability.</value>
@@ -243,8 +243,8 @@
   <data name="Scan" xml:space="preserve">
     <value>Scan</value>
   </data>
-  <data name="SpinnerMessageTriggeringIoLinkScan" xml:space="preserve">
-    <value>Triggering IO-Link Master scan</value>
+  <data name="SpinnerMessageTriggeringDeviceScan" xml:space="preserve">
+    <value>Triggering device scan</value>
   </data>
   <data name="SpinnerMessageWaitingForScanResult" xml:space="preserve">
     <value>Waiting for scan result</value>
@@ -252,7 +252,7 @@
   <data name="SpinnerMessageGeneratingDataflow" xml:space="preserve">
     <value>Generating Dataflow</value>
   </data>
-  <data name="SpinnerMessageTriggeringDeviceScan" xml:space="preserve">
+  <data name="SpinnerMessageTriggeringDeviceTreeScan" xml:space="preserve">
     <value>Triggering DeviceTree scan</value>
   </data>
   <data name="SpinnerMessageDeployingDataflow" xml:space="preserve">
@@ -261,26 +261,26 @@
   <data name="SpinnerMessageSubscribingResultOutput" xml:space="preserve">
     <value>Subscribing result output</value>
   </data>
-  <data name="IoLinkScanErrorDuringScan" xml:space="preserve">
-    <value>Scanning for IO-Link Master devices failed:</value>
+  <data name="DeviceScanError" xml:space="preserve">
+    <value>The device scan failed:</value>
   </data>
   <data name="MoneoDeactivatedTooltip" xml:space="preserve">
     <value>The configuration of process values is generally supported for all data targets. For the moneo|cloud, this functionality will be enabled once the corresponding features are available. In the meantime, please use the configuration options provided directly in the moneo|cloud.</value>
   </data>
-  <data name="IoLinkScanNoResult" xml:space="preserve">
-    <value>No IO-Link Masters were found on the network...</value>
+  <data name="DeviceScanNoResult" xml:space="preserve">
+    <value>No devices were found on the network...</value>
   </data>
-  <data name="IoLinkScanFilterNoResult" xml:space="preserve">
+  <data name="DeviceScanFilterNoResult" xml:space="preserve">
     <value>The filter applied did not produce any results...</value>
   </data>
-  <data name="IoLinkScanRequiresAuthentication" xml:space="preserve">
+  <data name="DeviceScanRequiresAuthentication" xml:space="preserve">
     <value>This device requires authentication</value>
   </data>
   <data name="SpinnerMessageAwaitingCurrentDeployments" xml:space="preserve">
     <value>Waiting for deployments</value>
   </data>
   <data name="SpinnerMessageCreatingScanEngine" xml:space="preserve">
-    <value>Creating IO-Link scan engine</value>
+    <value>Creating scan engine</value>
   </data>
   <data name="ClusterOutOfDateDialogHeader" xml:space="preserve">
     <value>Configuration has changed</value>

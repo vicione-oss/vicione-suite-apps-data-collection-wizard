@@ -142,7 +142,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are approaching the recommended limit of enabled data points ({0} of {1})..
+        ///   Looks up a localized string similar to You are approaching the recommended limit of enabled datapoints ({0} of {1})..
         /// </summary>
         internal static string DataPointLimitApproaching {
             get {
@@ -223,6 +223,42 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The device scan failed:.
+        /// </summary>
+        internal static string DeviceScanError {
+            get {
+                return ResourceManager.GetString("DeviceScanError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The filter applied did not produce any results....
+        /// </summary>
+        internal static string DeviceScanFilterNoResult {
+            get {
+                return ResourceManager.GetString("DeviceScanFilterNoResult", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No devices were found on the network....
+        /// </summary>
+        internal static string DeviceScanNoResult {
+            get {
+                return ResourceManager.GetString("DeviceScanNoResult", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This device requires authentication.
+        /// </summary>
+        internal static string DeviceScanRequiresAuthentication {
+            get {
+                return ResourceManager.GetString("DeviceScanRequiresAuthentication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Enabled.
         /// </summary>
         internal static string Enabled {
@@ -273,42 +309,6 @@ namespace DataCollectionWizard.Client.Components.Localization {
         internal static string IoLinkMasterName {
             get {
                 return ResourceManager.GetString("IoLinkMasterName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Scanning for IO-Link Master devices failed:.
-        /// </summary>
-        internal static string IoLinkScanErrorDuringScan {
-            get {
-                return ResourceManager.GetString("IoLinkScanErrorDuringScan", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The filter applied did not produce any results....
-        /// </summary>
-        internal static string IoLinkScanFilterNoResult {
-            get {
-                return ResourceManager.GetString("IoLinkScanFilterNoResult", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No IO-Link Masters were found on the network....
-        /// </summary>
-        internal static string IoLinkScanNoResult {
-            get {
-                return ResourceManager.GetString("IoLinkScanNoResult", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This device requires authentication.
-        /// </summary>
-        internal static string IoLinkScanRequiresAuthentication {
-            get {
-                return ResourceManager.GetString("IoLinkScanRequiresAuthentication", resourceCulture);
             }
         }
         
@@ -475,7 +475,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Creating IO-Link scan engine.
+        ///   Looks up a localized string similar to Creating scan engine.
         /// </summary>
         internal static string SpinnerMessageCreatingScanEngine {
             get {
@@ -511,7 +511,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Triggering DeviceTree scan.
+        ///   Looks up a localized string similar to Triggering device scan.
         /// </summary>
         internal static string SpinnerMessageTriggeringDeviceScan {
             get {
@@ -520,11 +520,11 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Triggering IO-Link Master scan.
+        ///   Looks up a localized string similar to Triggering DeviceTree scan.
         /// </summary>
-        internal static string SpinnerMessageTriggeringIoLinkScan {
+        internal static string SpinnerMessageTriggeringDeviceTreeScan {
             get {
-                return ResourceManager.GetString("SpinnerMessageTriggeringIoLinkScan", resourceCulture);
+                return ResourceManager.GetString("SpinnerMessageTriggeringDeviceTreeScan", resourceCulture);
             }
         }
         

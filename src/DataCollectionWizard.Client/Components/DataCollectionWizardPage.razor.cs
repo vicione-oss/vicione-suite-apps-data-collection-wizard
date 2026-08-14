@@ -81,7 +81,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         new()
         {
             DisplayDuration = 3,
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceTreeScan,
         },
         TimedMessageFactory.CreateGap(1),
         new()
@@ -111,7 +111,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         new()
         {
             DisplayDuration = 3,
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceTreeScan,
         },
         TimedMessageFactory.CreateGap(1),
         new()
@@ -119,12 +119,12 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             Message = Localization.DataCollectionWizardPage.SpinnerMessageWaitingForScanResult,
         },
     ];
-    private readonly TimedMessage[] _loadingSpinnerMessagesScanIoLink =
+    private readonly TimedMessage[] _loadingSpinnerMessagesNetworkScan =
     [
         new()
         {
             DisplayDuration = 3,
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringIoLinkScan,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
         },
         TimedMessageFactory.CreateGap(1),
         new()
@@ -142,7 +142,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         new()
         {
             DisplayDuration = 3,
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceTreeScan,
         },
         TimedMessageFactory.CreateGap(1),
         new()
@@ -165,6 +165,12 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
     private List<DcpDevice>? _scannedIoLinkDevices;
     private readonly List<string> _selectedIoLinkDevices = [];
+    private List<VseScanDevice>? _scannedVseDevices;
+    private readonly List<string> _selectedVseDevices = [];
+    private string _vseDialogHeight = IoLinkMasterDialogHeightNormal;
+    private int _vseTabIndex;
+    private string _vseFilter = string.Empty;
+    private List<string> _scanVseErrors = [];
     private DeviceTreeRoot? _tree;
     private readonly Lock _treeLock = new();
     private string _ioLinkMasterDialogHeight = IoLinkMasterDialogHeightNormal;
@@ -323,18 +329,12 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         })];
     }
 
-    private IEnumerable<DcpDevice> FilterScannedDevices(IEnumerable<DcpDevice> devices)
-        => devices.Where(d =>
-        {
-            if (string.IsNullOrWhiteSpace(_ioLinkMasterFilter))
-                return true;
-
-            return (d.Network.Address?.ToString()?.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase) ?? false)
-                || d.Identity.Name.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
-                || d.Network.MacAddress.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
-                || d.Identity.VendorId.ToString(CultureInfo.InvariantCulture).Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
-                || d.Identity.DeviceId.ToString(CultureInfo.InvariantCulture).Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase);
-        });
+    private static bool MatchesIoLinkFilter(DcpDevice device, string filter)
+        => (device.Network.Address?.ToString()?.Contains(filter, StringComparison.OrdinalIgnoreCase) ?? false)
+            || device.Identity.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)
+            || device.Network.MacAddress.Contains(filter, StringComparison.OrdinalIgnoreCase)
+            || device.Identity.VendorId.ToString(CultureInfo.InvariantCulture).Contains(filter, StringComparison.OrdinalIgnoreCase)
+            || device.Identity.DeviceId.ToString(CultureInfo.InvariantCulture).Contains(filter, StringComparison.OrdinalIgnoreCase);
 
     protected override ValueTask DisposeInternal()
     {
@@ -405,7 +405,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         {
             await ResourceDownloadState.WaitForCompletion();
             await DataCollectionWizardService.WaitForCurrentDeployment(new TimeSpan(0, 1, 0));
-            await DataCollectionWizardService.AddIoLinkScannerDataflow(_service.LogLevel);
+            await DataCollectionWizardService.AddDeviceScannerDataflow(_service.LogLevel);
             await UpdateDeviceTreeAsync(false, false);
         }
         catch (Exception ex)
@@ -488,7 +488,10 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     }
 
     private async Task OnAddVSEDialogCloseAsync()
-        => await _refAddVSEDialog!.CloseAsync();
+    {
+        CancelDcwScan();
+        await _refAddVSEDialog!.CloseAsync();
+    }
 
     private void OnAdapterNodeDeleted(NodeBase node, NodeBase? parent)
     {
@@ -567,7 +570,14 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     }
 
     private async void OnAddVSERequestedAsync()
-        => await _refAddVSEDialog!.ShowAsync();
+    {
+        _vseTabIndex = 0;
+        _dcwScanTokenSource = new CancellationTokenSource();
+        ScanVseDevices(_dcwScanTokenSource.Token);
+
+        await _refAddVSEDialog!.ShowAsync();
+    }
+
 
     private async Task OnAddIoLinkMasterDialogCloseAsync()
     {
@@ -662,6 +672,14 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
     private async Task OnAddVSEDialogOkAsync()
     {
+        CancelDcwScan();
+
+        if (_vseTabIndex == 1)
+        {
+            await AddScannedVseDevicesAsync();
+            return;
+        }
+
         _newVSEAddress = _newVSEAddress.Trim();
         Uri? vseAddress = null;
 
@@ -721,6 +739,54 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             _displayLoadingSpinner = false;
             await InvokeAsync(StateHasChanged);
         }, true, _service.LogLevel);
+    }
+
+    /// <summary>
+    /// Adds every VSE device ticked on the dialog's scan tab, the same way the IO-Link dialog adds its
+    /// selection.
+    /// </summary>
+    private async Task AddScannedVseDevicesAsync()
+    {
+        _loadingSpinnerMessages = _loadingSpinnerMessagesScanDevice;
+        _displayLoadingSpinner = true;
+        await _refAddVSEDialog!.CloseAsync();
+
+        var numberOfReceivedDevices = 0;
+        var deviceEngineInfos = _selectedVseDevices.Select(
+            d => new DeviceEngineInfo(VseAddresses.GetVseAddressWithPort(d), typeof(DeviceTreeVseDevice).AssemblyQualifiedName!));
+
+        await DataCollectionWizardService.RequestNewDevicesDeviceTreeAsync(
+            deviceEngineInfos,
+            async (d, _, a) =>
+            {
+                if (d is not DeviceTreeVseDevice)
+                {
+                    LogUnexpectedNullDeviceError(Logger, a.DnsSafeHost);
+                    d = new DeviceTreeVseDevice
+                    {
+                        Description = new DeviceTreeNodeDescription
+                        {
+                            Text = "an ifm VSE device",
+                        },
+                        Id = $"vse@{a}",
+                        MacAddress = "ff:ff:ff:ff:ff",
+                        Name = "VSE Device",
+                        Status = ConnectionStatus.Offline,
+                        Url = VseAddresses.GetVseAddressWithPort(a.DnsSafeHost),
+                    };
+                }
+
+                await AddDeviceToDeviceTree(d);
+                numberOfReceivedDevices++;
+
+                if (numberOfReceivedDevices >= _selectedVseDevices.Count)
+                {
+                    _displayLoadingSpinner = false;
+                    await InvokeAsync(StateHasChanged);
+                }
+            },
+            true,
+            _service.LogLevel);
     }
 
     private async Task OnAliasDialogCloseAsync()
@@ -1002,6 +1068,8 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _newVSEAddress = string.Empty;
         _isVSEUriUnique = true;
         _isVSEUriValid = true;
+        _vseFilter = string.Empty;
+        _vseDialogHeight = IoLinkMasterDialogHeightNormal;
     }
 
     private async void SaveButtonAsync()
@@ -1098,6 +1166,80 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                 _scanIoLinkErrors.Add($"An error occurred while trying to scan for IO-Link Masters: {ex.GetType()}: {ex.Message}");
             }
         }, cancellationToken);
+    }
+
+    private void ScanVseDevices(CancellationToken cancellationToken)
+    {
+        _scannedVseDevices = null;
+        _scanVseErrors = [];
+        _selectedVseDevices.Clear();
+
+        DeviceTreeVseDevice[] currentVseDevices;
+        lock (_treeLock)
+        {
+            currentVseDevices = [.. _tree!.GetNodeAndDescendants().OfType<DeviceTreeVseDevice>()];
+        }
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var scanResult = await DataCollectionWizardService.ScanVseDevicesAsync(_service.LogLevel, cancellationToken);
+
+                _scannedVseDevices = [.. scanResult.Devices
+                                                   .Where(d => !currentVseDevices.Any(v => v.Url == VseScanDeviceAddress(d)))
+                                                   .OrderBy(d => d.IpAddress, StringComparer.Ordinal)];
+
+                _scanVseErrors = scanResult.Messages;
+
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (Exception ex)
+            {
+                _scanVseErrors.Add($"An error occurred while trying to scan for VSE devices: {ex.GetType()}: {ex.Message}");
+            }
+        }, cancellationToken);
+    }
+
+    /// <summary>
+    /// The address a scanned VSE device is reached at. The scan reports host and port separately, while the
+    /// device tree identifies a VSE by the same URL the manual entry produces.
+    /// </summary>
+    private static Uri VseScanDeviceAddress(VseScanDevice device)
+        => VseAddresses.GetVseAddressWithPort(device.IpAddress);
+
+    private static bool MatchesVseFilter(VseScanDevice device, string filter)
+        => device.IpAddress.Contains(filter, StringComparison.OrdinalIgnoreCase)
+            || device.HostName.Contains(filter, StringComparison.OrdinalIgnoreCase)
+            || device.MacAddress.Contains(filter, StringComparison.OrdinalIgnoreCase)
+            || device.DeviceType.Contains(filter, StringComparison.OrdinalIgnoreCase);
+
+    private void OnRescanVseDevicesClicked()
+        => ScanVseDevices(_dcwScanTokenSource.Token);
+
+    private void OnScannedVseDeviceSelectionChanged(bool selected, VseScanDevice device)
+    {
+        if (string.IsNullOrWhiteSpace(device.IpAddress))
+        {
+            LogMissingAddressSelectedWarning(Logger);
+            return;
+        }
+
+        if (selected)
+            _selectedVseDevices.Add(device.IpAddress);
+        else
+            _selectedVseDevices.Remove(device.IpAddress);
+    }
+
+    private bool IsVseDialogOkEnabled()
+        => _vseTabIndex == 0
+            ? !string.IsNullOrWhiteSpace(_newVSEAddress) && _isVSEUriValid && _isVSEUriUnique
+            : _selectedVseDevices.Count > 0;
+
+    private void SetVseDialogScanHeight(int tabIndex)
+    {
+        _vseDialogHeight = tabIndex == 1 ? IoLinkMasterDialogHeightList : IoLinkMasterDialogHeightNormal;
+        InvokeAsync(StateHasChanged);
     }
 
     private void SetAllDatapointsCompression(PoolingGrid poolingGrid)

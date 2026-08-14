@@ -22,15 +22,15 @@ using ViciOne.DeviceTree.Contracts.Scanning;
 
 namespace DataCollectionWizard.Client.Services;
 
-public sealed partial class DataCollectionWizardService : IDataCollectionWizardService, IEventConsumer<DeviceTreeEngineAddedEvent>, IEventConsumer<IoLinkScannerEngineAddedEvent>,
+public sealed partial class DataCollectionWizardService : IDataCollectionWizardService, IEventConsumer<DeviceTreeEngineAddedEvent>, IEventConsumer<DeviceScannerEngineAddedEvent>,
                                                           IEventConsumer<DeviceConnectorIdsChangedEvent>,
                                                           IEventConsumer<ClusterUpdateCompleted>, IEventConsumer<ClusterUpdateChanged>, IEventConsumer<DeviceTreeChangedEvent>,
                                                           IEventConsumer<ClusterUpdateFailed>, IEventConsumer<ClusterUpdateRejected>,
                                                           IEventConsumer<ClusterUpdateStarted>, IEventConsumer<NodesOnlineEvent>, IEventConsumer<NodesOfflineEvent>
 {
     private const int FrontendDeviceTimeout = 40000;
-    private const int IoLinkMasterScanTimeout = 60000;
-    private const int MaxTimeout = FrontendDeviceTimeout + IoLinkMasterScanTimeout;
+    private const int DeviceScanTimeout = 60000;
+    private const int MaxTimeout = FrontendDeviceTimeout + DeviceScanTimeout;
 
     private readonly IClusterService _clusterService;
     private readonly IEventBroker _eventBroker;
@@ -40,7 +40,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
     private readonly Dictionary<Guid, List<(Func<IDeviceTreeMasterNode?, bool, Uri, Task> callBack, Type deviceType, Uri address)>> _newDeviceEngineRequests = [];
     private readonly SemaphoreSlim _requestDevicesSemaphore = new(1, 1);
     private readonly AutoDisposeList<IDisposable> _autoDisposeList = [];
-    private readonly SemaphoreSlim _ioLinkScannerEngineAdded = new(0, 1);
+    private readonly SemaphoreSlim _deviceScannerEngineAdded = new(0, 1);
     private readonly SemaphoreSlim _deploymentResetEvent = new(0, 1);
     private bool _deploymentInProgress;
     private bool _skipNextDeviceTreeChange;
@@ -58,7 +58,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
         _logger = logger;
 
         _autoDisposeList.Add(_mediator.Register<DeviceTreeEngineAddedEvent>(this));
-        _autoDisposeList.Add(_mediator.Register<IoLinkScannerEngineAddedEvent>(this));
+        _autoDisposeList.Add(_mediator.Register<DeviceScannerEngineAddedEvent>(this));
         _autoDisposeList.Add(_mediator.Register<DeviceConnectorIdsChangedEvent>(this));
         _autoDisposeList.Add(_mediator.Register<ClusterUpdateCompleted>(this));
         _autoDisposeList.Add(_mediator.Register<ClusterUpdateChanged>(this));
@@ -70,23 +70,23 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
         _autoDisposeList.Add(_mediator.Register<NodesOnlineEvent>(this));
     }
 
-    public async Task<bool> AddIoLinkScannerDataflow(LogLevel logLevel)
+    public async Task<bool> AddDeviceScannerDataflow(LogLevel logLevel)
     {
-        await DrainSemaphoreAsync(_ioLinkScannerEngineAdded);
-        await _mediator.Send(new AddIoLinkScanner(logLevel));
+        await DrainSemaphoreAsync(_deviceScannerEngineAdded);
+        await _mediator.Send(new AddDeviceScanner(logLevel));
 
-        if (!await _ioLinkScannerEngineAdded.WaitAsync(25000))
+        if (!await _deviceScannerEngineAdded.WaitAsync(25000))
         {
-            LogIoLinkScanEngineTimeoutCreatingDataflow(_logger);
+            LogDeviceScanEngineTimeoutCreatingDataflow(_logger);
             return false;
         }
 
         return true;
     }
 
-    public Task Consume(ClientContext<IoLinkScannerEngineAddedEvent> context, CancellationToken cancellationToken)
+    public Task Consume(ClientContext<DeviceScannerEngineAddedEvent> context, CancellationToken cancellationToken)
     {
-        SignalSemaphore(_ioLinkScannerEngineAdded);
+        SignalSemaphore(_deviceScannerEngineAdded);
         return Task.CompletedTask;
     }
 
@@ -142,7 +142,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
     public void Dispose()
     {
-        _ioLinkScannerEngineAdded.Dispose();
+        _deviceScannerEngineAdded.Dispose();
         _requestDevicesSemaphore.Dispose();
         _deploymentResetEvent.Dispose();
         _autoDisposeList.Dispose();
@@ -152,15 +152,30 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
         => (await _mediator.Request<GetOutputConnectorMappingRequest, GetOutputConnectorMappingResponse>(new GetOutputConnectorMappingRequest()))
             .Mapping;
 
-    private static DcpScanningResult GetScanValue(string value)
+    private static DcpScanningResult ParseIoLinkScanResult(string value)
     {
-        var scanningResult = JsonSerializer.Deserialize<DcpScanningResult>(value, SerializerOptions.DeviceTree)
-            ?? throw new InvalidDataException($"DCP scan failed: failed to deserialize result '{value[..(value.Length > 50 ? 50 : value.Length)]}' (chopped at 50 characters).");
-
-        if (scanningResult.Messages.Count > 0 && scanningResult.Devices.Count > 0)
-            throw new InvalidDataException($"DCP scan failed: {string.Join("; ", scanningResult.Messages)}.");
+        var scanningResult = DeserializeScanResult<DcpScanningResult>(value);
+        EnsureScanSucceeded(scanningResult.Messages, scanningResult.Devices.Count);
 
         return scanningResult;
+    }
+
+    private static VseScanningResult ParseVseScanResult(string value)
+    {
+        var scanningResult = DeserializeScanResult<VseScanningResult>(value);
+        EnsureScanSucceeded(scanningResult.Messages, scanningResult.Devices.Count);
+
+        return scanningResult;
+    }
+
+    private static TResult DeserializeScanResult<TResult>(string value)
+        => JsonSerializer.Deserialize<TResult>(value, SerializerOptions.DeviceTree)
+            ?? throw new InvalidDataException($"Device scan failed: failed to deserialize result '{value[..(value.Length > 50 ? 50 : value.Length)]}' (chopped at 50 characters).");
+
+    private static void EnsureScanSucceeded(IReadOnlyCollection<string> messages, int deviceCount)
+    {
+        if (messages.Count > 0 && deviceCount > 0)
+            throw new InvalidDataException($"Device scan failed: {string.Join("; ", messages)}.");
     }
 
     public async Task<bool> IsClusterRunningAsync()
@@ -396,22 +411,51 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
         }
     }
 
-    public async Task<DcpScanningResult> ScanIoLinkDevicesAsync(LogLevel logLevel, CancellationToken cancellationToken)
+    public Task<DcpScanningResult> ScanIoLinkDevicesAsync(LogLevel logLevel, CancellationToken cancellationToken)
+        => ScanDevicesAsync(
+            FunctionBlocks.IoLinkMasterFinder.Outputs.DevicesNodeId,
+            FunctionBlocks.IoLinkMasterFinder.Inputs.TriggerNodeId,
+            ParseIoLinkScanResult,
+            messages => new DcpScanningResult { Devices = [], Messages = [.. messages] },
+            logLevel,
+            cancellationToken);
+
+    public Task<VseScanningResult> ScanVseDevicesAsync(LogLevel logLevel, CancellationToken cancellationToken)
+        => ScanDevicesAsync(
+            FunctionBlocks.VseFinder.Outputs.DevicesNodeId,
+            FunctionBlocks.VseFinder.Inputs.TriggerNodeId,
+            ParseVseScanResult,
+            messages => new VseScanningResult { Devices = [], Messages = [.. messages] },
+            logLevel,
+            cancellationToken);
+
+    /// <summary>
+    /// Runs one scan: subscribe to the scanner's result connector, deploying the scanner dataflow first if it
+    /// is not there yet, then pulse its trigger and wait for the result.
+    /// </summary>
+    /// <typeparam name="TResult">The kind of result the scanner reports.</typeparam>
+    /// <param name="devicesNodeId">The connector the scan result arrives on.</param>
+    /// <param name="triggerNodeId">The connector a scan is started by.</param>
+    /// <param name="parse">Turns a received message into a result.</param>
+    /// <param name="failure">Builds a result that carries nothing but the given messages.</param>
+    /// <param name="logLevel">The log level a newly deployed scanner engine runs at.</param>
+    /// <param name="cancellationToken">Abandons the scan; the caller gets an empty result.</param>
+    private async Task<TResult> ScanDevicesAsync<TResult>(
+        Guid devicesNodeId,
+        Guid triggerNodeId,
+        Func<string, TResult> parse,
+        Func<IEnumerable<string>, TResult> failure,
+        LogLevel logLevel,
+        CancellationToken cancellationToken)
     {
-        var firstMessage = true;
 #pragma warning disable CA2000 // Dispose objects before losing scope
         SemaphoreSlim? resetEvent = new(0, 1);
 #pragma warning restore CA2000 // Dispose objects before losing scope
-        DcpScanningResult scanValue = new()
-        {
-            Devices = [],
-            Messages = [],
-        };
 
+        var progress = new ScanProgress<TResult> { Result = failure([]) };
         IAsyncDisposable? subscription = null;
-        var firstMessageResult = string.Empty;
 
-        LogSubscribingIoLinkScanOutput(_logger);
+        LogSubscribingScanOutput(_logger);
 
         var callBack = new Func<DateTime, string?, Task>((t, value) =>
         {
@@ -421,108 +465,105 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
                 return Task.CompletedTask;
             }
 
-            return ScanIoLinkDeviceCallback(value, ref firstMessage, resetEvent, ref scanValue, ref firstMessageResult);
+            return OnScanMessageReceived(value, resetEvent, progress, parse);
         });
 
         try
         {
-            subscription = await _eventBroker.Subscribe(FunctionBlocks.IoLinkMasterFinder.Outputs.DevicesNodeId, callBack, cancellationToken);
+            subscription = await _eventBroker.Subscribe(devicesNodeId, callBack, cancellationToken);
         }
         catch
         {
-            LogIoLinkScannerSubscriptionFailedCreatingDataflow(_logger);
+            LogScannerSubscriptionFailedCreatingDataflow(_logger);
 
             await (subscription?.DisposeAsync() ?? ValueTask.CompletedTask);
 
-            if (!await AddIoLinkScannerDataflow(logLevel))
+            if (!await AddDeviceScannerDataflow(logLevel))
             {
-                return new DcpScanningResult
-                {
-                    Devices = [],
-                    Messages = ["Failed to deploy DCP scanner dataflow."],
-                };
+                resetEvent.Dispose();
+                return failure(["Failed to deploy the device scanner dataflow."]);
             }
 
             try
             {
-                subscription = await _eventBroker.Subscribe(FunctionBlocks.IoLinkMasterFinder.Outputs.DevicesNodeId, callBack, cancellationToken);
+                subscription = await _eventBroker.Subscribe(devicesNodeId, callBack, cancellationToken);
             }
             catch (Exception ex)
             {
-                LogIoLinkScannerSubscriptionFailedUnexpectedly(_logger, ex);
+                LogScannerSubscriptionFailedUnexpectedly(_logger, ex);
                 resetEvent.Dispose();
                 await (subscription?.DisposeAsync() ?? ValueTask.CompletedTask);
 
-                return new DcpScanningResult
-                {
-                    Devices = [],
-                    Messages = [$"Failed to subscribe to device scanning output: {ex.GetType()} {ex.Message}."]
-                };
+                return failure([$"Failed to subscribe to device scanning output: {ex.GetType()} {ex.Message}."]);
             }
         }
 
-        await TriggerDcpScan();
+        await TriggerScanAsync(triggerNodeId);
 
-        var isTimeout = !await resetEvent.WaitAsync(IoLinkMasterScanTimeout, CancellationToken.None);
+        var isTimeout = !await resetEvent.WaitAsync(DeviceScanTimeout, CancellationToken.None);
 
         if (cancellationToken.IsCancellationRequested)
         {
             resetEvent.Dispose();
-            resetEvent = null;
             await subscription.DisposeAsync();
-            return new DcpScanningResult();
+            return failure([]);
         }
 
         if (isTimeout)
         {
-            LogNoDcpDataReceived(_logger);
+            LogNoScanDataReceived(_logger);
 
-            if (!string.IsNullOrEmpty(firstMessageResult))
+            // The retained message held back below is all there is once the scan itself did not answer.
+            if (!string.IsNullOrEmpty(progress.FirstMessageResult))
             {
                 try
                 {
-                    scanValue = GetScanValue(firstMessageResult);
+                    progress.Result = parse(progress.FirstMessageResult);
                 }
                 catch (Exception ex)
                 {
-                    LogDcpResultSerializationFailed(_logger, ex);
+                    LogScanResultSerializationFailed(_logger, ex);
                 }
             }
         }
 
         resetEvent.Dispose();
-        resetEvent = null;
         await subscription.DisposeAsync();
-        return scanValue;
+        return progress.Result;
     }
 
-    private Task ScanIoLinkDeviceCallback(string? value, ref bool firstMessage, SemaphoreSlim? resetEvent, ref DcpScanningResult scanValue, ref string? firstMessageResult)
+    /// <summary>
+    /// Handles one message from a scanner's result connector. The first one is the value retained from the
+    /// previous scan and is held back rather than reported, so only the message the current scan produces
+    /// completes the wait.
+    /// </summary>
+    private Task OnScanMessageReceived<TResult>(string? value, SemaphoreSlim? resetEvent, ScanProgress<TResult> progress, Func<string, TResult> parse)
     {
-        if (firstMessage)
+        if (progress.FirstMessage)
         {
-            LogIoLinkScanReceivedFirstMessage(_logger);
-            firstMessageResult = value;
-            firstMessage = false;
+            LogScanReceivedFirstMessage(_logger);
+            progress.FirstMessageResult = value;
+            progress.FirstMessage = false;
             return Task.CompletedTask;
         }
 
         if (value == "null")
         {
-            LogIoLinkScanReceivedNullMessage(_logger);
+            LogScanReceivedNullMessage(_logger);
             return Task.CompletedTask;
         }
 
-        LogIoLinkScanReceivedSecondMessage(_logger);
+        LogScanReceivedSecondMessage(_logger);
 
         if (!string.IsNullOrEmpty(value))
         {
             try
             {
-                scanValue = GetScanValue(value);
+                progress.Result = parse(value);
             }
             catch (Exception ex)
             {
-                LogDcpResultSerializationFailed(_logger, ex);
+                LogScanResultSerializationFailed(_logger, ex);
             }
         }
 
@@ -530,11 +571,30 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
         return Task.CompletedTask;
     }
 
-    private async Task TriggerDcpScan()
+    /// <summary>
+    /// Starts a scan. The trigger counts as changed on every write, so writing it back to false right away
+    /// leaves it ready for the next scan.
+    /// </summary>
+    private async Task TriggerScanAsync(Guid triggerNodeId)
     {
-        LogTriggeringIoLinkMasterScan(_logger);
-        await _eventBroker.SetValue(FunctionBlocks.IoLinkMasterFinder.Inputs.TriggerNodeId, true.ToString());
-        await _eventBroker.SetValue(FunctionBlocks.IoLinkMasterFinder.Inputs.TriggerNodeId, false.ToString());
+        LogTriggeringScan(_logger);
+        await _eventBroker.SetValue(triggerNodeId, true.ToString());
+        await _eventBroker.SetValue(triggerNodeId, false.ToString());
+    }
+
+    /// <summary>
+    /// What a running scan has seen so far.
+    /// </summary>
+    private sealed class ScanProgress<TResult>
+    {
+        /// <summary>Whether the next message will be the first one, which is the retained one.</summary>
+        public bool FirstMessage { get; set; } = true;
+
+        /// <summary>The retained message, kept in case the scan itself never answers.</summary>
+        public string? FirstMessageResult { get; set; }
+
+        /// <summary>The result reported so far.</summary>
+        public TResult Result { get; set; } = default!;
     }
 
     public async Task<bool> IsDeployInProgressAsync()

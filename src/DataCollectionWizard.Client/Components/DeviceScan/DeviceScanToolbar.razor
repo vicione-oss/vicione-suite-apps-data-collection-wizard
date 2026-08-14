@@ -1,0 +1,14 @@
+@using ViciOne.Ui.Localization.Resources
+
+<div class="toolbar">
+    <SearchBox @bind-Text="@FilterValue"
+               @bind-Text:event="TextChanging"
+               Placeholder="@CommonVocabulary.Search" />
+
+    <span class="separator"></span>
+
+    <button title="@RescanTitle"
+            @onclick="@OnRescan">
+        <MonochromeIcon Name="@MonochromeIconName.Refresh" Size="@MonochromeIconSize.SmallMedium" />
+    </button>
+</div>

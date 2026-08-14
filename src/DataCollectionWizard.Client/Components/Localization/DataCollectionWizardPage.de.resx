@@ -243,8 +243,8 @@
   <data name="Scan" xml:space="preserve">
     <value>Scan</value>
   </data>
-  <data name="SpinnerMessageTriggeringIoLinkScan" xml:space="preserve">
-    <value>Starte IO-Link Master Scan</value>
+  <data name="SpinnerMessageTriggeringDeviceScan" xml:space="preserve">
+    <value>Starte Gerätescan</value>
   </data>
   <data name="SpinnerMessageWaitingForScanResult" xml:space="preserve">
     <value>Warte auf Antwort</value>
@@ -252,7 +252,7 @@
   <data name="SpinnerMessageGeneratingDataflow" xml:space="preserve">
     <value>Generiere Dataflow</value>
   </data>
-  <data name="SpinnerMessageTriggeringDeviceScan" xml:space="preserve">
+  <data name="SpinnerMessageTriggeringDeviceTreeScan" xml:space="preserve">
     <value>Starte DeviceTree Scan</value>
   </data>
   <data name="SpinnerMessageDeployingDataflow" xml:space="preserve">
@@ -261,26 +261,26 @@
   <data name="SpinnerMessageSubscribingResultOutput" xml:space="preserve">
     <value>Abonniere den Ausgang für das Scanergebnis</value>
   </data>
-  <data name="IoLinkScanErrorDuringScan" xml:space="preserve">
-    <value>Der IO-Link Master Scan ist fehlgeschlagen:</value>
+  <data name="DeviceScanError" xml:space="preserve">
+    <value>Der Gerätescan ist fehlgeschlagen:</value>
   </data>
   <data name="MoneoDeactivatedTooltip" xml:space="preserve">
     <value>Die Konfiguration von Prozesswerten wird generell für alle Datenziele unterstützt. Für die moneo|cloud wird diese Funktionalität freigeschaltet, sobald die entsprechenden Features verfügbar sind. In der Zwischenzeit nutzen Sie bitte die Konfigurationsmöglichkeiten direkt in der moneo|cloud.</value>
   </data>
-  <data name="IoLinkScanNoResult" xml:space="preserve">
-    <value>Es wurden keine IO-Link Master im Netzwerk gefunden...</value>
+  <data name="DeviceScanNoResult" xml:space="preserve">
+    <value>Es wurden keine Geräte im Netzwerk gefunden...</value>
   </data>
-  <data name="IoLinkScanFilterNoResult" xml:space="preserve">
+  <data name="DeviceScanFilterNoResult" xml:space="preserve">
     <value>Der verwendete Filter hat keine Ergebnisse geliefert...</value>
   </data>
-  <data name="IoLinkScanRequiresAuthentication" xml:space="preserve">
+  <data name="DeviceScanRequiresAuthentication" xml:space="preserve">
     <value>Dieses Gerät erfordert eine Authentifizierung</value>
   </data>
   <data name="SpinnerMessageAwaitingCurrentDeployments" xml:space="preserve">
     <value>Warte auf bestehende Deployments</value>
   </data>
   <data name="SpinnerMessageCreatingScanEngine" xml:space="preserve">
-    <value>Generiere IO-Link Scan Engine</value>
+    <value>Generiere Scan Engine</value>
   </data>
   <data name="ClusterOutOfDateDialogHeader" xml:space="preserve">
     <value>Konfigurationsänderung</value>

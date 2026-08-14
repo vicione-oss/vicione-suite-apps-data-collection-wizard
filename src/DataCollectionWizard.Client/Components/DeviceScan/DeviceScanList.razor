@@ -1,0 +1,46 @@
+@typeparam TDevice
+@using ViciOne.Ui.Blazor.Components.LoadingSpinner.Models
+
+@if (Devices is null)
+{
+    <LoadingSpinner Messages="@SpinnerMessages" Visible="true" />
+}
+else
+{
+    <div class="device-list">
+        @if (Errors.Count > 0)
+        {
+            <span class="validation-message">@ScanErrorText</span>
+
+            @foreach (var errorMessage in Errors)
+            {
+                <span class="validation-message">@errorMessage</span>
+            }
+        }
+        else if (Devices.Count == 0)
+        {
+            <span class="validation-message validation-message-info">@NoResultText</span>
+        }
+        else
+        {
+            var filteredDevices = FilterDevices().ToArray();
+
+            @if (filteredDevices.Length == 0)
+            {
+                <span class="validation-message validation-message-info">@FilterNoResultText</span>
+            }
+            else
+            {
+                @foreach (var device in filteredDevices)
+                {
+                    <div class="device-list-entry">
+                        <input @onchange="@(e => OnSelectionChanged((bool)e.Value!, device))"
+                               checked="@IsSelected(device)"
+                               type="checkbox" />
+                        @DeviceTemplate(device)
+                    </div>
+                }
+            }
+        }
+    </div>
+}

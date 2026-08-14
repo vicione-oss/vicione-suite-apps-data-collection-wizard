@@ -7,29 +7,29 @@ public sealed partial class DataCollectionWizardService
     [LoggerMessage(LogLevel.Warning, "Failed to subscribe to DeviceTree output")]
     private static partial void LogClusterSubscriptionFailed(ILogger logger, Exception exception);
 
-    [LoggerMessage(LogLevel.Error, "Failed to deserialize DCP scan result")]
-    private static partial void LogDcpResultSerializationFailed(ILogger logger, Exception exception);
+    [LoggerMessage(LogLevel.Error, "Failed to deserialize the device scan result")]
+    private static partial void LogScanResultSerializationFailed(ILogger logger, Exception exception);
 
-    [LoggerMessage(LogLevel.Warning, "Did not receive DCP scan data.")]
-    private static partial void LogNoDcpDataReceived(ILogger logger);
+    [LoggerMessage(LogLevel.Warning, "Did not receive any device scan data.")]
+    private static partial void LogNoScanDataReceived(ILogger logger);
 
-    [LoggerMessage(LogLevel.Warning, "Timeout while adding IO-Link scan engine.")]
-    private static partial void LogIoLinkScanEngineTimeoutCreatingDataflow(ILogger logger);
+    [LoggerMessage(LogLevel.Warning, "Timeout while adding the device scanner engine.")]
+    private static partial void LogDeviceScanEngineTimeoutCreatingDataflow(ILogger logger);
 
     [LoggerMessage(LogLevel.Information, "Skipping first scan message - retained message.")]
-    private static partial void LogIoLinkScanReceivedFirstMessage(ILogger logger);
+    private static partial void LogScanReceivedFirstMessage(ILogger logger);
 
     [LoggerMessage(LogLevel.Information, "Skipping scan message - output is null.")]
-    private static partial void LogIoLinkScanReceivedNullMessage(ILogger logger);
+    private static partial void LogScanReceivedNullMessage(ILogger logger);
 
     [LoggerMessage(LogLevel.Information, "Received second scan message.")]
-    private static partial void LogIoLinkScanReceivedSecondMessage(ILogger logger);
+    private static partial void LogScanReceivedSecondMessage(ILogger logger);
 
-    [LoggerMessage(LogLevel.Warning, "Failed to subscribe to scan devices output, creating dataflow.")]
-    private static partial void LogIoLinkScannerSubscriptionFailedCreatingDataflow(ILogger logger);
+    [LoggerMessage(LogLevel.Warning, "Failed to subscribe to the device scan output, creating the dataflow.")]
+    private static partial void LogScannerSubscriptionFailedCreatingDataflow(ILogger logger);
 
-    [LoggerMessage(LogLevel.Error, "Unexpectedly failed to subscribe to scan output")]
-    private static partial void LogIoLinkScannerSubscriptionFailedUnexpectedly(ILogger logger, Exception exception);
+    [LoggerMessage(LogLevel.Error, "Unexpectedly failed to subscribe to the device scan output")]
+    private static partial void LogScannerSubscriptionFailedUnexpectedly(ILogger logger, Exception exception);
 
     [LoggerMessage(LogLevel.Warning, "Did not receive second message: {url} - device is offline.")]
     private static partial void LogTimeoutDidNotReceiveDeviceMessage(ILogger logger, string url);
@@ -37,8 +37,8 @@ public sealed partial class DataCollectionWizardService
     [LoggerMessage(LogLevel.Information, "Subscribing DeviceTree for device at {deviceAddress}: {deviceTreeOutputId}, trigger: {deviceTreeTriggerId}")]
     private static partial void LogSubscribingDeviceTree(ILogger logger, Uri deviceAddress, Guid deviceTreeOutputId, Guid deviceTreeTriggerId);
 
-    [LoggerMessage(LogLevel.Information, "Subscribing DCP scan output.")]
-    private static partial void LogSubscribingIoLinkScanOutput(ILogger logger);
+    [LoggerMessage(LogLevel.Information, "Subscribing to the device scan output.")]
+    private static partial void LogSubscribingScanOutput(ILogger logger);
 
     [LoggerMessage(LogLevel.Information, "Sending trigger for device at {deviceAddress}: {deviceTreeTriggerId}")]
     private static partial void LogSendingDeviceTrigger(ILogger logger, Uri deviceAddress, Guid deviceTreeTriggerId);
@@ -58,8 +58,8 @@ public sealed partial class DataCollectionWizardService
     [LoggerMessage(LogLevel.Debug, "{Name} returns {Count} ids")]
     private static partial void LogReturnsIdsDebug(ILogger logger, string name, int count);
 
-    [LoggerMessage(LogLevel.Debug, "Triggering IO-Link master scan.")]
-    private static partial void LogTriggeringIoLinkMasterScan(ILogger logger);
+    [LoggerMessage(LogLevel.Debug, "Triggering a device scan.")]
+    private static partial void LogTriggeringScan(ILogger logger);
 
     [LoggerMessage(LogLevel.Warning, "Failed to apply device tree: timeout while waiting for ticket")]
     partial void LogFailedToApplyDeviceTreeTimeoutWhileWaitingForTicket();

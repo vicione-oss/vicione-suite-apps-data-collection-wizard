@@ -139,36 +139,81 @@
 @* CloseOnEscape="true" not supported yet, https://gitlab.com/vicione-oss/vicione/ui-libs/blazor-components/-/issues/141 *@
 <Dialog @ref="@_refAddVSEDialog"
         HeaderText="@Localization.DataCollectionWizardPage.AddVseDialogHeader"
-        Height="350px"
+        Height="@_vseDialogHeight"
         OnClosing="ResetAddVSEDialog"
         VisibleChanged="OnAddVSEDialogVisibleChangedAsync"
         Width="600px">
 
     <Body>
         <div class="dialog-content dialog-content-vse">
-            <div class="input">
-                <label>@(Localization.DataCollectionWizardPage.VseAddress)</label>
-
-                <TextBox Value="@_newVSEAddress"
-                         ValueChanging="OnAddVSEAddressChanged"
-                         @ref="_refAddVSETextBox"
-                         EnterPressed="OnAddVSETextBoxEnterPressedAsync" />
-
-                <div class="validation-message-container">
-                    @if (!_isVSEUriValid)
-                    {
-                        <span class="validation-message">
-                            @Localization.DataCollectionWizardPage.InvalidDeviceAddress
-                        </span>
-                    }
-
-                    @if (!_isVSEUriUnique)
-                    {
-                        <span class="validation-message">
-                            @Localization.DataCollectionWizardPage.DeviceAddressNotUnique
-                        </span>
-                    }
+            <div class="toolbar-container">
+                <div class="tab-control-container">
+                    <TabStrip @bind-ActiveTabIndex="_vseTabIndex" TabSize="TabSize.Large">
+                        <Tab Text="@Localization.DataCollectionWizardPage.Manual" OnSelected="@((i) => SetVseDialogScanHeight(i.TabIndex))" />
+                        <Tab Text="@Localization.DataCollectionWizardPage.Scan" OnSelected="@((i) => SetVseDialogScanHeight(i.TabIndex))" />
+                    </TabStrip>
                 </div>
+
+                @if (_vseTabIndex == 1)
+                {
+                    <DeviceScanToolbar @bind-Filter="@_vseFilter"
+                                       OnRescan="@OnRescanVseDevicesClicked"
+                                       RescanTitle="@Localization.DataCollectionWizardPage.Rescan" />
+                }
+            </div>
+
+            <div class="content-container">
+                @if (_vseTabIndex == 0)
+                {
+                    <div class="input">
+                        <label>@(Localization.DataCollectionWizardPage.VseAddress)</label>
+
+                        <TextBox Value="@_newVSEAddress"
+                                 ValueChanging="OnAddVSEAddressChanged"
+                                 @ref="_refAddVSETextBox"
+                                 EnterPressed="OnAddVSETextBoxEnterPressedAsync" />
+
+                        <div class="validation-message-container">
+                            @if (!_isVSEUriValid)
+                            {
+                                <span class="validation-message">
+                                    @Localization.DataCollectionWizardPage.InvalidDeviceAddress
+                                </span>
+                            }
+
+                            @if (!_isVSEUriUnique)
+                            {
+                                <span class="validation-message">
+                                    @Localization.DataCollectionWizardPage.DeviceAddressNotUnique
+                                </span>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <DeviceScanList TDevice="VseScanDevice"
+                                    Devices="@_scannedVseDevices"
+                                    Errors="@_scanVseErrors"
+                                    Filter="@_vseFilter"
+                                    MatchesFilter="@MatchesVseFilter"
+                                    IsSelected="@(d => _selectedVseDevices.Contains(d.IpAddress))"
+                                    SelectionChanged="@(s => OnScannedVseDeviceSelectionChanged(s.Selected, s.Device))"
+                                    SpinnerMessages="@(_loadingSpinnerMessagesNetworkScan)"
+                                    ScanErrorText="@Localization.DataCollectionWizardPage.DeviceScanError"
+                                    NoResultText="@Localization.DataCollectionWizardPage.DeviceScanNoResult"
+                                    FilterNoResultText="@Localization.DataCollectionWizardPage.DeviceScanFilterNoResult">
+                        <DeviceTemplate>
+                            <div class="device-list-entry-name">
+                                @(string.IsNullOrWhiteSpace(context.HostName) ? context.DeviceType : context.HostName)
+                            </div>
+
+                            <div class="device-list-entry-info">
+                                @($"{context.IpAddress}:{context.Port} | {context.MacAddress} | {context.DeviceType}")
+                            </div>
+                        </DeviceTemplate>
+                    </DeviceScanList>
+                }
             </div>
         </div>
     </Body>
@@ -176,7 +221,7 @@
     <Footer>
         <DialogFooterButton OnClick="@OnAddVSEDialogOkAsync"
                             Text="@CommonVocabulary.Ok"
-                            Enabled="@(!string.IsNullOrWhiteSpace(_newVSEAddress) && _isVSEUriValid && _isVSEUriUnique)" />
+                            Enabled="@IsVseDialogOkEnabled()" />
 
         <DialogFooterButton OnClick="@OnAddVSEDialogCloseAsync"
                             Text="@CommonVocabulary.Cancel" />
@@ -203,18 +248,9 @@
 
                 @if (_ioLinkMasterTabIndex == 1)
                 {
-                    <div class="toolbar">
-                        <SearchBox @bind-Text="@_ioLinkMasterFilter"
-                                   @bind-Text:event="TextChanging"
-                                   Placeholder="@CommonVocabulary.Search" />
-
-                        <span class="separator"></span>
-
-                        <button title="@Localization.DataCollectionWizardPage.Rescan"
-                                @onclick="@OnRescanIoLinkDevicesClicked">
-                            <MonochromeIcon Name="@MonochromeIconName.Refresh" Size="@MonochromeIconSize.SmallMedium" />
-                        </button>
-                    </div>
+                    <DeviceScanToolbar @bind-Filter="@_ioLinkMasterFilter"
+                                       OnRescan="@OnRescanIoLinkDevicesClicked"
+                                       RescanTitle="@Localization.DataCollectionWizardPage.Rescan" />
                 }
             </div>
 
@@ -248,62 +284,33 @@
                 }
                 else
                 {
-                    @if (_scannedIoLinkDevices is null)
-                    {
-                        <LoadingSpinner Messages="@(_loadingSpinnerMessagesScanIoLink)"
-                                        Visible="true" />
-                    }
-                    else
-                    {
-                        <div class="device-list">
-                            @if (_scanIoLinkErrors.Count > 0)
-                            {
-                                <span class="validation-message">@Localization.DataCollectionWizardPage.IoLinkScanErrorDuringScan</span>
+                    <DeviceScanList TDevice="DcpDevice"
+                                    Devices="@_scannedIoLinkDevices"
+                                    Errors="@_scanIoLinkErrors"
+                                    Filter="@_ioLinkMasterFilter"
+                                    MatchesFilter="@MatchesIoLinkFilter"
+                                    IsSelected="@(d => _selectedIoLinkDevices.Contains(d.Network.Address!.ToString()))"
+                                    SelectionChanged="@(s => OnScannedDeviceSelectionChanged(s.Selected, s.Device))"
+                                    SpinnerMessages="@(_loadingSpinnerMessagesNetworkScan)"
+                                    ScanErrorText="@Localization.DataCollectionWizardPage.DeviceScanError"
+                                    NoResultText="@Localization.DataCollectionWizardPage.DeviceScanNoResult"
+                                    FilterNoResultText="@Localization.DataCollectionWizardPage.DeviceScanFilterNoResult">
+                        <DeviceTemplate>
+                            <div class="device-list-entry-name">
+                                @context.Identity.Name
+                                @if (context.Security.RequiresAuthentication)
+                                {
+                                    <span title="@Localization.DataCollectionWizardPage.DeviceScanRequiresAuthentication">
+                                        <MonochromeIcon Name="@MonochromeIconName.LockActive" Size="@MonochromeIconSize.Small" />
+                                    </span>
+                                }
+                            </div>
 
-                                @foreach (var errorMessage in _scanIoLinkErrors)
-                                {
-                                    <span class="validation-message">@errorMessage</span>
-                                }
-                            }
-                            else if (_scannedIoLinkDevices.Count == 0)
-                            {
-                                <span class="validation-message validation-message-info">@Localization.DataCollectionWizardPage.IoLinkScanNoResult</span>
-                            }
-                            else
-                            {
-                                var filteredDevices = FilterScannedDevices(_scannedIoLinkDevices);
-                                
-                                @if (filteredDevices.Count() == 0)
-                                {
-                                    <span class="validation-message validation-message-info">@Localization.DataCollectionWizardPage.IoLinkScanFilterNoResult</span>
-                                }
-                                else
-                                {
-                                    @foreach (var device in filteredDevices)
-                                    {
-                                        <div class="device-list-entry">
-                                            <input @onchange="@((e) => OnScannedDeviceSelectionChanged((bool)e.Value!, device))"
-                                                    checked="@_selectedIoLinkDevices.Contains(device.Network.Address!.ToString())"
-                                                    type="checkbox" />
-                                            <div class="device-list-entry-name">
-                                                @device.Identity.Name
-                                                @if (device.Security.RequiresAuthentication)
-                                                {
-                                                    <span title="@Localization.DataCollectionWizardPage.IoLinkScanRequiresAuthentication">
-                                                        <MonochromeIcon Name="@MonochromeIconName.LockActive" Size="@MonochromeIconSize.Small" />
-                                                    </span>
-                                                }
-                                            </div>
-
-                                            <div class="device-list-entry-info">
-                                                @($"{device.Network.Address!.DnsSafeHost}:{device.Network.Address.Port} | {device.Network.MacAddress} | {device.Identity.VendorId}-{device.Identity.DeviceId}")
-                                            </div>
-                                        </div>
-                                    }
-                                }
-                            }
-                        </div>
-                    }
+                            <div class="device-list-entry-info">
+                                @($"{context.Network.Address!.DnsSafeHost}:{context.Network.Address.Port} | {context.Network.MacAddress} | {context.Identity.VendorId}-{context.Identity.DeviceId}")
+                            </div>
+                        </DeviceTemplate>
+                    </DeviceScanList>
                 }
             </div>
         </div>
