@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using DataCollectionWizard.Internal.Extensions;
-using DataCollectionWizard.Public.Extensions;
 using Sdk.Connections.Contracts;
 using ViciOne.DeviceTree.Contracts;
 using ViciOne.DeviceTree.Contracts.Comparer;

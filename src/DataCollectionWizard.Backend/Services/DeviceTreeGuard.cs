@@ -6,7 +6,6 @@ using DataCollectionWizard.Internal.Events;
 using DataCollectionWizard.Internal.Requests;
 using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Public.Events;
-using DataCollectionWizard.Public.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sdk.Backend.Messaging;

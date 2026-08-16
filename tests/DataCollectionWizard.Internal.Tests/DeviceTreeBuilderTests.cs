@@ -1,6 +1,5 @@
 ﻿using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Public;
-using DataCollectionWizard.Public.Extensions;
 using Sdk.Connections.Contracts;
 using ViciOne.DeviceTree.Contracts;
 using ViciOne.DeviceTree.Contracts.Extensions;

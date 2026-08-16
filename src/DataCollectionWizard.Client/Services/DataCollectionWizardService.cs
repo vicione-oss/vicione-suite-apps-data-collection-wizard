@@ -10,7 +10,6 @@ using DataCollectionWizard.Internal.Requests;
 using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Public.Events;
-using DataCollectionWizard.Public.Extensions;
 using DataCollectionWizard.Public.Requests;
 using Microsoft.Extensions.Logging;
 using Sdk.Client.Infrastructure;
@@ -172,7 +171,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
         => JsonSerializer.Deserialize<TResult>(value, SerializerOptions.DeviceTree)
             ?? throw new InvalidDataException($"Device scan failed: failed to deserialize result '{value[..(value.Length > 50 ? 50 : value.Length)]}' (chopped at 50 characters).");
 
-    private static void EnsureScanSucceeded(IReadOnlyCollection<string> messages, int deviceCount)
+    private static void EnsureScanSucceeded(List<string> messages, int deviceCount)
     {
         if (messages.Count > 0 && deviceCount > 0)
             throw new InvalidDataException($"Device scan failed: {string.Join("; ", messages)}.");
