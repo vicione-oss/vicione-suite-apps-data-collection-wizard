@@ -1,8 +1,7 @@
-﻿namespace DataCollectionWizard.Public;
+namespace DataCollectionWizard.Client;
 
-// Moved here from ViciOne.DeviceTree.Contracts.Constants.VseAddresses, which was removed from the shared
-// package as it was no longer used by any production driver code.
-public static class VseAddresses
+// VSE devices are reached on port 3321; an address given without an explicit port is normalized to it.
+internal static class VseAddresses
 {
     public static int VseDefaultPort { get; } = 3321;
 

@@ -1,6 +1,4 @@
-﻿using DataCollectionWizard.Public;
-
-namespace DataCollectionWizard.Internal.Tests;
+﻿namespace DataCollectionWizard.Client.Tests;
 
 public class VseAddressesTests
 {

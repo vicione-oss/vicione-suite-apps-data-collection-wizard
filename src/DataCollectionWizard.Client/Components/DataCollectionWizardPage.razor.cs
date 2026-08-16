@@ -12,7 +12,6 @@ using DataCollectionWizard.Internal.Events;
 using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
-using DataCollectionWizard.Public;
 using DataCollectionWizard.Public.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
