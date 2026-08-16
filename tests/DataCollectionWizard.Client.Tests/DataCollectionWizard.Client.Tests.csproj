@@ -20,8 +20,4 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="drivers\**" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
 </Project>
