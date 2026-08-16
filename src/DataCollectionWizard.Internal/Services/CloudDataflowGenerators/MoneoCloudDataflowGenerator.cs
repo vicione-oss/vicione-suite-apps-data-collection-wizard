@@ -54,7 +54,7 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
     {
         var result = new Dictionary<string, AggregationFunctionCloudInputs>();
 
-        var deviceContainerManager = new DeviceContainerManager(deviceTreeMaster, cloudContainer, builder);
+        var deviceContainerManager = new DeviceContainerManager(deviceTreeMaster, () => cloudContainer, dataflow, builder);
 
         var stringOutput = GetConstantStringOutput(builder, dataflow, cloudContainer);
         GenerateDataPort(connection, deviceTreeMaster, builder, dataflow, stringOutput, out var deviceId, out var deviceIdNode);

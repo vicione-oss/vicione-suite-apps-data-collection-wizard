@@ -407,9 +407,9 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
         var cloudInputs = GenerateClouds(master, engine, dataflow, activePublishTargets, generateDataflowResult);
 
-        var compressorContainer = builder.Editors.Container.AddContainer(dataflow.Root, ContainerNameCompressors, null, new Point { X = FunctionBlocks.DefaultHorizontalSeparation });
+        Container CompressorContainer() => builder.Editors.Container.AddContainer(dataflow.Root, ContainerNameCompressors, null, new Point { X = FunctionBlocks.DefaultHorizontalSeparation });
 
-        GenerateProcessDataLogging(dataflow, nodeAndDescendants, master, compressorContainer, parents, compressorFbs, enabledConfigs, generateDataflowResult, cloudInputs, connectionNames);
+        GenerateProcessDataLogging(dataflow, nodeAndDescendants, master, CompressorContainer, parents, compressorFbs, enabledConfigs, generateDataflowResult, cloudInputs, connectionNames);
         GenerateSchedulableBlobLogging(dataflow, nodeAndDescendants, schedulerFbs, enabledConfigs, cloudInputs, connectionNames, generateDataflowResult);
         GenerateEventTriggerBlobLogging(dataflow, nodeAndDescendants, enabledConfigs, cloudInputs, connectionNames, generateDataflowResult);
 
@@ -440,7 +440,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
     private Dictionary<Guid, Dictionary<string, AggregationFunctionCloudInputs>> GenerateClouds(IDeviceTreeMasterNode master, Engine engine, Dataflow dataflow, Connection[] activePublishTargets, DeviceDataflowGeneratorResult generateDataflowResult)
     {
         var cloudInputs = new Dictionary<Guid, Dictionary<string, AggregationFunctionCloudInputs>>();
-        var cloudsContainer = builder.Editors.Container.AddSubContainer(dataflow, "Clouds", dataflow.Root, FunctionBlocks.DefaultHorizontalSeparation * 2, 0);
+        Container? cloudsContainer = null;
 
         foreach (var cloudDataflowGenerator in cloudDataflowGenerators.DistinctBy(c => c.GetType()))
         {
@@ -451,6 +451,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
             foreach (var cloudConnection in cloudConnections)
             {
+                cloudsContainer ??= builder.Editors.Container.AddSubContainer(dataflow, "Clouds", dataflow.Root, FunctionBlocks.DefaultHorizontalSeparation * 2, 0);
                 var allNodes = master.GetNodeAndDescendants().ToArray();
                 var container = builder.Editors.Container.AddSubContainer(dataflow, $"{cloudConnection.Name ?? cloudConnection.Id.ToString()}", cloudsContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
 
@@ -545,14 +546,14 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         }
     }
 
-    private void GenerateProcessDataLogging(Dataflow dataflow, IDeviceTreeBase[] nodeAndDescendants, IDeviceTreeMasterNode deviceNode, ChildContainer compressorsContainer,
+    private void GenerateProcessDataLogging(Dataflow dataflow, IDeviceTreeBase[] nodeAndDescendants, IDeviceTreeMasterNode deviceNode, Func<Container> compressorsContainer,
         Dictionary<IDeviceTreeBase, IDeviceTreeBase> parents,
         Dictionary<IDeviceTreeBase, Dictionary<string, FunctionBlock>> compressorFbs, Guid[] enabledConfigs,
         DeviceDataflowGeneratorResult generateDataflowResult,
         Dictionary<Guid, Dictionary<string, AggregationFunctionCloudInputs>> cloudInputs,
         Dictionary<Guid, string> connectionNames)
     {
-        var compressorContainerManager = new DeviceContainerManager(deviceNode, compressorsContainer, builder);
+        var compressorContainerManager = new DeviceContainerManager(deviceNode, compressorsContainer, dataflow, builder);
 
         foreach (var compressableDataNode in nodeAndDescendants.OfType<IDeviceTreeCompressableDataNode>())
         {

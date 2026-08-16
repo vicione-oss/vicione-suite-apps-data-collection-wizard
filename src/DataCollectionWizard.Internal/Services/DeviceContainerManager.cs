@@ -1,7 +1,6 @@
 ﻿using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using ViciOne.Cluster.Builder;
-using ViciOne.Cluster.Builder.Extensions;
 using ViciOne.Cluster.Model;
 using ViciOne.DeviceTree.Contracts;
 using ViciOne.DeviceTree.Contracts.Extensions;
@@ -15,15 +14,20 @@ internal sealed class DeviceContainerManager
     private readonly Dataflow _dataflow;
     private readonly Dictionary<string, Container> _nodesContainers = [];
     private readonly Dictionary<string, IDeviceTreeBase?> _nodesParents;
-    private readonly ChildContainer _parentContainer;
+    private readonly Func<Container> _rootFactory;
+    private Container? _rootContainer;
 
-    public DeviceContainerManager(IDeviceTreeMasterNode device, ChildContainer parent, ClusterBuilder builder)
+    // The root container, created on first access so a device that contributes no function blocks never
+    // materializes it.
+    private Container Root => _rootContainer ??= _rootFactory();
+
+    public DeviceContainerManager(IDeviceTreeMasterNode device, Func<Container> rootFactory, Dataflow dataflow, ClusterBuilder builder)
     {
         var allNodes = device.GetNodeAndDescendants().ToArray();
         _nodesParents = allNodes.ToDictionary(n => n.Id, n => allNodes.FirstOrDefault(p => p.Children.Contains(n)));
-        _parentContainer = parent;
+        _rootFactory = rootFactory;
+        _dataflow = dataflow;
         _builder = builder;
-        _dataflow = _builder.Cache.GetDataflow(_parentContainer);
     }
 
     private Container GetNodeContainer(IDeviceTreeBase node)
@@ -35,7 +39,7 @@ internal sealed class DeviceContainerManager
             throw new ArgumentException(InvalidNodeArgumentExceptionMessage, nameof(node));
 
         if (parentNode is null)
-            return _parentContainer;
+            return Root;
 
         var parentContainer = GetNodeContainer(parentNode);
 
@@ -51,7 +55,7 @@ internal sealed class DeviceContainerManager
             throw new ArgumentException(InvalidNodeArgumentExceptionMessage, nameof(node));
 
         if (parentNode is null)
-            return _parentContainer;
+            return Root;
 
         return GetNodeContainer(parentNode);
     }

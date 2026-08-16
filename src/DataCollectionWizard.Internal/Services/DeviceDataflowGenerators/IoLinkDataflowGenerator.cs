@@ -106,8 +106,7 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
     {
         var result = new DeviceDataflowGeneratorResult();
         var ioLinkMaster = (DeviceTreeIoLinkMaster)device;
-        var processDataContainer = builder.Editors.Container.AddContainer(dataflow.Root, ContainerNameProcessData);
-        var deviceContainerManager = new DeviceContainerManager(device, processDataContainer, builder);
+        var deviceContainerManager = new DeviceContainerManager(device, () => builder.Editors.Container.AddContainer(dataflow.Root, ContainerNameProcessData), dataflow, builder);
 
         var relevantNodesTuples = GetDataNodesRecursively((DeviceTreeIoLinkMaster)device)
                                     .Where(n => !n.IOLinkDevice?.IsUnknown ?? false)
