@@ -275,8 +275,8 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             }
         }
 
-        var dataPointPrecentageToRecommended = 1.0 * _currentlyEnabledDataPoints / MaxRecommendedDataPoints;
-        if (dataPointPrecentageToRecommended is >= MaxRecommendedMessageDisplayBoundary and < 1.0)
+        var dataPointPercentageToRecommended = 1.0 * _currentlyEnabledDataPoints / MaxRecommendedDataPoints;
+        if (dataPointPercentageToRecommended is >= MaxRecommendedMessageDisplayBoundary and < 1.0)
         {
             MessageBannerService.ShowMessageBanner(MessageType.Information, string.Format(
                 CultureInfo.InvariantCulture,
@@ -285,7 +285,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                 MaxRecommendedDataPoints
             ));
         }
-        else if (dataPointPrecentageToRecommended >= 1.0)
+        else if (dataPointPercentageToRecommended >= 1.0)
         {
             MessageBannerService.ShowMessageBanner(MessageType.Warning, string.Format(
                 CultureInfo.InvariantCulture,
@@ -467,22 +467,22 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         return existingDevice is not null;
     }
 
-    private async Task NodesOffline(string[] arg)
+    private async Task NodesOffline(string[] nodeIds)
     {
         if (_tree is null)
             return;
 
-        SetNodesStatus(arg, ConnectionStatus.Offline);
+        SetNodesStatus(nodeIds, ConnectionStatus.Offline);
         SetTree(_tree, true);
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task NodesOnline(string[] arg)
+    private async Task NodesOnline(string[] nodeIds)
     {
         if (_tree is null)
             return;
 
-        SetNodesStatus(arg, ConnectionStatus.Online);
+        SetNodesStatus(nodeIds, ConnectionStatus.Online);
         SetTree(_tree, false);
         await InvokeAsync(StateHasChanged);
     }
@@ -636,7 +636,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
         await DataCollectionWizardService.RequestNewDevicesDeviceTreeAsync(
             deviceEngineInfos,
-            async (d, _, a) =>
+            async (d, a, _) =>
             {
                 var uri = new UriBuilder(a).Uri;
 
@@ -757,7 +757,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
         await DataCollectionWizardService.RequestNewDevicesDeviceTreeAsync(
             deviceEngineInfos,
-            async (d, _, a) =>
+            async (d, a, _) =>
             {
                 if (d is not DeviceTreeVseDevice)
                 {

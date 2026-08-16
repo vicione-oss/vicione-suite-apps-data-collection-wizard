@@ -35,7 +35,7 @@ public sealed partial class DeleteDeviceTreeConsumer(IDataCollectionWizardDbCont
         }
         catch (DbUpdateException e)
         {
-            await context.Publish(new DeviceTreeChangeErrorEvent(new ErrorInfo(ErrorCodes.DbUpdateFailed, e.Message)));
+            await context.Publish(new DeviceTreeChangedErrorEvent(new ErrorInfo(ErrorCodes.DbUpdateFailed, e.Message)));
         }
     }
 }

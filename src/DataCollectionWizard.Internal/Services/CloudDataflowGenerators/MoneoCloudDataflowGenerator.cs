@@ -58,15 +58,15 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
 
         var stringOutput = GetConstantStringOutput(builder, dataflow, cloudContainer);
         GenerateDataPort(connection, deviceTreeMaster, builder, dataflow, stringOutput, out var deviceId, out var deviceIdNode);
-        GenerateProcessData(builder, dataflow, engineCycleInterval, loggedProcessDataNodes, result, deviceId, deviceIdNode, deviceContainerManager, dataOutputs);
+        GenerateProcessData(builder, dataflow, engineCycleInterval, loggedProcessDataNodes, deviceId, deviceIdNode, deviceContainerManager, dataOutputs, result);
 
         return result;
     }
 
     private static void GenerateProcessData(ClusterBuilder builder, Dataflow dataflow, uint engineCycleInterval,
-                                            List<ProcessDataConfiguration> loggedProcessDataNodes, Dictionary<string, AggregationFunctionCloudInputs> result,
+                                            List<ProcessDataConfiguration> loggedProcessDataNodes,
                                             string deviceId, DataPortTreeNode deviceIdNode, DeviceContainerManager containerManager,
-                                            Dictionary<string, DataOutputInfo> dataOutputs)
+                                            Dictionary<string, DataOutputInfo> dataOutputs, Dictionary<string, AggregationFunctionCloudInputs> result)
     {
         foreach (var currentProcessDataNode in loggedProcessDataNodes)
         {

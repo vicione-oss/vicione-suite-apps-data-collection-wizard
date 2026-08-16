@@ -22,7 +22,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
     public Type DeviceType => typeof(DeviceTreeVseDevice);
 
     public DeviceDataflowGeneratorResult GenerateDeviceFunctionBlocks(ClusterBuilder builder, Dataflow dataflow, IDeviceTreeMasterNode device, Dictionary<string, bool> enabledDataIds,
-                                                                      Dictionary<Guid, string> cloudNames, BlobLoggingConfiguration[] blobLoggingConfigurations)
+                                                                      Dictionary<Guid, string> cloudNames, BlobLoggingConfiguration[] blobLoggingConfigurations, string connectionIdentifier)
     {
         var result = new DeviceDataflowGeneratorResult();
         var vseDevice = (DeviceTreeVseDevice)device;
@@ -59,8 +59,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
         var rawDataNode = vseDevice.Children.FirstOrDefault(c => c.Name == NodeNames.RawData);
         if (rawDataNode is not null)
         {
-            var sensors = rawDataNode.Children.OfType<DeviceTreeVseRawData>();
-            AddVseRawDataSensors(builder, dataflow, processDataContainer, device.Url, result, cloudNames, blobLoggingConfigurations);
+            AddVseRawDataSensors(builder, dataflow, processDataContainer, device.Url, cloudNames, blobLoggingConfigurations, result);
         }
 
         var variantsNode = vseDevice.Children.FirstOrDefault(c => c.Name == NodeNames.Variants) as DeviceTreeVseVariants;
@@ -72,18 +71,18 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
         return result;
     }
 
-    public DeviceTreeFunctionblockResult GenerateGetDeviceTreeFunctionblock(ClusterBuilder builder, Dataflow dataflow, string address)
+    public DeviceTreeFunctionBlockResult GenerateDeviceTreeSourceFunctionBlock(ClusterBuilder builder, Dataflow dataflow, string address, string connectionIdentifier)
     {
         AddVseDeviceTreeSubscriber(builder, dataflow, address, out var deviceTreeTrigger, out var deviceTreeOutput);
 
-        return new DeviceTreeFunctionblockResult
+        return new DeviceTreeFunctionBlockResult
         {
             DeviceTreeOutput = deviceTreeOutput,
             DeviceTreeTrigger = deviceTreeTrigger,
         };
     }
 
-    private static FunctionBlock AddSensorFb(ClusterBuilder builder, Dataflow dataflow, Uri deviceUri, Container container, DeviceTreeVseRawData sensor, Guid dataGroupIdentifier, string cloudName)
+    private static FunctionBlock AddSensorFb(ClusterBuilder builder, Dataflow dataflow, Container container, Uri deviceUri, DeviceTreeVseRawData sensor, Guid dataGroupIdentifier, string cloudName)
     {
         var sensorFb = builder.Editors.Container.AddSubFunctionBlock(dataflow, FunctionBlocks.VseRawDataSubscriber.DesignId, $"{sensor.Name}-{cloudName}",
             container, 0, FunctionBlocks.DefaultVerticalSeparation);
@@ -335,7 +334,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
     }
 
     private void AddVseRawDataSensors(ClusterBuilder builder, Dataflow dataflow, Container processDataContainer, Uri deviceUri,
-                                      DeviceDataflowGeneratorResult result, Dictionary<Guid, string> cloudNames, BlobLoggingConfiguration[] blobLoggingConfigurations)
+                                      Dictionary<Guid, string> cloudNames, BlobLoggingConfiguration[] blobLoggingConfigurations, DeviceDataflowGeneratorResult result)
     {
         result.RawDataContainer = builder.Editors.Container.AddSubContainer(dataflow, ContainerNameRawData, processDataContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
 
@@ -352,7 +351,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
 
             foreach (var configuration in nodeBlobLoggingConfigurations.GroupBy(c => c.DataGroupIdentifier))
             {
-                var sensorFb = AddSensorFb(builder, dataflow, deviceUri, result.RawDataContainer, sensor,
+                var sensorFb = AddSensorFb(builder, dataflow, result.RawDataContainer, deviceUri, sensor,
                     configuration.Key, cloudNames[configuration.Key]);
 
                 if (configuration.Any(c => c.NeedsScheduler))
@@ -419,7 +418,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
     }
 
     private static DataOutputInfo GetOutputInfo(IDeviceTreeCompressableDataNode child, string parentName, ConnectorOutput output, ConnectorOutput? validOutput, ConnectorOutput availableOutput,
-                                                Func<AggregationFunction, int, string> getDatpointIdentifier)
+                                                Func<AggregationFunction, int, string> getDatapointIdentifier)
     {
         var outputInfo = new DataOutputInfo
         {
@@ -431,7 +430,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
 
         foreach (var compressorConfig in child.CompressorConfigurations)
         {
-            outputInfo.DataPointIdentifiers[compressorConfig.DataGroupIdentifier] = getDatpointIdentifier(compressorConfig.Aggregation, compressorConfig.CompressionTime);
+            outputInfo.DataPointIdentifiers[compressorConfig.DataGroupIdentifier] = getDatapointIdentifier(compressorConfig.Aggregation, compressorConfig.CompressionTime);
         }
 
         return outputInfo;

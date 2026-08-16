@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.Toolbar;
 
-public sealed partial class DcwToolbar : IDisposable
+public sealed partial class DataCollectionWizardToolbar : IDisposable
 {
     private PoolingGrid _debugPoolingGrid = PoolingGrid.MinutesThirty;
     private readonly System.Timers.Timer _searchBoxTimer = new()

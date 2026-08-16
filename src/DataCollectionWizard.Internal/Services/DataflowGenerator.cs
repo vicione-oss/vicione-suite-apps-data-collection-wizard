@@ -388,18 +388,22 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         var masterUrl = new UriBuilder(master.Url).Uri;
         var masterAddress = $"{masterUrl.DnsSafeHost}:{masterUrl.Port}";
 
+        // A fresh identifier per master, under which the IoTCoreConfiguration function block registers the
+        // connection and by which the subscriber function blocks reach that same, shared connection.
+        var connectionIdentifier = Guid.NewGuid().ToString();
+
         var connectionNames = activePublishTargets.ToDictionary(c => c.Id, c => c.Name ?? string.Empty);
 
         var deviceDataflowGenerator = deviceDataflowGenerators.FirstOrDefault(g => g.DeviceType == master.GetType())
             ?? throw new ArgumentException($"No deviceDataflowGenerator found for {master.GetType()}");
 
-        var getDeviceTreeFBResult = deviceDataflowGenerator.GenerateGetDeviceTreeFunctionblock(builder, dataflow, masterAddress);
-        deviceTreeTrigger = getDeviceTreeFBResult.DeviceTreeTrigger;
-        deviceTreeOutput = getDeviceTreeFBResult.DeviceTreeOutput;
+        var deviceTreeFunctionBlockResult = deviceDataflowGenerator.GenerateDeviceTreeSourceFunctionBlock(builder, dataflow, masterAddress, connectionIdentifier);
+        deviceTreeTrigger = deviceTreeFunctionBlockResult.DeviceTreeTrigger;
+        deviceTreeOutput = deviceTreeFunctionBlockResult.DeviceTreeOutput;
 
         var enabledDataIds = GetEnabledDataIds(master, enabledConfigs);
         var blobLoggingConfigurations = GetBlobLoggingConfigurations(nodeAndDescendants, enabledConfigs).ToArray();
-        var generateDataflowResult = deviceDataflowGenerator.GenerateDeviceFunctionBlocks(builder, dataflow, master, enabledDataIds, connectionNames, blobLoggingConfigurations);
+        var generateDataflowResult = deviceDataflowGenerator.GenerateDeviceFunctionBlocks(builder, dataflow, master, enabledDataIds, connectionNames, blobLoggingConfigurations, connectionIdentifier);
 
         var cloudInputs = GenerateClouds(master, engine, dataflow, activePublishTargets, generateDataflowResult);
 
@@ -590,7 +594,6 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         Dictionary<Guid, Dictionary<string, AggregationFunctionCloudInputs>> cloudInputs,
         Dictionary<Guid, string> connectionNames, DeviceDataflowGeneratorResult generateDataflowResult)
     {
-        var measurementPublisherFbY = 0;
         Container? schedulerContainer = null;
 
         foreach (var schedulableDataNode in nodeAndDescendants.OfType<IDeviceTreeSchedulableDataNode>())
@@ -613,7 +616,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
                         continue;
                     }
 
-                    var schedulerFb = GetOrAddSchedulerFb(schedulerConfig, dataflow, schedulerFbs, schedulerContainer);
+                    var schedulerFb = GetOrAddSchedulerFb(dataflow, schedulerConfig, schedulerFbs, schedulerContainer);
 
                     ConnectSchedulerToRawDataSubscriber(schedulerFb, schedulerRawDataInfo.TriggerInput);
 
@@ -623,8 +626,6 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
                         {
                             throw new InvalidOperationException($"Cloud input for cloud {connectionNames[schedulerConfig.DataGroupIdentifier]} ({schedulerConfig.DataGroupIdentifier}) an device {schedulableDataNode.Id} is missing.");
                         }
-
-                        measurementPublisherFbY++;
 
                         aggregationFunctionCloudInput.RawData.Connect(rawDataInfo.SchedulerSensors[schedulerConfig.DataGroupIdentifier].MeasurementOutput, builder);
                     }
@@ -692,7 +693,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         return false;
     }
 
-    private FunctionBlock GetOrAddSchedulerFb(SchedulerConfiguration configuration, Dataflow dataflow, Dictionary<SchedulerConfiguration, FunctionBlock> schedulerFbs, Container schedulerContainer)
+    private FunctionBlock GetOrAddSchedulerFb(Dataflow dataflow, SchedulerConfiguration configuration, Dictionary<SchedulerConfiguration, FunctionBlock> schedulerFbs, Container schedulerContainer)
     {
         if (schedulerFbs.TryGetValue(configuration, out var schedulerFb))
             return schedulerFb;

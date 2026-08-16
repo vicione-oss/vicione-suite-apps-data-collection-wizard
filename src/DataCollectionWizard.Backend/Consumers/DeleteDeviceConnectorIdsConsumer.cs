@@ -40,7 +40,7 @@ public sealed partial class DeleteDeviceConnectorIdsConsumer(IDataCollectionWiza
         }
         catch (DbUpdateException e)
         {
-            await context.Publish(new DeviceConnectorIdsChangeErrorEvent(new ErrorInfo(ErrorCodes.DbUpdateFailed, e.Message)));
+            await context.Publish(new DeviceConnectorIdsChangedErrorEvent(new ErrorInfo(ErrorCodes.DbUpdateFailed, e.Message)));
         }
     }
 }

@@ -19,8 +19,8 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
 
     public string Name => "ANNA";
 
-    private static FunctionBlock AddAnnaObjectDataFb(ClusterBuilder builder, Dataflow dataflow, string datapointIdentifier, string name,
-                                              CompressorConfiguration configuration, DeviceContainerManager containerManager,
+    private static FunctionBlock AddAnnaObjectDataFb(ClusterBuilder builder, Dataflow dataflow, DeviceContainerManager containerManager, string datapointIdentifier, string name,
+                                              CompressorConfiguration configuration,
                                               bool insertRefValue, bool insertRotSpeed, IDeviceTreeBase node)
     {
         var parentContainer = containerManager.GetParentContainer(node);
@@ -85,7 +85,7 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
         }
 
         GenerateDataPort(connection, deviceTreeMaster, builder, dataflow, machineIdentifier, out var objectDataNode, out var rawDataNode);
-        GenerateObjectData(connection, builder, dataflow, loggedProcessDataNodes, dataOutputs, rotationalFrequencyOutputs, result, objectDataNode, cloudContainer, deviceTreeMaster);
+        GenerateObjectData(connection, builder, dataflow, loggedProcessDataNodes, dataOutputs, rotationalFrequencyOutputs, objectDataNode, cloudContainer, deviceTreeMaster, result);
         GenerateRawData(connection, builder, dataflow, loggedRawDataNodes, cloudContainer, rotationalFrequencyOutputs, rawDataNode, result);
 
         return result;
@@ -115,8 +115,8 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
     private static void GenerateObjectData(Connection connection, ClusterBuilder builder, Dataflow dataflow, List<ProcessDataConfiguration> loggedProcessDataNodes,
                                     Dictionary<string, DataOutputInfo> dataOutputs,
                                     Dictionary<string, RotationalFrequencyOutputs> rotationalFrequencyOutputs,
-                                    Dictionary<string, AggregationFunctionCloudInputs> result,
-                                    DataPortTreeNode objectDataTreeNode, ChildContainer cloudContainer, IDeviceTreeMasterNode deviceTreeMaster)
+                                    DataPortTreeNode objectDataTreeNode, ChildContainer cloudContainer, IDeviceTreeMasterNode deviceTreeMaster,
+                                    Dictionary<string, AggregationFunctionCloudInputs> result)
     {
         var deviceContainerManager = new DeviceContainerManager(deviceTreeMaster, cloudContainer, builder);
 
@@ -129,7 +129,7 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
 
             var insertRotSpeedAndRefValue = rotationalFrequencyOutputs.TryGetValue(dataNode.Node.Id, out _);
 
-            var annaObjectDataFb = AddAnnaObjectDataFb(builder, dataflow, dataOutputInfo.DataPointIdentifiers[connection.Id], dataOutputInfo.Output.FunctionBlock.Name, dataNode.Configuration, deviceContainerManager,
+            var annaObjectDataFb = AddAnnaObjectDataFb(builder, dataflow, deviceContainerManager, dataOutputInfo.DataPointIdentifiers[connection.Id], dataOutputInfo.Output.FunctionBlock.Name, dataNode.Configuration,
                     insertRotSpeedAndRefValue, insertRotSpeedAndRefValue, dataNode.Node);
             builder.Editors.DataPortTreeNode.AssignConnector(objectDataTreeNode, annaObjectDataFb.GetOutputByDesignId(FunctionBlocks.AnnaObjectData.Outputs.Value));
 

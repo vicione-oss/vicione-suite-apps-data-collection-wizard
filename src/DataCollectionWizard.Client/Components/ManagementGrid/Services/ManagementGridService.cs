@@ -136,7 +136,7 @@ internal sealed class ManagementGridService : INotifyPropertyChanged
     public void RequestAddNewVse()
         => AddNewVseRequested?.Invoke();
 
-    public void ReqestAddIoLinkMaster()
+    public void RequestAddIoLinkMaster()
         => AddNewIoLinkMasterRequested?.Invoke();
 
     public void RequestDeleteOfflineNodes()

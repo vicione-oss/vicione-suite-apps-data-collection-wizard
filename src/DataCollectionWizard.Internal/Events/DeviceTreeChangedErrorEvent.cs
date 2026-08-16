@@ -3,4 +3,4 @@
 namespace DataCollectionWizard.Internal.Events;
 
 [ForwardToUI]
-public sealed record DeviceTreeChangeErrorEvent(ErrorInfo Error) : IEvent;
+public sealed record DeviceTreeChangedErrorEvent(ErrorInfo Error) : IEvent;

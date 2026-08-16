@@ -56,7 +56,7 @@ public sealed partial class DeviceTreeUpdater(
                 catch (DbUpdateException e)
                 {
                     var error = new ErrorInfo(ErrorCodes.DbUpdateFailed, e.Message);
-                    await mediator.Publish(new DeviceTreeChangeErrorEvent(error), ct);
+                    await mediator.Publish(new DeviceTreeChangedErrorEvent(error), ct);
                     DiscardUpdateRequest(ticketId);
                     await mediator.Publish(new DeviceTreeApplicationEvent(error) { CorrelationId = correlationId }, ct);
                     return;

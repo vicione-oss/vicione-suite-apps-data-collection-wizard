@@ -16,7 +16,7 @@ public static class FunctionBlocks
     public static DataFormatter DataFormatter { get; } = new();
     public static ErrorStateGuard ErrorStateGuard { get; } = new();
     public static IoLinkBooleanSubscriber IoLinkBooleanSubscriber { get; } = new();
-    public static IoLinkDeviceTreeSubscriber IoLinkDeviceTreeSubscriber { get; } = new();
+    public static IoTCoreConfiguration IoTCoreConfiguration { get; } = new();
     public static IoLinkDoubleSubscriber IoLinkDoubleSubscriber { get; } = new();
     public static IoLinkMasterScanner IoLinkMasterScanner { get; } = new();
     public static IoLinkStringSubscriber IoLinkStringSubscriber { get; } = new();

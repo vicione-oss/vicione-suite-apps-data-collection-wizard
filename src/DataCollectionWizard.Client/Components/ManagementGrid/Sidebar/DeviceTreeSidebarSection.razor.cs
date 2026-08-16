@@ -51,7 +51,7 @@ public sealed partial class DeviceTreeSidebarSection : ComponentBase, IDisposabl
     private void OnAddIoLinkMasterClicked()
     {
         CloseAddDeviceMenu();
-        Service.ReqestAddIoLinkMaster();
+        Service.RequestAddIoLinkMaster();
     }
 
     private void OnAddVseClicked()

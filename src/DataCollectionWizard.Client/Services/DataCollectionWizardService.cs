@@ -37,10 +37,10 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
     private readonly Dictionary<Uri, (Guid deviceTreeTrigger, Guid deviceTreeOutput)> _deviceTreeConnectors = [];
     private readonly IUiMediator _mediator;
     private readonly ILogger<DataCollectionWizardService> _logger;
-    private readonly Dictionary<Guid, List<(Func<IDeviceTreeMasterNode?, bool, Uri, Task> callBack, Type deviceType, Uri address)>> _newDeviceEngineRequests = [];
+    private readonly Dictionary<Guid, List<(Func<IDeviceTreeMasterNode?, Uri, bool, Task> callback, Type deviceType, Uri address)>> _newDeviceEngineRequests = [];
     private readonly SemaphoreSlim _requestDevicesSemaphore = new(1, 1);
     private readonly AutoDisposeList<IDisposable> _autoDisposeList = [];
-    private readonly SemaphoreSlim _deviceScannerEngineAdded = new(0, 1);
+    private readonly SemaphoreSlim _deviceScannerEngineAddedSemaphore = new(0, 1);
     private readonly SemaphoreSlim _deploymentResetEvent = new(0, 1);
     private bool _deploymentInProgress;
     private bool _skipNextDeviceTreeChange;
@@ -72,10 +72,10 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
     public async Task<bool> AddDeviceScannerDataflow(LogLevel logLevel)
     {
-        await DrainSemaphoreAsync(_deviceScannerEngineAdded);
+        await DrainSemaphoreAsync(_deviceScannerEngineAddedSemaphore);
         await _mediator.Send(new AddDeviceScanner(logLevel));
 
-        if (!await _deviceScannerEngineAdded.WaitAsync(25000))
+        if (!await _deviceScannerEngineAddedSemaphore.WaitAsync(25000))
         {
             LogDeviceScanEngineTimeoutCreatingDataflow(_logger);
             return false;
@@ -86,20 +86,20 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
     public Task Consume(ClientContext<DeviceScannerEngineAddedEvent> context, CancellationToken cancellationToken)
     {
-        SignalSemaphore(_deviceScannerEngineAdded);
+        SignalSemaphore(_deviceScannerEngineAddedSemaphore);
         return Task.CompletedTask;
     }
 
     public Task Consume(ClientContext<DeviceTreeEngineAddedEvent> context, CancellationToken cancellationToken)
     {
-        if (context.CorrelationId is null || !_newDeviceEngineRequests.TryGetValue(context.CorrelationId.Value, out var callBackTuples))
+        if (context.CorrelationId is null || !_newDeviceEngineRequests.TryGetValue(context.CorrelationId.Value, out var callbackTuples))
             return Task.CompletedTask;
 
         var deviceTreeConnectors = context.Message.DeviceTreeConnectors;
         var deviceUri = new UriBuilder(deviceTreeConnectors.DeviceAddress).Uri;
         _deviceTreeConnectors[deviceUri] = (deviceTreeConnectors.TriggerInput, deviceTreeConnectors.DeviceTreeOutput);
         var eventAddress = new UriBuilder(context.Message.Address).Uri;
-        var callBackTuple = callBackTuples.FirstOrDefault(c => c.address == eventAddress);
+        var callbackTuple = callbackTuples.FirstOrDefault(c => c.address == eventAddress);
 
         _ = Task.Run(async () =>
         {
@@ -107,7 +107,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
             try
             {
-                await RequestExistingDeviceAsync(callBackTuple.deviceType, deviceUri, false, callBackTuple.callBack);
+                await RequestExistingDeviceAsync(callbackTuple.deviceType, deviceUri, false, callbackTuple.callback);
             }
             catch (Exception ex)
             {
@@ -120,9 +120,9 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
         }, cancellationToken);
 
-        callBackTuples.Remove(callBackTuple);
+        callbackTuples.Remove(callbackTuple);
 
-        if (callBackTuples.Count == 0)
+        if (callbackTuples.Count == 0)
         {
             _newDeviceEngineRequests.Remove(context.CorrelationId.Value);
         }
@@ -142,7 +142,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
     public void Dispose()
     {
-        _deviceScannerEngineAdded.Dispose();
+        _deviceScannerEngineAddedSemaphore.Dispose();
         _requestDevicesSemaphore.Dispose();
         _deploymentResetEvent.Dispose();
         _autoDisposeList.Dispose();
@@ -218,7 +218,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
         {
             try
             {
-                await RequestExistingDeviceAsync(device.GetType(), new UriBuilder(device.Url).Uri, triggerSubscriber, async (received, success, url) =>
+                await RequestExistingDeviceAsync(device.GetType(), new UriBuilder(device.Url).Uri, triggerSubscriber, async (received, url, success) =>
                 {
                     receivedDevices.Add((received, url, success));
 
@@ -241,14 +241,14 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
         }
     }
 
-    public Task RequestExistingDeviceAsync(Type type, Uri deviceAddress, bool triggerSubscriber, Func<IDeviceTreeMasterNode?, bool, Uri, Task> callback)
+    public Task RequestExistingDeviceAsync(Type type, Uri deviceAddress, bool triggerSubscriber, Func<IDeviceTreeMasterNode?, Uri, bool, Task> callback)
     {
-        var methodInfo = GetType().GetMethod(nameof(RequestExistingDeviceAsync), 1, [typeof(Uri), typeof(bool), typeof(Func<IDeviceTreeMasterNode?, bool, Uri, Task>)]);
+        var methodInfo = GetType().GetMethod(nameof(RequestExistingDeviceAsync), 1, [typeof(Uri), typeof(bool), typeof(Func<IDeviceTreeMasterNode?, Uri, bool, Task>)]);
         methodInfo = methodInfo!.MakeGenericMethod(type);
         return (Task)methodInfo.Invoke(this, [deviceAddress, triggerSubscriber, callback])!;
     }
 
-    public async Task RequestExistingDeviceAsync<T>(Uri deviceAddress, bool triggerSubscriber, Func<IDeviceTreeMasterNode?, bool, Uri, Task> callback) where T : IDeviceTreeMasterNode
+    public async Task RequestExistingDeviceAsync<T>(Uri deviceAddress, bool triggerSubscriber, Func<IDeviceTreeMasterNode?, Uri, bool, Task> callback) where T : IDeviceTreeMasterNode
     {
         var (deviceTreeTriggerId, deviceTreeOutputId) = _deviceTreeConnectors[deviceAddress];
 
@@ -294,7 +294,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
                                 }
                             }
 
-                            await callback(null, false, deviceAddress);
+                            await callback(null, deviceAddress, false);
                         }
                     });
 
@@ -326,7 +326,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
                 if (!triggerSubscriber || skippedRetainedMessageAlready)
                 {
                     DeviceTreeBuilder.RemoveEmptyStructureNodes(device);
-                    await callback(device, true, deviceAddress);
+                    await callback(device, deviceAddress, true);
                 }
 
                 if (handleToDispose is not null)
@@ -342,7 +342,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
         catch (Exception ex)
         {
             LogClusterSubscriptionFailed(_logger, ex);
-            await callback(null, false, deviceAddress);
+            await callback(null, deviceAddress, false);
             return;
         }
 
@@ -356,7 +356,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
             }
             catch
             {
-                await callback(null, false, deviceAddress);
+                await callback(null, deviceAddress, false);
             }
         }
     }
@@ -368,21 +368,21 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
         return (await _mediator.Request<GetDeviceTree, GetDeviceTreeResponse>(new GetDeviceTree())).DeviceTree;
     }
 
-    public async Task RequestNewDeviceDeviceTreeAsync(Type deviceType, Uri address, Func<IDeviceTreeMasterNode?, bool, Uri, Task> callBack, bool allowUseExistingEngine, LogLevel logLevel)
+    public async Task RequestNewDeviceDeviceTreeAsync(Type deviceType, Uri address, Func<IDeviceTreeMasterNode?, Uri, bool, Task> callback, bool allowUseExistingEngine, LogLevel logLevel)
     {
         var command = new AddDeviceTreeEngine([new(address, deviceType.AssemblyQualifiedName!)], allowUseExistingEngine, logLevel);
         await _mediator.Send(command);
-        _newDeviceEngineRequests.Add(command.CorrelationId, [(callBack, deviceType, new UriBuilder(address).Uri)]);
+        _newDeviceEngineRequests.Add(command.CorrelationId, [(callback, deviceType, new UriBuilder(address).Uri)]);
     }
 
     public async Task RequestNewDevicesDeviceTreeAsync(IEnumerable<DeviceEngineInfo> deviceEngineInfos,
-        Func<IDeviceTreeMasterNode?, bool, Uri, Task> callBack, bool allowUseExistingEngine, LogLevel logLevel)
+        Func<IDeviceTreeMasterNode?, Uri, bool, Task> callback, bool allowUseExistingEngine, LogLevel logLevel)
     {
         var engineInfos = deviceEngineInfos as DeviceEngineInfo[] ?? [.. deviceEngineInfos];
         var command = new AddDeviceTreeEngine(engineInfos, allowUseExistingEngine, logLevel);
 
         _newDeviceEngineRequests.Add(command.CorrelationId, []);
-        _newDeviceEngineRequests[command.CorrelationId].AddRange(engineInfos.Select(e => (callBack, Type.GetType(e.Type)!, new UriBuilder(e.Address).Uri)));
+        _newDeviceEngineRequests[command.CorrelationId].AddRange(engineInfos.Select(e => (callback, Type.GetType(e.Type)!, new UriBuilder(e.Address).Uri)));
 
         await _mediator.Send(command);
     }
@@ -457,7 +457,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
         LogSubscribingScanOutput(_logger);
 
-        var callBack = new Func<DateTime, string?, Task>((t, value) =>
+        var callback = new Func<DateTime, string?, Task>((t, value) =>
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -470,7 +470,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
         try
         {
-            subscription = await _eventBroker.Subscribe(devicesNodeId, callBack, cancellationToken);
+            subscription = await _eventBroker.Subscribe(devicesNodeId, callback, cancellationToken);
         }
         catch
         {
@@ -486,7 +486,7 @@ public sealed partial class DataCollectionWizardService : IDataCollectionWizardS
 
             try
             {
-                subscription = await _eventBroker.Subscribe(devicesNodeId, callBack, cancellationToken);
+                subscription = await _eventBroker.Subscribe(devicesNodeId, callback, cancellationToken);
             }
             catch (Exception ex)
             {

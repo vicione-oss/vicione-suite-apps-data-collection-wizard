@@ -95,9 +95,9 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
                 throw new ArgumentException($"Cannot find type {type}");
 
             var engineName = GetMasterDeviceEngineName(type, deviceEngineInfo.Address);
-            var (engineExist, deviceTreeConnectors) = await DoesEngineAlreadyExistAsync(engineName, deviceEngineInfo.Address);
+            var (engineExists, deviceTreeConnectors) = await DoesEngineAlreadyExistAsync(engineName, deviceEngineInfo.Address);
 
-            if (engineExist && allowUseExistingEngine)
+            if (engineExists && allowUseExistingEngine)
             {
                 await mediator.Publish(new DeviceTreeEngineAddedEvent
                 {
@@ -291,7 +291,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
         return dataCollectionWizardState.ClusterBuilder!.Cluster;
     }
 
-    private async Task<(bool result, DeviceConnectorIds deviceTreeConnectors)> DoesEngineAlreadyExistAsync(string engineName, Uri deviceAddress)
+    private async Task<(bool engineExists, DeviceConnectorIds deviceTreeConnectors)> DoesEngineAlreadyExistAsync(string engineName, Uri deviceAddress)
     {
         var clusterBuilder = dataCollectionWizardState.ClusterBuilder ?? throw new InvalidOperationException("Cluster Builder is not initialized.");
 

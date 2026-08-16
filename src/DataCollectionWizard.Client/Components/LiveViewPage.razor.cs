@@ -124,22 +124,22 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         }
     }
 
-    private async Task NodesOffline(string[] arg)
+    private async Task NodesOffline(string[] nodeIds)
     {
         if (_tree is null)
             return;
 
-        SetNodesStatus(arg, ConnectionStatus.Offline);
+        SetNodesStatus(nodeIds, ConnectionStatus.Offline);
         SetTree(_tree, true);
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task NodesOnline(string[] arg)
+    private async Task NodesOnline(string[] nodeIds)
     {
         if (_tree is null)
             return;
 
-        SetNodesStatus(arg, ConnectionStatus.Online);
+        SetNodesStatus(nodeIds, ConnectionStatus.Online);
         SetTree(_tree, false);
         await InvokeAsync(StateHasChanged);
     }
