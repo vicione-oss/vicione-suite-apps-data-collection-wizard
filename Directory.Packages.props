@@ -11,7 +11,7 @@
     <PackageVersion Include="Semver" Version="3.0.0" />
     <PackageVersion Include="ViciOne.Core.Dataflow.DataModel.Generation" Version="1.0.0" />
     <PackageVersion Include="ViciOne.Cluster.Builder" Version="1.0.0" />
-    <PackageVersion Include="ViciOne.DeviceTree.Contracts" Version="2.0.2-ci2762837031" />
+    <PackageVersion Include="ViciOne.DeviceTree.Contracts" Version="2.0.2-ci2764114507" />
     <PackageVersion Include="ViciOne.Suite.ClusterManagement.Public" Version="2.4.0-ci2729942661" />
     <PackageVersion Include="ViciOne.Suite.Sdk" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="ViciOne.Suite.Sdk.Backend" Version="$(ViciOneSuiteSdkVersion)" />

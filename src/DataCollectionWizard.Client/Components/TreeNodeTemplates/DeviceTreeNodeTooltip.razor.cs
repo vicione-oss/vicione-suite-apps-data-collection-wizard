@@ -80,6 +80,7 @@ public sealed partial class DeviceTreeNodeTooltip
         {
             AddSeparatorIfNeeded();
             AddInfo(DeviceTreeTooltip.InfoPropertyApplicationSpecificTag, treeDevice.ApplicationSpecificTag);
+            AddInfo(DeviceTreeTooltip.InfoPropertySerialNumber, treeDevice.SerialNumber);
             AddInfo(DeviceTreeTooltip.InfoPropertyVendorId, treeDevice.VendorId.ToString(CultureInfo.InvariantCulture));
             AddInfo(DeviceTreeTooltip.InfoPropertyDeviceId, treeDevice.DeviceId.ToString(CultureInfo.InvariantCulture));
         }

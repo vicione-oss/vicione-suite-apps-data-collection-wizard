@@ -189,6 +189,7 @@ public static class DeviceTreeBuilder
 
                 case DeviceTreeDevice device when parsed is DeviceTreeDevice parsedDevice:
                     device.ApplicationSpecificTag = parsedDevice.ApplicationSpecificTag;
+                    device.SerialNumber = parsedDevice.SerialNumber;
                     deviceTreeDevices ??= [];
                     deviceTreeDevices.Add((device, parsedDevice));
                     break;
