@@ -122,9 +122,94 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
             }
         }
 
+        GenerateMasterDiagnostics(builder, dataflow, deviceContainerManager, result, ioLinkMaster, enabledDataIds, connectionIdentifier);
+
         GenerateBlobData(builder, dataflow, deviceContainerManager, cloudNames, result, ioLinkMaster, blobLoggingConfigurations, connectionIdentifier);
 
         return result;
+    }
+
+    private static void GenerateMasterDiagnostics(ClusterBuilder builder, Dataflow dataflow, DeviceContainerManager containerManager, DeviceDataflowGeneratorResult result,
+        DeviceTreeIoLinkMaster ioLinkMaster, Dictionary<string, bool> enabledDataIds, string connectionIdentifier)
+    {
+        // The master's own diagnostic values hang under a Diagnostics group directly under the master, not under
+        // a port/device, so GetDataNodesRecursively never yields them - discover them here by their address.
+        var diagnosticNodes = ioLinkMaster.GetNodeAndDescendants()
+            .OfType<DeviceTreeProcessData>()
+            .Where(n => n.Id.Contains("/processdatamaster/", StringComparison.Ordinal) && enabledDataIds.GetValueOrDefault(n.Id))
+            .ToArray();
+
+        if (diagnosticNodes.Length == 0)
+        {
+            return;
+        }
+
+        // One diagnostic function block per master, wiring only the selected values' outputs.
+        var container = containerManager.GetParentContainer(diagnosticNodes[0]);
+        var diagnosticFb = builder.Editors.Container.AddSubFunctionBlock(dataflow, FunctionBlocks.IoLinkMasterDiagnosticSubscriber.DesignId, "Diagnostics", container, 0, FunctionBlocks.DefaultVerticalSeparation);
+        builder.Editors.Setting.SetFunctionBlockSetting(diagnosticFb, FunctionBlocks.IoLinkMasterDiagnosticSubscriber.Settings.Identifier, connectionIdentifier);
+
+        var availableOutput = diagnosticFb.GetOutputByDesignId(FunctionBlocks.IoLinkMasterDiagnosticSubscriber.Outputs.Available);
+
+        foreach (var node in diagnosticNodes)
+        {
+            var (valueDesignId, unitDesignId) = GetDiagnosticOutputDesignIds(node.Id);
+            if (valueDesignId is null)
+            {
+                continue;
+            }
+
+            var valueOutput = diagnosticFb.GetOutputByDesignId(valueDesignId.Value);
+            var unitOutput = unitDesignId is null ? null : diagnosticFb.GetOutputByDesignId(unitDesignId.Value);
+
+            valueOutput.EventEnabled = true;
+            if (unitOutput is not null)
+            {
+                unitOutput.EventEnabled = true;
+            }
+
+            result.OutputMapping.Add(new ValueMappingEntry
+            {
+                ProcessDataId = node.Id,
+                UnitOutputId = unitOutput?.Id,
+                ValueOutputIdUI = valueOutput.Id,
+                ValueOutputIdLogging = valueOutput.Id,
+            });
+
+            var outputInfo = new DataOutputInfo
+            {
+                AvailableOutput = availableOutput,
+                Output = valueOutput,
+                Suffix = $"{ioLinkMaster.Name} Diagnostics {node.Name}",
+            };
+
+            if (node is IDeviceTreeCompressableDataNode compressableDataNode)
+            {
+                foreach (var compressorConfiguration in compressableDataNode.CompressorConfigurations)
+                {
+                    outputInfo.DataPointIdentifiers[compressorConfiguration.DataGroupIdentifier] =
+                        IdentifierHelper.GetIoLinkMasterDiagnosticIdentifier(ioLinkMaster, node, compressorConfiguration.Aggregation, compressorConfiguration.CompressionTime);
+                }
+            }
+
+            result.DataOutputs[node.Id] = outputInfo;
+        }
+    }
+
+    private static (Guid? Value, Guid? Unit) GetDiagnosticOutputDesignIds(string nodeId)
+    {
+        var outputs = FunctionBlocks.IoLinkMasterDiagnosticSubscriber.Outputs;
+
+        if (nodeId.EndsWith("/temperature", StringComparison.Ordinal))
+            return (outputs.Temperature, outputs.TemperatureUnit);
+        if (nodeId.EndsWith("/voltage", StringComparison.Ordinal))
+            return (outputs.SupplyVoltage, outputs.SupplyVoltageUnit);
+        if (nodeId.EndsWith("/current", StringComparison.Ordinal))
+            return (outputs.Current, outputs.CurrentUnit);
+        if (nodeId.EndsWith("/supervisionstatus", StringComparison.Ordinal))
+            return (outputs.SupervisionStatus, null);
+
+        return (null, null);
     }
 
     public DeviceTreeFunctionBlockResult GenerateDeviceTreeSourceFunctionBlock(ClusterBuilder builder, Dataflow dataflow, string address, string connectionIdentifier)

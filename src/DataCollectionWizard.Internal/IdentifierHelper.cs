@@ -15,6 +15,10 @@ internal static class IdentifierHelper
             device.ApplicationSpecificTag ?? string.Empty, ioLinkMasterPort.SubIndex, device.VendorId, device.DeviceId, device.Name,
             processData.Name, GetAggregationFunctionString(aggregationFunction, poolingGrid));
 
+    public static string GetIoLinkMasterDiagnosticIdentifier(DeviceTreeIoLinkMaster masterDevice, DeviceTreeProcessData processData, AggregationFunction aggregationFunction, int poolingGrid)
+        => Identifiers.GetIoLinkMasterDiagnosticIdentifier(GetIoLinkDeviceAddressWithPort(masterDevice.Url),
+            processData.Name, GetAggregationFunctionString(aggregationFunction, poolingGrid));
+
     private static string GetAggregationFunctionString(AggregationFunction aggregationFunction, int poolingGrid)
         => poolingGrid == -1 ? "OnChange" : aggregationFunction.ToString();
 

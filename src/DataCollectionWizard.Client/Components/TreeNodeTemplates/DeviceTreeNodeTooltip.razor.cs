@@ -79,10 +79,10 @@ public sealed partial class DeviceTreeNodeTooltip
         if (Device is DeviceTreeDevice treeDevice)
         {
             AddSeparatorIfNeeded();
-            AddInfo(DeviceTreeTooltip.InfoPropertyApplicationSpecificTag, treeDevice.ApplicationSpecificTag);
-            AddInfo(DeviceTreeTooltip.InfoPropertySerialNumber, treeDevice.SerialNumber);
             AddInfo(DeviceTreeTooltip.InfoPropertyVendorId, treeDevice.VendorId.ToString(CultureInfo.InvariantCulture));
             AddInfo(DeviceTreeTooltip.InfoPropertyDeviceId, treeDevice.DeviceId.ToString(CultureInfo.InvariantCulture));
+            AddInfo(DeviceTreeTooltip.InfoPropertySerialNumber, treeDevice.SerialNumber);
+            AddInfo(DeviceTreeTooltip.InfoPropertyApplicationSpecificTag, treeDevice.ApplicationSpecificTag);
         }
 
         if (Device is DeviceTreeVseAlarm vseAlarm)
@@ -119,7 +119,6 @@ public sealed partial class DeviceTreeNodeTooltip
         if (Device is DeviceTreeVseRawData vseRawData)
         {
             AddSeparatorIfNeeded();
-            AddInfo(DeviceTreeTooltip.InfoPropertyIsWritable, vseRawData.IsWriteable.ToString().ToLowerInvariant());
             AddInfo(DeviceTreeTooltip.InfoPropertySensorType, vseRawData.SensorType);
         }
 

@@ -9,6 +9,7 @@ internal static class Identifiers
 
     public static string Recording { get; } = "Recording";
     public static string DeviceTypeIoLink { get; } = "iolink";
+    public static string DeviceTypeIoLinkMasterDiagnostic { get; } = "iolinkmasterdiagnostic";
     public static string DeviceTypeVse { get; } = "vse";
 
     public static string GetIoLinkMasterIdentifier(string identifier, string applicationSpecificTag, int port,
@@ -23,18 +24,11 @@ internal static class Identifiers
            $"{DatabaseIdentifierSeparator}{processName}" +
            $"{DatabaseIdentifierSeparator}{aggregationFunction}";
 
-    public static string GetIoLinkRawDataIdentifier(string identifier, string applicationSpecificTag, int port,
-        ushort vendorId, uint deviceId, string productName, string processName, int duration, int frequency)
-        => $"{DatabaseIdentifierSeparator}{DeviceTypeIoLink}" +
+    public static string GetIoLinkMasterDiagnosticIdentifier(string identifier, string valueName, string aggregationFunction)
+        => $"{DatabaseIdentifierSeparator}{DeviceTypeIoLinkMasterDiagnostic}" +
            $"{DatabaseIdentifierSeparator}{identifier}" +
-           $"{DatabaseIdentifierSeparator}{applicationSpecificTag}" +
-           $"{DatabaseIdentifierSeparator}{port}" +
-           $"{DatabaseIdentifierSeparator}{vendorId}" +
-           $"{DatabaseIdentifierSeparator}{deviceId}" +
-           $"{DatabaseIdentifierSeparator}{productName}" +
-           $"{DatabaseIdentifierSeparator}{processName}" +
-           $"{DatabaseIdentifierSeparator}{duration}" +
-           $"{DatabaseIdentifierSeparator}{frequency}";
+           $"{DatabaseIdentifierSeparator}{valueName}" +
+           $"{DatabaseIdentifierSeparator}{aggregationFunction}";
 
     public static string GetVseAlarmIdentifier(string identifier, string alarmName, string alarmType, string childName, string aggregationFunction)
         => $"{DatabaseIdentifierSeparator}{DeviceTypeVse}" +
@@ -79,14 +73,6 @@ internal static class Identifiers
            $"{DatabaseIdentifierSeparator}{unit}" +
            $"{DatabaseIdentifierSeparator}{childName}" +
            $"{DatabaseIdentifierSeparator}{aggregationFunction}";
-
-    public static string GetVseRawDataIdentifier(string identifier, int sensorIndex, int duration, int samplingRate)
-        => $"{DatabaseIdentifierSeparator}{DeviceTypeVse}" +
-           $"{DatabaseIdentifierSeparator}{identifier}" +
-           $"{DatabaseIdentifierSeparator}RawData" +
-           $"{DatabaseIdentifierSeparator}{sensorIndex}" +
-           $"{DatabaseIdentifierSeparator}{duration}" +
-           $"{DatabaseIdentifierSeparator}{samplingRate}";
 
     public static string GetVseVariantIdentifier(string identifier, string aggregationFunction)
         => $"{DatabaseIdentifierSeparator}{DeviceTypeVse}" +

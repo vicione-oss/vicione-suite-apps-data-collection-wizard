@@ -18,6 +18,7 @@ public static class FunctionBlocks
     public static IoLinkBooleanSubscriber IoLinkBooleanSubscriber { get; } = new();
     public static IoTCoreConfiguration IoTCoreConfiguration { get; } = new();
     public static IoLinkDoubleSubscriber IoLinkDoubleSubscriber { get; } = new();
+    public static IoLinkMasterDiagnosticSubscriber IoLinkMasterDiagnosticSubscriber { get; } = new();
     public static IoLinkMasterScanner IoLinkMasterScanner { get; } = new();
     public static IoLinkStringSubscriber IoLinkStringSubscriber { get; } = new();
     public static LongToDouble LongToDouble { get; } = new();
