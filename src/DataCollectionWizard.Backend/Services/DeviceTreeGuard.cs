@@ -55,7 +55,14 @@ public sealed partial class DeviceTreeGuard : IDeviceTreeGuard, IAsyncDisposable
 
         lock (_deviceTreeLock)
         {
-            currentDevice = _deviceTree?.Children.FirstOrDefault(c => c.Id == masterNode.Id);
+            // Correlate by Url, not Id: a master's node Id differs between its online form (the mirrored element
+            // address) and its offline form ("IoLink@host:port"), so an Id match misses an offline tree published
+            // for a master that was last persisted online. The guard would then never record an offline baseline,
+            // and a later reconnect would raise no NodesOnlineEvent - leaving the UI offline until a reload. The
+            // Url identifies the master regardless of its connection state.
+            currentDevice = _deviceTree?.Children
+                                        .OfType<IDeviceTreeMasterNode>()
+                                        .FirstOrDefault(c => c.Url == masterNode.Url);
         }
 
         if (currentDevice is null)
