@@ -212,15 +212,17 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
         return (null, null);
     }
 
-    public DeviceTreeFunctionBlockResult GenerateDeviceTreeSourceFunctionBlock(ClusterBuilder builder, Dataflow dataflow, string address, string connectionIdentifier)
+    public DeviceTreeFunctionBlockResult GenerateDeviceTreeSourceFunctionBlock(ClusterBuilder builder, Dataflow dataflow, IDeviceTreeMasterNode master, string connectionIdentifier)
     {
-        var uri = new UriBuilder(address).Uri;
+        var ioLinkMaster = (DeviceTreeIoLinkMaster)master;
+        var uri = new UriBuilder(master.Url).Uri;
+        var address = $"{uri.DnsSafeHost}:{uri.Port}";
         var configurationFb = builder.Editors.Container.AddFunctionBlock(dataflow, FunctionBlocks.IoTCoreConfiguration.DesignId, $"IoTCoreConfiguration {uri.DnsSafeHost}:{uri.Port}", null, new Point { Y = FunctionBlocks.DefaultVerticalSeparation * -1 });
 
         builder.Editors.Setting.SetFunctionBlockSetting(configurationFb, FunctionBlocks.IoTCoreConfiguration.Settings.Identifier, connectionIdentifier);
         builder.Editors.Setting.SetFunctionBlockSetting(configurationFb, FunctionBlocks.IoTCoreConfiguration.Settings.Address, address);
-        builder.Editors.Setting.SetFunctionBlockSetting(configurationFb, FunctionBlocks.IoTCoreConfiguration.Settings.Username, string.Empty);
-        builder.Editors.Setting.SetFunctionBlockSetting(configurationFb, FunctionBlocks.IoTCoreConfiguration.Settings.Password, string.Empty);
+        builder.Editors.Setting.SetFunctionBlockSetting(configurationFb, FunctionBlocks.IoTCoreConfiguration.Settings.Username, ioLinkMaster.Username ?? string.Empty);
+        builder.Editors.Setting.SetFunctionBlockSetting(configurationFb, FunctionBlocks.IoTCoreConfiguration.Settings.Password, ioLinkMaster.Password ?? string.Empty);
         builder.Editors.Setting.SetFunctionBlockSetting(configurationFb, FunctionBlocks.IoTCoreConfiguration.Settings.IoddDirectory, ioddStore.IoddDirectory);
         builder.Editors.Setting.SetFunctionBlockSetting(configurationFb, FunctionBlocks.IoTCoreConfiguration.Settings.IoddAutoDownload, ioddStore.GetAutoDownloadIodds());
         builder.Editors.Setting.SetFunctionBlockSetting(configurationFb, FunctionBlocks.IoTCoreConfiguration.Settings.UseGetDataMulti, true);

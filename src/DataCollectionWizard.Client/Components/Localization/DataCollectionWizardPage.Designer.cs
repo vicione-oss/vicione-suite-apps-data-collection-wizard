@@ -302,6 +302,114 @@ namespace DataCollectionWizard.Client.Components.Localization {
                 return ResourceManager.GetString("IoLinkMasterAddress", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Username.
+        /// </summary>
+        internal static string IoLinkMasterUsername {
+            get {
+                return ResourceManager.GetString("IoLinkMasterUsername", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Password.
+        /// </summary>
+        internal static string IoLinkMasterPassword {
+            get {
+                return ResourceManager.GetString("IoLinkMasterPassword", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Use the same credentials for all.
+        /// </summary>
+        internal static string IoLinkUseSameCredentialsForAll {
+            get {
+                return ResourceManager.GetString("IoLinkUseSameCredentialsForAll", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Only required for masters that use authentication.
+        /// </summary>
+        internal static string IoLinkMasterCredentialsHint {
+            get {
+                return ResourceManager.GetString("IoLinkMasterCredentialsHint", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Authentication.
+        /// </summary>
+        internal static string IoLinkMasterAuthentication {
+            get {
+                return ResourceManager.GetString("IoLinkMasterAuthentication", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Connection.
+        /// </summary>
+        internal static string IoLinkMasterConnection {
+            get {
+                return ResourceManager.GetString("IoLinkMasterConnection", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Network address of the IO-Link master.
+        /// </summary>
+        internal static string IoLinkMasterConnectionHint {
+            get {
+                return ResourceManager.GetString("IoLinkMasterConnectionHint", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to e.g. 192.168.178.96.
+        /// </summary>
+        internal static string IoLinkMasterAddressExample {
+            get {
+                return ResourceManager.GetString("IoLinkMasterAddressExample", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Network address of the VSE device.
+        /// </summary>
+        internal static string VseConnectionHint {
+            get {
+                return ResourceManager.GetString("VseConnectionHint", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to e.g. 192.168.178.100.
+        /// </summary>
+        internal static string VseAddressExample {
+            get {
+                return ResourceManager.GetString("VseAddressExample", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Next.
+        /// </summary>
+        internal static string WizardNext {
+            get {
+                return ResourceManager.GetString("WizardNext", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Credentials for the selected masters.
+        /// </summary>
+        internal static string IoLinkCredentialStepHint {
+            get {
+                return ResourceManager.GetString("IoLinkCredentialStepHint", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to IO-Link Master.

@@ -71,8 +71,10 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
         return result;
     }
 
-    public DeviceTreeFunctionBlockResult GenerateDeviceTreeSourceFunctionBlock(ClusterBuilder builder, Dataflow dataflow, string address, string connectionIdentifier)
+    public DeviceTreeFunctionBlockResult GenerateDeviceTreeSourceFunctionBlock(ClusterBuilder builder, Dataflow dataflow, IDeviceTreeMasterNode master, string connectionIdentifier)
     {
+        var uri = new UriBuilder(master.Url).Uri;
+        var address = $"{uri.DnsSafeHost}:{uri.Port}";
         AddVseDeviceTreeSubscriber(builder, dataflow, address, out var deviceTreeTrigger, out var deviceTreeOutput);
 
         return new DeviceTreeFunctionBlockResult

@@ -385,9 +385,6 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
         InitContainerSizeManagers(dataflow, out var dataFormatterContainerManager);
 
-        var masterUrl = new UriBuilder(master.Url).Uri;
-        var masterAddress = $"{masterUrl.DnsSafeHost}:{masterUrl.Port}";
-
         // A fresh identifier per master, under which the IoTCoreConfiguration function block registers the
         // connection and by which the subscriber function blocks reach that same, shared connection.
         var connectionIdentifier = Guid.NewGuid().ToString();
@@ -397,7 +394,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         var deviceDataflowGenerator = deviceDataflowGenerators.FirstOrDefault(g => g.DeviceType == master.GetType())
             ?? throw new ArgumentException($"No deviceDataflowGenerator found for {master.GetType()}");
 
-        var deviceTreeFunctionBlockResult = deviceDataflowGenerator.GenerateDeviceTreeSourceFunctionBlock(builder, dataflow, masterAddress, connectionIdentifier);
+        var deviceTreeFunctionBlockResult = deviceDataflowGenerator.GenerateDeviceTreeSourceFunctionBlock(builder, dataflow, master, connectionIdentifier);
         deviceTreeTrigger = deviceTreeFunctionBlockResult.DeviceTreeTrigger;
         deviceTreeOutput = deviceTreeFunctionBlockResult.DeviceTreeOutput;
 

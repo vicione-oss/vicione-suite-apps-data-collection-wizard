@@ -225,6 +225,42 @@
   <data name="IoLinkMasterAddress" xml:space="preserve">
     <value>IO-Link Master address</value>
   </data>
+  <data name="IoLinkMasterUsername" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="IoLinkMasterPassword" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="IoLinkUseSameCredentialsForAll" xml:space="preserve">
+    <value>Use the same credentials for all</value>
+  </data>
+  <data name="IoLinkMasterCredentialsHint" xml:space="preserve">
+    <value>Only required for masters that use authentication</value>
+  </data>
+  <data name="IoLinkMasterAuthentication" xml:space="preserve">
+    <value>Authentication</value>
+  </data>
+  <data name="IoLinkMasterConnection" xml:space="preserve">
+    <value>Connection</value>
+  </data>
+  <data name="IoLinkMasterConnectionHint" xml:space="preserve">
+    <value>Network address of the IO-Link master</value>
+  </data>
+  <data name="IoLinkMasterAddressExample" xml:space="preserve">
+    <value>e.g. 192.168.178.96</value>
+  </data>
+  <data name="VseConnectionHint" xml:space="preserve">
+    <value>Network address of the VSE device</value>
+  </data>
+  <data name="VseAddressExample" xml:space="preserve">
+    <value>e.g. 192.168.178.100</value>
+  </data>
+  <data name="WizardNext" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="IoLinkCredentialStepHint" xml:space="preserve">
+    <value>Credentials for the selected masters</value>
+  </data>
   <data name="UnsavedChanges" xml:space="preserve">
     <value>Unsaved changes may be lost.</value>
   </data>
@@ -268,7 +304,7 @@
     <value>The configuration of process values is generally supported for all data targets. For the moneo|cloud, this functionality will be enabled once the corresponding features are available. In the meantime, please use the configuration options provided directly in the moneo|cloud.</value>
   </data>
   <data name="DeviceScanNoResult" xml:space="preserve">
-    <value>No devices were found on the network...</value>
+    <value>No further devices were found on the network...</value>
   </data>
   <data name="DeviceScanFilterNoResult" xml:space="preserve">
     <value>The filter applied did not produce any results...</value>

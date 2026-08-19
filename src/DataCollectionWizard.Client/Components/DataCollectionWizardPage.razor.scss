@@ -55,6 +55,28 @@
     }
 }
 
+// Both dialogs stack their cards (and, on the scan tab, the device list) in a column. The container fills the
+// space left below the toolbar and the scan list scrolls, so nothing is clipped by the fixed dialog height.
+.dialog-content-vse.dialog-content,
+.dialog-content-iolink.dialog-content {
+    .content-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        // Fill the space left below the toolbar instead of the global height:100% (which, sitting below the
+        // toolbar, would push the container - and the credentials panel at its bottom - past the clipped dialog).
+        height: auto;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    ::deep .device-list {
+        height: auto;
+        min-height: 0;
+        flex: 1 1 auto;
+    }
+}
+
 .dialog-content {
     align-content: center;
     bottom: 0;
@@ -68,10 +90,11 @@
     top: 0;
 
     ::deep .loading-spinner {
-        border-radius: 8px;
+        // Blend the scan spinner into the dialog instead of a semi-transparent, offset box: make it transparent
+        // so it shows the dialog background behind it exactly, and drop the box styling.
+        background-color: transparent;
         position: unset;
         padding-bottom: 150px;
-        margin-right: 32px;
 
         .message-container {
             width: 90%;
@@ -113,4 +136,175 @@
     display: grid;
     grid-column: 2;
     grid-template-columns: auto;
+}
+
+// One block per selected master on the scan tab: the master's IP (device names repeat and can't be told
+// apart) above its username/password pair.
+.credentials-master {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    & + & {
+        padding-top: 14px;
+        border-top: 1px solid col.$border;
+    }
+}
+
+.credentials-master-name {
+    font-size: 13px;
+    color: col.$font-dark;
+}
+
+.credentials-master-ip {
+    margin-right: 8px;
+    font-weight: 600;
+    color: col.$font;
+}
+
+.credentials-master-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-column-gap: 10px;
+}
+
+// Modern card language for the add-master dialog: an elevated, labelled section with an icon tile in the
+// header and top-aligned fields. Used for the "connection" and "authentication" sections of both tabs.
+.dialog-card {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    padding: 15px 16px;
+    border: 1px solid col.$border;
+    border-radius: 10px;
+    background: col.$content-dark;
+    flex-shrink: 0;
+}
+
+// Scan credential step: the card sizes to its content (so a single master is a compact card, not a huge empty
+// box) but is capped to the dialog height, in which case its per-master list scrolls. A little top margin gives
+// it air, since this step has no tab strip above it.
+.credential-step {
+    margin-top: 16px;
+    max-height: calc(100% - 16px);
+}
+
+.credential-step-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    // Keep the fields off the scrollbar.
+    padding-right: 8px;
+}
+
+.dialog-card-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+}
+
+.dialog-card-icon {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: col.$font-dark;
+}
+
+.dialog-card-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dialog-card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: col.$font;
+}
+
+.dialog-card-subtitle {
+    font-size: 12px;
+    color: col.$font-dark;
+}
+
+// The "use the same credentials for all" toggle sits on the right of a card header.
+.dialog-card-shared {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-left: auto;
+    font-size: 13px;
+    color: col.$font-dark;
+    cursor: pointer;
+    white-space: nowrap;
+
+    // Match the custom checkbox used in the device list instead of the browser default.
+    input[type="checkbox"] {
+        appearance: none;
+        display: grid;
+        place-content: center;
+        width: 16px;
+        height: 16px;
+        border: 1px solid col.$border;
+        border-radius: 4px;
+        outline: none;
+        cursor: pointer;
+
+        &::before {
+            content: "";
+            width: 9px;
+            height: 9px;
+            background-color: col.$accent;
+            clip-path: polygon(0 50%, 35% 86%, 100% 21%, 85% 6%, 35% 60%, 13% 38%);
+            transform: scale(0);
+            transition: 40ms transform ease-in;
+        }
+
+        &:checked::before {
+            transform: scale(1);
+        }
+    }
+}
+
+// Top-aligned label fields inside a card.
+.dialog-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+
+    &.dialog-fields-two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 11px 14px;
+    }
+}
+
+.dialog-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dialog-field-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: col.$font-dark;
+}
+
+// Recess the text inputs inside a card: darker than the card surface so they read as inputs, not panels.
+// (Only the fill is themed here - the TextBox keeps its own size from ViciOne.Ui.Blazor.Components.)
+.dialog-card ::deep input:not([type="checkbox"]) {
+    background: #2d2d2d;
+}
+
+// In the IO-Link dialog the field labels are right-aligned so their colons line up against the inputs.
+.dialog-content-iolink.dialog-content .input label {
+    justify-content: flex-end;
 }

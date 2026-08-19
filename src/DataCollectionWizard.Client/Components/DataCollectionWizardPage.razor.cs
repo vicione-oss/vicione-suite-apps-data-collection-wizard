@@ -34,8 +34,9 @@ namespace DataCollectionWizard.Client.Components;
 
 public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollectionWizardClientModule>, IEventConsumer<DeviceTreeApplicationEvent>
 {
-    private const string IoLinkMasterDialogHeightNormal = "350px";
-    private const string IoLinkMasterDialogHeightList = "600px";
+    private const string VseDialogHeightManual = "405px";
+    private const string IoLinkMasterDialogHeightManual = "565px";
+    private const string ScanDialogHeight = "680px";
     private const int MaxRecommendedDataPoints = 100;
     private const double MaxRecommendedMessageDisplayBoundary = 0.6;
 
@@ -164,15 +165,26 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
     private List<DcpDevice>? _scannedIoLinkDevices;
     private readonly List<string> _selectedIoLinkDevices = [];
+    // Credentials entered for IO-Link masters that require authentication, keyed by the device address string as
+    // held in _selectedIoLinkDevices. Applied to each created DeviceTreeIoLinkMaster on confirm.
+    private readonly Dictionary<string, (string User, string Password)> _ioLinkCredentials = new(StringComparer.OrdinalIgnoreCase);
+    private string _newIoLinkMasterUser = string.Empty;
+    private string _newIoLinkMasterPassword = string.Empty;
+    // "Same credentials for all" mode for the scan tab (only meaningful when more than one selected master requires
+    // authentication): one shared username/password applied to all of them instead of one pair per device.
+    private bool _ioLinkUseSharedCredentials;
+    private string _ioLinkSharedUser = string.Empty;
+    private string _ioLinkSharedPassword = string.Empty;
+    private bool _ioLinkShowCredentialStep;
     private List<VseScanDevice>? _scannedVseDevices;
     private readonly List<string> _selectedVseDevices = [];
-    private string _vseDialogHeight = IoLinkMasterDialogHeightNormal;
+    private string _vseDialogHeight = VseDialogHeightManual;
     private int _vseTabIndex;
     private string _vseFilter = string.Empty;
     private List<string> _scanVseErrors = [];
     private DeviceTreeRoot? _tree;
     private readonly Lock _treeLock = new();
-    private string _ioLinkMasterDialogHeight = IoLinkMasterDialogHeightNormal;
+    private string _ioLinkMasterDialogHeight = IoLinkMasterDialogHeightManual;
     private int _ioLinkMasterTabIndex;
     private CancellationTokenSource _dcwScanTokenSource = new();
     private bool _isIoLinkMasterUriValid = true;
@@ -415,13 +427,87 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     }
 
     private bool IsIoLinkMasterDialogOkEnabled()
-        => _ioLinkMasterTabIndex == 0
-            ? !string.IsNullOrWhiteSpace(_newIoLinkMasterAddress) && _isIoLinkMasterUriValid && _isIoLinkMasterUriUnique
-            : _selectedIoLinkDevices.Count > 0;
+    {
+        if (_ioLinkMasterTabIndex == 0)
+            return !string.IsNullOrWhiteSpace(_newIoLinkMasterAddress);
+
+        if (_selectedIoLinkDevices.Count == 0)
+            return false;
+
+        List<string> authAddresses = SelectedAuthRequiredAddresses();
+        // In "same credentials for all" mode one shared username covers every auth-required master; otherwise each
+        // selected auth-required master needs its own username entered.
+        return _ioLinkUseSharedCredentials && authAddresses.Count > 1
+            ? !string.IsNullOrEmpty(_ioLinkSharedUser)
+            : authAddresses.All(address => !string.IsNullOrEmpty(GetIoLinkCredentialUser(address)));
+    }
+
+    private bool IoLinkScanNeedsCredentialStep()
+        => _ioLinkMasterTabIndex == 1 && _selectedIoLinkDevices.Count > 0 && SelectedAuthRequiredAddresses().Count > 0;
+
+    private void GoToIoLinkCredentialStep() => _ioLinkShowCredentialStep = true;
+
+    private void BackToIoLinkSelection() => _ioLinkShowCredentialStep = false;
+
+    /// <summary>
+    /// The addresses of the currently selected scanned masters that reported they require authentication.
+    /// </summary>
+    private List<string> SelectedAuthRequiredAddresses()
+        => (_scannedIoLinkDevices ?? [])
+            .Where(device => device.Security.RequiresAuthentication &&
+                             device.Network.Address is not null &&
+                             _selectedIoLinkDevices.Contains(device.Network.Address.ToString()!))
+            .Select(device => device.Network.Address!.ToString())
+            .ToList();
+
+    private string DeviceNameForAddress(string address)
+        => (_scannedIoLinkDevices ?? [])
+            .FirstOrDefault(device => string.Equals(device.Network.Address?.ToString(), address, StringComparison.OrdinalIgnoreCase))
+            ?.Identity.Name ?? address;
+
+    // The device names repeat across masters, so each credential block is headed by the master's IP instead.
+    private string DeviceIpForAddress(string address)
+        => (_scannedIoLinkDevices ?? [])
+            .FirstOrDefault(device => string.Equals(device.Network.Address?.ToString(), address, StringComparison.OrdinalIgnoreCase))
+            ?.Network.Address is { } uri
+            ? $"{uri.DnsSafeHost}:{uri.Port}"
+            : address;
+
+    private string GetIoLinkCredentialUser(string address)
+        => _ioLinkCredentials.TryGetValue(address, out (string User, string Password) credential) ? credential.User : string.Empty;
+
+    private string GetIoLinkCredentialPassword(string address)
+        => _ioLinkCredentials.TryGetValue(address, out (string User, string Password) credential) ? credential.Password : string.Empty;
+
+    private void SetIoLinkCredentialUser(string address, string user)
+        => _ioLinkCredentials[address] = (user, GetIoLinkCredentialPassword(address));
+
+    private void SetIoLinkCredentialPassword(string address, string password)
+        => _ioLinkCredentials[address] = (GetIoLinkCredentialUser(address), password);
+
+    /// <summary>
+    /// Toggles "same credentials for all" mode. When turning it off, the shared credentials are copied into the
+    /// per-device fields so nothing entered is lost on the switch back.
+    /// </summary>
+    private void OnUseSharedCredentialsChanged(bool useShared, List<string> authAddresses)
+    {
+        _ioLinkUseSharedCredentials = useShared;
+        if (useShared)
+            return;
+
+        foreach (string address in authAddresses)
+        {
+            if (!string.IsNullOrEmpty(_ioLinkSharedUser))
+                SetIoLinkCredentialUser(address, _ioLinkSharedUser);
+            if (!string.IsNullOrEmpty(_ioLinkSharedPassword))
+                SetIoLinkCredentialPassword(address, _ioLinkSharedPassword);
+        }
+    }
 
     private void SetIoLinkMasterDialogScanHeight(int tabIndex)
     {
-        _ioLinkMasterDialogHeight = tabIndex == 1 ? IoLinkMasterDialogHeightList : IoLinkMasterDialogHeightNormal;
+        _ioLinkShowCredentialStep = false;
+        _ioLinkMasterDialogHeight = tabIndex == 1 ? ScanDialogHeight : IoLinkMasterDialogHeightManual;
         InvokeAsync(StateHasChanged);
     }
 
@@ -624,6 +710,28 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
             _selectedIoLinkDevices.Clear();
             _selectedIoLinkDevices.Add(_newIoLinkMasterAddress);
+            if (!string.IsNullOrEmpty(_newIoLinkMasterUser))
+                _ioLinkCredentials[_newIoLinkMasterAddress] = (_newIoLinkMasterUser, _newIoLinkMasterPassword);
+        }
+
+        // Resolve the entered credentials to the normalized address the node callback receives, so each created
+        // master can be matched to its credentials there. In "same credentials for all" mode the shared pair
+        // covers every auth-required selected master.
+        var resolvedCredentials = new Dictionary<string, (string User, string Password)>(StringComparer.OrdinalIgnoreCase);
+        List<string> authAddresses = SelectedAuthRequiredAddresses();
+        bool useSharedCredentials = _ioLinkUseSharedCredentials && authAddresses.Count > 1;
+        var authAddressSet = new HashSet<string>(authAddresses, StringComparer.OrdinalIgnoreCase);
+
+        foreach (string selectedAddress in _selectedIoLinkDevices)
+        {
+            (string User, string Password) credential;
+            if (useSharedCredentials && authAddressSet.Contains(selectedAddress))
+                credential = (_ioLinkSharedUser, _ioLinkSharedPassword);
+            else if (!_ioLinkCredentials.TryGetValue(selectedAddress, out credential))
+                continue;
+
+            if (!string.IsNullOrEmpty(credential.User))
+                resolvedCredentials[new UriBuilder(selectedAddress).Uri.AbsoluteUri] = credential;
         }
 
         _loadingSpinnerMessages = _loadingSpinnerMessagesScanDevice;
@@ -631,7 +739,12 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         await _refAddIoLinkMasterDialog!.CloseAsync();
         var numberOfReceivedDevices = 0;
 
-        var deviceEngineInfos = _selectedIoLinkDevices.Select(d => new DeviceEngineInfo(new UriBuilder(d).Uri, typeof(DeviceTreeIoLinkMaster).AssemblyQualifiedName!));
+        var deviceEngineInfos = _selectedIoLinkDevices.Select(d =>
+        {
+            var uri = new UriBuilder(d).Uri;
+            resolvedCredentials.TryGetValue(uri.AbsoluteUri, out (string User, string Password) credential);
+            return new DeviceEngineInfo(uri, typeof(DeviceTreeIoLinkMaster).AssemblyQualifiedName!, credential.User, credential.Password);
+        });
 
         await DataCollectionWizardService.RequestNewDevicesDeviceTreeAsync(
             deviceEngineInfos,
@@ -654,6 +767,12 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                         Status = ConnectionStatus.Offline,
                         Url = uri,
                     };
+                }
+
+                if (d is DeviceTreeIoLinkMaster masterNode && resolvedCredentials.TryGetValue(uri.AbsoluteUri, out (string User, string Password) credential))
+                {
+                    masterNode.Username = credential.User;
+                    masterNode.Password = credential.Password;
                 }
 
                 await AddDeviceToDeviceTree(d);
@@ -1052,7 +1171,14 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _newIoLinkMasterAddress = string.Empty;
         _isIoLinkMasterUriUnique = true;
         _isIoLinkMasterUriValid = true;
-        _ioLinkMasterDialogHeight = IoLinkMasterDialogHeightNormal;
+        _ioLinkMasterDialogHeight = IoLinkMasterDialogHeightManual;
+        _ioLinkCredentials.Clear();
+        _newIoLinkMasterUser = string.Empty;
+        _newIoLinkMasterPassword = string.Empty;
+        _ioLinkUseSharedCredentials = false;
+        _ioLinkSharedUser = string.Empty;
+        _ioLinkSharedPassword = string.Empty;
+        _ioLinkShowCredentialStep = false;
     }
 
     private void OnAddVSEAddressChanged(string value)
@@ -1068,7 +1194,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _isVSEUriUnique = true;
         _isVSEUriValid = true;
         _vseFilter = string.Empty;
-        _vseDialogHeight = IoLinkMasterDialogHeightNormal;
+        _vseDialogHeight = VseDialogHeightManual;
     }
 
     private async void SaveButtonAsync()
@@ -1152,8 +1278,12 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
                 _scannedIoLinkDevices = [.. scanResult.Devices
                                                       .Where(d => !d.IsUnreachable)
-                                                      // Todo: Vergleich zuverlässiger machen
-                                                      .Where(d => !currentIoLinkMasters.Any(m => m.Url == d.Network.Address))
+                                                      // Match by host, not the full URL: an already-added master stores its
+                                                      // URL with the scheme/port it is actually reached on (e.g. https:443
+                                                      // after an authenticated master upgrades from the scanned http:80), so
+                                                      // a full-URL compare would offer it again as if it were new.
+                                                      .Where(d => !currentIoLinkMasters.Any(m =>
+                                                          string.Equals(m.Url.DnsSafeHost, d.Network.Address?.DnsSafeHost, StringComparison.OrdinalIgnoreCase)))
                                                       .OrderBy(d => d.Network.Address.ToString())];
 
                 _scanIoLinkErrors = scanResult.Messages;
@@ -1232,12 +1362,12 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
     private bool IsVseDialogOkEnabled()
         => _vseTabIndex == 0
-            ? !string.IsNullOrWhiteSpace(_newVSEAddress) && _isVSEUriValid && _isVSEUriUnique
+            ? !string.IsNullOrWhiteSpace(_newVSEAddress)
             : _selectedVseDevices.Count > 0;
 
     private void SetVseDialogScanHeight(int tabIndex)
     {
-        _vseDialogHeight = tabIndex == 1 ? IoLinkMasterDialogHeightList : IoLinkMasterDialogHeightNormal;
+        _vseDialogHeight = tabIndex == 1 ? ScanDialogHeight : VseDialogHeightManual;
         InvokeAsync(StateHasChanged);
     }
 

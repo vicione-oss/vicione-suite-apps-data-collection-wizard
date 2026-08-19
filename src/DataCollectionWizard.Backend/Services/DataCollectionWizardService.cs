@@ -110,13 +110,13 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
             }
 
             createdEngines = true;
-            await AddDeviceRequestEngineAsync(type, dataCollectionWizardState.ClusterBuilder!, deviceEngineInfo.Address, correlationId, logLevel);
+            await AddDeviceRequestEngineAsync(type, dataCollectionWizardState.ClusterBuilder!, deviceEngineInfo.Address, deviceEngineInfo.Username, deviceEngineInfo.Password, correlationId, logLevel);
         }
 
         return createdEngines ? dataCollectionWizardState.ClusterBuilder!.Cluster : null;
     }
 
-    private async Task AddDeviceRequestEngineAsync(Type type, ClusterBuilder clusterBuilder, Uri address, Guid correlationId, LogLevel logLevel)
+    private async Task AddDeviceRequestEngineAsync(Type type, ClusterBuilder clusterBuilder, Uri address, string? username, string? password, Guid correlationId, LogLevel logLevel)
     {
         IDeviceTreeMasterNode device = type switch
         {
@@ -135,6 +135,9 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
                 MacAddress = "ff:ff:ff:ff:ff",
                 Name = $"IO-Link-{address}",
                 Url = new UriBuilder(address).Uri,
+                // The fetch engine authenticates with these so the tree of an auth-required master can be read.
+                Username = username,
+                Password = password,
             },
             _ => throw new ArgumentException($"Invalid device type encountered, {type} is not currently supported", type.Name),
         };

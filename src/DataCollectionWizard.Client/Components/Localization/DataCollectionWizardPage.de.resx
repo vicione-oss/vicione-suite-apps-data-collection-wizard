@@ -154,7 +154,7 @@
     <value>Rekursiv</value>
   </data>
   <data name="Rescan" xml:space="preserve">
-    <value>Neu scannen</value>
+    <value>Erneut scannen</value>
   </data>
   <data name="ShowAll" xml:space="preserve">
     <value>Alle anzeigen</value>
@@ -225,6 +225,42 @@
   <data name="IoLinkMasterAddress" xml:space="preserve">
     <value>IO-Link Master Adresse</value>
   </data>
+  <data name="IoLinkMasterUsername" xml:space="preserve">
+    <value>Benutzername</value>
+  </data>
+  <data name="IoLinkMasterPassword" xml:space="preserve">
+    <value>Passwort</value>
+  </data>
+  <data name="IoLinkUseSameCredentialsForAll" xml:space="preserve">
+    <value>Gleiche Zugangsdaten für alle</value>
+  </data>
+  <data name="IoLinkMasterCredentialsHint" xml:space="preserve">
+    <value>Nur bei Mastern mit Authentifizierung notwendig</value>
+  </data>
+  <data name="IoLinkMasterAuthentication" xml:space="preserve">
+    <value>Authentifizierung</value>
+  </data>
+  <data name="IoLinkMasterConnection" xml:space="preserve">
+    <value>Verbindung</value>
+  </data>
+  <data name="IoLinkMasterConnectionHint" xml:space="preserve">
+    <value>Netzwerkadresse des IO-Link Masters</value>
+  </data>
+  <data name="IoLinkMasterAddressExample" xml:space="preserve">
+    <value>z. B. 192.168.178.96</value>
+  </data>
+  <data name="VseConnectionHint" xml:space="preserve">
+    <value>Netzwerkadresse des VSE-Geräts</value>
+  </data>
+  <data name="VseAddressExample" xml:space="preserve">
+    <value>z. B. 192.168.178.100</value>
+  </data>
+  <data name="WizardNext" xml:space="preserve">
+    <value>Weiter</value>
+  </data>
+  <data name="IoLinkCredentialStepHint" xml:space="preserve">
+    <value>Zugangsdaten für die markierten Master</value>
+  </data>
   <data name="UnsavedChanges" xml:space="preserve">
     <value>Alle ungespeicherten Änderungen gehen verloren.</value>
   </data>
@@ -268,7 +304,7 @@
     <value>Die Konfiguration von Prozesswerten wird generell für alle Datenziele unterstützt. Für die moneo|cloud wird diese Funktionalität freigeschaltet, sobald die entsprechenden Features verfügbar sind. In der Zwischenzeit nutzen Sie bitte die Konfigurationsmöglichkeiten direkt in der moneo|cloud.</value>
   </data>
   <data name="DeviceScanNoResult" xml:space="preserve">
-    <value>Es wurden keine Geräte im Netzwerk gefunden...</value>
+    <value>Es wurden keine weiteren Geräte im Netzwerk gefunden...</value>
   </data>
   <data name="DeviceScanFilterNoResult" xml:space="preserve">
     <value>Der verwendete Filter hat keine Ergebnisse geliefert...</value>

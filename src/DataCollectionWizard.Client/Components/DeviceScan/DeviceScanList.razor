@@ -33,10 +33,11 @@ else
             {
                 @foreach (var device in filteredDevices)
                 {
-                    <div class="device-list-entry">
-                        <input @onchange="@(e => OnSelectionChanged((bool)e.Value!, device))"
-                               checked="@IsSelected(device)"
-                               type="checkbox" />
+                    <div class="device-list-entry @(IsSelected(device) ? "selected" : null)"
+                         @onclick="@(() => OnSelectionChanged(!IsSelected(device), device))">
+                        <input checked="@IsSelected(device)"
+                               type="checkbox"
+                               tabindex="-1" />
                         @DeviceTemplate(device)
                     </div>
                 }
