@@ -15,7 +15,6 @@ using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using DataCollectionWizard.Public.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.JSInterop;
 using Sdk.Client.Infrastructure;
 using Sdk.Client.Modules;
 using Sdk.Client.Services;
@@ -162,6 +161,8 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private Dialog? _refDataInvalidDialog;
     private Dialog? _refDeleteDialog;
     private Dialog? _refDeleteAllOfflineDialog;
+    private bool _showUnsavedChanges;
+    private TaskCompletionSource<UnsavedLeaveChoice>? _unsavedLeaveChoice;
 
     private List<DcpDevice>? _scannedIoLinkDevices;
     private readonly List<string> _selectedIoLinkDevices = [];
@@ -205,7 +206,6 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     [Inject] private IEnumerable<ICloudFilter> CloudFilters { get; set; } = null!;
     [Inject] private IDataCollectionWizardService DataCollectionWizardService { get; set; } = null!;
     [Inject] private IResourceDownloadStateService ResourceDownloadState { get; set; } = null!;
-    [Inject] private IJSRuntime Js { get; set; } = default!;
     [Inject] private IMessageBannerService MessageBannerService { get; set; } = default!;
     [Inject] private IUiMediator Mediator { get; set; } = default!;
     [Inject] private DeviceTreeNodeIconProvider IconProvider { get; set; } = default!;
@@ -311,17 +311,44 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         }
     }
 
+    // How the user answered the "unsaved changes" dialog when leaving the page.
+    private enum UnsavedLeaveChoice
+    {
+        Cancel,  // stay on the page
+        Discard, // leave without saving
+        Save,    // save (then leave)
+    }
+
     private async Task ConfirmLeave(LocationChangingContext context)
     {
         if (!_service.DeviceTreeChanged)
             return;
 
-        var confirmed = await Js.InvokeAsync<bool>("window.confirm", Localization.DataCollectionWizardPage.UnsavedChanges);
-        if (!confirmed)
+        _unsavedLeaveChoice = new TaskCompletionSource<UnsavedLeaveChoice>();
+        _showUnsavedChanges = true;
+        StateHasChanged();
+
+        var choice = await _unsavedLeaveChoice.Task;
+        _showUnsavedChanges = false;
+        StateHasChanged();
+
+        switch (choice)
         {
-            context.PreventNavigation();
+            case UnsavedLeaveChoice.Cancel:
+                context.PreventNavigation();
+                break;
+            case UnsavedLeaveChoice.Save:
+                // Trigger the save just like the toolbar button; the deploy runs in the background and the tree is
+                // already marked unchanged, so navigation may proceed.
+                SaveButtonAsync();
+                break;
+            case UnsavedLeaveChoice.Discard:
+                break; // let the navigation proceed
         }
     }
+
+    private void ResolveUnsavedLeave(UnsavedLeaveChoice choice)
+        => _unsavedLeaveChoice?.TrySetResult(choice);
 
     private void FillPublishTargets()
     {

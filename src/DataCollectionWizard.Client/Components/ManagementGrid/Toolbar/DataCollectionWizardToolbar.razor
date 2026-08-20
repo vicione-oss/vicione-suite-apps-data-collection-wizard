@@ -18,12 +18,21 @@
     <div class="toolbar @(_showDebug ? "debug" : string.Empty)">
         <span class="separator"></span>
 
-        <button @onclick="@(OnSaveButtonClicked)"
+        <span class="save-state @(Service.DeviceTreeChanged ? "dirty" : "clean")">
+            <span class="dot"></span>
+            @(Service.DeviceTreeChanged ? Localization.DataCollectionWizardPage.NotSaved : Localization.DataCollectionWizardPage.Saved)
+        </span>
+
+        <button class="save-button @(Service.DeviceTreeChanged && !Service.DisableClusterActions ? "dirty" : string.Empty)"
+                @onclick="@(OnSaveButtonClicked)"
                 disabled="@(!Service.DeviceTreeChanged || Service.DisableClusterActions)"
                 title="@(_showDebug ? SaveReasons : CommonVocabulary.Save)">
 
             <MonochromeIcon Name="@MonochromeIconName.SaveOutline" Size="@MonochromeIconSize.SmallMedium" />
+            <span>@CommonVocabulary.Save</span>
         </button>
+
+        <span class="separator"></span>
 
         <button @onclick="@(OnTogglePathVisible)"
                 class="@(Service.PathVisible ? "active" : string.Empty)"

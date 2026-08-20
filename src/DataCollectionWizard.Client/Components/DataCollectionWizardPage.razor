@@ -20,12 +20,13 @@
 @* This page's dialogs are rendered by the shared Dialog component, whose modal the page's scoped CSS cannot
    reach (it is portaled out of this component). This raw <style> - which Blazor does NOT scope - emits a global
    rule that top-aligns the dialogs carrying the CssClass (overriding the modal-root grid's align-items:center)
-   and pushes them 50px down from the top. The .modal-dialog.dcw-dialog-top selector matches the shared
-   component's own margin specificity and, being emitted after it, wins so the top margin takes effect. *@
+   and pushes them 50px down from the top. The shared component's own .modal-dialog[scope] rule sets margin:1.75rem
+   at (0,2,0) specificity and lands after this block in the cascade, so an equal-specificity selector loses the
+   margin. Qualifying with the .modal-root ancestor lifts this to (0,3,0) so the top margin wins regardless. *@
 <style>
-    .modal-dialog.dcw-dialog-top {
+    .modal-root .modal-dialog.dcw-dialog-top {
         align-self: start;
-        margin-top: 50px;
+        margin-top: 75px;
     }
 </style>
 
@@ -258,6 +259,36 @@
                             Text="@CommonVocabulary.Cancel" />
     </Footer>
 </Dialog>
+
+@if (_showUnsavedChanges)
+{
+    <div class="unsaved-backdrop" @onclick="@(() => ResolveUnsavedLeave(UnsavedLeaveChoice.Cancel))">
+        <div class="unsaved-card" role="dialog" aria-modal="true" @onclick:stopPropagation="true">
+            <div class="unsaved-body">
+                <span class="unsaved-icon">
+                    <MonochromeIcon Name="@MonochromeIconName.WarningLight" Size="@MonochromeIconSize.SmallMedium" />
+                </span>
+                <div class="unsaved-text">
+                    <div class="unsaved-title">@Localization.DataCollectionWizardPage.UnsavedChangesTitle</div>
+                    <div class="unsaved-message">@Localization.DataCollectionWizardPage.UnsavedChangesPrompt</div>
+                </div>
+            </div>
+
+            <div class="unsaved-footer">
+                <button class="unsaved-btn ghost" @onclick="@(() => ResolveUnsavedLeave(UnsavedLeaveChoice.Cancel))">
+                    @CommonVocabulary.Cancel
+                </button>
+                <span class="unsaved-grow"></span>
+                <button class="unsaved-btn danger" @onclick="@(() => ResolveUnsavedLeave(UnsavedLeaveChoice.Discard))">
+                    @Localization.DataCollectionWizardPage.Discard
+                </button>
+                <button class="unsaved-btn primary" @onclick="@(() => ResolveUnsavedLeave(UnsavedLeaveChoice.Save))">
+                    @CommonVocabulary.Save
+                </button>
+            </div>
+        </div>
+    </div>
+}
 
 @* CloseOnEscape="true" not supported yet, https://gitlab.com/vicione-oss/vicione/ui-libs/blazor-components/-/issues/141 *@
 <Dialog @ref="@_refAddIoLinkMasterDialog"

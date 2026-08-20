@@ -99,6 +99,13 @@
         .message-container {
             width: 90%;
         }
+
+        // This spinner variant renders 32px dots, which look oversized in the dialog. Shrink them with zoom (not
+        // transform: scale) so every dot variant - including the box-shadow-based ones with their 9999px offset
+        // trick - stays correctly centred.
+        [class*="dot-"] {
+            zoom: 0.45;
+        }
     }
 
     .input {
@@ -198,6 +205,116 @@
     overflow-y: auto;
     // Keep the fields off the scrollbar.
     padding-right: 8px;
+}
+
+// "Unsaved changes" confirmation dialog shown when leaving the page.
+.unsaved-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: grid;
+    place-items: center;
+    background: rgba(0, 0, 0, 0.58);
+}
+
+.unsaved-card {
+    width: 460px;
+    max-width: calc(100% - 40px);
+    background: #2a2a2a;
+    border: 1px solid #1c1c1c;
+    border-radius: 12px;
+    box-shadow: 0 26px 60px rgba(0, 0, 0, 0.55);
+    overflow: hidden;
+}
+
+.unsaved-body {
+    display: flex;
+    gap: 15px;
+    padding: 24px 24px 8px;
+}
+
+.unsaved-icon {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 11px;
+    background: rgba(255, 153, 0, 0.14);
+
+    ::deep .monochrome-icon::before {
+        background-color: col.$accent;
+    }
+}
+
+.unsaved-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.unsaved-title {
+    margin-bottom: 6px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #ededed;
+}
+
+.unsaved-message {
+    font-size: 14px;
+    line-height: 1.5;
+    color: col.$font-dark;
+}
+
+.unsaved-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 24px 22px;
+}
+
+.unsaved-grow {
+    flex: 1;
+}
+
+.unsaved-btn {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.12s ease, border-color 0.12s ease;
+
+    &.ghost {
+        background: transparent;
+        border-color: col.$border;
+        color: col.$font;
+
+        &:hover {
+            background: col.$content-dark;
+        }
+    }
+
+    &.danger {
+        background: transparent;
+        color: #eda093;
+
+        &:hover {
+            background: rgba(227, 75, 53, 0.15);
+        }
+    }
+
+    &.primary {
+        background: col.$accent;
+        border-color: col.$accent;
+        color: #1c1200;
+
+        &:hover {
+            background: #ffa724;
+        }
+    }
 }
 
 .dialog-card-head {

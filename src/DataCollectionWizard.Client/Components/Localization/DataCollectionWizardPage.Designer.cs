@@ -410,6 +410,51 @@ namespace DataCollectionWizard.Client.Components.Localization {
                 return ResourceManager.GetString("IoLinkCredentialStepHint", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Saved.
+        /// </summary>
+        internal static string Saved {
+            get {
+                return ResourceManager.GetString("Saved", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Not saved.
+        /// </summary>
+        internal static string NotSaved {
+            get {
+                return ResourceManager.GetString("NotSaved", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Unsaved changes.
+        /// </summary>
+        internal static string UnsavedChangesTitle {
+            get {
+                return ResourceManager.GetString("UnsavedChangesTitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Save before leaving?.
+        /// </summary>
+        internal static string UnsavedChangesPrompt {
+            get {
+                return ResourceManager.GetString("UnsavedChangesPrompt", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Discard.
+        /// </summary>
+        internal static string Discard {
+            get {
+                return ResourceManager.GetString("Discard", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to IO-Link Master.

@@ -261,6 +261,21 @@
   <data name="IoLinkCredentialStepHint" xml:space="preserve">
     <value>Credentials for the selected masters</value>
   </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Saved</value>
+  </data>
+  <data name="NotSaved" xml:space="preserve">
+    <value>Not saved</value>
+  </data>
+  <data name="UnsavedChangesTitle" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="UnsavedChangesPrompt" xml:space="preserve">
+    <value>Save the changes before leaving?</value>
+  </data>
+  <data name="Discard" xml:space="preserve">
+    <value>Discard</value>
+  </data>
   <data name="UnsavedChanges" xml:space="preserve">
     <value>Unsaved changes may be lost.</value>
   </data>
