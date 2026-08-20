@@ -7,7 +7,7 @@ using Sdk.Instance;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Builder.Abstractions;
 using ViciOne.Cluster.Model;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Tests.CloudDataflowGenerators;
 
@@ -63,7 +63,7 @@ public class MqttCloudDataflowGeneratorTests
         {
             // Arrange
             var loggedNodeId = "logged-node";
-            var mockDataNode = new DeviceTreeProcessData() { DataType = DataType.Float32T, Id = loggedNodeId, Name = "Logged Node" };
+            var mockDataNode = new DeviceTreeProcessData() { DataType = DataType.Real, Id = loggedNodeId, Name = "Logged Node" };
             var processDataConfig = new ProcessDataConfiguration(mockDataNode, new CompressorConfiguration() { DataGroupIdentifier = Guid.Parse("12300000-0000-0000-1234-000000000000") });
             var loggedNodeIds = new HashSet<string> { loggedNodeId };
             var loggedProcessDataNodes = new List<ProcessDataConfiguration> { processDataConfig };
@@ -221,7 +221,7 @@ public class MqttCloudDataflowGeneratorTests
             var node2Id = "node2";
             var node3Id = "node3";
 
-            var mockNode2 = new DeviceTreeProcessData { DataType = DataType.StringT, Id = node2Id, Name = "Node 2" };
+            var mockNode2 = new DeviceTreeProcessData { DataType = DataType.Real, Id = node2Id, Name = "Node 2" };
 
             var processDataConfig = new ProcessDataConfiguration(mockNode2, new CompressorConfiguration() { DataGroupIdentifier = Guid.Parse("12300000-0000-0000-1234-000000000000") });
 
@@ -322,7 +322,7 @@ public class MqttCloudDataflowGeneratorTests
             // Arrange
             var (builder, dataPort) = CreateDataPort();
             var generator = CreateGenerator();
-            var result = new Dictionary<string, PoolingModesCloudInput>();
+            var result = new Dictionary<string, AggregationFunctionCloudInputs>();
             var children = new List<TreeModel> { new() { DataConfig = null, Id = "folder1", Name = "My Folder!" } };
 
             // Act
@@ -338,16 +338,13 @@ public class MqttCloudDataflowGeneratorTests
         }
 
         [Theory]
-        [InlineData(DataType.Float32T)]
-        [InlineData(DataType.BooleanT)]
-        [InlineData(DataType.UIntegerT)]
-        [InlineData(DataType.IntegerT)]
+        [InlineData(DataType.Real)]
         public void Creates_float_data_point_node_for_numeric_data_types(DataType dataType)
         {
             // Arrange
             var (builder, dataPort) = CreateDataPort();
             var generator = CreateGenerator();
-            var result = new Dictionary<string, PoolingModesCloudInput>();
+            var result = new Dictionary<string, AggregationFunctionCloudInputs>();
             var dataNode = new DeviceTreeProcessData { DataType = dataType, Id = "n1", Name = "Value" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
             var children = new List<TreeModel> { new() { DataConfig = config, Id = "n1", Name = "Value" } };
@@ -363,14 +360,13 @@ public class MqttCloudDataflowGeneratorTests
         }
 
         [Theory]
-        [InlineData(DataType.StringT)]
-        [InlineData(DataType.OctetStringT)]
+        [InlineData(DataType.Text)]
         public void Creates_string_data_point_node_for_string_data_types(DataType dataType)
         {
             // Arrange
             var (builder, dataPort) = CreateDataPort();
             var generator = CreateGenerator();
-            var result = new Dictionary<string, PoolingModesCloudInput>();
+            var result = new Dictionary<string, AggregationFunctionCloudInputs>();
             var dataNode = new DeviceTreeProcessData { DataType = dataType, Id = "n1", Name = "Value" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
             var children = new List<TreeModel> { new() { DataConfig = config, Id = "n1", Name = "Value" } };
@@ -386,14 +382,16 @@ public class MqttCloudDataflowGeneratorTests
         }
 
         [Theory]
-        [InlineData(DataType.Invalid)]
-        [InlineData(DataType.BlobT)]
+        [InlineData(DataType.Blob)]
+        [InlineData(DataType.Unknown)]
+        [InlineData(DataType.Flag)]
+        [InlineData(DataType.Octets)]
         public void Throws_for_unsupported_data_type(DataType dataType)
         {
             // Arrange
             var (builder, dataPort) = CreateDataPort();
             var generator = CreateGenerator();
-            var result = new Dictionary<string, PoolingModesCloudInput>();
+            var result = new Dictionary<string, AggregationFunctionCloudInputs>();
             var dataNode = new DeviceTreeProcessData { DataType = dataType, Id = "n1", Name = "Value" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
             var children = new List<TreeModel> { new() { DataConfig = config, Id = "n1", Name = "Value" } };
@@ -408,8 +406,8 @@ public class MqttCloudDataflowGeneratorTests
             // Arrange
             var (builder, dataPort) = CreateDataPort();
             var generator = CreateGenerator();
-            var result = new Dictionary<string, PoolingModesCloudInput>();
-            var dataNode = new DeviceTreeProcessData { DataType = DataType.Float32T, Id = "n1", Name = "Value" };
+            var result = new Dictionary<string, AggregationFunctionCloudInputs>();
+            var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Value" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
             var children = new List<TreeModel> { new() { DataConfig = config, Id = "n1", Name = "Value" } };
 
@@ -432,7 +430,7 @@ public class MqttCloudDataflowGeneratorTests
             // Arrange
             var (builder, dataPort) = CreateDataPort();
             var generator = CreateGenerator();
-            var result = new Dictionary<string, PoolingModesCloudInput>();
+            var result = new Dictionary<string, AggregationFunctionCloudInputs>();
             var children = new List<TreeModel> { new() { DataConfig = null, Id = "folder1", Name = "Root" } };
 
             // Act
@@ -448,8 +446,8 @@ public class MqttCloudDataflowGeneratorTests
             // Arrange
             var (builder, dataPort) = CreateDataPort();
             var generator = CreateGenerator();
-            var result = new Dictionary<string, PoolingModesCloudInput>();
-            var dataNode = new DeviceTreeProcessData { DataType = DataType.Float32T, Id = "n1", Name = "Data 1" };
+            var result = new Dictionary<string, AggregationFunctionCloudInputs>();
+            var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Data 1" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
             var children = new List<TreeModel>
             {
@@ -505,7 +503,7 @@ public class MqttCloudDataflowGeneratorTests
             // Arrange
             using var builder = CreateBuilder(out var dataflow);
             var connection = CreateMqttConnection();
-            var deviceTreeMaster = new DeviceTreeVseDevice { Id = "id", MacAddress = "aa:bb", Name = "Dev", NameAlias = "Dev", Url = new Uri("http://10.0.0.1") };
+            var deviceTreeMaster = new DeviceTreeVseDevice { Id = "id", MacAddress = "aa:bb", Name = "Dev", Alias = "Dev", Url = new Uri("http://10.0.0.1") };
             var generator = new MqttCloudDataflowGenerator(Substitute.For<IInstanceInformationProvider>());
 
             // Act
@@ -523,7 +521,7 @@ public class MqttCloudDataflowGeneratorTests
             // Arrange
             using var builder = CreateBuilder(out var dataflow);
             var connection = CreateMqttConnection();
-            var dataNode = new DeviceTreeProcessData { DataType = DataType.Float32T, Id = "n1", Name = "Value" };
+            var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Value" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
             var deviceTreeMaster = new DeviceTreeVseDevice
             {
@@ -531,7 +529,7 @@ public class MqttCloudDataflowGeneratorTests
                 Id = "id",
                 MacAddress = "aa:bb",
                 Name = "Dev",
-                NameAlias = "Dev",
+                Alias = "Dev",
                 Url = new Uri("http://my.broker.local:1883"),
             };
             var instanceInfo = Substitute.For<IInstanceInformationProvider>();
@@ -561,7 +559,7 @@ public class MqttCloudDataflowGeneratorTests
             // Arrange
             using var builder = CreateBuilder(out var dataflow);
             var connection = CreateMqttConnection();
-            var dataNode = new DeviceTreeProcessData { DataType = DataType.Float32T, Id = "n1", Name = "Value" };
+            var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Value" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
             var deviceTreeMaster = new DeviceTreeVseDevice
             {
@@ -569,7 +567,7 @@ public class MqttCloudDataflowGeneratorTests
                 Id = "id",
                 MacAddress = "aa:bb",
                 Name = "Dev",
-                NameAlias = "Dev",
+                Alias = "Dev",
                 Url = new Uri("http://10.0.0.1"),
             };
             var instanceInfo = Substitute.For<IInstanceInformationProvider>();
@@ -610,7 +608,7 @@ public class MqttCloudDataflowGeneratorTests
                 WillTopic = "will/topic",
             };
             connection.SetMqttConnection(mqttConnection);
-            var dataNode = new DeviceTreeProcessData { DataType = DataType.Float32T, Id = "n1", Name = "Value" };
+            var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Value" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
             var deviceTreeMaster = new DeviceTreeVseDevice
             {
@@ -618,7 +616,7 @@ public class MqttCloudDataflowGeneratorTests
                 Id = "id",
                 MacAddress = "aa:bb",
                 Name = "Dev",
-                NameAlias = "Dev",
+                Alias = "Dev",
                 Url = new Uri("http://10.0.0.1"),
             };
             var instanceInfo = Substitute.For<IInstanceInformationProvider>();

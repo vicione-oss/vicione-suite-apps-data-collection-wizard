@@ -5,7 +5,7 @@ using Sdk.Connections.Extensions;
 using Sdk.Instance;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Model;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
@@ -18,7 +18,7 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
 
     public string Name => "mqtt";
 
-    public Dictionary<string, PoolingModesCloudInput> GenerateCloudDataflow(Connection connection,
+    public Dictionary<string, AggregationFunctionCloudInputs> GenerateCloudDataflow(Connection connection,
                                                                             IDeviceTreeMasterNode deviceTreeMaster,
                                                                             ClusterBuilder builder,
                                                                             Dataflow dataflow,
@@ -30,7 +30,7 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
                                                                             List<ProcessDataConfiguration> loggedProcessDataNodes,
                                                                             List<IDeviceTreeDataNode> loggedRawDataNodes)
     {
-        var result = new Dictionary<string, PoolingModesCloudInput>();
+        var result = new Dictionary<string, AggregationFunctionCloudInputs>();
         var loggedNodeIds = loggedProcessDataNodes.Select(n => n.Node.Id).ToHashSet();
         var loggedTree = BuildLoggedTreeRecursively(deviceTreeMaster, loggedNodeIds, loggedProcessDataNodes);
 
@@ -52,7 +52,7 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
         // Replace any characters that are not allowed in MQTT topic names with underscores
         => new string (dnsSafeHost.Select(c => char.IsLetterOrDigit(c) || c == '-' || c == '_' ? c : '_').ToArray());
 
-    internal void BuildDataportNodesRecursively(List<TreeModel> children, DataPort dataPort, DataPortTreeNode? parent, ClusterBuilder builder, Dictionary<string, PoolingModesCloudInput> result)
+    internal void BuildDataportNodesRecursively(List<TreeModel> children, DataPort dataPort, DataPortTreeNode? parent, ClusterBuilder builder, Dictionary<string, AggregationFunctionCloudInputs> result)
     {
         foreach (var child in children)
         {
@@ -72,7 +72,7 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
 
             if (child.DataConfig is not null)
             {
-                result[child.DataConfig.Node.Id] = new PoolingModesCloudInput()
+                result[child.DataConfig.Node.Id] = new AggregationFunctionCloudInputs()
                 {
                     Avg = new CloudInput() { InputTreeNode = childNode },
                     Last = new CloudInput() { InputTreeNode = childNode },
@@ -95,13 +95,9 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
 
         switch (child.DataConfig.Node.DataType)
         {
-            case DataType.BooleanT:
-            case DataType.Float32T:
-            case DataType.UIntegerT:
-            case DataType.IntegerT:
+            case DataType.Real:
                 return typeof(float);
-            case DataType.StringT:
-            case DataType.OctetStringT:
+            case DataType.Text:
                 return typeof(string);
             default:
                 throw new NotSupportedException($"Data type {child.DataConfig.Node.DataType} is not supported.");
@@ -127,13 +123,10 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
 
         switch (child.DataConfig.Node.DataType)
         {
-            case DataType.BooleanT:
-            case DataType.Float32T:
-            case DataType.UIntegerT:
-            case DataType.IntegerT:
+            case DataType.Real:
+
                 return PortDesignIdMqttDataPointFloat;
-            case DataType.StringT:
-            case DataType.OctetStringT:
+            case DataType.Text:
                 return PortDesignIdMqttDataPointString;
             default:
                 throw new NotSupportedException($"Data type {child.DataConfig.Node.DataType} is not supported.");

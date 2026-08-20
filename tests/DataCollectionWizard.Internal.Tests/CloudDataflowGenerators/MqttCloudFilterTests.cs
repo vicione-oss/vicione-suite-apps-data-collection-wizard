@@ -1,7 +1,6 @@
-using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
+﻿using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using DataCollectionWizard.Public;
 using Sdk.Connections.Contracts;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
 
 namespace DataCollectionWizard.Internal.Tests.CloudDataflowGenerators;
 
