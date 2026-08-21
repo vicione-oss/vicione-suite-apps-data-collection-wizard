@@ -210,6 +210,63 @@
   <data name="Enabled" xml:space="preserve">
     <value>Aktiviert</value>
   </data>
+  <data name="Information" xml:space="preserve">
+    <value>Informationen</value>
+  </data>
+  <data name="InfoThroughput" xml:space="preserve">
+    <value>Durchsatz</value>
+  </data>
+  <data name="InfoThroughputShare" xml:space="preserve">
+    <value>Anteil am Durchsatz</value>
+  </data>
+  <data name="InfoProjection" xml:space="preserve">
+    <value>Hochrechnung</value>
+  </data>
+  <data name="InfoHour" xml:space="preserve">
+    <value>Stunde</value>
+  </data>
+  <data name="InfoDay" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="InfoWeek" xml:space="preserve">
+    <value>Woche</value>
+  </data>
+  <data name="InfoMonth" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="InfoNotProjectable" xml:space="preserve">
+    <value>Nicht vorhersagbar</value>
+  </data>
+  <data name="InfoOnChangeSuffix" xml:space="preserve">
+    <value>Datenpunkte werden nur bei Änderung aufgezeichnet</value>
+  </data>
+  <data name="InfoRawRecordingsSuffix" xml:space="preserve">
+    <value>Rohdaten-Aufnahmen</value>
+  </data>
+  <data name="InfoNotProjectableHint" xml:space="preserve">
+    <value>Hängen vom echten Signal / Ereignis ab — nicht in der Hochrechnung.</value>
+  </data>
+  <data name="InfoDataVolume" xml:space="preserve">
+    <value>Datenvolumen</value>
+  </data>
+  <data name="InfoUnsavedChangesSuffix" xml:space="preserve">
+    <value>durch offene Änderungen</value>
+  </data>
+  <data name="ActiveDatapointCount" xml:space="preserve">
+    <value>· {0} aktiv</value>
+  </data>
+  <data name="BulkActivate" xml:space="preserve">
+    <value>Aktivieren</value>
+  </data>
+  <data name="BulkDeactivate" xml:space="preserve">
+    <value>Deaktivieren</value>
+  </data>
+  <data name="AllClouds" xml:space="preserve">
+    <value>Alle Clouds</value>
+  </data>
+  <data name="BulkSelectionCount" xml:space="preserve">
+    <value>{0} markiert</value>
+  </data>
   <data name="ProcessDataView" xml:space="preserve">
     <value>Prozessdatenansicht</value>
   </data>
@@ -235,7 +292,7 @@
     <value>Gleiche Zugangsdaten für alle</value>
   </data>
   <data name="IoLinkMasterCredentialsHint" xml:space="preserve">
-    <value>Nur bei Mastern mit Authentifizierung notwendig</value>
+    <value>Nur bei IO-Link Mastern mit Authentifizierung notwendig</value>
   </data>
   <data name="IoLinkMasterAuthentication" xml:space="preserve">
     <value>Authentifizierung</value>
@@ -279,11 +336,14 @@
   <data name="UnsavedChanges" xml:space="preserve">
     <value>Alle ungespeicherten Änderungen gehen verloren.</value>
   </data>
-  <data name="DataPointLimitApproaching" xml:space="preserve">
-    <value>Sie erreichen in Kürze das empfohlene Limit für aktivierte Datenpunkte ({0} von {1}).</value>
+  <data name="DataPointUsage" xml:space="preserve">
+    <value>Aktive Datenpunkte</value>
   </data>
-  <data name="DataPointLimitReached" xml:space="preserve">
-    <value>Sie haben das empfohlene Limit für aktivierte Datenpunkte erreicht ({0} von {1}). Das Aktivieren weiterer Datenpunkte kann zu Systeminstabilität führen.</value>
+  <data name="DataPointLimitApproachingHint" xml:space="preserve">
+    <value>nähert sich dem empfohlenen Limit</value>
+  </data>
+  <data name="DataPointLimitExceededHint" xml:space="preserve">
+    <value>empfohlenes Limit überschritten – kann die Stabilität beeinträchtigen</value>
   </data>
   <data name="LogLevel" xml:space="preserve">
     <value>Log Level</value>
@@ -337,6 +397,6 @@
     <value>Konfigurationsänderung</value>
   </data>
   <data name="ClusterOutOfDateDialogText" xml:space="preserve">
-    <value>Jemand anderes hat eine Konfiguration gespeichert. Wenn Sie die aktuelle Konfiguration speichern, werden alle Änderungen überschrieben, die von dieser anderen Partei vorgenommen wurden. Falls das kein Problem ist, können Sie diese Meldung ignorieren, andernfalls schließen Sie bitte den Data Collection Wizard und öffnen ihn erneut, um die aktuellste Konfiguration zu bearbeiten.</value>
+    <value>Ein anderer Teilnehmer hat eine neue Konfiguration gespeichert. Wenn Sie die aktuelle Konfiguration speichern, werden alle Änderungen überschrieben, die von dieser anderen Partei vorgenommen wurden. Falls das kein Problem ist, können Sie diese Meldung ignorieren, andernfalls schließen Sie bitte den Data Collection Wizard und öffnen ihn erneut, um die aktuellste Konfiguration zu bearbeiten.</value>
   </data>
 </root>

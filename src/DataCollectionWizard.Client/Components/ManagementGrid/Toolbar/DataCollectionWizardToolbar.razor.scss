@@ -21,6 +21,9 @@
     display: flex;
     align-items: center;
     gap: 4px;
+    // Fixed height (matches LiveViewToolbar) so the shared icons - notably Refresh - sit at the same vertical
+    // position in both views, independent of the save button being taller than the plain icon buttons.
+    height: 30px;
 
     // Save state text ("Saved" / "Not saved") shown next to the save button.
     .save-state {
@@ -170,7 +173,10 @@
     display: grid;
     grid-column-gap: 8px;
     grid-template-columns: auto 200px min-content;
-    margin: 40px;
+    // Title keeps its original top position (40px); only the bottom margin is tightened so the grid comes up. The
+    // remaining bottom band leaves room for the fixed datapoint meter (DataPointUsageMeter) that overlays it. Kept
+    // identical in LiveViewToolbar so both views line up.
+    margin: 40px 40px 24px 40px;
 }
 
 @keyframes save-pulse {

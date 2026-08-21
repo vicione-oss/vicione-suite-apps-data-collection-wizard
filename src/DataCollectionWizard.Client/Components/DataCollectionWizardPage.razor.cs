@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using ClusterManagement.Public.Services;
+using DataCollectionWizard.Client.Components.ManagementGrid;
 using DataCollectionWizard.Client.Components.ManagementGrid.Models;
 using DataCollectionWizard.Client.Components.ManagementGrid.Services;
 using DataCollectionWizard.Client.Models.DeviceTree;
@@ -37,7 +38,6 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private const string IoLinkMasterDialogHeightManual = "565px";
     private const string ScanDialogHeight = "680px";
     private const int MaxRecommendedDataPoints = 100;
-    private const double MaxRecommendedMessageDisplayBoundary = 0.6;
 
     private DeviceTreeAdapter _adapter = default!;
     private Dictionary<string, IDeviceTreeBase> _allNodes = [];
@@ -286,29 +286,9 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             }
         }
 
-        var dataPointPercentageToRecommended = 1.0 * _currentlyEnabledDataPoints / MaxRecommendedDataPoints;
-        if (dataPointPercentageToRecommended is >= MaxRecommendedMessageDisplayBoundary and < 1.0)
-        {
-            MessageBannerService.ShowMessageBanner(MessageType.Information, string.Format(
-                CultureInfo.InvariantCulture,
-                Localization.DataCollectionWizardPage.DataPointLimitApproaching,
-                _currentlyEnabledDataPoints,
-                MaxRecommendedDataPoints
-            ));
-        }
-        else if (dataPointPercentageToRecommended >= 1.0)
-        {
-            MessageBannerService.ShowMessageBanner(MessageType.Warning, string.Format(
-                CultureInfo.InvariantCulture,
-                Localization.DataCollectionWizardPage.DataPointLimitReached,
-                _currentlyEnabledDataPoints,
-                MaxRecommendedDataPoints
-            ));
-        }
-        else
-        {
-            MessageBannerService.CloseMessageBanner();
-        }
+        // The count is surfaced by the passive usage meter under the title (see DataCollectionWizardToolbar), which
+        // colours itself amber/red near/over the limit - so just re-render; no more pop-up banner.
+        _ = InvokeAsync(StateHasChanged);
     }
 
     // How the user answered the "unsaved changes" dialog when leaving the page.
@@ -365,6 +345,11 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
             return new PublishTargetInfo(c, cloudFilter.ConnectionKind, cloudFilter.TreeNodesSupportedForConfiguration);
         })];
+
+        // Share the clouds with the service so the sidebar info panel can project the throughput per cloud, and
+        // recompute once now that the target list is known.
+        _service.PublishTargets = _publishTargetInfos;
+        _service.InvokeConfigChanged();
     }
 
     private static bool MatchesIoLinkFilter(DcpDevice device, string filter)
@@ -568,6 +553,11 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
         foreach (var dataNode in treeNodes.OfType<IDeviceTreeDataNode>())
             dataNode.AddConfigurations(_publishTargets);
+
+        // Give the info panel the whole tree so its throughput projection covers every device (not just the
+        // selected one), and trigger a recompute now that the per-cloud configs are in place.
+        _service.TreeRoot = _tree;
+        _service.InvokeConfigChanged();
     }
 
     private bool TryGetExistingDeviceTreeMaster(IDeviceTreeMasterNode device, out IDeviceTreeMasterNode? existingDevice)
@@ -585,7 +575,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             return;
 
         SetNodesStatus(nodeIds, ConnectionStatus.Offline);
-        SetTree(_tree, true);
+        RefreshNodeStatuses(nodeIds);
         await InvokeAsync(StateHasChanged);
     }
 
@@ -595,8 +585,23 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             return;
 
         SetNodesStatus(nodeIds, ConnectionStatus.Online);
-        SetTree(_tree, false);
+        RefreshNodeStatuses(nodeIds);
         await InvokeAsync(StateHasChanged);
+    }
+
+    // Apply a live status change to the tree without a full rebuild: refresh only the affected nodes' brackets (and
+    // their ancestors, so collapsed parents still show the status) and update the offline-nodes flag. Previously these
+    // notifications called SetTree, which rebuilt the whole tree + grid on every status change and caused the grid to
+    // flicker.
+    private void RefreshNodeStatuses(string[] nodeIds)
+    {
+        _adapter.UpdateNodeStatuses(nodeIds);
+
+        lock (_treeLock)
+        {
+            _service.HasOfflineNodes = _tree!.GetNodeAndDescendants()
+                .Any(n => n.Status != ConnectionStatus.Online && n is not IDeviceTreeMasterNode);
+        }
     }
 
     private async Task OnAddVSEDialogCloseAsync()
@@ -1040,6 +1045,12 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             _saveReasons += " nodes have been deleted;";
         }
 
+        // The node was removed from the tree in place (RemoveNodeFromParent), so TreeRoot is not otherwise
+        // re-assigned. Re-assign it to bump TreeVersion (invalidates the info panel's node cache) and raise
+        // ConfigChanged so cache-by-version consumers - notably the info panel - recompute without the deleted node.
+        _service.TreeRoot = _tree!;
+        _service.InvokeConfigChanged();
+
         await _refDeleteDialog!.CloseAsync();
 
         SetGridItems();
@@ -1122,6 +1133,9 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private void OnTreeSelectionChangedAsync()
         => _ = InvokeAsync(() =>
         {
+            // Selecting a different tree node shows a different set of rows, so clear the multi-select (and with it
+            // the bulk bar). Otherwise rows ticked on the previous node stay selected but invisible - easy to forget.
+            _service.ClearSelection();
             _service.GridItems = [];
             _gridNeedsRebuild = true;
             StateHasChanged();
@@ -1453,6 +1467,54 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
         CheckDataPointRecommendedLimit(true);
         _service.DeviceTreeChanged = true;
+    }
+
+    // Multi-select bulk enable/disable: applies to the process-value data points in the grid selection for the
+    // chosen publish target (or all targets). RawData/event-triggered recordings are intentionally left out for
+    // now - they carry more than one toggle, so they need their own bulk action.
+    private void OnBulkEnableSelection(BulkEnableRequest request)
+    {
+        if (_tree is null)
+            return;
+
+        var targetConnections = request.Target is null
+            ? (IEnumerable<Connection>)_publishTargets
+            : new[] { request.Target.Connection };
+        var connectionIds = targetConnections.Select(connection => connection.Id).ToHashSet();
+
+        var selectedNodes = _service.SelectedNodes;
+
+        lock (_treeLock)
+        {
+            foreach (var configuration in selectedNodes.OfType<IDeviceTreeCompressableDataNode>()
+                                                       .SelectMany(node => node.CompressorConfigurations)
+                                                       .Where(configuration => connectionIds.Contains(configuration.DataGroupIdentifier)))
+            {
+                configuration.Enabled = request.Enabled;
+            }
+
+            var nonMoneoConnectionIds = _publishTargets
+                .Except(new MoneoCloudFilter().GetCloudConnections(_publishTargets))
+                .Select(connection => connection.Id)
+                .ToHashSet();
+
+            foreach (var configuration in selectedNodes.OfType<IDeviceTreeSchedulableDataNode>()
+                                                       .SelectMany(node => node.SchedulerConfigurations)
+                                                       .Where(configuration => connectionIds.Contains(configuration.DataGroupIdentifier)
+                                                                               && nonMoneoConnectionIds.Contains(configuration.DataGroupIdentifier)))
+            {
+                configuration.Enabled = request.Enabled;
+            }
+
+            _changedMasterDevices.Clear();
+            _changedMasterDevices.AddRange(_tree.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>());
+        }
+
+        _saveReasons += " data points enabled via multi-select;";
+
+        CheckDataPointRecommendedLimit(true);
+        _service.DeviceTreeChanged = true;
+        _service.InvokeBulkEnableApplied();
     }
 
     public void SetDebugRawDataGrid()

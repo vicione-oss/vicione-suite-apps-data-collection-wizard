@@ -1,0 +1,291 @@
+@use "./../../../Styles/colours" as col;
+@use "sass:color";
+
+// The ExpandableMenu provides the "Informationen" header and expand/collapse; this is just the section content.
+// Layout is three blocks: hero (throughput + volume + unsaved diff), the per-cloud / per-device breakdowns, and a
+// quiet footer for values that can't be projected. The surrounding sidebar owns the vertical scroll.
+.info-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    // Roomy right padding so the right-aligned value never sits against the panel/sidebar edge - a flush value was
+    // getting its last character clipped ("492k/Ta"). Rows fit via flex and long lines wrap, so no horizontal scroll.
+    padding: 6px 12px 8px 6px;
+}
+
+// ─── shared section label (matches the grid's muted column headers) ──────────
+.lbl {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    margin-bottom: 10px;
+    font-size: 12.5px;
+    color: col.$font-dark;
+
+    .sub {
+        font-size: 11px;
+        color: col.$font-dark;
+        opacity: 0.6;
+
+        &::before {
+            content: "· ";
+        }
+    }
+}
+
+// ─── hero ────────────────────────────────────────────────────────────────────
+.hero {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+
+    .lbl {
+        margin-bottom: 0;
+    }
+}
+
+.seg {
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    // A slightly recessed track so the active button reads as raised above it.
+    background: color.adjust(col.$background, $lightness: -3%);
+    border: 1px solid col.$border;
+    border-radius: 7px;
+
+    button {
+        flex: 1;
+        height: 24px;
+        min-width: 0;
+        padding: 0;
+        border: none;
+        border-radius: 5px;
+        background: transparent;
+        color: col.$font-dark;
+        font-family: inherit;
+        font-size: 11.5px;
+        cursor: pointer;
+
+        // Selection is shown by `.on`; don't draw the app's orange focus ring on a mouse click. Keep it for keyboard.
+        &:focus:not(:focus-visible) {
+            outline: none;
+        }
+
+        &.on {
+            // Just a raised surface, no orange underline - matches the compact "Cloud / Gerät" toggle style.
+            background: col.$background-hover;
+            color: col.$font;
+        }
+    }
+}
+
+.num {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 8px;
+
+    .n {
+        font-size: 29px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.5px;
+        color: col.$font;
+    }
+
+    .u {
+        color: col.$font-dark;
+        font-size: 12px;
+    }
+}
+
+// Volume as a quiet subline of the hero (was its own boxed "Datenvolumen" section).
+.subline {
+    font-size: 11.5px;
+    color: col.$font-disabled;
+    font-variant-numeric: tabular-nums;
+
+    b {
+        color: col.$font-dark;
+        font-weight: 500;
+    }
+
+    .dot {
+        margin: 0 4px;
+        opacity: 0.6;
+    }
+}
+
+// "Unsaved changes" diff badge under the throughput headline.
+.diff {
+    // Badge and label on one line ("text behind the badge"). The badge value is kept compact (see UnsavedDiffBadge)
+    // so it stays narrow enough that the label never wraps - which is what made the hero height jump between periods.
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 8px;
+    font-size: 12px;
+    color: col.$font-dark;
+
+    .badge {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+
+        &.up {
+            color: #6ba585;
+            background: rgba(107, 165, 133, 0.12);
+            border: 1px solid rgba(107, 165, 133, 0.3);
+        }
+
+        &.down {
+            color: #c7a24a;
+            background: rgba(199, 162, 74, 0.12);
+            border: 1px solid rgba(199, 162, 74, 0.3);
+        }
+    }
+}
+
+// ─── stacked "share of throughput" bars (per cloud / per device) ─────────────
+.share-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.share-title {
+    font-size: 12.5px;
+    color: col.$font-dark;
+}
+
+.share-side {
+    font-size: 11px;
+    color: col.$font-disabled;
+}
+
+.bar {
+    display: flex;
+    gap: 1px;
+    height: 9px;
+    border-radius: 3px;
+    overflow: hidden;
+    // Shows through the 1px gaps between segments (and any unfilled remainder).
+    background: color.adjust(col.$background, $lightness: -4%);
+
+    > span {
+        // No flex-grow here on purpose: the `.g-N` classes set it. Setting it via the `flex` shorthand would win on
+        // specificity (`.bar > span` beats `.g-N`), pinning every segment to grow:0 so the bar ignored the shares.
+        flex-shrink: 1;
+        flex-basis: 0;
+        min-width: 2px;
+        height: 100%;
+    }
+}
+
+.legend {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 10px;
+
+    .li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 2px 0;
+        font-size: 12px;
+    }
+
+    .dot {
+        width: 9px;
+        height: 9px;
+        flex-shrink: 0;
+        border-radius: 3px;
+    }
+
+    .nm {
+        flex: 1;
+        min-width: 0;
+        color: col.$font-dark;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .li.mono .nm {
+        font-family: "Cascadia Code", "Consolas", ui-monospace, monospace;
+        font-size: 11.5px;
+    }
+
+    .pct {
+        flex-shrink: 0;
+        text-align: right;
+        font-family: "Cascadia Code", "Consolas", ui-monospace, monospace;
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+        color: col.$font-disabled;
+    }
+}
+
+// Class-driven segment size (flex-grow) and colour (20 evenly-spread muted hues) - avoids inline styles on segments.
+@for $i from 0 through 100 {
+    .g-#{$i} {
+        flex-grow: $i;
+    }
+}
+
+@for $i from 0 through 19 {
+    .hue-#{$i} {
+        background: hsl($i * 18, 42%, 60%);
+    }
+}
+
+// ─── quiet footer: values that can't be projected ────────────────────────────
+.foot {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 13px;
+    border-top: 1px solid col.$border;
+}
+
+.foot-label {
+    font-size: 11px;
+    color: col.$font-disabled;
+}
+
+.foot-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11.5px;
+    color: col.$font-disabled;
+
+    .pi {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        flex-shrink: 0;
+        color: #c98a3a;
+        font-size: 12px;
+    }
+
+    b {
+        color: col.$font-dark;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+// Short explanation of why these values can't be projected.
+.foot-hint {
+    margin-top: 2px;
+    font-size: 11px;
+    line-height: 1.45;
+    color: col.$font-disabled;
+    opacity: 0.85;
+}

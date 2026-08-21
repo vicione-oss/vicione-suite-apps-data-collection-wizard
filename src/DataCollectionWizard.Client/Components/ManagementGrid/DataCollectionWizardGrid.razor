@@ -13,6 +13,18 @@
 
     @* --- HEADER --- *@
     <div class="grid-header">
+        <div class="row-select-col header">
+            <div class="header-template">
+                <span></span>
+                <div class="select-all-cell">
+                    <input type="checkbox"
+                           class="grid-select"
+                           checked="@AreAllVisibleSelected"
+                           @onchange="@(e => ToggleSelectAll((bool)e.Value!))" />
+                </div>
+            </div>
+        </div>
+
         @if (Service.PathVisible)
         {
             <div class="device-path">
@@ -48,7 +60,10 @@
 
             <div class="publish-target">
                 <div class="header-template">
-                    <span>@(targetInfo.Connection.Name)</span>
+                    <span>
+                        @(targetInfo.Connection.Name)
+                        <span class="active-count">@(ActiveDatapointCountText(targetInfo))</span>
+                    </span>
 
                     <div class="publish-target">
                         <span>
@@ -86,24 +101,50 @@
     @* --- BODY (virtualized) --- *@
     <div class="grid-body">
         <Virtualize @ref="_virtualizeRef"
-                    TItem="IndexedItem<ManagementGridRowModel>"
+                    TItem="IndexedItem<GridDisplayRow>"
                     Items="@_indexedItems"
                     Context="entry"
                     ItemSize="48"
-                    OverscanCount="10">
+                    OverscanCount="4">
 
-            <div class="grid-row @(entry.Index % 2 == 0 ? "row-even" : "row-odd")">
-                @{
-                    var item = entry.Item;
-                }
+            @{
+                var row = entry.Item;
+            }
+
+            @if (row.IsHeader)
+            {
+                <div class="grid-group-row" @key="(row.IsHeader, entry.Index, _rowRenderEpoch)">
+                    <label class="grid-group-header">
+                        <input type="checkbox"
+                               class="grid-select"
+                               checked="@IsGroupSelected(row)"
+                               @onchange="@(e => ToggleGroup(row, (bool)e.Value!))" />
+
+                        <span class="grid-group-label">@row.GroupLabel</span>
+                        <span class="grid-group-count">· @row.GroupItems!.Count</span>
+                    </label>
+                </div>
+            }
+            else
+            {
+                var item = row.Item!;
+
+                <div class="grid-row @(row.IsEvenDataRow ? "row-even" : "row-odd") @(Service.IsNodeSelected(item.DataNode) ? "selected" : string.Empty)" @key="(row.IsHeader, entry.Index, _rowRenderEpoch)">
+
+                <div class="row-select-col">
+                    <input type="checkbox"
+                           class="grid-select"
+                           checked="@Service.IsNodeSelected(item.DataNode)"
+                           @onchange="@(e => Service.SetNodeSelected(item.DataNode, (bool)e.Value!))" />
+                </div>
 
                 @if (Service.PathVisible)
                 {
                     <div class="device-path"
-                         title="@(item.Breadcrumb)">
+                         title="@(row.IsGrouped ? row.GroupRelativePath : item.Breadcrumb)">
 
                         <div class="device-path-container">
-                            <span>@(item.Breadcrumb)</span>
+                            <span>@(row.IsGrouped ? row.GroupRelativePath : item.Breadcrumb)</span>
                         </div>
                     </div>
 
@@ -187,7 +228,41 @@
                 <div class="spacer absorbtion">
                     <!-- space absorption column -->
                 </div>
-            </div>
+                </div>
+            }
         </Virtualize>
     </div>
 </div>
+
+<div class="bulk-bar @(Service.SelectionCount > 0 ? "show" : string.Empty)" @ref="_bulkBarRef">
+        <span class="bulk-grip" @ref="_bulkGripRef">⠿</span>
+        <span class="bulk-count">@BulkSelectionText</span>
+
+        @if (PublishTargetInfos.Count > 1)
+        {
+            <span class="bulk-sep"></span>
+            <span class="bulk-lbl">@TechnicalTerms.Cloud</span>
+
+            <select class="bulk-target" @bind="_bulkTargetIndex">
+                <option value="@PublishTargetInfos.Count">@Localization.DataCollectionWizardPage.AllClouds</option>
+                @for (var ti = 0; ti < PublishTargetInfos.Count; ti++)
+                {
+                    <option value="@ti">@PublishTargetInfos[ti].Connection.Name</option>
+                }
+            </select>
+        }
+
+        <span class="bulk-sep"></span>
+
+        <button class="bulk-btn accent" @onclick="@(() => ApplyBulkEnableAsync(true))">
+            @Localization.DataCollectionWizardPage.BulkActivate
+        </button>
+
+        <button class="bulk-btn ghost" @onclick="@(() => ApplyBulkEnableAsync(false))">
+            @Localization.DataCollectionWizardPage.BulkDeactivate
+        </button>
+
+        <span class="bulk-sep"></span>
+
+        <button class="bulk-x" @onclick="@(() => Service.ClearSelection())" title="@CommonVocabulary.Cancel">✕</button>
+    </div>

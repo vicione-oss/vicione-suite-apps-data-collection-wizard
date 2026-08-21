@@ -210,6 +210,63 @@
   <data name="Enabled" xml:space="preserve">
     <value>Enabled</value>
   </data>
+  <data name="Information" xml:space="preserve">
+    <value>Information</value>
+  </data>
+  <data name="InfoThroughput" xml:space="preserve">
+    <value>Throughput</value>
+  </data>
+  <data name="InfoThroughputShare" xml:space="preserve">
+    <value>Throughput share</value>
+  </data>
+  <data name="InfoProjection" xml:space="preserve">
+    <value>Projection</value>
+  </data>
+  <data name="InfoHour" xml:space="preserve">
+    <value>Hour</value>
+  </data>
+  <data name="InfoDay" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="InfoWeek" xml:space="preserve">
+    <value>Week</value>
+  </data>
+  <data name="InfoMonth" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="InfoNotProjectable" xml:space="preserve">
+    <value>Not projectable</value>
+  </data>
+  <data name="InfoOnChangeSuffix" xml:space="preserve">
+    <value>data points are only recorded on change</value>
+  </data>
+  <data name="InfoRawRecordingsSuffix" xml:space="preserve">
+    <value>raw-data recordings</value>
+  </data>
+  <data name="InfoNotProjectableHint" xml:space="preserve">
+    <value>Depend on the actual signal / event — not part of the projection.</value>
+  </data>
+  <data name="InfoDataVolume" xml:space="preserve">
+    <value>Data volume</value>
+  </data>
+  <data name="InfoUnsavedChangesSuffix" xml:space="preserve">
+    <value>from pending changes</value>
+  </data>
+  <data name="ActiveDatapointCount" xml:space="preserve">
+    <value>· {0} active</value>
+  </data>
+  <data name="BulkActivate" xml:space="preserve">
+    <value>Activate</value>
+  </data>
+  <data name="BulkDeactivate" xml:space="preserve">
+    <value>Deactivate</value>
+  </data>
+  <data name="AllClouds" xml:space="preserve">
+    <value>All clouds</value>
+  </data>
+  <data name="BulkSelectionCount" xml:space="preserve">
+    <value>{0} selected</value>
+  </data>
   <data name="ProcessDataView" xml:space="preserve">
     <value>Process data view</value>
   </data>
@@ -235,7 +292,7 @@
     <value>Use the same credentials for all</value>
   </data>
   <data name="IoLinkMasterCredentialsHint" xml:space="preserve">
-    <value>Only required for masters that use authentication</value>
+    <value>Only required for IO-Link Masters that use authentication</value>
   </data>
   <data name="IoLinkMasterAuthentication" xml:space="preserve">
     <value>Authentication</value>
@@ -279,11 +336,14 @@
   <data name="UnsavedChanges" xml:space="preserve">
     <value>Unsaved changes may be lost.</value>
   </data>
-  <data name="DataPointLimitApproaching" xml:space="preserve">
-    <value>You are approaching the recommended limit of enabled data points ({0} of {1}).</value>
+  <data name="DataPointUsage" xml:space="preserve">
+    <value>Active data points</value>
   </data>
-  <data name="DataPointLimitReached" xml:space="preserve">
-    <value>You reached the recommended limit of enabled data points ({0} of {1}). Further enabling data points may result in system instability.</value>
+  <data name="DataPointLimitApproachingHint" xml:space="preserve">
+    <value>approaching the recommended limit</value>
+  </data>
+  <data name="DataPointLimitExceededHint" xml:space="preserve">
+    <value>recommended limit exceeded – may affect stability</value>
   </data>
   <data name="LogLevel" xml:space="preserve">
     <value>Log level</value>
@@ -337,6 +397,6 @@
     <value>Configuration has changed</value>
   </data>
   <data name="ClusterOutOfDateDialogText" xml:space="preserve">
-    <value>Somebody else saved a configuration. Your changes may override changes made by them. If that does not matter to you, you may ignore this warning, otherwise, please close the Data Collection Wizard and open it again to continue working on the latest configuration.</value>
+    <value>Another participant saved a new configuration. Your changes may override changes made by them. If that does not matter to you, you may ignore this warning, otherwise, please close the Data Collection Wizard and open it again to continue working on the latest configuration.</value>
   </data>
 </root>

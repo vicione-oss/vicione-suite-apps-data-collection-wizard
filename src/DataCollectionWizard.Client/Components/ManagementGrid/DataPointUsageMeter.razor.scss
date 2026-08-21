@@ -1,0 +1,106 @@
+@use "./../../Styles/colours" as col;
+
+// Overlay under the "Prozessdatenansicht" title, in the band between the toolbar and the grid. It is a child of the
+// Top slot (.content__top, which is position:relative), so it anchors to the content column - right of the sidebar,
+// directly under the title - not to the whole page. Being absolutely positioned it is out of flow: showing/hiding it
+// (0 -> 1 active datapoint) never reflows the grid, and the toolbar stays single-row so the Live-View toolbar keeps
+// aligned. Offsets: left = toolbar-container left margin (40) + title left margin (8); top = toolbar top margin (40)
+// + title row height.
+.dp-usage-meter {
+    position: absolute;
+    top: 72px;
+    left: 48px;
+    z-index: 30;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 26px;
+
+    .dp-lbl {
+        font-size: 12.5px;
+        color: col.$font-dark;
+        white-space: nowrap;
+    }
+
+    .dp-count {
+        font-family: "Cascadia Code", "Consolas", ui-monospace, monospace;
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+
+        b {
+            font-weight: 600;
+        }
+    }
+
+    .dp-lim {
+        color: col.$font-disabled;
+    }
+
+    .dp-track {
+        width: 220px;
+        height: 6px;
+        border-radius: 999px;
+        background: col.$content-dark;
+        overflow: hidden;
+    }
+
+    // Width comes from the .dp-w-* class; no width here so it is not overridden by higher specificity.
+    .dp-fill {
+        display: block;
+        height: 100%;
+        border-radius: 999px;
+    }
+
+    .dp-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12px;
+
+        // Tint the monochrome warning icon with the current state colour (amber / red).
+        ::deep .monochrome-icon::before {
+            background-color: currentColor;
+        }
+    }
+
+    &.ok {
+        .dp-fill { background: #5b6674; }
+        .dp-count b { color: col.$font; }
+    }
+
+    &.warn {
+        .dp-fill { background: #d9a441; }
+        .dp-count b, .dp-lbl, .dp-hint { color: #d9a441; }
+    }
+
+    &.err {
+        .dp-fill { background: #e05a45; }
+        .dp-count b, .dp-lbl, .dp-hint { color: #e05a45; }
+
+        // Over the limit: pulse only the warning hint after the progress bar (icon + text), not the whole meter.
+        .dp-hint {
+            animation: dp-usage-pulse 1.4s ease-in-out infinite;
+        }
+    }
+}
+
+@keyframes dp-usage-pulse {
+    0%, 100% { opacity: 0.5; }
+    50%      { opacity: 1; }
+}
+
+// Respect the OS "reduce motion" setting: drop the animation (the red text/icon already signals the state).
+@media (prefers-reduced-motion: reduce) {
+    .dp-usage-meter.err .dp-hint {
+        animation: none;
+    }
+}
+
+// Fill widths driven by class (no inline style) - .dp-w-0 … .dp-w-100 set the bar width.
+@for $i from 0 through 100 {
+    .dp-w-#{$i} {
+        width: #{$i}#{"%"};
+    }
+}

@@ -21,8 +21,16 @@
     display: grid;
     grid-column-gap: 4px;
     grid-template-columns: repeat(4, min-content);
+    // Match DataCollectionWizardToolbar: same fixed height and centred icons so the shared icons (Refresh) sit at
+    // the same vertical position in both views.
+    align-items: center;
+    height: 30px;
 
     > button {
+        // Centre the icon inside the button exactly like DataCollectionWizardToolbar; without this the icon sat at a
+        // different vertical position, so the shared icons (Refresh) appeared to jump when switching between the views.
+        display: grid;
+        place-items: center;
         border-radius: 4px;
         height: 28px;
         padding: 0;
@@ -53,6 +61,8 @@
         background-color: col.$border;
         margin: 0px 8px;
         width: 1px;
+        // Explicit height needed now that the row centres its items (align-items:center) instead of stretching them.
+        height: 20px;
     }
 }
 
@@ -61,5 +71,7 @@
     display: grid;
     grid-column-gap: 8px;
     grid-template-columns: auto 200px min-content;
-    margin: 40px;
+    // Kept identical to DataCollectionWizardToolbar so the two views line up vertically (title, toolbar icons, grid)
+    // when switching tabs. The bottom band matches the space the DCW datapoint meter overlays.
+    margin: 40px 40px 24px 40px;
 }

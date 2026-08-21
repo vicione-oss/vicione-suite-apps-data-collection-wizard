@@ -260,6 +260,35 @@ internal sealed class DeviceTreeAdapter(bool isLiveView, DeviceTreeNodeIconProvi
         }
     }
 
+    // Lightweight live-status update for the online/offline notifications: refresh only the affected nodes' own status
+    // and re-propagate their ancestors' inherited status (so a collapsed parent keeps its coloured bracket), then
+    // re-render just those nodes. Avoids the full SetDeviceTree rebuild those notifications used to do, which rebuilt
+    // the whole tree and grid on every status change and made the grid flicker.
+    public void UpdateNodeStatuses(IEnumerable<string> nodeIds)
+    {
+        if (_rootNode is null)
+            return;
+
+        var nodesById = _rootNode.GetNodeAndDescendants().ToDictionary(node => node.Device.Id);
+        var toRefresh = new HashSet<NodeBase>();
+
+        foreach (var nodeId in nodeIds)
+        {
+            if (!nodesById.TryGetValue(nodeId, out var node))
+                continue;
+
+            node.Status = node.Device.GetStatus(isLiveView);
+
+            // The node's own bracket may change, and every ancestor's inherited bracket up to the root.
+            RecalculateInheritedStatusToRoot(node.Parent);
+            for (var current = node; current is not null; current = current.Parent)
+                toRefresh.Add(current);
+        }
+
+        foreach (var node in toRefresh)
+            Builder.Helper.RequestNodeRefresh(node);
+    }
+
     internal void SetDeviceTree(DeviceTreeRoot root, bool expandOfflineNodes)
     {
         var nodesToExpandTo = new List<NodeBase>();

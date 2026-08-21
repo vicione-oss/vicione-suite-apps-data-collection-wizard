@@ -31,7 +31,12 @@
         }
 
         .content__top {
-            overflow-x: auto;
+            // Positioning context for the DataPointUsageMeter overlay so it anchors to the content column (right of
+            // the sidebar), directly under the title - not to the whole page.
+            position: relative;
+            // Must stay visible (not overflow-x:auto): the absolute meter overlay - especially once its warning text
+            // is shown - extends past this row, and an auto overflow would turn that into a scrollbar here.
+            overflow: visible;
         }
     }
 }
@@ -213,13 +218,15 @@
     inset: 0;
     z-index: 1100;
     display: grid;
-    place-items: center;
+    align-items: start;
+    justify-items: center;
     background: rgba(0, 0, 0, 0.58);
 }
 
 .unsaved-card {
     width: 460px;
     max-width: calc(100% - 40px);
+    margin-top: 75px;
     background: #2a2a2a;
     border: 1px solid #1c1c1c;
     border-radius: 12px;

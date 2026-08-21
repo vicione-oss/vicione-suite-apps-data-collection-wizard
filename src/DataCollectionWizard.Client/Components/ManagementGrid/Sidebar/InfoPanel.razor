@@ -1,0 +1,113 @@
+@using System.Linq
+@using ViciOne.Ui.Localization.Resources
+
+<div class="info-panel">
+    <div class="hero">
+        <div class="lbl">@Localization.DataCollectionWizardPage.InfoThroughput <span class="sub">@Localization.DataCollectionWizardPage.InfoProjection</span></div>
+
+        <div class="seg">
+            <button class="@(_period == Period.Hour ? "on" : string.Empty)" @onclick="@(() => SetPeriod(Period.Hour))">@PeriodName(Period.Hour)</button>
+            <button class="@(_period == Period.Day ? "on" : string.Empty)" @onclick="@(() => SetPeriod(Period.Day))">@PeriodName(Period.Day)</button>
+            <button class="@(_period == Period.Week ? "on" : string.Empty)" @onclick="@(() => SetPeriod(Period.Week))">@PeriodName(Period.Week)</button>
+            <button class="@(_period == Period.Month ? "on" : string.Empty)" @onclick="@(() => SetPeriod(Period.Month))">@PeriodName(Period.Month)</button>
+        </div>
+
+        <div class="num">
+            <span class="n">@HeadlineNumber</span>
+            <span class="u">@HeadlineUnit</span>
+        </div>
+
+        @if (_totalPerHour > 0)
+        {
+            <div class="subline">
+                @Localization.DataCollectionWizardPage.InfoDataVolume
+                <b>@VolumePerDay</b> /@Localization.DataCollectionWizardPage.InfoDay
+                <span class="dot">·</span>
+                <b>@VolumePerMonth</b> /@Localization.DataCollectionWizardPage.InfoMonth
+            </div>
+        }
+
+        @if (HasUnsavedChanges)
+        {
+            <div class="diff">
+                <span class="badge @(IsUnsavedDiffPositive ? "up" : "down")">@UnsavedDiffBadge</span>
+                @Localization.DataCollectionWizardPage.InfoUnsavedChangesSuffix
+            </div>
+        }
+    </div>
+
+    @if (Service.PublishTargets.Count > 1)
+    {
+        <div class="block">
+            <div class="share-head">
+                <span class="share-title">@Localization.DataCollectionWizardPage.InfoThroughputShare</span>
+                <span class="share-side">@TechnicalTerms.Cloud · @_cloudShares.Count</span>
+            </div>
+
+            <div class="bar">
+                @foreach (var share in _cloudShares.Where(s => s.Percent > 0))
+                {
+                    <span class="@HueClass(share.ColorIndex) @GrowClass(share.Percent)" title="@ShareTooltip(share)"></span>
+                }
+            </div>
+
+            <div class="legend">
+                @foreach (var share in _cloudShares)
+                {
+                    <div class="li">
+                        <span class="dot @HueClass(share.ColorIndex)"></span>
+                        <span class="nm" title="@share.Name">@share.Name</span>
+                        <span class="pct">@(share.Percent)%</span>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    @if (_totalPerHour > 0)
+    {
+        <div class="block">
+            <div class="share-head">
+                <span class="share-title">@Localization.DataCollectionWizardPage.InfoThroughputShare</span>
+                <span class="share-side">@CommonVocabulary.DevicePlural · @_deviceShares.Count</span>
+            </div>
+
+            <div class="bar">
+                @foreach (var share in _deviceShares.Where(s => s.Percent > 0))
+                {
+                    <span class="@HueClass(share.ColorIndex) @GrowClass(share.Percent)" title="@ShareTooltip(share)"></span>
+                }
+            </div>
+
+            <div class="legend">
+                @foreach (var share in _deviceShares)
+                {
+                    <div class="li mono">
+                        <span class="dot @HueClass(share.ColorIndex)"></span>
+                        <span class="nm" title="@share.Name">@share.Name</span>
+                        <span class="pct">@(share.Percent)%</span>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    @if (_onChangeCount > 0 || _eventCount > 0)
+    {
+        <div class="foot">
+            <div class="foot-label">@Localization.DataCollectionWizardPage.InfoNotProjectable</div>
+
+            @if (_onChangeCount > 0)
+            {
+                <div class="foot-row"><span><b>@_onChangeCount</b>&nbsp;@Localization.DataCollectionWizardPage.InfoOnChangeSuffix</span></div>
+            }
+
+            @if (_eventCount > 0)
+            {
+                <div class="foot-row"><span class="pi"><MonochromeIcon Name="MonochromeIconName.ErrorSolid" Size="MonochromeIconSize.Small" /></span> <span><b>@_eventCount</b>&nbsp;@Localization.DataCollectionWizardPage.InfoRawRecordingsSuffix</span></div>
+            }
+
+            <div class="foot-hint">@Localization.DataCollectionWizardPage.InfoNotProjectableHint</div>
+        </div>
+    }
+</div>

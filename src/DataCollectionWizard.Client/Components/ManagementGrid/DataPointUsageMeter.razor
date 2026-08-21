@@ -1,0 +1,11 @@
+@* Passive datapoint-usage meter. Rendered by the page as a fixed overlay under the title (not inside the toolbar),
+   so it never changes the toolbar row height or the grid position and the Live-View toolbar stays aligned with it. *@
+<div class="dp-usage-meter @StateClass">
+    <span class="dp-lbl">@Localization.DataCollectionWizardPage.DataPointUsage</span>
+    <span class="dp-count"><b>@Count</b> <span class="dp-lim">/ @Limit</span></span>
+    <span class="dp-track"><span class="dp-fill @FillClass"></span></span>
+    @if (Hint is not null)
+    {
+        <span class="dp-hint"><MonochromeIcon Name="MonochromeIconName.WarningSolid" Size="MonochromeIconSize.SmallMedium" /> @Hint</span>
+    }
+</div>

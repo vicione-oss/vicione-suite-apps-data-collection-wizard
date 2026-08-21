@@ -139,6 +139,7 @@ public sealed partial class CompressableCell : ComponentBase
         Config.CompressionTime = (int)poolingGrid;
         _shouldRender = true;
 
+        Service.InvokeConfigChanged();
         OnDeviceTreeChanged.InvokeAsync();
     }
 
@@ -147,6 +148,7 @@ public sealed partial class CompressableCell : ComponentBase
         Config.Aggregation = aggregationFunction;
         _shouldRender = true;
 
+        Service.InvokeConfigChanged();
         OnDeviceTreeChanged.InvokeAsync();
     }
 }

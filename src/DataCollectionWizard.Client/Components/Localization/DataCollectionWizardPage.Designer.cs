@@ -61,6 +61,15 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to · {0} active.
+        /// </summary>
+        internal static string ActiveDatapointCount {
+            get {
+                return ResourceManager.GetString("ActiveDatapointCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Add IO-Link Master.
         /// </summary>
         internal static string AddIoLinkMasterDialogHeader {
@@ -106,6 +115,42 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All clouds.
+        /// </summary>
+        internal static string AllClouds {
+            get {
+                return ResourceManager.GetString("AllClouds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Activate.
+        /// </summary>
+        internal static string BulkActivate {
+            get {
+                return ResourceManager.GetString("BulkActivate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deactivate.
+        /// </summary>
+        internal static string BulkDeactivate {
+            get {
+                return ResourceManager.GetString("BulkDeactivate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} selected.
+        /// </summary>
+        internal static string BulkSelectionCount {
+            get {
+                return ResourceManager.GetString("BulkSelectionCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Configuration has changed.
         /// </summary>
         internal static string ClusterOutOfDateDialogHeader {
@@ -115,7 +160,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Somebody else saved a configuration. Your changes may override changes made by them. If that does not matter to you, you may ignore this warning, otherwise, please close the Data Collection Wizard and open it again to continue working on the latest configuration..
+        ///   Looks up a localized string similar to Another participant saved a new configuration. Your changes may override changes made by them. If that does not matter to you, you may ignore this warning, otherwise, please close the Data Collection Wizard and open it again to continue working on the latest configuration..
         /// </summary>
         internal static string ClusterOutOfDateDialogText {
             get {
@@ -142,20 +187,29 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are approaching the recommended limit of enabled data points ({0} of {1})..
+        ///   Looks up a localized string similar to approaching the recommended limit.
         /// </summary>
-        internal static string DataPointLimitApproaching {
+        internal static string DataPointLimitApproachingHint {
             get {
-                return ResourceManager.GetString("DataPointLimitApproaching", resourceCulture);
+                return ResourceManager.GetString("DataPointLimitApproachingHint", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You reached the recommended limit of enabled data points ({0} of {1}). Further enabling data points may result in system instability..
+        ///   Looks up a localized string similar to recommended limit exceeded – may affect stability.
         /// </summary>
-        internal static string DataPointLimitReached {
+        internal static string DataPointLimitExceededHint {
             get {
-                return ResourceManager.GetString("DataPointLimitReached", resourceCulture);
+                return ResourceManager.GetString("DataPointLimitExceededHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Active data points.
+        /// </summary>
+        internal static string DataPointUsage {
+            get {
+                return ResourceManager.GetString("DataPointUsage", resourceCulture);
             }
         }
         
@@ -241,7 +295,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No devices were found on the network....
+        ///   Looks up a localized string similar to No further devices were found on the network....
         /// </summary>
         internal static string DeviceScanNoResult {
             get {
@@ -255,6 +309,15 @@ namespace DataCollectionWizard.Client.Components.Localization {
         internal static string DeviceScanRequiresAuthentication {
             get {
                 return ResourceManager.GetString("DeviceScanRequiresAuthentication", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Discard.
+        /// </summary>
+        internal static string Discard {
+            get {
+                return ResourceManager.GetString("Discard", resourceCulture);
             }
         }
         
@@ -286,11 +349,146 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Data volume.
+        /// </summary>
+        internal static string InfoDataVolume {
+            get {
+                return ResourceManager.GetString("InfoDataVolume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Day.
+        /// </summary>
+        internal static string InfoDay {
+            get {
+                return ResourceManager.GetString("InfoDay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hour.
+        /// </summary>
+        internal static string InfoHour {
+            get {
+                return ResourceManager.GetString("InfoHour", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Month.
+        /// </summary>
+        internal static string InfoMonth {
+            get {
+                return ResourceManager.GetString("InfoMonth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not projectable.
+        /// </summary>
+        internal static string InfoNotProjectable {
+            get {
+                return ResourceManager.GetString("InfoNotProjectable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Depend on the actual signal / event — not part of the projection..
+        /// </summary>
+        internal static string InfoNotProjectableHint {
+            get {
+                return ResourceManager.GetString("InfoNotProjectableHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to data points are only recorded on change.
+        /// </summary>
+        internal static string InfoOnChangeSuffix {
+            get {
+                return ResourceManager.GetString("InfoOnChangeSuffix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Projection.
+        /// </summary>
+        internal static string InfoProjection {
+            get {
+                return ResourceManager.GetString("InfoProjection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to raw-data recordings.
+        /// </summary>
+        internal static string InfoRawRecordingsSuffix {
+            get {
+                return ResourceManager.GetString("InfoRawRecordingsSuffix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Information.
+        /// </summary>
+        internal static string Information {
+            get {
+                return ResourceManager.GetString("Information", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Throughput.
+        /// </summary>
+        internal static string InfoThroughput {
+            get {
+                return ResourceManager.GetString("InfoThroughput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Throughput share.
+        /// </summary>
+        internal static string InfoThroughputShare {
+            get {
+                return ResourceManager.GetString("InfoThroughputShare", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to from pending changes.
+        /// </summary>
+        internal static string InfoUnsavedChangesSuffix {
+            get {
+                return ResourceManager.GetString("InfoUnsavedChangesSuffix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Week.
+        /// </summary>
+        internal static string InfoWeek {
+            get {
+                return ResourceManager.GetString("InfoWeek", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The provided address is not valid..
         /// </summary>
         internal static string InvalidDeviceAddress {
             get {
                 return ResourceManager.GetString("InvalidDeviceAddress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Credentials for the selected masters.
+        /// </summary>
+        internal static string IoLinkCredentialStepHint {
+            get {
+                return ResourceManager.GetString("IoLinkCredentialStepHint", resourceCulture);
             }
         }
         
@@ -302,70 +500,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
                 return ResourceManager.GetString("IoLinkMasterAddress", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Username.
-        /// </summary>
-        internal static string IoLinkMasterUsername {
-            get {
-                return ResourceManager.GetString("IoLinkMasterUsername", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Password.
-        /// </summary>
-        internal static string IoLinkMasterPassword {
-            get {
-                return ResourceManager.GetString("IoLinkMasterPassword", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Use the same credentials for all.
-        /// </summary>
-        internal static string IoLinkUseSameCredentialsForAll {
-            get {
-                return ResourceManager.GetString("IoLinkUseSameCredentialsForAll", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Only required for masters that use authentication.
-        /// </summary>
-        internal static string IoLinkMasterCredentialsHint {
-            get {
-                return ResourceManager.GetString("IoLinkMasterCredentialsHint", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Authentication.
-        /// </summary>
-        internal static string IoLinkMasterAuthentication {
-            get {
-                return ResourceManager.GetString("IoLinkMasterAuthentication", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Connection.
-        /// </summary>
-        internal static string IoLinkMasterConnection {
-            get {
-                return ResourceManager.GetString("IoLinkMasterConnection", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Network address of the IO-Link master.
-        /// </summary>
-        internal static string IoLinkMasterConnectionHint {
-            get {
-                return ResourceManager.GetString("IoLinkMasterConnectionHint", resourceCulture);
-            }
-        }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to e.g. 192.168.178.96.
         /// </summary>
@@ -374,85 +509,40 @@ namespace DataCollectionWizard.Client.Components.Localization {
                 return ResourceManager.GetString("IoLinkMasterAddressExample", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to Network address of the VSE device.
+        ///   Looks up a localized string similar to Authentication.
         /// </summary>
-        internal static string VseConnectionHint {
+        internal static string IoLinkMasterAuthentication {
             get {
-                return ResourceManager.GetString("VseConnectionHint", resourceCulture);
+                return ResourceManager.GetString("IoLinkMasterAuthentication", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to e.g. 192.168.178.100.
+        ///   Looks up a localized string similar to Connection.
         /// </summary>
-        internal static string VseAddressExample {
+        internal static string IoLinkMasterConnection {
             get {
-                return ResourceManager.GetString("VseAddressExample", resourceCulture);
+                return ResourceManager.GetString("IoLinkMasterConnection", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to Next.
+        ///   Looks up a localized string similar to Network address of the IO-Link master.
         /// </summary>
-        internal static string WizardNext {
+        internal static string IoLinkMasterConnectionHint {
             get {
-                return ResourceManager.GetString("WizardNext", resourceCulture);
+                return ResourceManager.GetString("IoLinkMasterConnectionHint", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to Credentials for the selected masters.
+        ///   Looks up a localized string similar to Only required for IO-Link Masters that use authentication.
         /// </summary>
-        internal static string IoLinkCredentialStepHint {
+        internal static string IoLinkMasterCredentialsHint {
             get {
-                return ResourceManager.GetString("IoLinkCredentialStepHint", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Saved.
-        /// </summary>
-        internal static string Saved {
-            get {
-                return ResourceManager.GetString("Saved", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Not saved.
-        /// </summary>
-        internal static string NotSaved {
-            get {
-                return ResourceManager.GetString("NotSaved", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Unsaved changes.
-        /// </summary>
-        internal static string UnsavedChangesTitle {
-            get {
-                return ResourceManager.GetString("UnsavedChangesTitle", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Save before leaving?.
-        /// </summary>
-        internal static string UnsavedChangesPrompt {
-            get {
-                return ResourceManager.GetString("UnsavedChangesPrompt", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Discard.
-        /// </summary>
-        internal static string Discard {
-            get {
-                return ResourceManager.GetString("Discard", resourceCulture);
+                return ResourceManager.GetString("IoLinkMasterCredentialsHint", resourceCulture);
             }
         }
         
@@ -462,6 +552,33 @@ namespace DataCollectionWizard.Client.Components.Localization {
         internal static string IoLinkMasterName {
             get {
                 return ResourceManager.GetString("IoLinkMasterName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password.
+        /// </summary>
+        internal static string IoLinkMasterPassword {
+            get {
+                return ResourceManager.GetString("IoLinkMasterPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Username.
+        /// </summary>
+        internal static string IoLinkMasterUsername {
+            get {
+                return ResourceManager.GetString("IoLinkMasterUsername", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use the same credentials for all.
+        /// </summary>
+        internal static string IoLinkUseSameCredentialsForAll {
+            get {
+                return ResourceManager.GetString("IoLinkUseSameCredentialsForAll", resourceCulture);
             }
         }
         
@@ -489,6 +606,15 @@ namespace DataCollectionWizard.Client.Components.Localization {
         internal static string MoneoDeactivatedTooltip {
             get {
                 return ResourceManager.GetString("MoneoDeactivatedTooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not saved.
+        /// </summary>
+        internal static string NotSaved {
+            get {
+                return ResourceManager.GetString("NotSaved", resourceCulture);
             }
         }
         
@@ -543,6 +669,15 @@ namespace DataCollectionWizard.Client.Components.Localization {
         internal static string Rescan {
             get {
                 return ResourceManager.GetString("Rescan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Saved.
+        /// </summary>
+        internal static string Saved {
+            get {
+                return ResourceManager.GetString("Saved", resourceCulture);
             }
         }
         
@@ -709,6 +844,24 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Save the changes before leaving?.
+        /// </summary>
+        internal static string UnsavedChangesPrompt {
+            get {
+                return ResourceManager.GetString("UnsavedChangesPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unsaved changes.
+        /// </summary>
+        internal static string UnsavedChangesTitle {
+            get {
+                return ResourceManager.GetString("UnsavedChangesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to VSE address.
         /// </summary>
         internal static string VseAddress {
@@ -718,11 +871,38 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to e.g. 192.168.178.100.
+        /// </summary>
+        internal static string VseAddressExample {
+            get {
+                return ResourceManager.GetString("VseAddressExample", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Network address of the VSE device.
+        /// </summary>
+        internal static string VseConnectionHint {
+            get {
+                return ResourceManager.GetString("VseConnectionHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to VSE.
         /// </summary>
         internal static string VseName {
             get {
                 return ResourceManager.GetString("VseName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Next.
+        /// </summary>
+        internal static string WizardNext {
+            get {
+                return ResourceManager.GetString("WizardNext", resourceCulture);
             }
         }
     }

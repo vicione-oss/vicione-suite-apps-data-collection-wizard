@@ -23,6 +23,9 @@
 
 .header-template {
     >div {
+        // Top/bottom divider lines bracket only the (bottom-aligned) label row; the cloud-name row sits above them,
+        // outside the box. Bottom-aligning the columns in .grid-header is what keeps these rules continuous across
+        // columns - without it the taller cloud columns pushed their rule down and tore the line.
         border-top: 1px solid col.$content-hover;
         border-bottom: 1px solid col.$content-hover;
         padding: 16px 0px 16px var(--width-padding);
@@ -47,6 +50,14 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    // Subtle "x active" summary shown next to each cloud's name in the header.
+    .active-count {
+        margin-left: 6px;
+        font-size: 12px;
+        font-weight: normal;
+        opacity: 0.55;
     }
 }
 
@@ -91,13 +102,18 @@
     top: 0;
     z-index: 15;
 
+    // Bottom-align every column's header content so all the labels share one baseline just above the bottom rule
+    // (the cloud-name columns are two rows tall; the others are one).
     >div {
-        align-content: end;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
     }
 
     >.device-name {
         background-color: col.$background;
-        left: 0;
+        // Offset by the width of the sticky select column so both stay frozen without overlapping.
+        left: 34px;
         max-width: 320px;
         min-width: 160px;
         position: sticky;
@@ -119,7 +135,8 @@
     >.device-name {
         align-items: center;
         display: flex;
-        left: 0;
+        // Offset by the width of the sticky select column (see header device-name).
+        left: 34px;
         max-width: 320px;
         min-width: 160px;
         position: sticky;
@@ -164,5 +181,227 @@
         ::deep .device-identifier-cell .caption.sensors span:nth-of-type(even) {
             background-color: color.adjust(col.$background, $lightness: 2%);
         }
+    }
+
+    // Orange tint for rows ticked via the multi-select checkboxes. A solid mix (not an alpha overlay) so the tint
+    // looks identical on the alternating even/odd row backgrounds. Wins over row-even/row-odd by coming later at
+    // equal specificity.
+    &.selected>div {
+        background-color: color.mix(col.$accent, col.$background, 10%);
+    }
+}
+
+// ─── Multi-select ──────────────────────────────────────────────────────────
+
+// Custom tick box used for row / group / select-all selection - matches the scan dialog's checkbox (an orange
+// checkmark that scales in).
+.grid-select {
+    appearance: none;
+    display: grid;
+    place-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    border: 1px solid col.$border;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+
+    &::before {
+        content: "";
+        width: 9px;
+        height: 9px;
+        background-color: col.$accent;
+        clip-path: polygon(0 50%, 35% 86%, 100% 21%, 85% 6%, 35% 60%, 13% 38%);
+        transform: scale(0);
+        transition: 40ms transform ease-in;
+    }
+
+    &:checked::before {
+        transform: scale(1);
+    }
+}
+
+// Left-most frozen selection column. The header cell reuses the two-row .header-template so the select-all box and
+// the divider line sit exactly like the other column headers; the row cell aligns its box to the first text line
+// (not the vertical centre) so tall rows (e.g. raw-data sensors) keep the box next to the name.
+.grid-header>.row-select-col {
+    background-color: col.$background;
+    position: sticky;
+    left: 0;
+    z-index: 21;
+}
+
+.grid-header>.row-select-col .select-all-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    // Drop the header-template's left text-indent so the box centres in the full 34px column, lining up with the
+    // row checkboxes.
+    padding-left: 0;
+    // The 16px checkbox is 2px taller than the 14px text line, so trim 1px top/bottom to keep this cell the same
+    // height as the text columns - otherwise its top divider line sits 2px higher and jogs the rule.
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.grid-row>.row-select-col {
+    display: grid;
+    // Centre the box in the cell so it lines up with the vertically-centred data-point name.
+    place-items: center;
+    padding: 0;
+    position: sticky;
+    left: 0;
+    z-index: 11;
+}
+
+// Full-width "container" header row woven between the data rows - a lighter shade so it reads as a section.
+.grid-group-row {
+    // Span every column so the lighter band + borders fill the whole row. The generic `.grid-body>div:not(.grid-row)`
+    // rule did not reliably reach this row, so only the max-content `.grid-group-header` showed as a floating box.
+    grid-column: 1 / -1;
+    background-color: color.adjust(col.$background, $lightness: 5%);
+    border-top: 1px solid col.$content-hover;
+    border-bottom: 1px solid col.$content-hover;
+}
+
+.grid-group-header {
+    position: sticky;
+    left: 0;
+    width: max-content;
+    display: inline-flex;
+    align-items: center;
+    // Match a data (process-value) row's height so the fixed-height virtualization (ItemSize=48) does not drift and
+    // the scroll position stays stable - the group row was ~34px, noticeably shorter than a 48px data row. 46px here
+    // plus the .grid-group-row's 1px top/bottom border = 48px.
+    box-sizing: border-box;
+    min-height: 46px;
+    padding: 0;
+    background-color: color.adjust(col.$background, $lightness: 5%);
+    cursor: pointer;
+    font-size: 12.5px;
+    color: col.$font;
+    z-index: 5;
+
+    // Centre the group checkbox within the 34px frozen select column (9 + 16 + 9) so it lines up with the header and
+    // row checkboxes.
+    .grid-select {
+        margin: 0 9px;
+    }
+
+    // Start the breadcrumb under the "Pfad" column header (34px select column + the path column's left padding), and
+    // use the same font as the column headers instead of the monospace face.
+    .grid-group-label {
+        margin-left: var(--width-padding);
+    }
+
+    .grid-group-count {
+        margin-left: 6px;
+        opacity: 0.55;
+    }
+}
+
+// ─── Bulk action bar ───────────────────────────────────────────────────────
+.bulk-bar {
+    position: fixed;
+    left: 50%;
+    bottom: 26px;
+    // Hidden resting state: faded out and nudged down, non-interactive. The .show class fades/slides it in.
+    transform: translateX(-50%) translateY(12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: col.$content-dark;
+    border: 1px solid col.$content-hover;
+    border-radius: 8px;
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
+    color: col.$font;
+    z-index: 50;
+
+    &.show {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    // Drag grip: lets the user move the bar out of the way (see makeDraggable in the JS module).
+    .bulk-grip {
+        cursor: move;
+        color: col.$font-dark;
+        font-size: 14px;
+        line-height: 1;
+        padding: 0 2px;
+        touch-action: none;
+        user-select: none;
+    }
+
+    .bulk-count {
+        padding: 0 4px;
+        font-weight: 500;
+        color: col.$accent;
+        white-space: nowrap;
+    }
+
+    .bulk-lbl {
+        font-size: 12.5px;
+        color: col.$font-dark;
+    }
+
+    .bulk-sep {
+        width: 1px;
+        height: 22px;
+        background: col.$content-hover;
+    }
+
+    .bulk-target {
+        height: 30px;
+        padding: 0 8px;
+        background: col.$content-dark;
+        border: 1px solid col.$content-hover;
+        border-radius: 4px;
+        color: col.$font;
+        // Cap the width so a long cloud name doesn't blow up the floating bar; the closed value truncates with an
+        // ellipsis while the open native popup still shows the full name. (ellipsis on a <select> needs
+        // overflow:hidden + white-space:nowrap to take effect.)
+        max-width: 170px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .bulk-btn {
+        height: 30px;
+        padding: 0 14px;
+        border-radius: 4px;
+        border: 1px solid transparent;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+
+        &.accent {
+            background: col.$accent;
+            border-color: col.$accent;
+            color: #1c1200;
+        }
+
+        &.ghost {
+            background: transparent;
+            border-color: col.$content-hover;
+            color: col.$font;
+        }
+    }
+
+    .bulk-x {
+        padding: 0 4px;
+        background: none;
+        border: none;
+        color: col.$font-dark;
+        font-size: 15px;
+        cursor: pointer;
     }
 }

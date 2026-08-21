@@ -40,11 +40,17 @@
             </Left>
 
             <Top>
-                <DataCollectionWizardToolbar SaveReasons="@_saveReasons"/>
+                <DataCollectionWizardToolbar SaveReasons="@_saveReasons" />
+
+                @if (_currentlyEnabledDataPoints > 0 && _service.PublishTargets.Count > 0)
+                {
+                    <DataPointUsageMeter Count="@_currentlyEnabledDataPoints" Limit="@MaxRecommendedDataPoints" />
+                }
             </Top>
             @* TODO: "Center" is obsolete *@
             <Center>
                 <DataCollectionWizardGrid AllNodes="@(_allNodes)"
+                                          OnBulkEnable="@(OnBulkEnableSelection)"
                                           OnDeviceTreeChanged="@(OnDeviceTreeChanged)"
                                           PublishTargetInfos="@(_publishTargetInfos)"
                                           RawDataPullingMaxTimesADay="@_rawDataPullingMaxTimesADay" />
