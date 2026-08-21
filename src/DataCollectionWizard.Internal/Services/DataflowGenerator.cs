@@ -434,6 +434,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         clusterBuilder.Editors.FunctionBlockDesign.AddFunctionBlockDesign(FunctionBlocks.Scheduler.DesignId);
         clusterBuilder.AddDataPortDesign(FunctionBlocks.MqttDataPort.DesignId);
         clusterBuilder.AddDataPortDesign(FunctionBlocks.AnnaDataPort.DesignId);
+        clusterBuilder.AddDataPortDesign(FunctionBlocks.OpcUaDataPort.DesignId);
         clusterBuilder.Editors.FunctionBlockDesign.AddFunctionBlockDesign(s_designIdSystemDataPort);
     }
 

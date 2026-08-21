@@ -6,4 +6,5 @@ public enum ConnectionKind
     Anna,
     Moneo,
     Mqtt,
+    OpcUa,
 }

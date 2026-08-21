@@ -23,6 +23,7 @@ public static class FunctionBlocks
     public static IoLinkStringSubscriber IoLinkStringSubscriber { get; } = new();
     public static LongToDouble LongToDouble { get; } = new();
     public static MqttDataPort MqttDataPort { get; } = new();
+    public static OpcUaDataPort OpcUaDataPort { get; } = new();
     public static RpmAtMinMaxTracker RpmAtMinMaxTracker { get; } = new();
     public static Scheduler Scheduler { get; } = new();
     public static VseAlarmSubscriber VseAlarmSubscriber { get; } = new();
