@@ -104,7 +104,49 @@ namespace DataCollectionWizard.Client.Components.Localization {
                 return ResourceManager.GetString("InfoPropertyAlias", resourceCulture);
             }
         }
-        
+
+        internal static string InfoPropertyAddress {
+            get {
+                return ResourceManager.GetString("InfoPropertyAddress", resourceCulture);
+            }
+        }
+
+        internal static string GroupNetwork {
+            get {
+                return ResourceManager.GetString("GroupNetwork", resourceCulture);
+            }
+        }
+
+        internal static string GroupHardware {
+            get {
+                return ResourceManager.GetString("GroupHardware", resourceCulture);
+            }
+        }
+
+        internal static string GroupIdentity {
+            get {
+                return ResourceManager.GetString("GroupIdentity", resourceCulture);
+            }
+        }
+
+        internal static string GroupData {
+            get {
+                return ResourceManager.GetString("GroupData", resourceCulture);
+            }
+        }
+
+        internal static string GroupSensor {
+            get {
+                return ResourceManager.GetString("GroupSensor", resourceCulture);
+            }
+        }
+
+        internal static string NoFurtherInformation {
+            get {
+                return ResourceManager.GetString("NoFurtherInformation", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to App specific tag.
         /// </summary>

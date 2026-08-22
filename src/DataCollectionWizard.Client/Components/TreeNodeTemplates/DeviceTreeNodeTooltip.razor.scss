@@ -1,136 +1,270 @@
-﻿@use "./../../Styles/colours" as col;
+@use "./../../Styles/colours" as col;
 
-.device-image {
-    grid-area: image;
+.tt {
+    // Grows to fit content but never wider than max-width; long names/values wrap instead of widening the tooltip.
+    width: max-content;
+    min-width: 220px;
+    max-width: 340px;
+    background: col.$content-dark;
+    border: 1px solid col.$border;
+    // Status hairline as a thicker top border. (An ::before bar + overflow:hidden put the tooltip on its own
+    // compositing layer, which made the text render lighter/blurrier than the rest of the app.)
+    border-top: 3px solid col.$border;
+    border-radius: 12px;
+    box-shadow: 0 20px 46px rgba(0, 0, 0, 0.5);
+    font-size: 13px;
+    color: col.$font;
+    // The shared .tooltip-container host sets letter-spacing:.2px and line-height:1.2 for its own small 11px text.
+    // Inherited here, the fractional spacing pushes every glyph onto a sub-pixel position, which is what made the
+    // text look smeared - visible on exactly those rows that don't set a spacing of their own (the section labels
+    // do, which is why they looked fine while the field rows didn't). Reset both to our own values.
+    letter-spacing: normal;
+    line-height: 1.45;
 
-    > img {
-        border-radius: 8px;
-        height: 150px;
-        width: 150px;
+    &.st-off {
+        border-top-color: col.$error;
+    }
+
+    &.st-warn {
+        border-top-color: col.$warning;
+    }
+
+    &.st-new {
+        border-top-color: col.$add;
     }
 }
 
-.device-info {
-    display: grid;
-    grid-area: info;
-    grid-column-gap: 8px;
-    grid-row-gap: 2px;
-    grid-template-columns: repeat(2, max-content);
+.tt-top {
+    padding: 12px 14px 10px;
+}
 
-    &:not(.no-info) {
-        grid-auto-rows: min-content;
+.tt-nameline {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tt-name {
+    font-size: 15px;
+    font-weight: 400;
+    color: col.$font;
+    overflow-wrap: anywhere;
+}
+
+// Same lock + "Auth" pill as the device scan list (.device-auth-lock / .device-auth-badge), so a master that wants
+// credentials is marked identically wherever it shows up.
+.tt-auth-lock {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    color: col.$font-dark;
+}
+
+.tt-auth-badge {
+    margin-left: auto;
+    flex-shrink: 0;
+    padding: 3px 9px;
+    border: 1px solid col.$border;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: col.$font-dark;
+    white-space: nowrap;
+}
+
+.tt-sub {
+    margin-top: 3px;
+    font-size: 12.5px;
+    color: col.$font-dark;
+    overflow-wrap: anywhere;
+}
+
+// Hero: the image on the left with its companion key/value fields beside it.
+.tt-hero {
+    display: flex;
+    gap: 13px;
+    align-items: flex-start;
+    padding: 2px 14px 12px;
+}
+
+.tt-img {
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    width: 92px;
+    height: 92px;
+    border-radius: 10px;
+    // Thin dark frame rather than an inset: the image now runs to the edge, so the frame is what separates it from
+    // the tooltip surface. Darker than the tooltip background so it reads as a line against both it and the backing.
+    border: 1px solid col.$background;
+    // Light backing so transparent IODD sensor images stay visible on the dark tooltip.
+    background: #f2f2f2;
+    // Paint the backing inside the border only, so the dark line stays crisp.
+    background-clip: padding-box;
+    // The image is clipped by this radius, not rounded itself - one antialiased edge for image and backing alike, so
+    // the backing can't show through the corners of an opaque image.
+    overflow: hidden;
+
+    > img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+}
+
+.tt-ids {
+    flex: 1;
+    min-width: 0;
+    // Top-aligned with the image (the hero sets align-items:flex-start); not vertically centred, which looked off
+    // with only one or two fields.
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tt-body {
+    padding: 0 14px 4px;
+}
+
+// A stacked label-over-value pair. The label is styled like a section heading ("Description" et al.).
+.kvs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.kv {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    .k {
+        font-size: 10px;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: col.$font-disabled;
     }
 
-    > div.separator {
-        grid-column: 1 / -1;
-        height: 1px;
-        margin: 2px 4px;
-    }
-
-    > label {
-        text-align: right;
-    }
-
-    > span {
-        max-width: 400px;
-        min-width: 100px;
+    .v {
+        color: col.$font;
         overflow-wrap: anywhere;
     }
 }
 
-.device-status {
-    grid-area: status;
+// A section: an uppercase label with a trailing hairline, then rows / a description / a path.
+.grp {
+    padding: 9px 0;
+}
 
-    > .status {
-        display: grid;
-        grid-column-gap: 4px;
-        grid-template-columns: min-content auto;
-        white-space: nowrap;
+// Section label: small uppercase heading with a trailing hairline.
+.grp-lbl {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 8px;
+    font-size: 10px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: col.$font-disabled;
 
-        &.error {
-            > .status-dot {
-                background-color: col.$error;
-            }
-        }
-
-        &.info{
-            > .status-dot {
-                background-color: col.$add;
-            }
-        }
-
-        &.warning {
-            > .status-dot {
-                background-color: col.$warning;
-            }
-        }
-
-        &.inherited {
-            opacity: 1.0;
-        }
-
-        > .status-dot {
-            background-color: rebeccapurple;
-            border-radius: 8px;
-            height: 8px;
-            place-self: center;
-            width: 8px;
-        }
+    &::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: col.$border;
     }
 }
 
-.tooltip-container {
-    background-color: col.$content;
-    border: 1px solid col.$border;
-    border-radius: 8px;
+.rows {
     display: grid;
-    grid-column-gap: 8px;
-    grid-row-gap: 8px;
-    grid-template-areas:
-        "header header"
-        "image  info"
-        "image  status";
-    grid-template-rows: min-content 1fr min-content;
-    padding: 8px;
+    grid-template-columns: auto 1fr;
+    gap: 5px 14px;
+    margin: 0;
 
-    &.no-image {
-        grid-template-areas:
-            "header"
-            "info"
-            "status";
+    dt {
+        // Reboot bolds dt, and the app's body weight is light, so an unstyled dt reads as emphasised next to its value.
+        font-weight: inherit;
+        color: col.$font-dark;
+        white-space: nowrap;
+    }
 
-        &.no-info {
-            grid-template-areas:
-                "header"
-                "status";
-            grid-template-rows: repeat(2, min-content);
-
-            &.no-status {
-                grid-template-areas:
-                    "header";
-                grid-template-rows: min-content;
-
-                .tooltip-header {
-                    border: none;
-                    padding: 0px;
-                }
-            }
-        }
-
-        &.no-status {
-            grid-template-areas:
-                "header"
-                "info";
-            grid-template-rows: repeat(2, min-content);
-        }
+    dd {
+        margin: 0;
+        text-align: right;
+        overflow-wrap: anywhere;
     }
 }
 
-.tooltip-header {
-    border-bottom: 1px solid col.$border;
-    font-weight: bold;
-    grid-area: header;
-    padding-bottom: 8px;
-    text-align: center;
-    white-space: nowrap;
+.tt-desc {
+    line-height: 1.5;
+}
+
+.tt-path {
+    color: col.$font;
+    overflow-wrap: anywhere;
+    line-height: 1.4;
+}
+
+.tt-empty {
+    padding: 9px 0;
+    font-size: 12.5px;
+    font-style: italic;
+    color: col.$font-disabled;
+}
+
+// Status footer, always separated from the content above by a divider.
+.tt-flags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 11px 14px 13px;
+    border-top: 1px solid col.$border;
+
+    .flag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        padding: 4px 9px;
+        border-radius: 7px;
+        border: 1px solid transparent;
+
+        .d {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        &.err {
+            color: #f4a89c;
+            background: rgba(227, 75, 53, 0.12);
+            border-color: rgba(227, 75, 53, 0.3);
+
+            .d {
+                background: col.$error;
+            }
+        }
+
+        &.warn {
+            color: #ffe08a;
+            background: rgba(255, 206, 0, 0.10);
+            border-color: rgba(255, 206, 0, 0.28);
+
+            .d {
+                background: col.$warning;
+            }
+        }
+
+        &.new {
+            color: #7ed3ab;
+            background: rgba(43, 140, 104, 0.12);
+            border-color: rgba(43, 140, 104, 0.3);
+
+            .d {
+                background: col.$add;
+            }
+        }
+    }
 }

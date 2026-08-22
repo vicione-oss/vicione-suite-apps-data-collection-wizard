@@ -1,114 +1,120 @@
-﻿@using DataCollectionWizard.Client.Components.Localization
-@using DataCollectionWizard.Client.Models
+@using DataCollectionWizard.Client.Components.Localization
 
 @{
-    var deviceInfo = GetDeviceInfo();
-    var hasInfo = deviceInfo.Count > 0;
-
+    var sections = BuildSections();
+    var statusFlags = GetStatusFlags();
     var hasImage = !string.IsNullOrWhiteSpace(_deviceImageDataBase64);
-    var nodeStatus = Device.GetStatus(IsLiveView);
-    var inheritedStatus = (NodeStatus)InheritedStatus & ~nodeStatus;
-    var hasInheritedStatus = inheritedStatus != NodeStatus.None;
+    var subtitle = Subtitle;
+
+    // When there is an image, its companion fields (the first key/value section) sit next to it in a hero row; the
+    // remaining sections run full width below. Without an image everything is a single full-width column.
+    var heroSection = hasImage ? sections.FirstOrDefault(section => section.Kind == TooltipSectionKind.KeyValues) : null;
+    var bodySections = heroSection is null ? sections : sections.Where(section => section != heroSection).ToList();
+
+    var isEmpty = sections.Count == 0 && !hasImage && statusFlags.Count == 0;
+
+    RenderFragment<TooltipSection> renderSection = section =>
+        @<div class="grp">
+            @if (!string.IsNullOrEmpty(section.Label))
+            {
+                <div class="grp-lbl">@section.Label</div>
+            }
+
+            @switch (section.Kind)
+            {
+                case TooltipSectionKind.Description:
+                    <div class="tt-desc">@section.Text</div>
+                    break;
+
+                case TooltipSectionKind.Path:
+                    <div class="tt-path">@section.Text</div>
+                    break;
+
+                case TooltipSectionKind.KeyValues:
+                    <div class="kvs">
+                        @foreach (var row in section.Rows)
+                        {
+                            <div class="kv">
+                                <span class="k">@row.Label</span>
+                                <span class="v">@row.Value</span>
+                            </div>
+                        }
+                    </div>
+                    break;
+
+                default:
+                    <dl class="rows">
+                        @foreach (var row in section.Rows)
+                        {
+                            <dt>@row.Label</dt>
+                            <dd>@row.Value</dd>
+                        }
+                    </dl>
+                    break;
+            }
+        </div>;
 }
 
-<div class="tooltip-container @(hasImage ? string.Empty : "no-image") @(hasInfo ? string.Empty : "no-info") @(nodeStatus == NodeStatus.None && !hasInheritedStatus ? "no-status" : string.Empty)">
-    <div class="tooltip-header">
-        @(Device.Name)
-    </div>
-
-    @if (hasInfo)
-    {
-        <div class="device-info">
-            @foreach (var info in deviceInfo)
+<div class="tt @TopStateClass">
+    <div class="tt-top">
+        <div class="tt-nameline">
+            <span class="tt-name">@Device.Name</span>
+            @if (RequiresAuthentication)
             {
-                if (info.Key == DeviceInfoSeparatorKey)
-                {
-                    <div class="separator"></div>
-                }
-                else
-                {
-                    <label>@(info.Key)</label>
-                    <span>@(info.Value)</span>
-                }
+                <span class="tt-auth-lock">
+                    <MonochromeIcon Name="@MonochromeIconName.LockActive" Size="@MonochromeIconSize.Small" />
+                </span>
+                <span class="tt-auth-badge">Auth</span>
             }
         </div>
-    }
+        @if (!string.IsNullOrWhiteSpace(subtitle))
+        {
+            <div class="tt-sub">@subtitle</div>
+        }
+    </div>
 
     @if (hasImage)
     {
-        <div class="device-image">
-            <img src="data:image/jpeg;base64,@(_deviceImageDataBase64)" />
+        <div class="tt-hero">
+            <div class="tt-img">
+                <img src="data:image/jpeg;base64,@(_deviceImageDataBase64)" alt="" />
+            </div>
+            @if (heroSection is not null)
+            {
+                <div class="tt-ids">
+                    @foreach (var row in heroSection.Rows)
+                    {
+                        <div class="kv">
+                            <span class="k">@row.Label</span>
+                            <span class="v">@row.Value</span>
+                        </div>
+                    }
+                </div>
+            }
         </div>
     }
 
-    @if (nodeStatus != NodeStatus.None || hasInheritedStatus)
+    @if (bodySections.Count > 0 || isEmpty)
     {
-        <div class="device-status">
-            @if (nodeStatus.HasFlag(NodeStatus.Offline))
+        <div class="tt-body">
+            @if (isEmpty)
             {
-                <div class="status error">
-                    <div class="status-dot"></div>
-                    <span>@(DeviceTreeTooltip.DeviceStatusOffline)</span>
-                </div>
+                <div class="tt-empty">@DeviceTreeTooltip.NoFurtherInformation</div>
             }
 
-            @if (nodeStatus.HasFlag(NodeStatus.NotSupported))
+            @foreach (var section in bodySections)
             {
-                <div class="status warning">
-                    <div class="status-dot"></div>
-                    <span>@(DeviceTreeTooltip.DeviceStatusNotSupported)</span>
-                </div>
+                @renderSection(section)
             }
+        </div>
+    }
 
-            @if (nodeStatus.HasFlag(NodeStatus.Unknown))
+    @if (statusFlags.Count > 0)
+    {
+        <div class="tt-flags">
+            @foreach (var (text, severity) in statusFlags)
             {
-                <div class="status warning">
-                    <div class="status-dot"></div>
-                    <span>@(DeviceTreeTooltip.DeviceStatusUnknown)</span>
-                </div>
-            }
-
-            @if (nodeStatus.HasFlag(NodeStatus.New))
-            {
-                <div class="status info">
-                    <div class="status-dot"></div>
-                    <span>@(DeviceTreeTooltip.DeviceStatusNewlyCreated)</span>
-                </div>
-            }
-
-            @if (hasInheritedStatus)
-            {
-                @if (inheritedStatus.HasFlag(NodeStatus.Offline))
-                {
-                    <div class="status error inherited">
-                        <div class="status-dot"></div>
-                        <span>@(DeviceTreeTooltip.InheritedStatusOffline)</span>
-                    </div>
-                }
-
-                @if (inheritedStatus.HasFlag(NodeStatus.NotSupported))
-                {
-                    <div class="status warning inherited">
-                        <div class="status-dot"></div>
-                        <span>@(DeviceTreeTooltip.InheritedStatusNotSupported)</span>
-                    </div>
-                }
-
-                @if (inheritedStatus.HasFlag(NodeStatus.Unknown))
-                {
-                    <div class="status warning inherited">
-                        <div class="status-dot"></div>
-                        <span>@(DeviceTreeTooltip.InheritedStatusUnknown)</span>
-                    </div>
-                }
-
-                @if (inheritedStatus.HasFlag(NodeStatus.New))
-                {
-                    <div class="status info inherited">
-                        <div class="status-dot"></div>
-                        <span>@(DeviceTreeTooltip.InheritedStatusNewlyCreated)</span>
-                    </div>
-                }
+                <span class="flag @severity"><span class="d"></span>@text</span>
             }
         </div>
     }

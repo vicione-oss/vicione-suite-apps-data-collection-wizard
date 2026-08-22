@@ -172,7 +172,28 @@
     <value>Manufacturer ID</value>
   </data>
   <data name="InfoPropertyAlias" xml:space="preserve">
-    <value>Alias</value>
+    <value>Name</value>
+  </data>
+  <data name="InfoPropertyAddress" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="GroupNetwork" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="GroupHardware" xml:space="preserve">
+    <value>Hardware</value>
+  </data>
+  <data name="GroupIdentity" xml:space="preserve">
+    <value>Identity</value>
+  </data>
+  <data name="GroupData" xml:space="preserve">
+    <value>Data</value>
+  </data>
+  <data name="GroupSensor" xml:space="preserve">
+    <value>Sensor</value>
+  </data>
+  <data name="NoFurtherInformation" xml:space="preserve">
+    <value>No further information</value>
   </data>
   <data name="InfoPropertyPath" xml:space="preserve">
     <value>Path</value>
