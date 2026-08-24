@@ -27,26 +27,6 @@
             </div>
         </div>
 
-        @if (Service.PathVisible)
-        {
-            <div class="device-path">
-                <div class="header-template">
-                    <span></span>
-                    <div>
-                        <span>@CommonVocabulary.Path</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="spacer">
-                <!-- spacer column -->
-                <div class="header-template">
-                    <span></span>
-                    <div>&nbsp;</div>
-                </div>
-            </div>
-        }
-
         <div class="device-name">
             <div class="header-template">
                 <span></span>
@@ -103,7 +83,7 @@
     @* --- BODY (virtualized) --- *@
     <div class="grid-body">
         <Virtualize @ref="_virtualizeRef"
-                    TItem="IndexedItem<GridDisplayRow>"
+                    TItem="IndexedItem<GroupedRow<ManagementGridRowModel>>"
                     Items="@_indexedItems"
                     Context="entry"
                     ItemSize="48"
@@ -131,7 +111,7 @@
             {
                 var item = row.Item!;
 
-                <div class="grid-row @(row.IsEvenDataRow ? "row-even" : "row-odd") @(Service.IsNodeSelected(item.DataNode) ? "selected" : string.Empty)" @key="(row.IsHeader, entry.Index, _rowRenderEpoch)">
+                <div class="grid-row @(row.IsEvenDataRow ? "row-even" : "row-odd") @(Service.IsNodeSelected(item.DataNode) ? "selected" : string.Empty) @(item.DataNode.HasCaptions() ? "captioned" : string.Empty)" @key="(row.IsHeader, entry.Index, _rowRenderEpoch)">
 
                 <div class="row-select-col">
                     <input type="checkbox"
@@ -140,23 +120,12 @@
                            @onchange="@(e => Service.SetNodeSelected(item.DataNode, (bool)e.Value!))" />
                 </div>
 
-                @if (Service.PathVisible)
-                {
-                    <div class="device-path"
-                         title="@(row.IsGrouped ? row.GroupRelativePath : item.Breadcrumb)">
-
-                        <div class="device-path-container">
-                            <span>@(row.IsGrouped ? row.GroupRelativePath : item.Breadcrumb)</span>
-                        </div>
-                    </div>
-
-                    <div class="spacer">
-                        <!-- spacer column -->
-                    </div>
-                }
-
                 <div class="device-name">
+                    @* Where the value sits, in the row itself. A grouped row only needs the part below its
+                       header - which is empty when the header already names its parent, so nothing is shown
+                       there. An ungrouped row carries its full path. *@
                     <DeviceIdentifierCell AllNodes="@AllNodes"
+                                          Context="@(row.IsGrouped ? row.GroupRelativePath : item.Breadcrumb)"
                                           ExpandedChanged="@(RefreshAsync)"
                                           Model="item"
                                           PublishTargetInfos="@PublishTargetInfos" />

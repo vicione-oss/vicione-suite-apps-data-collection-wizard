@@ -138,9 +138,6 @@
   <data name="LiveView" xml:space="preserve">
     <value>Live Prozessdatenansicht</value>
   </data>
-  <data name="PathVisible" xml:space="preserve">
-    <value>Pfad anzeigen</value>
-  </data>
   <data name="ProcessValue" xml:space="preserve">
     <value>Prozesswert</value>
   </data>

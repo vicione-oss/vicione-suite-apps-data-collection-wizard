@@ -15,15 +15,6 @@
     <div class="toolbar">
         <span class="separator"></span>
 
-        <button @onclick="@(OnTogglePathVisible)"
-                class="@(Service.PathVisible ? "active" : string.Empty)"
-                title="@Localization.LiveViewPage.PathVisible">
-
-            <MonochromeIcon Name="@MonochromeIconName.PathDetailsShow" Size="@MonochromeIconSize.SmallMedium" />
-        </button>
-
-        <span class="separator"></span>
-
         <button @onclick="@OnRefresh"
                 title="@Localization.LiveViewPage.Rescan">
 

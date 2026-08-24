@@ -16,7 +16,6 @@ internal sealed class LiveGridService : IDisposable
     public IEnumerable<LiveGridRowModel> FilteredGridItems => _filteredGridItems;
     public IEnumerable<LiveGridRowModel> GridItems => _gridItems;
 
-    public bool PathVisible { get; set; } = true;
     public string ToolbarSearchText
     {
         get => _toolbarSearchText;

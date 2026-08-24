@@ -11,4 +11,11 @@
             @(Model.DataNode.Name)
         </span>
     </div>
+
+    @* Where this value sits. This grid has no grouping, so every row carries its own path - without it, values
+       of the same name (a VSE alarm's "Value", say) cannot be told apart. *@
+    @if (!string.IsNullOrWhiteSpace(Context))
+    {
+        <div class="device-context" title="@Context">@Context</div>
+    }
 </div>

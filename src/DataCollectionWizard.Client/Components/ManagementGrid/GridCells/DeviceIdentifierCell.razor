@@ -16,6 +16,13 @@
         </span>
     </div>
 
+    @* Where this value sits, for rows the path column is not telling. Without it two values of the same name -
+       "OUT1" on two ports, say - are indistinguishable once the path column is hidden. *@
+    @if (!string.IsNullOrWhiteSpace(Context))
+    {
+        <div class="device-context" title="@Context">@Context</div>
+    }
+
     @if (PublishTargetInfos.Count > 0 && Model.DataNode.HasCaptions())
     {
         <div class="captions"

@@ -1,141 +1,112 @@
-﻿@using DataCollectionWizard.Client.Components.LiveGrid.GridCells
-@using DataCollectionWizard.Client.Extensions
+@using DataCollectionWizard.Client.Components.LiveGrid.GridCells
+@using DataCollectionWizard.Client.Components.LiveGrid.Models
+@using DataCollectionWizard.Client.Models
+@using Microsoft.AspNetCore.Components.Web.Virtualization
 @using ViciOne.Ui.Localization.Resources
 
+@* Built like the configuration grid - same subgrid layout, sticky header, grouping and virtualization - only
+   without its selection column, since there is nothing to act on here. *@
 <div @ref="@(_mainContainerRef)"
-     class="live-view-grid">
+     class="live-view-grid"
+     style="--grid-columns: @GridColumnsStyle">
 
-    <table cellpadding="0"
-           cellspacing="0">
+    @* --- HEADER --- *@
+    <div class="grid-header">
+        <div class="device-name">
+            <div class="header-template">
+                <span></span>
+                <div>
+                    <span>@Localization.LiveViewPage.ProcessValue</span>
+                </div>
+            </div>
+        </div>
 
-        <thead>
-            <tr>
-                @if (Service.PathVisible)
-                {
-                    <th class="device-path">
-                        <div class="header-template">
-                            <span></span>
-                            <div>
-                                <span>@CommonVocabulary.Path</span>
-                            </div>
-                        </div>
-                    </th>
+        <div class="value">
+            <div class="header-template">
+                <span></span>
+                <div>@CommonVocabulary.Value</div>
+            </div>
+        </div>
 
-                    <th class="spacer"
-                        style="--spacer-width: 3;">
+        <div class="unit">
+            <div class="header-template">
+                <span></span>
+                <div>@Localization.LiveViewPage.Unit</div>
+            </div>
+        </div>
 
-                        <!-- spacer column -->
-                        <div class="header-template">
-                            <span></span>
-                            <div>&nbsp;</div>
-                        </div>
-                    </th>
-                }
+        <div class="last-changed">
+            <div class="header-template" title="@(Localization.LiveViewPage.LastChangedHint)">
+                <span></span>
+                <div>
+                    @Localization.LiveViewPage.LastChanged
+                    <span class="icon-header">
+                        <MonochromeIcon Name="@MonochromeIconName.WarningLight" Size="@MonochromeIconSize.SmallMedium" />
+                    </span>
+                </div>
+            </div>
+        </div>
 
-                <th class="device-name">
-                    <div class="header-template">
-                        <span></span>
-                        <div>
-                            <span>@Localization.LiveViewPage.ProcessValue</span>
-                        </div>
-                    </div>
-                </th>
+        <div class="spacer absorbtion">
+            <!-- space absorption column -->
+            <div class="header-template">
+                <span></span>
+                <div>&nbsp;</div>
+            </div>
+        </div>
+    </div>
 
-                @* <th class="spacer"
-                    style="--spacer-width: 12;">
+    @* --- BODY (virtualized) --- *@
+    <div class="grid-body">
+        <Virtualize @ref="_virtualizeRef"
+                    TItem="IndexedItem<GroupedRow<LiveGridRowModel>>"
+                    Items="@_indexedItems"
+                    Context="entry"
+                    ItemSize="48"
+                    OverscanCount="10">
 
-                    <!-- spacer column -->
-                    <div class="header-template">
-                        <span></span>
-                        <div>&nbsp;</div>
-                    </div>
-                </th> *@
-
-                <th class="value">
-                    <div class="header-template">
-                        <span></span>
-                        <div>@CommonVocabulary.Value</div>
-                    </div>
-                </th>
-
-                <th class="unit">
-                    <div class="header-template">
-                        <span></span>
-                        <div>@Localization.LiveViewPage.Unit</div>
-                    </div>
-                </th>
-
-                <th class="last-changed">
-                    <div class="header-template" title=" @(Localization.LiveViewPage.LastChangedHint)">
-                        <span></span>
-                        <div>@Localization.LiveViewPage.LastChanged <span class="icon-header"><MonochromeIcon Name="@MonochromeIconName.WarningLight" Size="@MonochromeIconSize.SmallMedium" /></span></div>
-                    </div>
-                </th>
-
-                <th class="spacer absorbtion">
-                    <!-- space absorbtion column -->
-                    <div class="header-template">
-                        <span></span>
-                        <div>&nbsp;</div>
-                    </div>
-                </th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @foreach (var item in Service.FilteredGridItems)
-            {
-                <tr>
-                    @if (Service.PathVisible)
-                    {
-                        <td class="device-path"
-                            title="@(item.PathToNode.GetBreadcrumb())">
-
-                            <div class="device-path-container">
-                                <span>@(item.PathToNode.GetBreadcrumb())</span>
-                            </div>
-                        </td>
-
-                        const int spacerWidth = 3;
-
-                        <td class="spacer"
-                            style="--spacer-width: @(spacerWidth);">
-
-                            <!-- spacer column -->
-                        </td>
-                    }
-
-                    <td class="device-name"
-                        title="@(item.DataNode.Name)">
-
-                        <DeviceIdentifierCell Model="item" />
-                    </td>
-
-                    @* @{ spacerWidth = 12; }
-
-                    <td class="spacer"
-                        style="--spacer-width: @(spacerWidth);">
-
-                        <!-- spacer column -->
-                    </td> *@
-
-                    <td class="value" title="@item.Value">
-                        <span>@item.Value</span>
-                    </td>
-
-                    <td class="unit">
-                        <span>@item.Unit</span>
-                    </td>
-
-                    <td class="last-changed">
-                        <span>@item.LastUpdated</span>
-                    </td>
-
-                    <td class="spacer absorbtion">
-                        <!-- space absorbtion column -->
-                    </td>
-                </tr>
+            @{
+                var row = entry.Item;
             }
-        </tbody>
-    </table>
+
+            @if (row.IsHeader)
+            {
+                <div class="grid-group-row" @key="(row.IsHeader, entry.Index)">
+                    <div class="grid-group-header">
+                        <span class="grid-group-label">@row.GroupLabel</span>
+                        <span class="grid-group-count">· @row.GroupItems!.Count</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                var item = row.Item!;
+
+                <div class="grid-row @(row.IsEvenDataRow ? "row-even" : "row-odd")" @key="(row.IsHeader, entry.Index)">
+                    <div class="device-name" title="@(item.DataNode.Name)">
+                        @* Grouped rows only need the part below their header; an ungrouped row carries its
+                           full path. Same rule as in the configuration grid. *@
+                        <DeviceIdentifierCell Context="@(row.IsGrouped ? row.GroupRelativePath : item.Breadcrumb)"
+                                              Model="item" />
+                    </div>
+
+                    <div class="value" title="@item.Value">
+                        <span>@item.Value</span>
+                    </div>
+
+                    <div class="unit">
+                        <span>@item.Unit</span>
+                    </div>
+
+                    <div class="last-changed">
+                        <span>@item.LastUpdated</span>
+                    </div>
+
+                    <div class="spacer absorbtion">
+                        <!-- space absorption column -->
+                    </div>
+                </div>
+            }
+        </Virtualize>
+    </div>
 </div>

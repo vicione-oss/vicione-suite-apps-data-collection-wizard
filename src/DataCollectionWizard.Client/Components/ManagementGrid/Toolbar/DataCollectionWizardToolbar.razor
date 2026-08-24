@@ -34,13 +34,6 @@
 
         <span class="separator"></span>
 
-        <button @onclick="@(OnTogglePathVisible)"
-                class="@(Service.PathVisible ? "active" : string.Empty)"
-                title="@Localization.DataCollectionWizardPage.PathVisible">
-
-            <MonochromeIcon Name="@MonochromeIconName.PathDetailsShow" Size="@MonochromeIconSize.SmallMedium" />
-        </button>
-
         <button disabled="@(!Service.HasOfflineNodes)"
                 @onclick="@OnDeleteOfflineNodesClicked"
                 title="@Localization.DataCollectionWizardPage.DeleteAllOfflineNodes">

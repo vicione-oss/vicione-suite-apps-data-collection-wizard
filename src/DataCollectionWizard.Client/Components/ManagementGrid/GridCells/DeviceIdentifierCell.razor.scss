@@ -86,6 +86,22 @@
     grid-template-rows: 24px;
 }
 
+// Where the value sits, under its name. Muted and a size down, so the name stays the thing one reads first -
+// the same relationship the device tooltip uses between its name and its subtitle.
+// Sized to fit the row as it already is: the name row is 24px inside 11px padding, while the row's height comes
+// from the publish-target cells next to it. Pulling this line into that spare space keeps the row where it was
+// instead of making every row taller for the sake of the few that need the context.
+.device-context {
+    grid-column: 1;
+    margin-top: -3px;
+    font-size: 11px;
+    line-height: 14px;
+    color: col.$font-disabled;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .device-status {
     grid-area: status;
 

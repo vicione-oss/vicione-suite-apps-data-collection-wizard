@@ -141,24 +141,14 @@
         min-width: 160px;
         position: sticky;
         z-index: 10;
-    }
-
-    >.device-path {
-        align-content: start;
-        max-width: 520px;
-        min-width: 190px;
-
-        .device-path-container {
-            align-items: center;
-            display: flex;
-            min-height: 24px;
-
-            >span {
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-        }
+        // Tighter than the other cells so the name plus its context line fit the height the row already has.
+        // That height comes from the publish-target cells, whose controls need the full padding; this cell was
+        // leaving the difference unused.
+        padding-top: 5px;
+        padding-bottom: 5px;
+        // Every other cell can run to its column edge; this one cannot, because a long name would otherwise sit
+        // flush against the next column's label. Ellipsis takes over that much earlier instead.
+        padding-right: 12px;
     }
 
     // Alternating row backgrounds — applied via index-based classes because
@@ -253,6 +243,14 @@
     position: sticky;
     left: 0;
     z-index: 11;
+}
+
+// A captioned row is several lines tall and its name sits at the top, so a centred box ends up beside one of the
+// captions rather than the name it selects. Line it up with the name instead: the cell's 5px top padding plus
+// half of the 24px name row, less half of the 16px box.
+.grid-row.captioned>.row-select-col {
+    align-content: start;
+    padding-top: 9px;
 }
 
 // Points out the cells a bulk change reached. Re-keying the rows rebuilds these elements, which is what starts

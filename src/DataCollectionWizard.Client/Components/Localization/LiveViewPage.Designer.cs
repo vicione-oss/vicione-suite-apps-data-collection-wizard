@@ -125,12 +125,6 @@ namespace DataCollectionWizard.Client.Components.Localization {
         
         /// <summary>
         ///   Looks up a localized string similar to Display path.
-        /// </summary>
-        internal static string PathVisible {
-            get {
-                return ResourceManager.GetString("PathVisible", resourceCulture);
-            }
-        }
         
         /// <summary>
         ///   Looks up a localized string similar to Process value.

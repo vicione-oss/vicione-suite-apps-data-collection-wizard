@@ -81,12 +81,6 @@ public sealed partial class DataCollectionWizardToolbar : IDisposable
             await InvokeAsync(StateHasChanged);
     }
 
-    private void OnTogglePathVisible()
-    {
-        Service.PathVisible ^= true;
-        Service.Refresh();
-    }
-
     private void OnDeleteOfflineNodesClicked()
         => Service.RequestDeleteOfflineNodes();
 

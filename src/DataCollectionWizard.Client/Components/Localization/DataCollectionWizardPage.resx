@@ -198,9 +198,6 @@
   <data name="AddIoLinkMasterDialogHeader" xml:space="preserve">
     <value>Add IO-Link Master</value>
   </data>
-  <data name="PathVisible" xml:space="preserve">
-    <value>Display path</value>
-  </data>
   <data name="ShowDebugTooling" xml:space="preserve">
     <value>Show debug tooling</value>
   </data>

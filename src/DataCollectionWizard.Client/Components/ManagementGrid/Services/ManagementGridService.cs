@@ -75,7 +75,6 @@ internal sealed class ManagementGridService : INotifyPropertyChanged
         }
     }
 
-    public bool PathVisible { get; set; } = true;
 
     // The active publish targets (clouds); set by the page. Read by the info panel for its per-cloud projection.
     public IReadOnlyList<PublishTargetInfo> PublishTargets { get; set; } = [];

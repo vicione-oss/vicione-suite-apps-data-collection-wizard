@@ -23,6 +23,19 @@
     grid-template-rows: 24px;
 }
 
+// Where the value sits, under its name. This grid has no grouping, so the line carries the full path - it took
+// the place of the path column, which said the same thing a column further left.
+.device-context {
+    grid-column: 1;
+    margin-top: -3px;
+    font-size: 11px;
+    line-height: 14px;
+    color: col.$font-disabled;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .status-bar {
     background-color: col.$error;
     height: 70%;
