@@ -292,7 +292,7 @@
     <value>Interval</value>
   </data>
   <data name="BulkFieldAggregationFunction" xml:space="preserve">
-    <value>Function</value>
+    <value>Aggregation</value>
   </data>
   <data name="BulkFieldDays" xml:space="preserve">
     <value>Weekdays</value>
@@ -320,6 +320,12 @@
   </data>
   <data name="BulkRowCount" xml:space="preserve">
     <value>{0} of {1}</value>
+  </data>
+  <data name="BulkRowCountWithRawData" xml:space="preserve">
+    <value>{0} of {1} · {2} of them with raw data</value>
+  </data>
+  <data name="BulkDistribution" xml:space="preserve">
+    <value>{0} on · {1} off</value>
   </data>
   <data name="BulkNoSettings" xml:space="preserve">
     <value>Only activating and deactivating</value>

@@ -51,6 +51,15 @@
         display: block;
         height: 100%;
         border-radius: 999px;
+        // Slides to the new width while the count beside it runs to its new value - same duration, so the two
+        // arrive together. The colour follows the state class and is worth easing along with it.
+        transition: width 0.42s ease-out, background-color 0.42s ease-out;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .dp-fill {
+            transition: none;
+        }
     }
 
     .dp-hint {

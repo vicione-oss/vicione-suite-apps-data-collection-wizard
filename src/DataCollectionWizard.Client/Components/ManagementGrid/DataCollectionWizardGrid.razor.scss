@@ -498,6 +498,11 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
     // ── settings panel ───────────────────────────────────────────────────────
     // Laid out in the tooltip's language: uppercase section labels with a trailing hairline, muted secondary text.
     .bulk-panel {
+        // One width for every control in the panel, so a column has a single left and a single right edge
+        // instead of one per field. The buttons share it out between them rather than taking it from their
+        // labels, which keeps it aligned in a language where those are longer.
+        --bulk-control-width: 198px;
+
         display: flex;
         flex-direction: column;
         padding: 4px 14px 14px;
@@ -506,6 +511,20 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
         // past the viewport.
         max-height: 52vh;
         overflow-y: auto;
+    }
+
+    // The groups side by side rather than stacked: with the controls no longer stretched across the bar there is
+    // room for two, and four groups then fit without scrolling. One group keeps one column - two would leave
+    // half the bar empty.
+    .bulk-groups {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0px 30px;
+        align-items: start;
+
+        &.two-columns {
+            grid-template-columns: 1fr 1fr;
+        }
     }
 
     .bulk-tabs {
@@ -577,9 +596,14 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
         }
     }
 
-    .bulk-field {
+    // Listed twice because BulkToggleField renders its own row and carries its own CSS scope; one definition
+    // reaches both rather than a second copy living over there.
+    .bulk-field,
+    ::deep .bulk-field {
         display: grid;
-        grid-template-columns: 104px minmax(0, 1fr);
+        // The value column no longer stretches to the bar's width - "1s" does not need 860px, and the height
+        // that was wasted on is what made the panel scroll.
+        grid-template-columns: 104px max-content;
         align-items: center;
         gap: 10px;
         margin-bottom: 8px;
@@ -590,7 +614,9 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
         }
 
         select {
-            width: 100%;
+            // The same width the button pairs use - not 100%, which has nothing to resolve against in a
+            // max-content track.
+            width: var(--bulk-control-width);
             min-width: 0;
             height: 28px;
             padding: 0 26px 0 7px;
@@ -614,38 +640,104 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
 
     // Activate / deactivate as two buttons rather than a switch: while the selection disagrees neither state is
     // true, and a switch has no honest position for that - here simply neither button is marked.
-    .bulk-toggle {
+    // Activate / deactivate as one control rather than two loose buttons - the same shape the bar's own pair
+    // uses, only smaller here. The state that applies is filled: the accent for "all on", a plain fill for
+    // "all off", and neither while the selection disagrees.
+    ::deep .bulk-duo {
         display: inline-flex;
-        gap: 2px;
-        padding: 2px;
-        width: max-content;
-        background: col.$background;
-        border: 1px solid col.$border;
-        border-radius: 6px;
+        // Same width as the selects beside them, so a column has one left and one right edge instead of five.
+        // The bar's own pair is not in a column and takes its width from its labels - see the modifier below.
+        width: var(--bulk-control-width, auto);
+        box-sizing: border-box;
+        height: 28px;
+
+        // In the bar rather than in the panel: taller, and sized to its content.
+        &.bulk-duo-bar {
+            width: auto;
+            height: 30px;
+
+            button {
+                padding: 0px 14px;
+                font-size: 13px;
+                font-weight: 500;
+            }
+        }
+        border: 1px solid col.$content-hover;
+        border-radius: 4px;
+        overflow: hidden;
+        background: col.$content-dark;
 
         button {
-            padding: 4px 12px;
+            flex: 1;
+            min-width: 0;
+            padding: 0px 10px;
             border: none;
-            border-radius: 4px;
             background: transparent;
-            color: col.$font-dark;
+            color: col.$font;
             font-family: inherit;
             font-size: 12.5px;
             cursor: pointer;
+            white-space: nowrap;
 
-            &.on {
-                background: col.$background-hover;
-                color: col.$font;
+            + button {
+                border-left: 1px solid col.$content-hover;
             }
 
-            &.on.yes {
-                background: rgba(255, 153, 0, 0.22);
-                color: col.$accent;
+            &:hover {
+                background: rgba(255, 255, 255, 0.06);
+            }
+
+            &.primary {
+                background: col.$accent;
+                color: #1c1200;
+
+                &:hover {
+                    background: color.adjust(col.$accent, $lightness: 7%);
+                }
+            }
+
+            // "Everything is off" is a statement too, so it is marked - but without claiming the accent.
+            &.marked {
+                background: col.$background-hover;
+                color: col.$font;
             }
 
             &:focus:not(:focus-visible) {
                 outline: none;
             }
+        }
+    }
+
+    // The buttons and, beside them, how the selection currently stands.
+    ::deep .bulk-choice {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    ::deep .bulk-dist {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 11.5px;
+        font-variant-numeric: tabular-nums;
+        color: col.$font-disabled;
+        white-space: nowrap;
+    }
+
+    ::deep .bulk-meter {
+        width: 60px;
+        height: 5px;
+        flex-shrink: 0;
+        border-radius: 3px;
+        background: col.$content;
+        overflow: hidden;
+
+        > i {
+            display: block;
+            height: 100%;
+            background: col.$accent;
         }
     }
 

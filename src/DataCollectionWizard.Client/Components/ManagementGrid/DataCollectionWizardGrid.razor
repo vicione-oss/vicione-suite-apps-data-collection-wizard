@@ -44,7 +44,12 @@
                 <div class="header-template">
                     <span>
                         @(targetInfo.Connection.Name)
-                        <span class="active-count">@(ActiveDatapointCountText(targetInfo))</span>
+                        @* Filled by wwwroot/js/count-up.js, which counts it up to the new value rather than
+                           swapping the number - a bulk change can move it by hundreds, and a number that simply
+                           jumps is easy to miss. *@
+                        <span class="active-count"
+                              data-counts="@(_activeCounts.GetValueOrDefault(targetInfo.Connection.Id))"
+                              data-count-format="@Localization.DataCollectionWizardPage.ActiveDatapointCount"></span>
                     </span>
 
                     <div class="publish-target">
@@ -229,13 +234,15 @@
 
         <span class="bulk-sep"></span>
 
-        <button class="bulk-btn accent" @onclick="@(() => ApplyBulkEnableAsync(true))">
-            @Localization.DataCollectionWizardPage.BulkActivate
-        </button>
+        <div class="bulk-duo bulk-duo-bar">
+            <button class="primary" @onclick="@(() => ApplyBulkEnableAsync(true))">
+                @Localization.DataCollectionWizardPage.BulkActivate
+            </button>
 
-        <button class="bulk-btn ghost" @onclick="@(() => ApplyBulkEnableAsync(false))">
-            @Localization.DataCollectionWizardPage.BulkDeactivate
-        </button>
+            <button @onclick="@(() => ApplyBulkEnableAsync(false))">
+                @Localization.DataCollectionWizardPage.BulkDeactivate
+            </button>
+        </div>
 
         @if (Bulk.HasAnything)
         {
@@ -297,6 +304,8 @@
                     <div class="bulk-note">@Localization.DataCollectionWizardPage.BulkReducedOptions</div>
                 }
 
+                <div class="bulk-groups @(BulkGroupCount > 1 ? "two-columns" : string.Empty)">
+
                 @if (processNodes.Count > 0)
                 {
                     <div class="bulk-group">
@@ -305,19 +314,9 @@
                             <span class="n">@BulkRowCountText(processNodes.Count)</span>
                         </div>
 
-                        <div class="bulk-field">
-                            <span class="k">@Localization.DataCollectionWizardPage.Enabled</span>
-                            <div class="bulk-toggle">
-                                <button class="@(bulk.ProcessEnabled == true ? "on yes" : string.Empty)"
-                                        @onclick="@(() => ApplyBulkSettingAsync(BulkSetting.ProcessEnabled, true))">
-                                    @Localization.DataCollectionWizardPage.BulkActivate
-                                </button>
-                                <button class="@(bulk.ProcessEnabled == false ? "on" : string.Empty)"
-                                        @onclick="@(() => ApplyBulkSettingAsync(BulkSetting.ProcessEnabled, false))">
-                                    @Localization.DataCollectionWizardPage.BulkDeactivate
-                                </button>
-                            </div>
-                        </div>
+                        <BulkToggleField Label="@Localization.DataCollectionWizardPage.Enabled"
+                                         Tally="@bulk.ProcessEnabled"
+                                         OnChoose="@(value => ApplyBulkSettingAsync(BulkSetting.ProcessEnabled, value))" />
 
                         <div class="bulk-field">
                             <span class="k">@Localization.DataCollectionWizardPage.BulkFieldAggregationInterval</span>
@@ -366,45 +365,31 @@
                             <span class="n">@BulkRowCountText(uncompressedNodes.Count)</span>
                         </div>
 
-                        <div class="bulk-field">
-                            <span class="k">@Localization.DataCollectionWizardPage.Enabled</span>
-                            <div class="bulk-toggle">
-                                <button class="@(bulk.UncompressedEnabled == true ? "on yes" : string.Empty)"
-                                        @onclick="@(() => ApplyBulkSettingAsync(BulkSetting.UncompressedEnabled, true))">
-                                    @Localization.DataCollectionWizardPage.BulkActivate
-                                </button>
-                                <button class="@(bulk.UncompressedEnabled == false ? "on" : string.Empty)"
-                                        @onclick="@(() => ApplyBulkSettingAsync(BulkSetting.UncompressedEnabled, false))">
-                                    @Localization.DataCollectionWizardPage.BulkDeactivate
-                                </button>
-                            </div>
-                        </div>
+                        <BulkToggleField Label="@Localization.DataCollectionWizardPage.Enabled"
+                                         Tally="@bulk.UncompressedEnabled"
+                                         OnChoose="@(value => ApplyBulkSettingAsync(BulkSetting.UncompressedEnabled, value))" />
 
                         <div class="bulk-note sub">@Localization.DataCollectionWizardPage.BulkNoSettings</div>
                     </div>
                 }
 
-                @if (recordingNodes.Count > 0)
+                @if (recordingNodes.Count > 0 || bulk.RawDataNodes.Count > 0)
                 {
+                    @* Frequency and duration belong here rather than in a group of their own: they say what a
+                       recording captures, while the fields above say when it runs, and on a VSE both come from
+                       the same node. They are only shown when the selection actually holds nodes that have
+                       them - an IO-Link BLOB is schedulable but has no raw-data settings. *@
                     <div class="bulk-group">
                         <div class="bulk-group-lbl">
                             <span>@Localization.DataCollectionWizardPage.BulkGroupRecordings</span>
-                            <span class="n">@BulkRowCountText(recordingNodes.Count)</span>
+                            <span class="n">@BulkRecordingCountText(recordingNodes.Count, bulk.RawDataNodes.Count)</span>
                         </div>
 
-                        <div class="bulk-field">
-                            <span class="k">@Localization.DataCollectionWizardPage.Enabled</span>
-                            <div class="bulk-toggle">
-                                <button class="@(bulk.RecordingEnabled == true ? "on yes" : string.Empty)"
-                                        @onclick="@(() => ApplyBulkSettingAsync(BulkSetting.RecordingEnabled, true))">
-                                    @Localization.DataCollectionWizardPage.BulkActivate
-                                </button>
-                                <button class="@(bulk.RecordingEnabled == false ? "on" : string.Empty)"
-                                        @onclick="@(() => ApplyBulkSettingAsync(BulkSetting.RecordingEnabled, false))">
-                                    @Localization.DataCollectionWizardPage.BulkDeactivate
-                                </button>
-                            </div>
-                        </div>
+                        @if (recordingNodes.Count > 0)
+                        {
+                        <BulkToggleField Label="@Localization.DataCollectionWizardPage.Enabled"
+                                         Tally="@bulk.RecordingEnabled"
+                                         OnChoose="@(value => ApplyBulkSettingAsync(BulkSetting.RecordingEnabled, value))" />
 
                         <div class="bulk-field">
                             <span class="k">@Localization.DataCollectionWizardPage.BulkFieldDays</span>
@@ -434,17 +419,10 @@
                                 }
                             </select>
                         </div>
-                    </div>
-                }
+                        }
 
-                @if (bulk.RawDataNodes.Count > 0)
-                {
-                    <div class="bulk-group">
-                        <div class="bulk-group-lbl">
-                            <span>@Localization.DataCollectionWizardPage.BulkGroupRawData</span>
-                            <span class="n">@BulkRowCountText(bulk.RawDataNodes.Count)</span>
-                        </div>
-
+                        @if (bulk.RawDataNodes.Count > 0)
+                        {
                         <div class="bulk-field">
                             <span class="k">@Localization.DataCollectionWizardPage.BulkFieldFrequency</span>
                             <select value="@(bulk.RawDataFrequency?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty)"
@@ -474,6 +452,7 @@
                                 }
                             </select>
                         </div>
+                        }
                     </div>
                 }
 
@@ -485,47 +464,17 @@
                             <span class="n">@($"{BulkRowCountText(bulk.TriggerNodes.Count)} · {bulk.TriggerConfigurationCount}")</span>
                         </div>
 
-                        <div class="bulk-field">
-                            <span class="k">@Localization.DataCollectionWizardPage.Enabled</span>
-                            <div class="bulk-toggle">
-                                <button class="@(bulk.TriggerEnabled == true ? "on yes" : string.Empty)"
-                                        @onclick="@(() => ApplyBulkSettingAsync(BulkSetting.TriggerEnabled, true))">
-                                    @Localization.DataCollectionWizardPage.BulkActivate
-                                </button>
-                                <button class="@(bulk.TriggerEnabled == false ? "on" : string.Empty)"
-                                        @onclick="@(() => ApplyBulkSettingAsync(BulkSetting.TriggerEnabled, false))">
-                                    @Localization.DataCollectionWizardPage.BulkDeactivate
-                                </button>
-                            </div>
-                        </div>
+                        <BulkToggleField Label="@Localization.DataCollectionWizardPage.Enabled"
+                                         Tally="@bulk.TriggerEnabled"
+                                         OnChoose="@(value => ApplyBulkSettingAsync(BulkSetting.TriggerEnabled, value))" />
 
-                        <div class="bulk-field">
-                            <span class="k">@Localization.DataCollectionWizardPage.Damage</span>
-                            <div class="bulk-toggle">
-                                <button class="@(bulk.TriggerOnDamage == true ? "on yes" : string.Empty)"
-                                        @onclick="@(() => ApplyBulkSettingAsync(BulkSetting.TriggerOnDamage, true))">
-                                    @Localization.DataCollectionWizardPage.BulkActivate
-                                </button>
-                                <button class="@(bulk.TriggerOnDamage == false ? "on" : string.Empty)"
-                                        @onclick="@(() => ApplyBulkSettingAsync(BulkSetting.TriggerOnDamage, false))">
-                                    @Localization.DataCollectionWizardPage.BulkDeactivate
-                                </button>
-                            </div>
-                        </div>
+                        <BulkToggleField Label="@Localization.DataCollectionWizardPage.Damage"
+                                         Tally="@bulk.TriggerOnDamage"
+                                         OnChoose="@(value => ApplyBulkSettingAsync(BulkSetting.TriggerOnDamage, value))" />
 
-                        <div class="bulk-field">
-                            <span class="k">@CommonVocabulary.Warning</span>
-                            <div class="bulk-toggle">
-                                <button class="@(bulk.TriggerOnWarning == true ? "on yes" : string.Empty)"
-                                        @onclick="@(() => ApplyBulkSettingAsync(BulkSetting.TriggerOnWarning, true))">
-                                    @Localization.DataCollectionWizardPage.BulkActivate
-                                </button>
-                                <button class="@(bulk.TriggerOnWarning == false ? "on" : string.Empty)"
-                                        @onclick="@(() => ApplyBulkSettingAsync(BulkSetting.TriggerOnWarning, false))">
-                                    @Localization.DataCollectionWizardPage.BulkDeactivate
-                                </button>
-                            </div>
-                        </div>
+                        <BulkToggleField Label="@CommonVocabulary.Warning"
+                                         Tally="@bulk.TriggerOnWarning"
+                                         OnChoose="@(value => ApplyBulkSettingAsync(BulkSetting.TriggerOnWarning, value))" />
 
                         <div class="bulk-field">
                             <span class="k">@Localization.DataCollectionWizardPage.BulkFieldDelay</span>
@@ -543,6 +492,8 @@
                         </div>
                     </div>
                 }
+
+                </div>
 
                 @* Set apart from the settings above: this one discards them rather than writing one. *@
                 <div class="bulk-reset">

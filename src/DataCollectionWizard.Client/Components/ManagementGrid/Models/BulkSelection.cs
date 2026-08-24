@@ -22,6 +22,13 @@ internal sealed class BulkSelection(IReadOnlyCollection<IDeviceTreeDataNode> sel
     private static readonly (DaysOfWeek Value, DayOfWeek[] Days)[] s_daysOfWeekSets =
         [.. Enum.GetValues<DaysOfWeek>().Select(value => (value, value.AsEnumerable().ToArray()))];
 
+    private BulkTally? _processEnabled;
+    private BulkTally? _uncompressedEnabled;
+    private BulkTally? _recordingEnabled;
+    private BulkTally? _triggerEnabled;
+    private BulkTally? _triggerOnDamage;
+    private BulkTally? _triggerOnWarning;
+
     // The capability groups, mirroring how the grid decides which cell to render for a row.
     public IReadOnlyList<IDeviceTreeCompressableDataNode> ProcessNodes { get; } =
         [.. selectedNodes.OfType<IDeviceTreeCompressableDataNode>()
@@ -52,9 +59,14 @@ internal sealed class BulkSelection(IReadOnlyCollection<IDeviceTreeDataNode> sel
     /// </summary>
     public int TriggerConfigurationCount => Triggers().Count();
 
-    public bool? ProcessEnabled => Common(CompressorConfigurations(ProcessNodes).Select(configuration => configuration.Enabled));
+    // Tallied rather than reduced to "do they all agree", so the panel can show how the selection currently
+    // stands. Each is counted once and kept - the markup asks for them more than once per render, and every ask
+    // walks the whole selection.
+    public BulkTally ProcessEnabled
+        => _processEnabled ??= Tally(CompressorConfigurations(ProcessNodes).Select(configuration => configuration.Enabled));
 
-    public bool? UncompressedEnabled => Common(CompressorConfigurations(UncompressedNodes).Select(configuration => configuration.Enabled));
+    public BulkTally UncompressedEnabled
+        => _uncompressedEnabled ??= Tally(CompressorConfigurations(UncompressedNodes).Select(configuration => configuration.Enabled));
 
     public AggregationInterval? Interval
         => Common(CompressorConfigurations(ProcessNodes).Select(configuration => configuration.CompressionTime.ToAggregationInterval()));
@@ -86,7 +98,8 @@ internal sealed class BulkSelection(IReadOnlyCollection<IDeviceTreeDataNode> sel
         }
     }
 
-    public bool? RecordingEnabled => Common(SchedulerConfigurations().Select(configuration => configuration.Enabled));
+    public BulkTally RecordingEnabled
+        => _recordingEnabled ??= Tally(SchedulerConfigurations().Select(configuration => configuration.Enabled));
 
     public DaysOfWeek? Days
         => Common(SchedulerConfigurations().Where(configuration => configuration.Times.Count > 0).Select(DaysOfWeekOf));
@@ -95,11 +108,11 @@ internal sealed class BulkSelection(IReadOnlyCollection<IDeviceTreeDataNode> sel
         => Common(SchedulerConfigurations().Where(configuration => configuration.Times.Count > 0)
             .Select(configuration => configuration.Times.First().Value.Length));
 
-    public bool? TriggerEnabled => Common(Triggers().Select(trigger => trigger.Enabled));
+    public BulkTally TriggerEnabled => _triggerEnabled ??= Tally(Triggers().Select(trigger => trigger.Enabled));
 
-    public bool? TriggerOnDamage => Common(Triggers().Select(trigger => trigger.OnDamage));
+    public BulkTally TriggerOnDamage => _triggerOnDamage ??= Tally(Triggers().Select(trigger => trigger.OnDamage));
 
-    public bool? TriggerOnWarning => Common(Triggers().Select(trigger => trigger.OnWarning));
+    public BulkTally TriggerOnWarning => _triggerOnWarning ??= Tally(Triggers().Select(trigger => trigger.OnWarning));
 
     public int? TriggerDelay => Common(Triggers().Select(trigger => trigger.Delay));
 
@@ -138,6 +151,22 @@ internal sealed class BulkSelection(IReadOnlyCollection<IDeviceTreeDataNode> sel
     /// The one value every configuration in scope shares, or <see langword="null"/> when they differ - which the
     /// panel shows as "multiple" rather than presenting one row's value as if it applied to all.
     /// </summary>
+    private static BulkTally Tally(IEnumerable<bool> values)
+    {
+        var on = 0;
+        var total = 0;
+
+        foreach (var value in values)
+        {
+            total++;
+
+            if (value)
+                on++;
+        }
+
+        return new BulkTally(on, total);
+    }
+
     private static T? Common<T>(IEnumerable<T> values)
         where T : struct
     {

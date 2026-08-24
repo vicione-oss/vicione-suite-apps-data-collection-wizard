@@ -23,6 +23,7 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
     private const int HighlightDurationMs = 1100;
 
     private IJSObjectReference? _jsModule;
+    private IJSObjectReference? _countUpModule;
     private ElementReference _mainContainerRef = default!;
     private bool _resetScrollPositionAfterNextRender;
     private Virtualize<IndexedItem<GroupedRow<ManagementGridRowModel>>>? _virtualizeRef;
@@ -104,6 +105,37 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
     private BulkSelection Bulk => _bulk ??= new(Service.SelectedNodes, BulkTargets);
 
     /// <summary>
+    /// How many groups the panel will show for the current selection.
+    /// </summary>
+    /// <remarks>
+    /// Decides one against two columns: with a single group the second would stand empty, and the bar should
+    /// only be as wide as it has to be.
+    /// </remarks>
+    private int BulkGroupCount
+    {
+        get
+        {
+            var bulk = Bulk;
+            var count = 0;
+
+            if (bulk.ProcessNodes.Count > 0)
+                count++;
+
+            if (bulk.UncompressedNodes.Count > 0)
+                count++;
+
+            // Recordings and raw-data settings share one group.
+            if (bulk.RecordingNodes.Count > 0 || bulk.RawDataNodes.Count > 0)
+                count++;
+
+            if (bulk.TriggerNodes.Count > 0)
+                count++;
+
+            return count;
+        }
+    }
+
+    /// <summary>
     /// Whether the chosen tab is a target that cannot be configured at all.
     /// </summary>
     private bool BulkTargetUnconfigurable
@@ -152,6 +184,14 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
 
     private string BulkRowCountText(int inGroup)
         => string.Format(CultureInfo.CurrentCulture, Localization.DataCollectionWizardPage.BulkRowCount, inGroup, Service.SelectionCount);
+
+    // Recordings and raw-data settings share one group but not always the same rows: a VSE recording has both
+    // halves, an IO-Link BLOB only the schedule. When they differ the header says so, rather than letting the
+    // frequency and duration below look as though they applied to every row in the group.
+    private string BulkRecordingCountText(int recordings, int withRawData)
+        => withRawData > 0 && withRawData != recordings
+            ? string.Format(CultureInfo.CurrentCulture, Localization.DataCollectionWizardPage.BulkRowCountWithRawData, recordings, Service.SelectionCount, withRawData)
+            : BulkRowCountText(recordings);
 
     private async Task ApplyBulkSettingAsync(BulkSetting setting, object value)
         => await OnBulkSetting.InvokeAsync(new BulkSettingRequest(setting, BulkTarget, value));
@@ -214,6 +254,9 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
         {
             if (_jsModule is not null)
                 await _jsModule.DisposeAsync();
+
+            if (_countUpModule is not null)
+                await _countUpModule.DisposeAsync();
         }
         catch (JSDisconnectedException)
         {
@@ -235,6 +278,8 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
         {
             _jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", $"./_content/{typeof(DataCollectionWizardGrid).Assembly.GetName().Name}/Components/ManagementGrid/{nameof(DataCollectionWizardGrid)}.razor.js");
             await _jsModule.InvokeVoidAsync("DataCollectionWizardGrid.makeDraggable", _bulkGripRef, _bulkBarRef);
+
+            _countUpModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", CountUp.ModulePath);
         }
 
         if (_resetScrollPositionAfterNextRender && _jsModule is not null)
@@ -242,6 +287,11 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
             await _jsModule.InvokeVoidAsync("DataCollectionWizardGrid.resetScrollPosition", _mainContainerRef);
             _resetScrollPositionAfterNextRender = false;
         }
+
+        // The per-cloud header counts and the bulk panel's distributions are written by JS, which counts them up
+        // to their new value. The bulk bar is a sibling of the grid, not inside it, so both need visiting.
+        await CountUp.AnimateAsync(_countUpModule, _mainContainerRef);
+        await CountUp.AnimateAsync(_countUpModule, _bulkBarRef);
     }
 
     protected override void OnInitialized()
@@ -363,8 +413,6 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
         }
     }
 
-    private string ActiveDatapointCountText(PublishTargetInfo target)
-        => string.Format(CultureInfo.CurrentCulture, Localization.DataCollectionWizardPage.ActiveDatapointCount, _activeCounts.GetValueOrDefault(target.Connection.Id));
 
     private void OnServicePropertyChanged(object? _1, PropertyChangedEventArgs e)
     {

@@ -1,17 +1,24 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid;
 
-public sealed partial class DataPointUsageMeter
+public sealed partial class DataPointUsageMeter : ComponentBase, IAsyncDisposable
 {
     // Turns amber at this fraction of the recommended limit and red at/above it.
     private const double WarningThreshold = 0.6;
+
+    private ElementReference _hostRef;
+    private IJSObjectReference? _countUpModule;
 
     [Parameter]
     public int Count { get; set; }
 
     [Parameter]
     public int Limit { get; set; }
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = default!;
 
     private double Ratio
         => Limit <= 0 ? 0 : (double)Count / Limit;
@@ -31,4 +38,26 @@ public sealed partial class DataPointUsageMeter
             >= WarningThreshold => Localization.DataCollectionWizardPage.DataPointLimitApproachingHint,
             _ => null,
         };
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_countUpModule is not null)
+                await _countUpModule.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is already gone - nothing left to clean up.
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            _countUpModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", CountUp.ModulePath);
+
+        // The bar beside it slides on its own - see the transition on .dp-fill.
+        await CountUp.AnimateAsync(_countUpModule, _hostRef);
+    }
 }

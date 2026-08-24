@@ -1,8 +1,10 @@
 @* Passive datapoint-usage meter. Rendered by the page as a fixed overlay under the title (not inside the toolbar),
    so it never changes the toolbar row height or the grid position and the Live-View toolbar stays aligned with it. *@
-<div class="dp-usage-meter @StateClass">
+<div class="dp-usage-meter @StateClass" @ref="_hostRef">
     <span class="dp-lbl">@Localization.DataCollectionWizardPage.DataPointUsage</span>
-    <span class="dp-count"><b>@Count</b> <span class="dp-lim">/ @Limit</span></span>
+    @* The count is written by wwwroot/js/count-up.js and runs to its new value, because a bulk change moves it
+       by hundreds at once - and this is the figure that decides whether the meter turns amber or red. *@
+    <span class="dp-count"><b data-counts="@Count" data-count-format="{0}"></b> <span class="dp-lim">/ @Limit</span></span>
     <span class="dp-track"><span class="dp-fill @FillClass"></span></span>
     @if (Hint is not null)
     {

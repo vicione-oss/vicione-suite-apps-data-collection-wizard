@@ -1,0 +1,33 @@
+@using DataCollectionWizard.Client.Components.ManagementGrid.Models
+
+<div class="bulk-field">
+    <span class="k">@Label</span>
+
+    <div class="bulk-choice">
+        <div class="bulk-duo">
+            <button class="@(Tally.All ? "primary" : string.Empty)"
+                    @onclick="@(() => OnChoose.InvokeAsync(true))">
+                @Localization.DataCollectionWizardPage.BulkActivate
+            </button>
+
+            <button class="@(Tally.None ? "marked" : string.Empty)"
+                    @onclick="@(() => OnChoose.InvokeAsync(false))">
+                @Localization.DataCollectionWizardPage.BulkDeactivate
+            </button>
+        </div>
+
+        @* How the selection stands right now. Without it, a mixed selection shows as "neither button marked",
+           which does not say whether nearly all of them are on or nearly none - and that is what decides which
+           of the two buttons one wants. *@
+        @if (Tally.Total > 0)
+        {
+            <span class="bulk-dist">
+                <span class="bulk-meter"><i style="width: @(SharePercent)%"></i></span>
+                @* Written by wwwroot/js/count-up.js, so the figures run to their new value together with the
+                   meter beside them instead of jumping. *@
+                <span data-counts="@(Tally.On),@(Tally.Off)"
+                      data-count-format="@Localization.DataCollectionWizardPage.BulkDistribution"></span>
+            </span>
+        }
+    </div>
+</div>

@@ -249,6 +249,24 @@ namespace DataCollectionWizard.Client.Components.Localization {
             }
         }
 
+        /// <summary>
+        ///   Looks up a localized string similar to {0} of {1} · {2} of them with raw data.
+        /// </summary>
+        internal static string BulkRowCountWithRawData {
+            get {
+                return ResourceManager.GetString("BulkRowCountWithRawData", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} on · {1} off.
+        /// </summary>
+        internal static string BulkDistribution {
+            get {
+                return ResourceManager.GetString("BulkDistribution", resourceCulture);
+            }
+        }
+
         internal static string BulkNoSettings {
             get {
                 return ResourceManager.GetString("BulkNoSettings", resourceCulture);
