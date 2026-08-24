@@ -1500,6 +1500,47 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _service.DeviceTreeChanged = true;
     }
 
+    // Multi-select reset: puts the selection's settings back to what a freshly discovered data point is given.
+    // The values themselves live in DeviceTreeDataNodeExtensions, next to the code that creates configurations in
+    // the first place, so the two cannot drift apart.
+    private void OnBulkResetSelection(BulkResetRequest request)
+    {
+        if (_tree is null)
+            return;
+
+        var connections = (request.Target is null
+                ? _publishTargets.Where(connection => IsConfigurable(connection))
+                : [request.Target.Connection])
+            .ToList();
+
+        if (connections.Count == 0)
+            return;
+
+        var selectedNodes = _service.SelectedNodes;
+
+        // Collected while writing, so the grid can point out the cells this reached.
+        var changedNodes = new HashSet<IDeviceTreeDataNode>();
+
+        lock (_treeLock)
+        {
+            foreach (var node in selectedNodes)
+            {
+                if (node.ResetConfigurations(connections))
+                    changedNodes.Add(node);
+            }
+
+            _changedMasterDevices.Clear();
+            _changedMasterDevices.AddRange(_tree.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>());
+        }
+
+        _saveReasons += " data point settings reset via multi-select;";
+
+        CheckDataPointRecommendedLimit(true);
+        _service.DeviceTreeChanged = true;
+        _service.InvokeBulkEnableApplied(
+            new BulkChangeHighlight(changedNodes, connections.Select(connection => connection.Id).ToHashSet()));
+    }
+
     // Multi-select bulk enable/disable: applies to the process-value data points in the grid selection for the
     // chosen publish target (or all targets). RawData/event-triggered recordings are intentionally left out for
     // now - they carry more than one toggle, so they need their own bulk action.

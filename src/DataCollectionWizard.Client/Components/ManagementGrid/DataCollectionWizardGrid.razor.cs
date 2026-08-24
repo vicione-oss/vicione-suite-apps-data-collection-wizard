@@ -71,6 +71,9 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
     [Parameter]
     public EventCallback<BulkSettingRequest> OnBulkSetting { get; set; }
 
+    [Parameter]
+    public EventCallback<BulkResetRequest> OnBulkReset { get; set; }
+
     // ── bulk settings panel ──────────────────────────────────────────────────
     // The bar grows into the panel rather than opening a second floating element: collapsed it is the bar as
     // before, expanded the settings appear below it. _bulkTargetIndex doubles as the panel's cloud tab, so the
@@ -152,6 +155,11 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
 
     private async Task ApplyBulkSettingAsync(BulkSetting setting, object value)
         => await OnBulkSetting.InvokeAsync(new BulkSettingRequest(setting, BulkTarget, value));
+
+    // Unlike the other bulk actions this discards settings rather than writing one of them, so the page asks
+    // first - see OnBulkResetSelection.
+    private async Task ApplyBulkResetAsync()
+        => await OnBulkReset.InvokeAsync(new BulkResetRequest(BulkTarget));
 
     // The selects carry an empty value while the selection disagrees; picking that placeholder again must not
     // write anything, so every handler bails on an unparsable value.
@@ -415,3 +423,9 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
 
 // Raised by the grid's bulk bar; handled by the page which mutates the tree. Target null means "all clouds".
 public sealed record BulkEnableRequest(bool Enabled, PublishTargetInfo? Target);
+
+/// <summary>
+/// Put the selection's settings back to the values a freshly discovered data point is given.
+/// </summary>
+/// <param name="Target">The publish target to reset, or <see langword="null"/> for every configurable one.</param>
+public sealed record BulkResetRequest(PublishTargetInfo? Target);

@@ -95,7 +95,7 @@
 
             @if (row.IsHeader)
             {
-                <div class="grid-group-row" @key="(row.IsHeader, entry.Index, _rowRenderEpoch)">
+                <div class="grid-group-row" @key="(row.IsHeader, entry.Index)">
                     <label class="grid-group-header">
                         <input type="checkbox"
                                class="grid-select"
@@ -111,7 +111,7 @@
             {
                 var item = row.Item!;
 
-                <div class="grid-row @(row.IsEvenDataRow ? "row-even" : "row-odd") @(Service.IsNodeSelected(item.DataNode) ? "selected" : string.Empty) @(item.DataNode.HasCaptions() ? "captioned" : string.Empty)" @key="(row.IsHeader, entry.Index, _rowRenderEpoch)">
+                <div class="grid-row @(row.IsEvenDataRow ? "row-even" : "row-odd") @(Service.IsNodeSelected(item.DataNode) ? "selected" : string.Empty) @(item.DataNode.HasCaptions() ? "captioned" : string.Empty)" @key="(row.IsHeader, entry.Index)">
 
                 <div class="row-select-col">
                     <input type="checkbox"
@@ -173,8 +173,11 @@
                                 {
                                     if (dataNode.DataType.SupportsCompression)
                                     {
+                                        @* The only cell that blocks its own re-render, so the only one that needs
+                                           telling when a bulk change wrote its configuration from outside. *@
                                         <CompressableCell CompressableDataNode="@dataNode"
                                                           Configuration="@targetInfo"
+                                                          RenderEpoch="@_rowRenderEpoch"
                                                           OnDeviceTreeChanged="@(() => OnDeviceTreeChanged.InvokeAsync(masterNode))" />
                                     }
                                     else
@@ -238,14 +241,17 @@
         {
             <span class="bulk-sep"></span>
 
+            @* The chevron is drawn in CSS, like the one on every select in this bar, so both sit on the right and
+               look the same. *@
             <button class="bulk-more @(_bulkPanelOpen ? "open" : string.Empty)"
                     @onclick="@(() => _bulkPanelOpen = !_bulkPanelOpen)">
-                <span class="caret">@(_bulkPanelOpen ? "▾" : "▸")</span>
                 @Localization.DataCollectionWizardPage.BulkSettings
             </button>
         }
 
-        <span class="bulk-sep"></span>
+        @* Pushed to the far right, away from the actions - it dismisses the bar rather than doing something to
+           the selection. *@
+        <span class="bulk-sep bulk-sep-end"></span>
 
         <button class="bulk-x" @onclick="@(() => Service.ClearSelection())" title="@CommonVocabulary.Cancel">✕</button>
     </div>
@@ -537,6 +543,15 @@
                         </div>
                     </div>
                 }
+
+                @* Set apart from the settings above: this one discards them rather than writing one. *@
+                <div class="bulk-reset">
+                    <button class="bulk-btn ghost" @onclick="@ApplyBulkResetAsync">
+                        @Localization.DataCollectionWizardPage.BulkReset
+                    </button>
+
+                    <span class="bulk-reset-note">@Localization.DataCollectionWizardPage.BulkResetHint</span>
+                </div>
             }
         </div>
     }

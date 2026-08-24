@@ -273,6 +273,12 @@
   <data name="BulkSettings" xml:space="preserve">
     <value>Settings</value>
   </data>
+  <data name="BulkReset" xml:space="preserve">
+    <value>Reset to defaults</value>
+  </data>
+  <data name="BulkResetHint" xml:space="preserve">
+    <value>Turns recording off and puts interval, aggregation, schedule and triggers back to each cloud's own defaults.</value>
+  </data>
   <data name="BulkGroupProcessValues" xml:space="preserve">
     <value>Process values</value>
   </data>

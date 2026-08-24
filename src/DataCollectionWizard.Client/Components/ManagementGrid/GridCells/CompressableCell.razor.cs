@@ -36,6 +36,7 @@ public sealed partial class CompressableCell : ComponentBase
     private bool _shouldRender = true;
     private IDeviceTreeCompressableDataNode? _previousDataNode;
     private PublishTargetInfo? _previousConfiguration;
+    private int _previousRenderEpoch;
 
     [CascadingParameter]
     private ManagementGridService Service { get; set; } = default!;
@@ -49,6 +50,18 @@ public sealed partial class CompressableCell : ComponentBase
     [Parameter]
     public EventCallback OnDeviceTreeChanged { get; set; }
 
+    /// <summary>
+    /// Bumped by the grid whenever something outside this cell wrote its configuration.
+    /// </summary>
+    /// <remarks>
+    /// The cell renders once per parameter change and then blocks, and a bulk change writes the configuration
+    /// object in place - so nothing it can see has changed and it would keep showing the old toggle and combo.
+    /// A changing number is enough to let one render through. The grid used to re-key every row for this, which
+    /// tore down and rebuilt every visible row's components for the sake of the few fields that actually moved.
+    /// </remarks>
+    [Parameter]
+    public int RenderEpoch { get; set; }
+
     private CompressorConfiguration Config
         => _cachedConfig ??= CompressableDataNode.CompressorConfigurations
             .Single(cc => cc.DataGroupIdentifier == Configuration.Connection.Id);
@@ -61,12 +74,14 @@ public sealed partial class CompressableCell : ComponentBase
 
     protected override void OnParametersSet()
     {
-        if (ReferenceEquals(_previousDataNode, CompressableDataNode) &&
+        if (_previousRenderEpoch == RenderEpoch &&
+            ReferenceEquals(_previousDataNode, CompressableDataNode) &&
             ReferenceEquals(_previousConfiguration, Configuration))
         {
             return;
         }
 
+        _previousRenderEpoch = RenderEpoch;
         _previousDataNode = CompressableDataNode;
         _previousConfiguration = Configuration;
         _cachedConfig = null;

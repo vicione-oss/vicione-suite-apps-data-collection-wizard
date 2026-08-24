@@ -147,6 +147,24 @@ namespace DataCollectionWizard.Client.Components.Localization {
             }
         }
 
+        /// <summary>
+        ///   Looks up a localized string similar to Reset to defaults.
+        /// </summary>
+        internal static string BulkReset {
+            get {
+                return ResourceManager.GetString("BulkReset", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Turns recording off and puts interval, aggregation, schedule and triggers back to each cloud&apos;s own defaults.
+        /// </summary>
+        internal static string BulkResetHint {
+            get {
+                return ResourceManager.GetString("BulkResetHint", resourceCulture);
+            }
+        }
+
         internal static string BulkGroupProcessValues {
             get {
                 return ResourceManager.GetString("BulkGroupProcessValues", resourceCulture);
