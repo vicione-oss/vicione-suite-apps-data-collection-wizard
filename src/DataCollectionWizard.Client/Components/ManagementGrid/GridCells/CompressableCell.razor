@@ -7,13 +7,13 @@
             ValueChanged="@(CompressionEnabledChanged)" />
 
     <ComboBox Enabled="@(IsSupportedConnection())"
-              Items="@(PoolingGrids)"
-              TextSelector="@(s_poolingGridTextSelector)"
-              TItem="@(ComboBoxOption<PoolingGrid>)"
-              TValue="@(PoolingGrid)"
-              Value="@(GetSelectedPoolingGrid())"
-              ValueChanged="@(PoolingGridChanged)"
-              ValueSelector="@(s_poolingGridValueSelector)" />
+              Items="@(AggregationIntervals)"
+              TextSelector="@(s_aggregationIntervalTextSelector)"
+              TItem="@(ComboBoxOption<AggregationInterval>)"
+              TValue="@(AggregationInterval)"
+              Value="@(GetSelectedAggregationInterval())"
+              ValueChanged="@(AggregationIntervalChanged)"
+              ValueSelector="@(s_aggregationIntervalValueSelector)" />
 
     <ComboBox Enabled="@(!IsOnChange() && IsSupportedConnection())"
               Items="@(AggregationFunctions)"

@@ -142,7 +142,7 @@ internal sealed class ManagementGridService : INotifyPropertyChanged
     public event Action? SaveRequested;
     public event Action? SelectionChanged;
     public event Action<bool>? SetAllDatapointsEnabledRequested;
-    public event Action<PoolingGrid>? SetCompressionForAllRequested;
+    public event Action<AggregationInterval>? SetCompressionForAllRequested;
     public event Action? SetDebugRawDataRequested;
 
     public void FilterGridItems(string filterText)
@@ -219,8 +219,8 @@ internal sealed class ManagementGridService : INotifyPropertyChanged
     public void RequestSetAllDatapointsEnabled(bool enabled)
         => SetAllDatapointsEnabledRequested?.Invoke(enabled);
 
-    public void RequestSetCompressionForAll(PoolingGrid poolingGrid)
-        => SetCompressionForAllRequested?.Invoke(poolingGrid);
+    public void RequestSetCompressionForAll(AggregationInterval aggregationInterval)
+        => SetCompressionForAllRequested?.Invoke(aggregationInterval);
 
     public void RequestSetDebugRawData()
         => SetDebugRawDataRequested?.Invoke();

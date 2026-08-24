@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using DataCollectionWizard.Client.Components.Localization;
 using ViciOne.DeviceTree.Contracts;
 
@@ -43,6 +40,8 @@ internal sealed class TooltipRowBuilder
 {
     private readonly List<TooltipRow> _rows = [];
 
+    public bool HasRows => _rows.Count > 0;
+
     public TooltipRowBuilder Add(string label, string? value)
     {
         if (!string.IsNullOrWhiteSpace(value))
@@ -50,8 +49,6 @@ internal sealed class TooltipRowBuilder
 
         return this;
     }
-
-    public bool HasRows => _rows.Count > 0;
 
     public IReadOnlyList<TooltipRow> Build() => _rows;
 }

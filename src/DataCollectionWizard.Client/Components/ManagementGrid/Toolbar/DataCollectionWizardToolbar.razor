@@ -69,16 +69,16 @@
         {
             <span class="separator"></span>
 
-            <select @onchange="@(e => _debugPoolingGrid = ((string)e.Value!).ToPoolingGrid())">
-                @foreach (var value in Enum.GetValues(typeof(PoolingGrid)).Cast<PoolingGrid>())
+            <select @onchange="@(e => _debugAggregationInterval = ((string)e.Value!).ToAggregationInterval())">
+                @foreach (var value in Enum.GetValues(typeof(AggregationInterval)).Cast<AggregationInterval>())
                 {
-                    <option selected="@(value == _debugPoolingGrid)">
-                        @(value.PoolingGridToString())
+                    <option selected="@(value == _debugAggregationInterval)">
+                        @(value.AggregationIntervalToString())
                     </option>
                 }
             </select>
 
-            <button @onclick="@(() => SetAllDatapointsCompression(_debugPoolingGrid))"
+            <button @onclick="@(() => SetAllDatapointsCompression(_debugAggregationInterval))"
                     title="@Localization.DataCollectionWizardPage.SetAllDatapointsCompression">
 
                 <MonochromeIcon Name="@MonochromeIconName.Check" Size="@MonochromeIconSize.SmallMedium" />

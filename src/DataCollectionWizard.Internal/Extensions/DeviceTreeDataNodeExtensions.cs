@@ -20,7 +20,7 @@ public static class DeviceTreeDataNodeExtensions
                 compressableDataNode.CompressorConfigurations.Add(new CompressorConfiguration
                 {
                     Aggregation = annaCloudfilter.GetCloudConnections([config]).Any() ? AggregationFunction.MinMaxAvg : AggregationFunction.Last,
-                    CompressionTime = annaCloudfilter.GetCloudConnections([config]).Any() ? (int)PoolingGrid.SecondsTen : (int)PoolingGrid.MinutesOne,
+                    CompressionTime = annaCloudfilter.GetCloudConnections([config]).Any() ? (int)AggregationInterval.SecondsTen : (int)AggregationInterval.MinutesOne,
                     DataGroupIdentifier = config.Id,
                     Enabled = false,
                 });

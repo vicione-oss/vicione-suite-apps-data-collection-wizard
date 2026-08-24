@@ -1,7 +1,7 @@
 ﻿namespace DataCollectionWizard.Internal.Contracts;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1008:Enumerationen müssen einen Wert von null aufweisen.", Justification = "Null wird nicht benötigt.")]
-public enum PoolingGrid
+public enum AggregationInterval
 {
     OnChange = -1,
     SecondsOne = 1 * 1000,

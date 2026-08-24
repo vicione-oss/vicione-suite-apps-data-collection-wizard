@@ -12,25 +12,25 @@ namespace DataCollectionWizard.Client.Components.ManagementGrid.GridCells;
 
 public sealed partial class CompressableCell : ComponentBase
 {
-    private static readonly ComboBoxOption<PoolingGrid>[] s_poolingGridsAnna =
+    private static readonly ComboBoxOption<AggregationInterval>[] s_aggregationIntervalsAnna =
     [
-        new() { Text = PoolingGrid.OnChange.PoolingGridToString(), Value = PoolingGrid.OnChange, },
-        new() { Text = PoolingGrid.SecondsOne.PoolingGridToString(), Value = PoolingGrid.SecondsOne, },
-        new() { Text = PoolingGrid.SecondsFive.PoolingGridToString(), Value = PoolingGrid.SecondsFive, },
-        new() { Text = PoolingGrid.SecondsTen.PoolingGridToString(), Value = PoolingGrid.SecondsTen, },
-        new() { Text = PoolingGrid.SecondsThirty.PoolingGridToString(), Value = PoolingGrid.SecondsThirty, },
-        new() { Text = PoolingGrid.MinutesOne.PoolingGridToString(), Value = PoolingGrid.MinutesOne, },
-        new() { Text = PoolingGrid.MinutesTwo.PoolingGridToString(), Value = PoolingGrid.MinutesTwo, },
-        new() { Text = PoolingGrid.MinutesFive.PoolingGridToString(), Value = PoolingGrid.MinutesFive, },
-        new() { Text = PoolingGrid.MinutesTen.PoolingGridToString(), Value = PoolingGrid.MinutesTen, },
-        new() { Text = PoolingGrid.MinutesThirty.PoolingGridToString(), Value = PoolingGrid.MinutesThirty, },
-        new() { Text = PoolingGrid.HoursOne.PoolingGridToString(), Value = PoolingGrid.HoursOne, },
+        new() { Text = AggregationInterval.OnChange.AggregationIntervalToString(), Value = AggregationInterval.OnChange, },
+        new() { Text = AggregationInterval.SecondsOne.AggregationIntervalToString(), Value = AggregationInterval.SecondsOne, },
+        new() { Text = AggregationInterval.SecondsFive.AggregationIntervalToString(), Value = AggregationInterval.SecondsFive, },
+        new() { Text = AggregationInterval.SecondsTen.AggregationIntervalToString(), Value = AggregationInterval.SecondsTen, },
+        new() { Text = AggregationInterval.SecondsThirty.AggregationIntervalToString(), Value = AggregationInterval.SecondsThirty, },
+        new() { Text = AggregationInterval.MinutesOne.AggregationIntervalToString(), Value = AggregationInterval.MinutesOne, },
+        new() { Text = AggregationInterval.MinutesTwo.AggregationIntervalToString(), Value = AggregationInterval.MinutesTwo, },
+        new() { Text = AggregationInterval.MinutesFive.AggregationIntervalToString(), Value = AggregationInterval.MinutesFive, },
+        new() { Text = AggregationInterval.MinutesTen.AggregationIntervalToString(), Value = AggregationInterval.MinutesTen, },
+        new() { Text = AggregationInterval.MinutesThirty.AggregationIntervalToString(), Value = AggregationInterval.MinutesThirty, },
+        new() { Text = AggregationInterval.HoursOne.AggregationIntervalToString(), Value = AggregationInterval.HoursOne, },
     ];
-    private static readonly ComboBoxOption<PoolingGrid>[] s_poolingGridsMoneo =
+    private static readonly ComboBoxOption<AggregationInterval>[] s_aggregationIntervalsMoneo =
     [
-        new() { Text = PoolingGrid.SecondsOne.PoolingGridToString(), Value = PoolingGrid.SecondsOne, },
-        new() { Text = PoolingGrid.SecondsTen.PoolingGridToString(), Value = PoolingGrid.SecondsTen, },
-        new() { Text = PoolingGrid.MinutesOne.PoolingGridToString(), Value = PoolingGrid.MinutesOne, },
+        new() { Text = AggregationInterval.SecondsOne.AggregationIntervalToString(), Value = AggregationInterval.SecondsOne, },
+        new() { Text = AggregationInterval.SecondsTen.AggregationIntervalToString(), Value = AggregationInterval.SecondsTen, },
+        new() { Text = AggregationInterval.MinutesOne.AggregationIntervalToString(), Value = AggregationInterval.MinutesOne, },
     ];
     private static readonly ComboBoxOption<AggregationFunction>[] s_aggregationFunctionsAnna =
     [
@@ -46,8 +46,8 @@ public sealed partial class CompressableCell : ComponentBase
         new() { Text = AggregationFunction.Min.AggregationFunctionToString(), Value = AggregationFunction.Min, },
         new() { Text = AggregationFunction.Max.AggregationFunctionToString(), Value = AggregationFunction.Max, },
     ];
-    private static readonly Expression<Func<ComboBoxOption<PoolingGrid>, string>> s_poolingGridTextSelector = e => e.Text;
-    private static readonly Expression<Func<ComboBoxOption<PoolingGrid>, PoolingGrid>> s_poolingGridValueSelector = e => e.Value;
+    private static readonly Expression<Func<ComboBoxOption<AggregationInterval>, string>> s_aggregationIntervalTextSelector = e => e.Text;
+    private static readonly Expression<Func<ComboBoxOption<AggregationInterval>, AggregationInterval>> s_aggregationIntervalValueSelector = e => e.Value;
     private static readonly Expression<Func<ComboBoxOption<AggregationFunction>, string>> s_aggregationFunctionTextSelector = e => e.Text;
     private static readonly Expression<Func<ComboBoxOption<AggregationFunction>, AggregationFunction>> s_aggregationFunctionValueSelector = e => e.Value;
     private CompressorConfiguration? _cachedConfig;
@@ -71,11 +71,11 @@ public sealed partial class CompressableCell : ComponentBase
         => _cachedConfig ??= CompressableDataNode.CompressorConfigurations
             .Single(cc => cc.DataGroupIdentifier == Configuration.Connection.Id);
 
-    private ComboBoxOption<PoolingGrid>[] PoolingGrids
+    private ComboBoxOption<AggregationInterval>[] AggregationIntervals
         => Configuration.Kind switch
         {
-            ConnectionKind.Anna => s_poolingGridsAnna,
-            ConnectionKind.Moneo => s_poolingGridsMoneo,
+            ConnectionKind.Anna => s_aggregationIntervalsAnna,
+            ConnectionKind.Moneo => s_aggregationIntervalsMoneo,
             _ => [],
         };
 
@@ -110,8 +110,8 @@ public sealed partial class CompressableCell : ComponentBase
         return true;
     }
 
-    private PoolingGrid GetSelectedPoolingGrid()
-        => Config.CompressionTime.ToPoolingGrid();
+    private AggregationInterval GetSelectedAggregationInterval()
+        => Config.CompressionTime.ToAggregationInterval();
 
     private AggregationFunction GetSelectedAggregationFunction()
         => Config.Aggregation;
@@ -134,9 +134,9 @@ public sealed partial class CompressableCell : ComponentBase
         OnDeviceTreeChanged.InvokeAsync();
     }
 
-    private void PoolingGridChanged(PoolingGrid poolingGrid)
+    private void AggregationIntervalChanged(AggregationInterval aggregationInterval)
     {
-        Config.CompressionTime = (int)poolingGrid;
+        Config.CompressionTime = (int)aggregationInterval;
         _shouldRender = true;
 
         Service.InvokeConfigChanged();

@@ -446,7 +446,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         if (_selectedIoLinkDevices.Count == 0)
             return false;
 
-        List<string> authAddresses = SelectedAuthRequiredAddresses();
+        var authAddresses = SelectedAuthRequiredAddresses();
         // In "same credentials for all" mode one shared username covers every auth-required master; otherwise each
         // selected auth-required master needs its own username entered.
         return _ioLinkUseSharedCredentials && authAddresses.Count > 1
@@ -465,12 +465,11 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     /// The addresses of the currently selected scanned masters that reported they require authentication.
     /// </summary>
     private List<string> SelectedAuthRequiredAddresses()
-        => (_scannedIoLinkDevices ?? [])
+        => [.. (_scannedIoLinkDevices ?? [])
             .Where(device => device.Security.RequiresAuthentication &&
                              device.Network.Address is not null &&
                              _selectedIoLinkDevices.Contains(device.Network.Address.ToString()!))
-            .Select(device => device.Network.Address!.ToString())
-            .ToList();
+            .Select(device => device.Network.Address!.ToString())];
 
     private string DeviceNameForAddress(string address)
         => (_scannedIoLinkDevices ?? [])
@@ -486,10 +485,10 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             : address;
 
     private string GetIoLinkCredentialUser(string address)
-        => _ioLinkCredentials.TryGetValue(address, out (string User, string Password) credential) ? credential.User : string.Empty;
+        => _ioLinkCredentials.TryGetValue(address, out var credential) ? credential.User : string.Empty;
 
     private string GetIoLinkCredentialPassword(string address)
-        => _ioLinkCredentials.TryGetValue(address, out (string User, string Password) credential) ? credential.Password : string.Empty;
+        => _ioLinkCredentials.TryGetValue(address, out var credential) ? credential.Password : string.Empty;
 
     private void SetIoLinkCredentialUser(string address, string user)
         => _ioLinkCredentials[address] = (user, GetIoLinkCredentialPassword(address));
@@ -507,7 +506,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         if (useShared)
             return;
 
-        foreach (string address in authAddresses)
+        foreach (var address in authAddresses)
         {
             if (!string.IsNullOrEmpty(_ioLinkSharedUser))
                 SetIoLinkCredentialUser(address, _ioLinkSharedUser);
@@ -750,11 +749,11 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         // master can be matched to its credentials there. In "same credentials for all" mode the shared pair
         // covers every auth-required selected master.
         var resolvedCredentials = new Dictionary<string, (string User, string Password)>(StringComparer.OrdinalIgnoreCase);
-        List<string> authAddresses = SelectedAuthRequiredAddresses();
-        bool useSharedCredentials = _ioLinkUseSharedCredentials && authAddresses.Count > 1;
+        var authAddresses = SelectedAuthRequiredAddresses();
+        var useSharedCredentials = _ioLinkUseSharedCredentials && authAddresses.Count > 1;
         var authAddressSet = new HashSet<string>(authAddresses, StringComparer.OrdinalIgnoreCase);
 
-        foreach (string selectedAddress in _selectedIoLinkDevices)
+        foreach (var selectedAddress in _selectedIoLinkDevices)
         {
             (string User, string Password) credential;
             if (useSharedCredentials && authAddressSet.Contains(selectedAddress))
@@ -774,7 +773,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         var deviceEngineInfos = _selectedIoLinkDevices.Select(d =>
         {
             var uri = new UriBuilder(d).Uri;
-            resolvedCredentials.TryGetValue(uri.AbsoluteUri, out (string User, string Password) credential);
+            resolvedCredentials.TryGetValue(uri.AbsoluteUri, out var credential);
             return new DeviceEngineInfo(uri, typeof(DeviceTreeIoLinkMaster).AssemblyQualifiedName!, credential.User, credential.Password);
         });
 
@@ -801,7 +800,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                     };
                 }
 
-                if (d is DeviceTreeIoLinkMaster masterNode && resolvedCredentials.TryGetValue(uri.AbsoluteUri, out (string User, string Password) credential))
+                if (d is DeviceTreeIoLinkMaster masterNode && resolvedCredentials.TryGetValue(uri.AbsoluteUri, out var credential))
                 {
                     masterNode.Username = credential.User;
                     masterNode.Password = credential.Password;
@@ -1412,7 +1411,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         InvokeAsync(StateHasChanged);
     }
 
-    private void SetAllDatapointsCompression(PoolingGrid poolingGrid)
+    private void SetAllDatapointsCompression(AggregationInterval aggregationInterval)
     {
         if (_tree is null)
             return;
@@ -1425,7 +1424,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
             foreach (var compressorConfiguration in compressorConfigurations)
             {
-                compressorConfiguration.CompressionTime = (int)poolingGrid;
+                compressorConfiguration.CompressionTime = (int)aggregationInterval;
             }
 
             _changedMasterDevices.Clear();
@@ -1479,7 +1478,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
         var targetConnections = request.Target is null
             ? (IEnumerable<Connection>)_publishTargets
-            : new[] { request.Target.Connection };
+            : [request.Target.Connection];
         var connectionIds = targetConnections.Select(connection => connection.Id).ToHashSet();
 
         var selectedNodes = _service.SelectedNodes;

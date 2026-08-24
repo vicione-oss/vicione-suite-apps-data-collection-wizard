@@ -163,17 +163,14 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
             var unitOutput = unitDesignId is null ? null : diagnosticFb.GetOutputByDesignId(unitDesignId.Value);
 
             valueOutput.EventEnabled = true;
-            if (unitOutput is not null)
-            {
-                unitOutput.EventEnabled = true;
-            }
+            unitOutput?.EventEnabled = true;
 
             result.OutputMapping.Add(new ValueMappingEntry
             {
                 ProcessDataId = node.Id,
                 UnitOutputId = unitOutput?.Id,
-                ValueOutputIdUI = valueOutput.Id,
                 ValueOutputIdLogging = valueOutput.Id,
+                ValueOutputIdUI = valueOutput.Id,
             });
 
             var outputInfo = new DataOutputInfo

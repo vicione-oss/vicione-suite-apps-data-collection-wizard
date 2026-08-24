@@ -134,10 +134,9 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
                 Id = "placeholder",
                 MacAddress = "ff:ff:ff:ff:ff",
                 Name = $"IO-Link-{address}",
-                Url = new UriBuilder(address).Uri,
-                // The fetch engine authenticates with these so the tree of an auth-required master can be read.
-                Username = username,
                 Password = password,
+                Url = new UriBuilder(address).Uri,
+                Username = username,
             },
             _ => throw new ArgumentException($"Invalid device type encountered, {type} is not currently supported", type.Name),
         };

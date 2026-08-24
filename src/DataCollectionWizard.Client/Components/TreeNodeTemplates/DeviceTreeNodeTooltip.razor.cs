@@ -1,6 +1,4 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using DataCollectionWizard.Client.Components.Localization;
+﻿using DataCollectionWizard.Client.Components.Localization;
 using DataCollectionWizard.Client.Extensions;
 using DataCollectionWizard.Client.Models;
 using DataCollectionWizard.Client.Services;
@@ -15,22 +13,36 @@ public sealed partial class DeviceTreeNodeTooltip
 
     [Inject]
     private IoddImageProvider IoddImageProvider { get; set; } = default!;
-
     [Parameter, EditorRequired]
     public required IDeviceTreeBase Device { get; set; }
-
     [Parameter]
     public bool IsLiveView { get; set; }
-
     [Parameter]
     public int InheritedStatus { get; set; }
-
     // "Manufacturer · Device family" under the name (master nodes only; the provider decides).
     private string? Subtitle => DeviceTooltipProviders.For(Device)?.GetSubtitle(Device);
-
     // Whether the master reports that it wants credentials - shown the same way as in the device scan list.
     private bool RequiresAuthentication
         => Device is DeviceTreeIoLinkMaster ioLinkMaster && ioLinkMaster.Security.RequiresAuthentication;
+    // Severity class for the coloured hairline on top of the tooltip (most severe status of node + subtree wins).
+    private string TopStateClass
+    {
+        get
+        {
+            var status = Device.GetStatus(IsLiveView) | (NodeStatus)InheritedStatus;
+
+            if (status.HasFlag(NodeStatus.Offline))
+                return "st-off";
+
+            if (status.HasFlag(NodeStatus.NotSupported) || status.HasFlag(NodeStatus.Unknown))
+                return "st-warn";
+
+            if (status.HasFlag(NodeStatus.New))
+                return "st-new";
+
+            return string.Empty;
+        }
+    }
 
     // The tooltip body. A type-specific provider decides the sections and where the description sits; a node without
     // a provider (e.g. a structure/folder or a plain data node) just shows its description, if any.
@@ -71,26 +83,6 @@ public sealed partial class DeviceTreeNodeTooltip
         Add(inheritedStatus, NodeStatus.New, DeviceTreeTooltip.InheritedStatusNewlyCreated, "new");
 
         return flags;
-    }
-
-    // Severity class for the coloured hairline on top of the tooltip (most severe status of node + subtree wins).
-    private string TopStateClass
-    {
-        get
-        {
-            var status = Device.GetStatus(IsLiveView) | (NodeStatus)InheritedStatus;
-
-            if (status.HasFlag(NodeStatus.Offline))
-                return "st-off";
-
-            if (status.HasFlag(NodeStatus.NotSupported) || status.HasFlag(NodeStatus.Unknown))
-                return "st-warn";
-
-            if (status.HasFlag(NodeStatus.New))
-                return "st-new";
-
-            return string.Empty;
-        }
     }
 
     private async Task<string> GetDeviceImage()

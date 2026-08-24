@@ -9,7 +9,7 @@ namespace DataCollectionWizard.Client.Components.ManagementGrid.Toolbar;
 
 public sealed partial class DataCollectionWizardToolbar : IDisposable
 {
-    private PoolingGrid _debugPoolingGrid = PoolingGrid.MinutesThirty;
+    private AggregationInterval _debugAggregationInterval = AggregationInterval.MinutesThirty;
     private readonly System.Timers.Timer _searchBoxTimer = new()
     {
         AutoReset = false,
@@ -90,7 +90,7 @@ public sealed partial class DataCollectionWizardToolbar : IDisposable
     private void OnDeleteOfflineNodesClicked()
         => Service.RequestDeleteOfflineNodes();
 
-    private void SetAllDatapointsCompression(PoolingGrid pg)
+    private void SetAllDatapointsCompression(AggregationInterval pg)
         => Service.RequestSetCompressionForAll(pg);
 
     private void SetAllDatapointsEnabled(bool enabled)

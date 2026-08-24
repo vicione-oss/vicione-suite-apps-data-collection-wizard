@@ -1,8 +1,6 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Globalization;
 using DataCollectionWizard.Client.Components.ManagementGrid.Services;
-using DataCollectionWizard.Internal.Contracts;
-using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using Microsoft.AspNetCore.Components;
 using ViciOne.DeviceTree.Contracts;
 using ViciOne.DeviceTree.Contracts.Extensions;
