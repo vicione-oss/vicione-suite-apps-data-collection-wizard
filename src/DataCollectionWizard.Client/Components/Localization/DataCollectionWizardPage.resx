@@ -144,6 +144,15 @@
   <data name="Alias" xml:space="preserve">
     <value>Enter alias</value>
   </data>
+  <data name="AliasTreePreview" xml:space="preserve">
+    <value>In the tree:</value>
+  </data>
+  <data name="AliasEmptyHint" xml:space="preserve">
+    <value>Leave empty to show only the device name.</value>
+  </data>
+  <data name="AliasCharacterCount" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
   <data name="Expand" xml:space="preserve">
     <value>Expand</value>
   </data>
@@ -263,6 +272,66 @@
   </data>
   <data name="AllClouds" xml:space="preserve">
     <value>All clouds</value>
+  </data>
+  <data name="BulkSettings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="BulkGroupProcessValues" xml:space="preserve">
+    <value>Process values</value>
+  </data>
+  <data name="BulkGroupUncompressed" xml:space="preserve">
+    <value>Without compression</value>
+  </data>
+  <data name="BulkGroupRecordings" xml:space="preserve">
+    <value>Recordings</value>
+  </data>
+  <data name="BulkFieldAggregationInterval" xml:space="preserve">
+    <value>Interval</value>
+  </data>
+  <data name="BulkFieldAggregationFunction" xml:space="preserve">
+    <value>Function</value>
+  </data>
+  <data name="BulkFieldDays" xml:space="preserve">
+    <value>Weekdays</value>
+  </data>
+  <data name="BulkFieldTimesADay" xml:space="preserve">
+    <value>Times a day</value>
+  </data>
+  <data name="BulkGroupRawData" xml:space="preserve">
+    <value>Raw data</value>
+  </data>
+  <data name="BulkGroupTriggers" xml:space="preserve">
+    <value>Event triggers</value>
+  </data>
+  <data name="BulkFieldFrequency" xml:space="preserve">
+    <value>Frequency</value>
+  </data>
+  <data name="BulkFieldDuration" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="BulkFieldDelay" xml:space="preserve">
+    <value>Delay (h)</value>
+  </data>
+  <data name="BulkMixedValue" xml:space="preserve">
+    <value>— Multiple —</value>
+  </data>
+  <data name="BulkRowCount" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="BulkNoSettings" xml:space="preserve">
+    <value>Only activating and deactivating</value>
+  </data>
+  <data name="BulkNothingApplicable" xml:space="preserve">
+    <value>The selection has no settings that can be changed together.</value>
+  </data>
+  <data name="BulkTargetNotConfigurable" xml:space="preserve">
+    <value>This cloud cannot be configured.</value>
+  </data>
+  <data name="BulkOnChangeLocked" xml:space="preserve">
+    <value>{0} of them are set to "On Change" — their function stays unchanged.</value>
+  </data>
+  <data name="BulkReducedOptions" xml:space="preserve">
+    <value>The clouds offer different options; only those available in all of them can be set here.</value>
   </data>
   <data name="BulkSelectionCount" xml:space="preserve">
     <value>{0} selected</value>

@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using DataCollectionWizard.Client.Components.ManagementGrid.Models;
 using DataCollectionWizard.Client.Components.ManagementGrid.Services;
 using DataCollectionWizard.Client.Extensions;
 using DataCollectionWizard.Client.Models;
@@ -12,40 +13,21 @@ namespace DataCollectionWizard.Client.Components.ManagementGrid.GridCells;
 
 public sealed partial class CompressableCell : ComponentBase
 {
-    private static readonly ComboBoxOption<AggregationInterval>[] s_aggregationIntervalsAnna =
-    [
-        new() { Text = AggregationInterval.OnChange.AggregationIntervalToString(), Value = AggregationInterval.OnChange, },
-        new() { Text = AggregationInterval.SecondsOne.AggregationIntervalToString(), Value = AggregationInterval.SecondsOne, },
-        new() { Text = AggregationInterval.SecondsFive.AggregationIntervalToString(), Value = AggregationInterval.SecondsFive, },
-        new() { Text = AggregationInterval.SecondsTen.AggregationIntervalToString(), Value = AggregationInterval.SecondsTen, },
-        new() { Text = AggregationInterval.SecondsThirty.AggregationIntervalToString(), Value = AggregationInterval.SecondsThirty, },
-        new() { Text = AggregationInterval.MinutesOne.AggregationIntervalToString(), Value = AggregationInterval.MinutesOne, },
-        new() { Text = AggregationInterval.MinutesTwo.AggregationIntervalToString(), Value = AggregationInterval.MinutesTwo, },
-        new() { Text = AggregationInterval.MinutesFive.AggregationIntervalToString(), Value = AggregationInterval.MinutesFive, },
-        new() { Text = AggregationInterval.MinutesTen.AggregationIntervalToString(), Value = AggregationInterval.MinutesTen, },
-        new() { Text = AggregationInterval.MinutesThirty.AggregationIntervalToString(), Value = AggregationInterval.MinutesThirty, },
-        new() { Text = AggregationInterval.HoursOne.AggregationIntervalToString(), Value = AggregationInterval.HoursOne, },
-    ];
-    private static readonly ComboBoxOption<AggregationInterval>[] s_aggregationIntervalsMoneo =
-    [
-        new() { Text = AggregationInterval.SecondsOne.AggregationIntervalToString(), Value = AggregationInterval.SecondsOne, },
-        new() { Text = AggregationInterval.SecondsTen.AggregationIntervalToString(), Value = AggregationInterval.SecondsTen, },
-        new() { Text = AggregationInterval.MinutesOne.AggregationIntervalToString(), Value = AggregationInterval.MinutesOne, },
-    ];
-    private static readonly ComboBoxOption<AggregationFunction>[] s_aggregationFunctionsAnna =
-    [
-        new() { Text = AggregationFunction.MinMaxAvg.AggregationFunctionToString(), Value = AggregationFunction.MinMaxAvg, },
-        new() { Text = AggregationFunction.Avg.AggregationFunctionToString(), Value = AggregationFunction.Avg, },
-        new() { Text = AggregationFunction.Min.AggregationFunctionToString(), Value = AggregationFunction.Min, },
-        new() { Text = AggregationFunction.Max.AggregationFunctionToString(), Value = AggregationFunction.Max, },
-    ];
-    private static readonly ComboBoxOption<AggregationFunction>[] s_aggregationFunctionsMoneo =
-    [
-        new() { Text = AggregationFunction.Last.AggregationFunctionToString(), Value = AggregationFunction.Last, },
-        new() { Text = AggregationFunction.Avg.AggregationFunctionToString(), Value = AggregationFunction.Avg, },
-        new() { Text = AggregationFunction.Min.AggregationFunctionToString(), Value = AggregationFunction.Min, },
-        new() { Text = AggregationFunction.Max.AggregationFunctionToString(), Value = AggregationFunction.Max, },
-    ];
+    // Which options exist per connection kind lives in AggregationOptions, shared with the bulk panel; this only
+    // wraps them for the ComboBox.
+    private static readonly Dictionary<ConnectionKind, ComboBoxOption<AggregationInterval>[]> s_aggregationIntervals =
+        Enum.GetValues<ConnectionKind>().ToDictionary(
+            kind => kind,
+            kind => AggregationOptions.IntervalsFor(kind)
+                .Select(interval => new ComboBoxOption<AggregationInterval> { Text = interval.AggregationIntervalToString(), Value = interval, })
+                .ToArray());
+
+    private static readonly Dictionary<ConnectionKind, ComboBoxOption<AggregationFunction>[]> s_aggregationFunctions =
+        Enum.GetValues<ConnectionKind>().ToDictionary(
+            kind => kind,
+            kind => AggregationOptions.FunctionsFor(kind)
+                .Select(function => new ComboBoxOption<AggregationFunction> { Text = function.AggregationFunctionToString(), Value = function, })
+                .ToArray());
     private static readonly Expression<Func<ComboBoxOption<AggregationInterval>, string>> s_aggregationIntervalTextSelector = e => e.Text;
     private static readonly Expression<Func<ComboBoxOption<AggregationInterval>, AggregationInterval>> s_aggregationIntervalValueSelector = e => e.Value;
     private static readonly Expression<Func<ComboBoxOption<AggregationFunction>, string>> s_aggregationFunctionTextSelector = e => e.Text;
@@ -72,20 +54,10 @@ public sealed partial class CompressableCell : ComponentBase
             .Single(cc => cc.DataGroupIdentifier == Configuration.Connection.Id);
 
     private ComboBoxOption<AggregationInterval>[] AggregationIntervals
-        => Configuration.Kind switch
-        {
-            ConnectionKind.Anna => s_aggregationIntervalsAnna,
-            ConnectionKind.Moneo => s_aggregationIntervalsMoneo,
-            _ => [],
-        };
+        => s_aggregationIntervals.TryGetValue(Configuration.Kind, out var intervals) ? intervals : [];
 
     private ComboBoxOption<AggregationFunction>[] AggregationFunctions
-        => Configuration.Kind switch
-        {
-            ConnectionKind.Anna => s_aggregationFunctionsAnna,
-            ConnectionKind.Moneo => s_aggregationFunctionsMoneo,
-            _ => [],
-        };
+        => s_aggregationFunctions.TryGetValue(Configuration.Kind, out var functions) ? functions : [];
 
     protected override void OnParametersSet()
     {

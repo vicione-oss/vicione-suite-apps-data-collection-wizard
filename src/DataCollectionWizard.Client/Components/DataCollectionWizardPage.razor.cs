@@ -3,8 +3,11 @@ using System.Net;
 using System.Net.Sockets;
 using ClusterManagement.Public.Services;
 using DataCollectionWizard.Client.Components.ManagementGrid;
+using DataCollectionWizard.Client.Components.ManagementGrid.GridCells;
 using DataCollectionWizard.Client.Components.ManagementGrid.Models;
 using DataCollectionWizard.Client.Components.ManagementGrid.Services;
+using DataCollectionWizard.Client.Components.TreeNodeTemplates;
+using DataCollectionWizard.Client.Extensions;
 using DataCollectionWizard.Client.Models.DeviceTree;
 using DataCollectionWizard.Client.Services;
 using DataCollectionWizard.Internal.Commands;
@@ -39,6 +42,11 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private const string ScanDialogHeight = "680px";
     private const int MaxRecommendedDataPoints = 100;
 
+
+    /// <summary>
+    /// Longest alias the dialog accepts.
+    /// </summary>
+    private const int AliasMaximumLength = 64;
     private DeviceTreeAdapter _adapter = default!;
     private Dictionary<string, IDeviceTreeBase> _allNodes = [];
     private readonly List<IDeviceTreeMasterNode> _changedMasterDevices = [];
@@ -199,6 +207,30 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private bool _gridNeedsRebuild;
     private readonly ManagementGridService _service = new();
     private IDisposable? _subscriptionHandleDeviceTreeApplication;
+
+    /// <summary>
+    /// The name of the device the alias dialog is currently editing.
+    /// </summary>
+    private string AliasSubjectName => _editingNode?.Device.Name ?? string.Empty;
+
+    /// <summary>
+    /// A second line identifying that device - its family and address, as far as the node reports them.
+    /// </summary>
+    private string? AliasSubjectDetail
+        => _editingNode?.Device is IDeviceTreeMasterNode master
+            ? DeviceTooltipFormat.Join(master.DeviceFamily, DeviceTooltipFormat.Address(master.Url))
+            : null;
+
+    /// <summary>
+    /// How the node will read in the tree with the alias currently typed - the alias does not replace the
+    /// device's name but precedes it, which is not otherwise visible while typing.
+    /// </summary>
+    private string AliasTreePreviewText
+        => DeviceTreeNodeNameProvider.GetUserAliasDisplayText(_deviceAlias, AliasSubjectName);
+
+    private string AliasCharacterCountText
+        => string.Format(CultureInfo.CurrentCulture, Localization.DataCollectionWizardPage.AliasCharacterCount,
+            _deviceAlias.Length, AliasMaximumLength);
 
     protected override string PageTitle => Localization.DataCollectionWizardPage.Title;
 
@@ -1483,13 +1515,19 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
         var selectedNodes = _service.SelectedNodes;
 
+        // Collected while writing, so the grid can point out exactly the cells this reached.
+        var changedNodes = new HashSet<IDeviceTreeDataNode>();
+
         lock (_treeLock)
         {
-            foreach (var configuration in selectedNodes.OfType<IDeviceTreeCompressableDataNode>()
-                                                       .SelectMany(node => node.CompressorConfigurations)
-                                                       .Where(configuration => connectionIds.Contains(configuration.DataGroupIdentifier)))
+            foreach (var node in selectedNodes.OfType<IDeviceTreeCompressableDataNode>())
             {
-                configuration.Enabled = request.Enabled;
+                foreach (var configuration in node.CompressorConfigurations
+                             .Where(configuration => connectionIds.Contains(configuration.DataGroupIdentifier)))
+                {
+                    configuration.Enabled = request.Enabled;
+                    changedNodes.Add(node);
+                }
             }
 
             var nonMoneoConnectionIds = _publishTargets
@@ -1497,12 +1535,15 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                 .Select(connection => connection.Id)
                 .ToHashSet();
 
-            foreach (var configuration in selectedNodes.OfType<IDeviceTreeSchedulableDataNode>()
-                                                       .SelectMany(node => node.SchedulerConfigurations)
-                                                       .Where(configuration => connectionIds.Contains(configuration.DataGroupIdentifier)
-                                                                               && nonMoneoConnectionIds.Contains(configuration.DataGroupIdentifier)))
+            foreach (var node in selectedNodes.OfType<IDeviceTreeSchedulableDataNode>())
             {
-                configuration.Enabled = request.Enabled;
+                foreach (var configuration in node.SchedulerConfigurations
+                             .Where(configuration => connectionIds.Contains(configuration.DataGroupIdentifier)
+                                                     && nonMoneoConnectionIds.Contains(configuration.DataGroupIdentifier)))
+                {
+                    configuration.Enabled = request.Enabled;
+                    changedNodes.Add(node);
+                }
             }
 
             _changedMasterDevices.Clear();
@@ -1513,8 +1554,197 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
         CheckDataPointRecommendedLimit(true);
         _service.DeviceTreeChanged = true;
-        _service.InvokeBulkEnableApplied();
+        _service.InvokeBulkEnableApplied(new BulkChangeHighlight(changedNodes, connectionIds));
     }
+
+    // Multi-select bulk settings: writes one setting on the grid selection for the chosen publish target (or all
+    // configurable ones). Enabling stays in OnBulkEnableSelection; this handles everything the panel adds.
+    private void OnBulkSettingSelection(BulkSettingRequest request)
+    {
+        if (_tree is null)
+            return;
+
+        var targetIds = (request.Target is null
+                ? _publishTargets.Where(connection => IsConfigurable(connection))
+                : [request.Target.Connection])
+            .Select(connection => connection.Id)
+            .ToHashSet();
+
+        if (targetIds.Count == 0)
+            return;
+
+        var selectedNodes = _service.SelectedNodes;
+
+        // Collected while writing, so the grid can point out exactly the cells this reached. A setting only
+        // applies to the data types that support it, so this is usually a subset of the selection.
+        var changedNodes = new HashSet<IDeviceTreeDataNode>();
+
+        lock (_treeLock)
+        {
+            switch (request.Setting)
+            {
+                case BulkSetting.ProcessEnabled:
+                case BulkSetting.UncompressedEnabled:
+                    foreach (var (node, configuration) in CompressorConfigurations(request.Setting == BulkSetting.ProcessEnabled))
+                    {
+                        configuration.Enabled = (bool)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.ProcessAggregationInterval:
+                    foreach (var (node, configuration) in CompressorConfigurations(compressible: true))
+                    {
+                        configuration.CompressionTime = (int)(AggregationInterval)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.ProcessAggregationFunction:
+                    // "On Change" locks the function in the single-row editor, so a bulk change must leave those
+                    // configurations alone rather than writing a value that could not be set there.
+                    foreach (var (node, configuration) in CompressorConfigurations(compressible: true)
+                                 .Where(entry => entry.Configuration.CompressionTime != (int)AggregationInterval.OnChange))
+                    {
+                        configuration.Aggregation = (AggregationFunction)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.RecordingEnabled:
+                    foreach (var (node, configuration) in SchedulerConfigurations())
+                    {
+                        configuration.Enabled = (bool)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.RecordingDays:
+                    foreach (var (node, configuration) in SchedulerConfigurations().Where(entry => entry.Configuration.Times.Count > 0))
+                    {
+                        Reschedule(configuration, configuration.Times.First().Value.Length, ((DaysOfWeek)request.Value).AsEnumerable());
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.RecordingTimesADay:
+                    foreach (var (node, configuration) in SchedulerConfigurations().Where(entry => entry.Configuration.Times.Count > 0))
+                    {
+                        Reschedule(configuration, (int)request.Value, [.. configuration.Times.Keys]);
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                // Enabled is written on its own: it is the switch that turns a trigger off without losing how it
+                // was set up, so enabling one restores exactly what was configured there.
+                case BulkSetting.TriggerEnabled:
+                    foreach (var (node, trigger) in Triggers())
+                    {
+                        trigger.Enabled = (bool)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.TriggerOnDamage:
+                    foreach (var (node, trigger) in Triggers())
+                    {
+                        trigger.OnDamage = (bool)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.TriggerOnWarning:
+                    foreach (var (node, trigger) in Triggers())
+                    {
+                        trigger.OnWarning = (bool)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.TriggerDelay:
+                    foreach (var (node, trigger) in Triggers())
+                    {
+                        trigger.Delay = (int)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.RawDataFrequency:
+                    foreach (var (node, settings) in RawDataSettings())
+                    {
+                        settings.Frequency = (int)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.RawDataDuration:
+                    foreach (var (node, settings) in RawDataSettings())
+                    {
+                        settings.Duration = (int)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                default:
+                    return;
+            }
+
+            _changedMasterDevices.Clear();
+            _changedMasterDevices.AddRange(_tree.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>());
+        }
+
+        _saveReasons += " data point settings changed via multi-select;";
+
+        CheckDataPointRecommendedLimit(true);
+        _service.DeviceTreeChanged = true;
+        _service.InvokeBulkEnableApplied(new BulkChangeHighlight(changedNodes, targetIds));
+
+        // Each of these yields the owning node alongside the configuration, so the caller can record which rows a
+        // change actually reached without walking the selection a second time.
+        IEnumerable<(IDeviceTreeDataNode Node, CompressorConfiguration Configuration)> CompressorConfigurations(bool compressible)
+            => selectedNodes.OfType<IDeviceTreeCompressableDataNode>()
+                .Where(node => node.DataType.SupportsLogging && node.DataType.SupportsCompression == compressible)
+                .SelectMany(node => node.CompressorConfigurations
+                    .Where(configuration => targetIds.Contains(configuration.DataGroupIdentifier))
+                    .Select(configuration => ((IDeviceTreeDataNode)node, configuration)));
+
+        IEnumerable<(IDeviceTreeDataNode Node, SchedulerConfiguration Configuration)> SchedulerConfigurations()
+            => selectedNodes.OfType<IDeviceTreeSchedulableDataNode>()
+                .SelectMany(node => node.SchedulerConfigurations
+                    .Where(configuration => targetIds.Contains(configuration.DataGroupIdentifier))
+                    .Select(configuration => ((IDeviceTreeDataNode)node, configuration)));
+
+        // One selected row carries a trigger per sensor and per cloud, so a change reaches more configurations
+        // than the selection has rows.
+        IEnumerable<(IDeviceTreeDataNode Node, EventTrigger Trigger)> Triggers()
+            => selectedNodes.OfType<IDeviceTreeEventTriggerDataNode>()
+                .SelectMany(node => node.EventTriggerConfigurations
+                    .SelectMany(sensor => sensor.Triggers)
+                    .Where(trigger => targetIds.Contains(trigger.DataGroupIdentifier))
+                    .Select(trigger => ((IDeviceTreeDataNode)node, trigger)));
+
+        IEnumerable<(IDeviceTreeDataNode Node, RawDataSettings Settings)> RawDataSettings()
+            => selectedNodes.OfType<IDeviceTreeConfigurableRawDataNode>()
+                .SelectMany(node => node.RawDataConfigurations
+                    .Where(entry => targetIds.Contains(entry.Key))
+                    .Select(entry => ((IDeviceTreeDataNode)node, entry.Value)));
+
+        // Rebuilds the schedule the same way the single-row editor does, so both produce identical Times.
+        static void Reschedule(SchedulerConfiguration configuration, int timesADay, IEnumerable<DayOfWeek> days)
+        {
+            var scheduling = BlobDataCell.GetNewScheduling(timesADay, days);
+            configuration.Times.Clear();
+
+            foreach (var entry in scheduling)
+                configuration.Times[entry.Key] = entry.Value;
+        }
+    }
+
+    // A publish target whose cloud filter supports no node type at all cannot be configured (moneo today), so a
+    // bulk change scoped to "all clouds" must skip it instead of writing settings the grid would not let you set.
+    private bool IsConfigurable(Connection connection)
+        => _publishTargetInfos.FirstOrDefault(info => info.Connection.Id == connection.Id)
+            is { TreeNodesSupportedForConfiguration.Count: > 0 };
 
     public void SetDebugRawDataGrid()
         => _rawDataPullingMaxTimesADay = 24 * 60 / 5;

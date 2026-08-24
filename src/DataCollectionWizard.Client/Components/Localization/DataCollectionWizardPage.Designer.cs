@@ -104,6 +104,24 @@ namespace DataCollectionWizard.Client.Components.Localization {
                 return ResourceManager.GetString("Alias", resourceCulture);
             }
         }
+
+        internal static string AliasTreePreview {
+            get {
+                return ResourceManager.GetString("AliasTreePreview", resourceCulture);
+            }
+        }
+
+        internal static string AliasEmptyHint {
+            get {
+                return ResourceManager.GetString("AliasEmptyHint", resourceCulture);
+            }
+        }
+
+        internal static string AliasCharacterCount {
+            get {
+                return ResourceManager.GetString("AliasCharacterCount", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Edit alias.
@@ -122,7 +140,127 @@ namespace DataCollectionWizard.Client.Components.Localization {
                 return ResourceManager.GetString("AllClouds", resourceCulture);
             }
         }
-        
+
+        internal static string BulkSettings {
+            get {
+                return ResourceManager.GetString("BulkSettings", resourceCulture);
+            }
+        }
+
+        internal static string BulkGroupProcessValues {
+            get {
+                return ResourceManager.GetString("BulkGroupProcessValues", resourceCulture);
+            }
+        }
+
+        internal static string BulkGroupUncompressed {
+            get {
+                return ResourceManager.GetString("BulkGroupUncompressed", resourceCulture);
+            }
+        }
+
+        internal static string BulkGroupRecordings {
+            get {
+                return ResourceManager.GetString("BulkGroupRecordings", resourceCulture);
+            }
+        }
+
+        internal static string BulkFieldAggregationInterval {
+            get {
+                return ResourceManager.GetString("BulkFieldAggregationInterval", resourceCulture);
+            }
+        }
+
+        internal static string BulkFieldAggregationFunction {
+            get {
+                return ResourceManager.GetString("BulkFieldAggregationFunction", resourceCulture);
+            }
+        }
+
+        internal static string BulkFieldDays {
+            get {
+                return ResourceManager.GetString("BulkFieldDays", resourceCulture);
+            }
+        }
+
+        internal static string BulkFieldTimesADay {
+            get {
+                return ResourceManager.GetString("BulkFieldTimesADay", resourceCulture);
+            }
+        }
+
+        internal static string BulkGroupRawData {
+            get {
+                return ResourceManager.GetString("BulkGroupRawData", resourceCulture);
+            }
+        }
+
+        internal static string BulkGroupTriggers {
+            get {
+                return ResourceManager.GetString("BulkGroupTriggers", resourceCulture);
+            }
+        }
+
+        internal static string BulkFieldFrequency {
+            get {
+                return ResourceManager.GetString("BulkFieldFrequency", resourceCulture);
+            }
+        }
+
+        internal static string BulkFieldDuration {
+            get {
+                return ResourceManager.GetString("BulkFieldDuration", resourceCulture);
+            }
+        }
+
+        internal static string BulkFieldDelay {
+            get {
+                return ResourceManager.GetString("BulkFieldDelay", resourceCulture);
+            }
+        }
+
+        internal static string BulkMixedValue {
+            get {
+                return ResourceManager.GetString("BulkMixedValue", resourceCulture);
+            }
+        }
+
+        internal static string BulkRowCount {
+            get {
+                return ResourceManager.GetString("BulkRowCount", resourceCulture);
+            }
+        }
+
+        internal static string BulkNoSettings {
+            get {
+                return ResourceManager.GetString("BulkNoSettings", resourceCulture);
+            }
+        }
+
+        internal static string BulkNothingApplicable {
+            get {
+                return ResourceManager.GetString("BulkNothingApplicable", resourceCulture);
+            }
+        }
+
+        internal static string BulkTargetNotConfigurable {
+            get {
+                return ResourceManager.GetString("BulkTargetNotConfigurable", resourceCulture);
+            }
+        }
+
+        internal static string BulkOnChangeLocked {
+            get {
+                return ResourceManager.GetString("BulkOnChangeLocked", resourceCulture);
+            }
+        }
+
+        internal static string BulkReducedOptions {
+            get {
+                return ResourceManager.GetString("BulkReducedOptions", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Activate.
         /// </summary>

@@ -255,6 +255,36 @@
     z-index: 11;
 }
 
+// Points out the cells a bulk change reached. Re-keying the rows rebuilds these elements, which is what starts
+// the animation; the class is dropped again once it has played (see HighlightDurationMs).
+// The tint is a background-image, not a background-color: the row already sets its own colour there - alternating
+// even/odd, or the orange mix of a selected row - and animating that property would replace it, leaving the cell
+// showing whatever sits behind the grid instead of the row it belongs to. An image layers on top and lets the
+// row's colour stay underneath.
+@keyframes publish-target-changed {
+    from {
+        background-image: linear-gradient(rgba(255, 153, 0, 0.28), rgba(255, 153, 0, 0.28));
+        box-shadow: inset 0px 0px 0px 1px col.$accent;
+    }
+
+    to {
+        background-image: linear-gradient(rgba(255, 153, 0, 0), rgba(255, 153, 0, 0));
+        box-shadow: inset 0px 0px 0px 1px rgba(255, 153, 0, 0);
+    }
+}
+
+.grid-row>.publish-target-changed {
+    animation: publish-target-changed 1.1s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .grid-row>.publish-target-changed {
+        animation: none;
+        background-image: linear-gradient(rgba(255, 153, 0, 0.18), rgba(255, 153, 0, 0.18));
+        box-shadow: inset 0px 0px 0px 1px col.$accent;
+    }
+}
+
 // Full-width "container" header row woven between the data rows - a lighter shade so it reads as a section.
 .grid-group-row {
     // Span every column so the lighter band + borders fill the whole row. The generic `.grid-body>div:not(.grid-row)`
@@ -311,10 +341,11 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.18s ease, transform 0.18s ease;
+    // The bar is now a column: the row of buttons, and below it the settings panel it grows into. Keeping it one
+    // element means there is never a second floating thing that could cover this one.
     display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
+    flex-direction: column;
+    padding: 0;
     background: col.$content-dark;
     border: 1px solid col.$content-hover;
     border-radius: 8px;
@@ -326,6 +357,13 @@
         opacity: 1;
         pointer-events: auto;
         transform: translateX(-50%) translateY(0);
+    }
+
+    .bulk-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
     }
 
     // Drag grip: lets the user move the bar out of the way (see makeDraggable in the JS module).
@@ -403,5 +441,191 @@
         color: col.$font-dark;
         font-size: 15px;
         cursor: pointer;
+    }
+
+    .bulk-more {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        height: 30px;
+        padding: 0 10px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        background: transparent;
+        color: col.$font;
+        font-family: inherit;
+        font-size: 13px;
+        cursor: pointer;
+
+        &:hover,
+        &.open {
+            background: col.$background-hover;
+        }
+
+        .caret {
+            font-size: 11px;
+            color: col.$font-dark;
+        }
+    }
+
+    // ── settings panel ───────────────────────────────────────────────────────
+    // Laid out in the tooltip's language: uppercase section labels with a trailing hairline, muted secondary text.
+    .bulk-panel {
+        display: flex;
+        flex-direction: column;
+        padding: 4px 14px 14px;
+        border-top: 1px solid col.$content-hover;
+        // A wide selection can produce more groups than fit above the grid; scroll inside rather than growing
+        // past the viewport.
+        max-height: 52vh;
+        overflow-y: auto;
+    }
+
+    .bulk-tabs {
+        display: flex;
+        gap: 2px;
+        margin: 10px 0 4px;
+        padding: 2px;
+        background: col.$background;
+        border: 1px solid col.$border;
+        border-radius: 6px;
+
+        button {
+            flex: 1;
+            min-width: 0;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: col.$font-dark;
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+
+            &.on {
+                background: col.$background-hover;
+                color: col.$font;
+            }
+
+            // Selection is shown by .on; don't draw the app's focus ring on a mouse click. Keep it for keyboard.
+            &:focus:not(:focus-visible) {
+                outline: none;
+            }
+        }
+    }
+
+    .bulk-group {
+        padding: 11px 0 4px;
+    }
+
+    .bulk-group-lbl {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 9px;
+        font-size: 10px;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: col.$font-disabled;
+
+        // Hairline filling the rest of the row, as in the device tooltip's section labels.
+        &::after {
+            content: "";
+            flex: 1;
+            order: 1;
+            height: 1px;
+            background: col.$content-hover;
+        }
+
+        .n {
+            order: 2;
+            letter-spacing: 0;
+            text-transform: none;
+            font-size: 11px;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+    }
+
+    .bulk-field {
+        display: grid;
+        grid-template-columns: 104px minmax(0, 1fr);
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+
+        > .k {
+            font-size: 12.5px;
+            color: col.$font-dark;
+        }
+
+        select {
+            width: 100%;
+            min-width: 0;
+            height: 28px;
+            padding: 0 7px;
+            background: col.$content-dark;
+            border: 1px solid col.$content-hover;
+            border-radius: 4px;
+            color: col.$font;
+            font-family: inherit;
+            font-size: 12.5px;
+
+            &:disabled {
+                opacity: 0.45;
+                cursor: not-allowed;
+            }
+        }
+    }
+
+    // Activate / deactivate as two buttons rather than a switch: while the selection disagrees neither state is
+    // true, and a switch has no honest position for that - here simply neither button is marked.
+    .bulk-toggle {
+        display: inline-flex;
+        gap: 2px;
+        padding: 2px;
+        width: max-content;
+        background: col.$background;
+        border: 1px solid col.$border;
+        border-radius: 6px;
+
+        button {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: col.$font-dark;
+            font-family: inherit;
+            font-size: 12.5px;
+            cursor: pointer;
+
+            &.on {
+                background: col.$background-hover;
+                color: col.$font;
+            }
+
+            &.on.yes {
+                background: rgba(255, 153, 0, 0.22);
+                color: col.$accent;
+            }
+
+            &:focus:not(:focus-visible) {
+                outline: none;
+            }
+        }
+    }
+
+    .bulk-note {
+        margin: 6px 0 2px;
+        font-size: 11.5px;
+        line-height: 1.45;
+        color: col.$font-disabled;
+
+        &.sub {
+            margin-left: 114px;
+        }
     }
 }

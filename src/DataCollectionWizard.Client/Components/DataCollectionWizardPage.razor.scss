@@ -41,8 +41,61 @@
     }
 }
 
+// Laid out like the scan and manual-add dialogs: the content sits in a dialog-card with the label above its
+// field, rather than in a grid with a fixed label column. The 70px top padding this used to carry only pushed
+// the single field into the middle of an otherwise empty dialog.
 .dialog-content-alias.dialog-content {
-    padding: 70px 32px 20px 32px;
+    padding: 22px 32px 20px 32px;
+    justify-content: flex-start;
+}
+
+// The device being renamed. The dialog knows it from _editingNode; showing it saves recalling which node was
+// right-clicked.
+.alias-subject {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.alias-subject-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: col.$font;
+    overflow-wrap: anywhere;
+}
+
+.alias-subject-detail {
+    font-size: 12px;
+    color: col.$font-dark;
+    overflow-wrap: anywhere;
+}
+
+// Sits at the right end of the field label, so the 64-character limit is visible before it is reached.
+.alias-count {
+    margin-left: auto;
+    font-weight: normal;
+    font-variant-numeric: tabular-nums;
+    color: col.$font-disabled;
+}
+
+.dialog-field-label:has(.alias-count) {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.alias-hint {
+    font-size: 11.5px;
+    line-height: 1.6;
+    color: col.$font-disabled;
+}
+
+// The resulting tree text, shown while typing.
+.alias-preview {
+    font-family: "Cascadia Code", "Consolas", ui-monospace, monospace;
+    color: col.$font-dark;
+    overflow-wrap: anywhere;
 }
 
 // Both device dialogs are built the same way: a tab strip with the scan toolbar next to it, and below it

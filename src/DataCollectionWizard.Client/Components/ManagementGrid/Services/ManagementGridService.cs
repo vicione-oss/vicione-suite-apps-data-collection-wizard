@@ -132,7 +132,7 @@ internal sealed class ManagementGridService : INotifyPropertyChanged
 
     public event Action? AddNewIoLinkMasterRequested;
     public event Action? AddNewVseRequested;
-    public event Action? BulkEnableApplied;
+    public event Action<BulkChangeHighlight>? BulkEnableApplied;
     public event Action? ConfigChanged;
     public event Action<bool>? DataPointEnabledChanged;
     public event Action? DeleteOfflineNodesRequested;
@@ -164,8 +164,8 @@ internal sealed class ManagementGridService : INotifyPropertyChanged
         => DataPointEnabledChanged?.Invoke(enabled);
 
     // ─── Multi-select ──────────────────────────────────────────────────────
-    public void InvokeBulkEnableApplied()
-        => BulkEnableApplied?.Invoke();
+    public void InvokeBulkEnableApplied(BulkChangeHighlight highlight)
+        => BulkEnableApplied?.Invoke(highlight);
 
     public void InvokeConfigChanged()
         => ConfigChanged?.Invoke();

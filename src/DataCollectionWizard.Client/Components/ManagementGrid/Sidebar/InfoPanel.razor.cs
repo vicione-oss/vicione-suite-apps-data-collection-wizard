@@ -63,7 +63,7 @@ public sealed partial class InfoPanel : ComponentBase, IDisposable
     public void Dispose()
     {
         Service.DataPointEnabledChanged -= OnEnabledChanged;
-        Service.BulkEnableApplied -= OnConfigChanged;
+        Service.BulkEnableApplied -= OnBulkEnableApplied;
         Service.ConfigChanged -= OnConfigChanged;
         Service.PropertyChanged -= OnServicePropertyChanged;
     }
@@ -71,7 +71,7 @@ public sealed partial class InfoPanel : ComponentBase, IDisposable
     protected override void OnInitialized()
     {
         Service.DataPointEnabledChanged += OnEnabledChanged;
-        Service.BulkEnableApplied += OnConfigChanged;
+        Service.BulkEnableApplied += OnBulkEnableApplied;
         Service.ConfigChanged += OnConfigChanged;
         Service.PropertyChanged += OnServicePropertyChanged;
         Recompute();
@@ -150,6 +150,10 @@ public sealed partial class InfoPanel : ComponentBase, IDisposable
 
     private async void OnConfigChanged()
         => await InvokeAsync(() => { Recompute(); StateHasChanged(); });
+
+    // Which cells changed is the grid's business - the panel only needs to know that something did.
+    private void OnBulkEnableApplied(Models.BulkChangeHighlight _)
+        => OnConfigChanged();
 
     // Recompute the projection in a single pass over all loggable nodes: throughput per cloud, per device, the total,
     // and the "not projectable" counts (OnChange points and event-triggered raw-data recordings).
