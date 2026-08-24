@@ -1037,5 +1037,23 @@ namespace DataCollectionWizard.Client.Components.Localization {
                 return ResourceManager.GetString("WizardNext", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Select device.
+        /// </summary>
+        internal static string WizardStepDeviceSelection {
+            get {
+                return ResourceManager.GetString("WizardStepDeviceSelection", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Sign in.
+        /// </summary>
+        internal static string WizardStepCredentials {
+            get {
+                return ResourceManager.GetString("WizardStepCredentials", resourceCulture);
+            }
+        }
     }
 }

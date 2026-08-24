@@ -381,6 +381,12 @@
   <data name="WizardNext" xml:space="preserve">
     <value>Next</value>
   </data>
+  <data name="WizardStepDeviceSelection" xml:space="preserve">
+    <value>Select device</value>
+  </data>
+  <data name="WizardStepCredentials" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
   <data name="IoLinkCredentialStepHint" xml:space="preserve">
     <value>Credentials for the selected masters</value>
   </data>

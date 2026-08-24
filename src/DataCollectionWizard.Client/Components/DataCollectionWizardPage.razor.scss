@@ -41,9 +41,9 @@
     }
 }
 
-// Laid out like the scan and manual-add dialogs: the content sits in a dialog-card with the label above its
-// field, rather than in a grid with a fixed label column. The 70px top padding this used to carry only pushed
-// the single field into the middle of an otherwise empty dialog.
+// Labels sit above their field, as in the add dialogs, rather than in a grid with a fixed label column - but
+// without their dialog-card, since there is only one area here and nothing to set apart. The 70px top padding
+// this used to carry only pushed the single field into the middle of an otherwise empty dialog.
 .dialog-content-alias.dialog-content {
     padding: 22px 32px 20px 32px;
     justify-content: flex-start;
@@ -244,6 +244,55 @@
     border-radius: 10px;
     background: col.$content-dark;
     flex-shrink: 0;
+}
+
+// Step strip for the two-step IO-Link master flow. Shown only once a master that requires authentication is
+// selected, since that is what creates the second step in the first place. It shares the dialog footer with the
+// buttons it explains: the footer is a flex row justified to the end, so the auto margin holds it on the left.
+.wizard-steps {
+    align-items: center;
+    color: col.$font-disabled;
+    display: flex;
+    font-size: 12px;
+    gap: 10px;
+    line-height: 1em;
+    list-style: none;
+    margin: 0 auto 0 0;
+    padding: 0px;
+}
+
+.wizard-step {
+    align-items: center;
+    display: flex;
+    gap: 6px;
+
+    // Reads as a sequence rather than two labels side by side.
+    + .wizard-step::before {
+        background-color: col.$border;
+        content: "";
+        height: 1px;
+        margin-right: 4px;
+        width: 18px;
+    }
+}
+
+.wizard-step-marker {
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    display: grid;
+    font-size: 9px;
+    font-weight: 600;
+    height: 16px;
+    place-items: center;
+    width: 16px;
+}
+
+.wizard-step-current {
+    color: col.$accent;
+
+    .wizard-step-marker {
+        background-color: rgba(255, 153, 0, 0.16);
+    }
 }
 
 // Scan credential step: the card sizes to its content (so a single master is a compact card, not a huge empty
@@ -475,9 +524,11 @@
     color: col.$font-dark;
 }
 
-// Recess the text inputs inside a card: darker than the card surface so they read as inputs, not panels.
+// Recess the text inputs so they read as inputs, not panels. The alias dialog is listed alongside the card
+// because it has no card of its own, and its field should still look the same as the ones in the add dialogs.
 // (Only the fill is themed here - the TextBox keeps its own size from ViciOne.Ui.Blazor.Components.)
-.dialog-card ::deep input:not([type="checkbox"]) {
+.dialog-card ::deep input:not([type="checkbox"]),
+.dialog-content-alias ::deep input:not([type="checkbox"]) {
     background: #2d2d2d;
 }
 

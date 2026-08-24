@@ -158,37 +158,37 @@
         Width="600px">
 
     <Body>
+        @* No dialog-card here, unlike the add dialogs: this dialog has a single area, so there is nothing for a
+           card to set apart. *@
         <div class="dialog-content dialog-content-alias">
-            <div class="dialog-card">
-                @* Which device is being renamed - the dialog knows it via _editingNode, so it may as well say so. *@
-                <div class="alias-subject">
-                    <span class="alias-subject-name">@AliasSubjectName</span>
-                    @if (!string.IsNullOrWhiteSpace(AliasSubjectDetail))
-                    {
-                        <span class="alias-subject-detail">@AliasSubjectDetail</span>
-                    }
-                </div>
+            @* Which device is being renamed - the dialog knows it via _editingNode, so it may as well say so. *@
+            <div class="alias-subject">
+                <span class="alias-subject-name">@AliasSubjectName</span>
+                @if (!string.IsNullOrWhiteSpace(AliasSubjectDetail))
+                {
+                    <span class="alias-subject-detail">@AliasSubjectDetail</span>
+                }
+            </div>
 
-                <div class="dialog-fields">
-                    <div class="dialog-field">
-                        <span class="dialog-field-label">
-                            @(Localization.DataCollectionWizardPage.Alias)
-                            <span class="alias-count">@AliasCharacterCountText</span>
-                        </span>
+            <div class="dialog-fields">
+                <div class="dialog-field">
+                    <span class="dialog-field-label">
+                        @(Localization.DataCollectionWizardPage.Alias)
+                        <span class="alias-count">@AliasCharacterCountText</span>
+                    </span>
 
-                        <TextBox @bind-Value="_deviceAlias"
-                                 @bind-Value:event="ValueChanging"
-                                 @ref="_refAliasTextBox"
-                                 EnterPressed="OnAliasDialogTextBoxEnterPressedAsync"
-                                 MaximumLength="@AliasMaximumLength" />
+                    <TextBox @bind-Value="_deviceAlias"
+                             @bind-Value:event="ValueChanging"
+                             @ref="_refAliasTextBox"
+                             EnterPressed="OnAliasDialogTextBoxEnterPressedAsync"
+                             MaximumLength="@AliasMaximumLength" />
 
-                        <span class="alias-hint">
-                            @(Localization.DataCollectionWizardPage.AliasTreePreview)
-                            <span class="alias-preview">@AliasTreePreviewText</span>
-                            <br />
-                            @(Localization.DataCollectionWizardPage.AliasEmptyHint)
-                        </span>
-                    </div>
+                    <span class="alias-hint">
+                        @(Localization.DataCollectionWizardPage.AliasTreePreview)
+                        <span class="alias-preview">@AliasTreePreviewText</span>
+                        <br />
+                        @(Localization.DataCollectionWizardPage.AliasEmptyHint)
+                    </span>
                 </div>
             </div>
         </div>
@@ -537,6 +537,23 @@
     </Body>
 
     <Footer>
+        @* Masters that require authentication turn this dialog into two steps. Without this strip the only sign
+           of which step is showing are the buttons beside it swapping. *@
+        @if (_ioLinkShowCredentialStep || IoLinkScanNeedsCredentialStep())
+        {
+            <ol class="wizard-steps">
+                <li class="wizard-step @(_ioLinkShowCredentialStep ? null : "wizard-step-current")">
+                    <span class="wizard-step-marker">1</span>
+                    @Localization.DataCollectionWizardPage.WizardStepDeviceSelection
+                </li>
+
+                <li class="wizard-step @(_ioLinkShowCredentialStep ? "wizard-step-current" : null)">
+                    <span class="wizard-step-marker">2</span>
+                    @Localization.DataCollectionWizardPage.WizardStepCredentials
+                </li>
+            </ol>
+        }
+
         @if (_ioLinkShowCredentialStep)
         {
             <DialogFooterButton OnClick="@OnAddIoLinkMasterDialogOkAsync"
