@@ -1,20 +1,3 @@
-@using ViciOne.Ui.Blazor.Components.ExpandableMenu.Components
-@using ViciOne.Ui.Blazor.Components.Sidebar
-@using ViciOne.Ui.Blazor.Components.Sidebar.Enums
-
-<div class="dcw-sidebar-host @(_compactMode ? "compact" : string.Empty)" @ref="_hostRef">
-    <Sidebar @bind-FluidWidth="_sidebarFluidWidth"
-             CompactWidth="56"
-             FluidMinimumWidth="300"
-             FluidMaximumWidth="680"
-             Mode="GetSidebarMode()"
-             Placement="SidebarPlacement.Left">
-
-        <ExpandableMenu @bind-CompactMode="_compactMode"
-                        Entries="@(_entries)" />
-    </Sidebar>
-
-    @* DCW-owned resize grip: replaces the house Sidebar's built-in mover (which loses the pointer and re-renders per
-       move). The drag is driven entirely in JS with pointer capture; see DataCollectionWizardSidebar.razor.js. *@
-    <div class="dcw-resize-handle" @ref="_handleRef"></div>
-</div>
+@* The device tree and the "Informationen" section are both ExpandableMenu entries (the menu provides the
+   expand/collapse and bottom-docking via IsSticky), so no custom sidebar layout is needed here. *@
+<ResizableSidebar Entries="@(_entries)" />

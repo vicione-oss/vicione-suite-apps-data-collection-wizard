@@ -1,4 +1,4 @@
-export class DataCollectionWizardSidebar {
+export class ResizableSidebar {
 
     /**
      * Attaches a smooth, pointer-capture based resize to the sidebar's right edge. During the drag the sidebar's
