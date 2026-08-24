@@ -23,7 +23,11 @@ public sealed partial class LiveViewGrid : ComponentBase, IDisposable, IAsyncDis
     {
         // Mirrors the configuration grid, minus its 34px selection column: the name column sizes to its content,
         // the value columns are fixed, and the last one absorbs what is left.
-        get => "max-content 200px 120px 200px 1fr";
+        //
+        // Value and unit are narrow on purpose. The value is set flush right and the unit flush left, so the two
+        // meet in the middle and read as one figure - "136,1 °" rather than a number here and a degree sign a
+        // hundred pixels away.
+        get => "max-content 150px 80px 200px 1fr";
     }
 
     [Inject]

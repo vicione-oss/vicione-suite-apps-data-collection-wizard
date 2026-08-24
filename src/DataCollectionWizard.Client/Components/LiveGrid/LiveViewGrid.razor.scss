@@ -89,6 +89,13 @@
         display: inline-flex;
         margin-left: 6px;
     }
+
+    // The "Wert" heading follows its column to the right edge, so heading and figures share one edge.
+    >.value .header-template>div {
+        justify-content: flex-end;
+        padding-left: 0px;
+        padding-right: var(--width-padding);
+    }
 }
 
 // ─── Body rows ─────────────────────────────────────────────────────────────
@@ -116,8 +123,13 @@
         padding-bottom: 5px;
     }
 
+    // The number ends where the unit begins, so the two read as one figure. Left-aligned numbers of differing
+    // length make the eye search for the decimal point in a different place on every row.
     >.value {
         font-variant-numeric: tabular-nums;
+        text-align: right;
+        padding-left: 0px;
+        padding-right: var(--width-padding);
     }
 
     // Alternating row backgrounds — applied via index-based classes because <Virtualize> inserts spacer divs
