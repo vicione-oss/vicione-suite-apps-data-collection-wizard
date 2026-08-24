@@ -1,4 +1,5 @@
 ﻿using DataCollectionWizard.Client.Models;
+using DataCollectionWizard.Client.Services;
 using DataCollectionWizard.Public.Extensions;
 using ViciOne.DeviceTree.Contracts;
 
@@ -16,16 +17,16 @@ internal static class IDeviceTreeBaseExtensions
         return string.Join(" / ", resultBreadcrumbs);
     }
 
+    // An aliased node is spelled "[Name] alias" here - the technical name leads, unlike the tree, where it
+    // trails as a subtitle under the alias. Two reasons for the difference: a breadcrumb has no subtitle, so
+    // leaving the name out drops it for good (a VSE object then appeared as its alias alone, and a group header
+    // named something the rows under it spelled differently); and with the name in front, the segments of a path
+    // start at a predictable place instead of each ending in a bracket at a different width. It also makes the
+    // technical name searchable, which it was not before.
     public static string GetBreadcrumbDisplayText(this IDeviceTreeBase deviceTreeNode)
-    {
-        if (deviceTreeNode is IDeviceTreeDeviceAliasNode deviceAliasNode)
-            return $"{deviceAliasNode.Alias}";
-
-        if (deviceTreeNode is IDeviceTreeUserAliasNode { Alias: var alias } && !string.IsNullOrWhiteSpace(alias))
-            return $"{alias}";
-
-        return $"{deviceTreeNode.Name}";
-    }
+        => deviceTreeNode is IDeviceTreeAliasNode { Alias: var alias } && !string.IsNullOrWhiteSpace(alias)
+            ? $"[{deviceTreeNode.Name}] {alias.Trim()}"
+            : deviceTreeNode.Name;
 
     public static NodeStatus GetStatus(this IDeviceTreeBase device, bool isLiveView = false)
     {
