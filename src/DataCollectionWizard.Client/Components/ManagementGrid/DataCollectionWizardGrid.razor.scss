@@ -215,6 +215,18 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
     &:checked::before {
         transform: scale(1);
     }
+
+    // Third state: some of the rows below are ticked, not all. A dash instead of a checkmark - the native
+    // `indeterminate` is a property rather than an attribute and cannot be set from markup, but this box draws
+    // its own mark anyway, so it costs nothing to draw a different one. Must come after :checked, which it ties
+    // with on specificity.
+    &.mixed::before {
+        clip-path: none;
+        width: 9px;
+        height: 2px;
+        border-radius: 1px;
+        transform: scale(1);
+    }
 }
 
 // Left-most frozen selection column. The header cell reuses the two-row .header-template so the select-all box and
@@ -450,13 +462,31 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
         }
     }
 
+    // Square rather than just the glyph, so the hover has something to fill and the target is worth hitting.
+    // Neutral, not red: this dismisses the bar, it does not delete anything - red is spoken for by the actions
+    // that do.
     .bulk-x {
-        padding: 0 4px;
+        display: grid;
+        place-items: center;
+        width: 26px;
+        height: 26px;
+        padding: 0px;
         background: none;
         border: none;
+        border-radius: 4px;
         color: col.$font-dark;
         font-size: 15px;
         cursor: pointer;
+        transition: background 0.12s ease, color 0.12s ease;
+
+        &:hover {
+            background: col.$background-hover;
+            color: col.$font;
+        }
+
+        &:focus:not(:focus-visible) {
+            outline: none;
+        }
     }
 
     .bulk-more {
@@ -724,6 +754,20 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
         font-variant-numeric: tabular-nums;
         color: col.$font-disabled;
         white-space: nowrap;
+    }
+
+    // The running figure and its hidden twin share one grid cell: the cell takes the twin's width, the figure
+    // is drawn over it. Nothing moves while the numbers change their digit count.
+    ::deep .bulk-dist-text {
+        display: grid;
+
+        > * {
+            grid-area: 1 / 1;
+        }
+
+        .sizer {
+            visibility: hidden;
+        }
     }
 
     ::deep .bulk-meter {

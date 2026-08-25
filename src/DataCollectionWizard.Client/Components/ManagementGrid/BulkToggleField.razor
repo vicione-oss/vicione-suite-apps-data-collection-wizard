@@ -23,10 +23,20 @@
         {
             <span class="bulk-dist">
                 <span class="bulk-meter"><i style="width: @(SharePercent)%"></i></span>
+
                 @* Written by wwwroot/js/count-up.js, so the figures run to their new value together with the
-                   meter beside them instead of jumping. *@
-                <span data-counts="@(Tally.On),@(Tally.Off)"
-                      data-count-format="@Localization.DataCollectionWizardPage.BulkDistribution"></span>
+                   meter beside them instead of jumping.
+
+                   The hidden twin holds the width open. While the figures run they pass through every digit
+                   count between the old value and the new one, and the bar sizes itself to its content - so
+                   without it the whole panel would breathe in and out for the length of the animation. Sizing
+                   it from the text rather than from a measured number keeps it right in a language whose words
+                   are longer. *@
+                <span class="bulk-dist-text">
+                    <span class="sizer" aria-hidden="true">@WidestText</span>
+                    <span data-counts="@(Tally.On),@(Tally.Off)"
+                          data-count-format="@Localization.DataCollectionWizardPage.BulkDistribution"></span>
+                </span>
             </span>
         }
     </div>

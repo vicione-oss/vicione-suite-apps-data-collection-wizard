@@ -19,8 +19,10 @@
             <div class="header-template">
                 <span></span>
                 <div class="select-all-cell">
+                    @* Three states, not two: "mixed" draws a dash, because a partial selection otherwise looks
+                       exactly like an empty one. Clicking it still selects everything. *@
                     <input type="checkbox"
-                           class="grid-select"
+                           class="grid-select @(IsVisibleSelectionMixed ? "mixed" : string.Empty)"
                            checked="@AreAllVisibleSelected"
                            @onchange="@(e => ToggleSelectAll((bool)e.Value!))" />
                 </div>
@@ -103,7 +105,7 @@
                 <div class="grid-group-row" @key="(row.IsHeader, entry.Index)">
                     <label class="grid-group-header">
                         <input type="checkbox"
-                               class="grid-select"
+                               class="grid-select @(IsGroupSelectionMixed(row) ? "mixed" : string.Empty)"
                                checked="@IsGroupSelected(row)"
                                @onchange="@(e => ToggleGroup(row, (bool)e.Value!))" />
 

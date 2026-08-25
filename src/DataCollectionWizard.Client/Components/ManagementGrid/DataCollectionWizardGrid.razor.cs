@@ -182,6 +182,17 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
         => Service.FilteredGridItems.Count > 0
             && Service.FilteredGridItems.All(item => Service.IsNodeSelected(item.DataNode));
 
+    /// <summary>
+    /// Some of the visible rows are selected, but not all of them.
+    /// </summary>
+    /// <remarks>
+    /// Drawn as a dash rather than a tick. Without it a partial selection looks exactly like an empty one, so
+    /// the box says "nothing is selected" while the bar below it counts 40 rows.
+    /// </remarks>
+    private bool IsVisibleSelectionMixed
+        => !AreAllVisibleSelected
+            && Service.FilteredGridItems.Any(item => Service.IsNodeSelected(item.DataNode));
+
     private string BulkRowCountText(int inGroup)
         => string.Format(CultureInfo.CurrentCulture, Localization.DataCollectionWizardPage.BulkRowCount, inGroup, Service.SelectionCount);
 
@@ -447,6 +458,11 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
     private bool IsGroupSelected(GroupedRow<ManagementGridRowModel> header)
         => header.GroupItems!.Count > 0
             && header.GroupItems.All(item => Service.IsNodeSelected(item.DataNode));
+
+    // Same three states as the select-all box: a group with two of its nine rows ticked said "none" before.
+    private bool IsGroupSelectionMixed(GroupedRow<ManagementGridRowModel> header)
+        => !IsGroupSelected(header)
+            && header.GroupItems!.Any(item => Service.IsNodeSelected(item.DataNode));
 
     private void ToggleGroup(GroupedRow<ManagementGridRowModel> header, bool selected)
         => Service.SetNodesSelected(header.GroupItems!.Select(item => item.DataNode), selected);
