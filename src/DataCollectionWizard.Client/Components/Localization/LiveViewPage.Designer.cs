@@ -170,5 +170,14 @@ namespace DataCollectionWizard.Client.Components.Localization {
                 return ResourceManager.GetString("Unit", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to watching for {0} · {1:N0} values · avg {2:N1}/s · now {3:N1}/s.
+        /// </summary>
+        internal static string SessionInfo {
+            get {
+                return ResourceManager.GetString("SessionInfo", resourceCulture);
+            }
+        }
     }
 }

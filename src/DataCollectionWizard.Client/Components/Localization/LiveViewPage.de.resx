@@ -153,4 +153,7 @@
   <data name="Unit" xml:space="preserve">
     <value>Einheit</value>
   </data>
+  <data name="SessionInfo" xml:space="preserve">
+    <value>beobachtet seit {0} · {1:N0} Werte · Ø {2:N1}/s · gerade {3:N1}/s</value>
+  </data>
 </root>

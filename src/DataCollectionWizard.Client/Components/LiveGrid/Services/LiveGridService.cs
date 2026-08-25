@@ -16,6 +16,12 @@ internal sealed class LiveGridService : IDisposable
     public IEnumerable<LiveGridRowModel> FilteredGridItems => _filteredGridItems;
     public IEnumerable<LiveGridRowModel> GridItems => _gridItems;
 
+    /// <summary>
+    /// What this view has seen since it was opened. The live view has no history beyond that, so everything
+    /// derived from the values is relative to this window - which is why it is shown rather than implied.
+    /// </summary>
+    public LiveSessionStats Session { get; } = new();
+
     public string ToolbarSearchText
     {
         get => _toolbarSearchText;

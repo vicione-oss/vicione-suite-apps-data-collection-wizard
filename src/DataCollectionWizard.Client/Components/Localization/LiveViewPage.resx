@@ -153,4 +153,7 @@
   <data name="Unit" xml:space="preserve">
     <value>Unit</value>
   </data>
+  <data name="SessionInfo" xml:space="preserve">
+    <value>watching for {0} · {1:N0} values · avg {2:N1}/s · now {3:N1}/s</value>
+  </data>
 </root>

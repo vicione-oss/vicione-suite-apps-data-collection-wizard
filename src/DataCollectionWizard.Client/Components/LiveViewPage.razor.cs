@@ -213,6 +213,10 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
             await UnsubscribeAllAsync();
             await SubscribeAllAsync(_cancelSubscribing.Token);
+
+            // Reported once the rebuild has settled - in between there is nothing subscribed, and that gap is
+            // not the end of the observation window.
+            _service.Session.SetWatching(!_handles.IsEmpty);
         }
         catch (Exception ex)
         {
@@ -252,6 +256,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
             _gridNodes = [.. _adapter.GetRelevantDataNodes().OfType<IDeviceTreeLiveDataNode>().Where(n => n is not IDeviceTreeHiddenNode)];
             _service.SetGridItems(CalculateGridItems(_gridNodes), false);
             await SubscribeAllAsync(_cancelSubscribing.Token);
+            _service.Session.SetWatching(!_handles.IsEmpty);
             _service.RefreshImmediate();
         }
         catch (Exception ex)
@@ -364,6 +369,10 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
                 item.LastUpdated = t > DateTime.MinValue
                     ? TimeZoneInfo.ConvertTime(t, TimeProvider.LocalTimeZone).ToString(culture)
                     : string.Empty;
+
+                // Here rather than at render time: Refresh coalesces to twice a second, so counting there would
+                // count pictures instead of values.
+                _service.Session.Note();
 
                 _service.Refresh();
                 return Task.CompletedTask;

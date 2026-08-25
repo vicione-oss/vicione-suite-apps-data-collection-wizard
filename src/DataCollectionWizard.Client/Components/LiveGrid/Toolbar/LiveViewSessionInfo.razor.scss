@@ -1,0 +1,21 @@
+@use "./../../../Styles/colours" as col;
+
+// Overlay under the "Live Prozessdatenansicht" title, in the band between the toolbar and the grid - the same
+// place and the same offsets the configuration page uses for its datapoint meter, so the two pages read alike.
+// Absolutely positioned for the same reason as there: it is out of flow, so it never reflows the grid and the
+// toolbar stays a single row. Offsets: left = toolbar-container left margin (40) + title left margin (8);
+// top = toolbar top margin (40) + title row height.
+.live-session-info {
+    position: absolute;
+    top: 72px;
+    left: 48px;
+    z-index: 30;
+
+    display: flex;
+    align-items: center;
+    height: 26px;
+    font-size: 12.5px;
+    color: col.$font-dark;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
