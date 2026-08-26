@@ -47,7 +47,7 @@
             <div class="bar">
                 @foreach (var share in _cloudShares.Where(s => s.Percent > 0))
                 {
-                    <span class="@HueClass(share.ColorIndex) @GrowClass(share.Percent)" title="@ShareTooltip(share)"></span>
+                    <span class="@HueClass(share.Hue) @GrowClass(share.Percent)" title="@ShareTooltip(share)"></span>
                 }
             </div>
 
@@ -55,7 +55,7 @@
                 @foreach (var share in _cloudShares)
                 {
                     <div class="li">
-                        <span class="dot @HueClass(share.ColorIndex)"></span>
+                        <span class="dot @HueClass(share.Hue)"></span>
                         <span class="nm" title="@share.Name">@share.Name</span>
                         <span class="pct">@(share.Percent)%</span>
                     </div>
@@ -75,7 +75,7 @@
             <div class="bar">
                 @foreach (var share in _deviceShares.Where(s => s.Percent > 0))
                 {
-                    <span class="@HueClass(share.ColorIndex) @GrowClass(share.Percent)" title="@ShareTooltip(share)"></span>
+                    <span class="@HueClass(share.Hue) @GrowClass(share.Percent)" title="@ShareTooltip(share)"></span>
                 }
             </div>
 
@@ -83,7 +83,7 @@
                 @foreach (var share in _deviceShares)
                 {
                     <div class="li mono">
-                        <span class="dot @HueClass(share.ColorIndex)"></span>
+                        <span class="dot @HueClass(share.Hue)"></span>
                         <span class="nm" title="@share.Name">@share.Name</span>
                         <span class="pct">@(share.Percent)%</span>
                     </div>

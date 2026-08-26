@@ -12,11 +12,18 @@ namespace DataCollectionWizard.Client.Components.ManagementGrid.Sidebar;
 // the current configuration produces - never a measurement, always recomputed from the config.
 public sealed partial class InfoPanel : ComponentBase, IDisposable
 {
+    // How many hues the share bars have to work with; the .hue-* classes are generated to match in the SCSS.
+    private const int HueCount = 20;
+
     private readonly Dictionary<Guid, double> _perCloudPerHour = [];
     private readonly Dictionary<IDeviceTreeMasterNode, double> _perDevicePerHour = [];
     // Ordered contributions (largest first) for the stacked "share of throughput" bars, rebuilt on each Recompute.
     private readonly List<Share> _cloudShares = [];
     private readonly List<Share> _deviceShares = [];
+    // A pool per bar, so two clouds get hues as far apart as the palette allows rather than sharing a sequence
+    // with the devices.
+    private readonly HueAssignment _cloudHues = new();
+    private readonly HueAssignment _deviceHues = new();
     // Flat cache of the loggable nodes, rebuilt only when the tree structure (root reference) changes; a config
     // change then just re-reads values over this list instead of re-walking the whole tree.
     private readonly List<(IDeviceTreeCompressableDataNode Node, IDeviceTreeMasterNode Master)> _compressables = [];
@@ -31,7 +38,9 @@ public sealed partial class InfoPanel : ComponentBase, IDisposable
     private enum Period { Hour, Day, Week, Month }
 
     // One contributor (cloud or device) in a stacked share bar: display value, its share % and a stable colour index.
-    private sealed record Share(string Name, string Value, int Percent, int ColorIndex);
+    // One contributor (cloud or device) in a stacked share bar: display value, its share % and the hue it is
+    // drawn in - which follows its name, not its current rank. See AssignHues.
+    private sealed record Share(string Name, string Value, int Percent, int Hue);
 
     [CascadingParameter]
     private ManagementGridService Service { get; set; } = default!;
@@ -246,28 +255,68 @@ public sealed partial class InfoPanel : ComponentBase, IDisposable
     {
         _cloudShares.Clear();
         _cloudShares.AddRange(ToShares(Service.PublishTargets.Select(target =>
-            (target.Connection.Name, _perCloudPerHour.GetValueOrDefault(target.Connection.Id)))));
+            (target.Connection.Name ?? string.Empty, _perCloudPerHour.GetValueOrDefault(target.Connection.Id))), _cloudHues));
 
         _deviceShares.Clear();
-        _deviceShares.AddRange(ToShares(_perDevicePerHour.Select(entry => (entry.Key.Name, entry.Value))));
+        _deviceShares.AddRange(ToShares(_perDevicePerHour.Select(entry => (entry.Key.Name, entry.Value)), _deviceHues));
     }
 
-    // Largest contributor first; each gets its per-day value, its rounded share % and its index (drives the colour).
-    private static IEnumerable<Share> ToShares(IEnumerable<(string Name, double PerHour)> entries)
+    // Largest contributor first; each gets its per-day value, its rounded share % and the hue it is drawn in.
+    private static IEnumerable<Share> ToShares(IEnumerable<(string Name, double PerHour)> entries, HueAssignment hues)
     {
         var ordered = entries.OrderByDescending(entry => entry.PerHour).ToList();
         var total = ordered.Sum(entry => entry.PerHour);
 
-        return ordered.Select((entry, index) => new Share(
+        // Names first, in their own order: contributors seen for the first time in this rebuild would otherwise
+        // take their hue by how much they happen to produce right now.
+        foreach (var name in ordered.Select(entry => entry.Name).Order(StringComparer.Ordinal))
+            hues.For(name);
+
+        return ordered.Select(entry => new Share(
             entry.Name,
             FormatCompact(entry.PerHour * 24),
             total <= 0 ? 0 : (int)Math.Round(entry.PerHour / total * 100),
-            index));
+            hues.For(entry.Name)));
     }
 
-    // 20 evenly-spread hues; the *7 step keeps neighbouring segments far apart in colour. Class-based so no inline style.
-    private static string HueClass(int colorIndex)
-        => $"hue-{colorIndex * 7 % 20}";
+    /// <summary>
+    /// Remembers which hue a contributor was given, for as long as the panel is open.
+    /// </summary>
+    /// <remarks>
+    /// <para>The colour used to come from the position in the throughput-sorted list, so two clouds swapped
+    /// colours the moment one overtook the other - and with 51% against 49% that happens on almost any
+    /// configuration change. A colour has to belong to the thing, not to its current rank.</para>
+    /// <para>Handing them out in order of first appearance and never taking one back is enough for that, and it
+    /// does more than deriving the hue from the name would: removing a contributor leaves every other colour
+    /// exactly where it was, and a removed one that comes back gets its old colour again. The hues also stay as
+    /// far apart as the palette allows, which a hash cannot promise.</para>
+    /// <para>They are not the same colours after a restart. That is deliberate - carrying them across would
+    /// mean storing them somewhere, for a legend that names every colour anyway.</para>
+    /// </remarks>
+    private sealed class HueAssignment
+    {
+        // Consecutive hues would be near-identical; stepping by 7 through 20 visits every one of them before
+        // repeating, and keeps neighbouring contributors far apart in colour.
+        private const int Step = 7;
+
+        private readonly Dictionary<string, int> _hues = new(StringComparer.Ordinal);
+        private int _handedOut;
+
+        public int For(string name)
+        {
+            if (_hues.TryGetValue(name, out var hue))
+                return hue;
+
+            hue = _handedOut * Step % HueCount;
+            _handedOut++;
+            _hues[name] = hue;
+
+            return hue;
+        }
+    }
+
+    private static string HueClass(int hue)
+        => $"hue-{hue}";
 
     private static string GrowClass(int percent)
         => $"g-{Math.Clamp(percent, 0, 100)}";
