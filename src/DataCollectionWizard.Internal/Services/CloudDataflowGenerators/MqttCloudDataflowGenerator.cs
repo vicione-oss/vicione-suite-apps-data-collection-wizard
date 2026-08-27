@@ -11,7 +11,7 @@ using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
-public sealed class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInformationProvider) : ICloudDataflowGenerator
+public sealed class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInformationProvider) : CloudDataflowTreeGenerator, ICloudDataflowGenerator
 {
     private const string PortDesignIdMqttDataPointBool = "DataPointBool";
     private const string PortDesignIdMqttDataPointFloat = "DataPointFloat";
@@ -20,6 +20,10 @@ public sealed class MqttCloudDataflowGenerator(IInstanceInformationProvider inst
     private const string PortDesignIdMqttFolder = "Folder";
 
     public string Name => "mqtt";
+
+    protected override string PortDesignIdFolder => "Folder";
+    protected override string PortDesignIdDataPointFloat => "DataPointFloat";
+    protected override string PortDesignIdDataPointString => "DataPointString";
 
     public Dictionary<string, AggregationFunctionCloudInputs> GenerateCloudDataflow(Connection connection,
                                                                             IDeviceTreeMasterNode deviceTreeMaster,
@@ -47,15 +51,15 @@ public sealed class MqttCloudDataflowGenerator(IInstanceInformationProvider inst
 
         var dataport = GenerateDataPort(connection, deviceTreeMaster, builder, dataflow);
 
-        var edgeNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdMqttFolder, dataport, GetMqttSafeTopicName(instanceInformationProvider.Local.Name ?? instanceInformationProvider.Local.SerialNumber), null, DataPortTransferMode.None);
-        var deviceNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdMqttFolder, edgeNode, GetMqttSafeTopicName(deviceTreeMaster.Url.DnsSafeHost), null, DataPortTransferMode.None);
+        var edgeNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdFolder, dataport, instanceInformationProvider.Local.Name ?? instanceInformationProvider.Local.SerialNumber, null, DataPortTransferMode.None);
+        var deviceNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdFolder, edgeNode, GetSafeNodeName(deviceTreeMaster.Url.DnsSafeHost), null, DataPortTransferMode.None);
 
         BuildDataportNodesRecursively(loggedTree!.Children, dataport, deviceNode, builder, dataOutputs, result);
 
         return result;
     }
 
-    private static string GetMqttSafeTopicName(string name)
+    private protected override string GetSafeNodeName(string name)
         // Replace any characters that are not allowed in MQTT topic names with underscores
         => new([.. name.Select(c => char.IsLetterOrDigit(c) || c == '-' || c == '_' ? c : '_')]);
 

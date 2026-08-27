@@ -1,4 +1,4 @@
-using ClusterManagement.Public.Connections.Contracts;
+﻿using ClusterManagement.Public.Connections.Contracts;
 using ClusterManagement.Public.Connections.Extensions;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
@@ -10,15 +10,16 @@ using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
-public class OpcUaCloudDataflowGenerator(IInstanceInformationProvider instanceInformationProvider) : ICloudDataflowGenerator
+public class OpcUaCloudDataflowGenerator(IInstanceInformationProvider instanceInformationProvider) : CloudDataflowTreeGenerator, ICloudDataflowGenerator
 {
-    private const string PortDesignIdOpcUaDataPointFloat = "DataPointFloat";
-    private const string PortDesignIdOpcUaDataPointString = "DataPointString";
-    private const string PortDesignIdOpcUaFolder = "Folder";
     private const string DefaultRootNodeName = "vicione";
     private const int MaxNodeNameLength = 256;
 
     public string Name => "opcua";
+
+    protected override string PortDesignIdFolder => "Folder";
+    protected override string PortDesignIdDataPointFloat => "DataPointFloat";
+    protected override string PortDesignIdDataPointString => "DataPointString";
 
     public Dictionary<string, AggregationFunctionCloudInputs> GenerateCloudDataflow(Connection connection,
                                                                             IDeviceTreeMasterNode deviceTreeMaster,
@@ -44,143 +45,22 @@ public class OpcUaCloudDataflowGenerator(IInstanceInformationProvider instanceIn
 
         // The OPC-UA Server DataPort has no client-side "RootNodeId" setting; the exposed address space is
         // always rooted at a fixed folder named after the suite.
-        var rootNodeName = GetOpcUaSafeNodeName(DefaultRootNodeName);
-        var rootNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdOpcUaFolder, dataport, rootNodeName, null, DataPortTransferMode.None);
-        var edgeNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdOpcUaFolder, rootNode, instanceInformationProvider.Local.Name ?? instanceInformationProvider.Local.SerialNumber, null, DataPortTransferMode.None);
-        var deviceNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdOpcUaFolder, edgeNode, GetOpcUaSafeNodeName(deviceTreeMaster.Url.DnsSafeHost), null, DataPortTransferMode.None);
+        var rootNodeName = GetSafeNodeName(DefaultRootNodeName);
+        var rootNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdFolder, dataport, rootNodeName, null, DataPortTransferMode.None);
+        var edgeNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdFolder, rootNode, instanceInformationProvider.Local.Name ?? instanceInformationProvider.Local.SerialNumber, null, DataPortTransferMode.None);
+        var deviceNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdFolder, edgeNode, GetSafeNodeName(deviceTreeMaster.Url.DnsSafeHost), null, DataPortTransferMode.None);
 
         BuildDataportNodesRecursively(loggedTree!.Children, dataport, deviceNode, builder, result);
 
         return result;
     }
 
-    // The OPC-UA Client DataPort's Folder/DataPoint name validation only rejects control characters and
+    // The OPC-UA Server DataPort's Folder/DataPoint name validation only rejects control characters and
     // caps length at 256, so unlike MQTT's topic-safe replacement this just strips what's disallowed.
-    private static string GetOpcUaSafeNodeName(string name)
+    private protected override string GetSafeNodeName(string name)
     {
         var sanitized = new string([.. name.Where(c => !char.IsControl(c))]);
         return sanitized.Length > MaxNodeNameLength ? sanitized[..MaxNodeNameLength] : sanitized;
-    }
-
-    internal void BuildDataportNodesRecursively(List<TreeModel> children, DataPort dataPort, DataPortTreeNode? parent, ClusterBuilder builder, Dictionary<string, AggregationFunctionCloudInputs> result)
-    {
-        foreach (var child in children)
-        {
-            var dataportNodeDesignId = GetDataPortNodeDesignId(child);
-            var dataportNodeTransferMode = GetDataPortNodeTransferMode(child);
-            var dataportNodeValueType = GetDataportNodeValueType(child);
-            DataPortTreeNode childNode;
-
-            if (parent is null)
-            {
-                childNode = builder.Editors.DataPort.AddTreeNode(dataportNodeDesignId, dataPort, GetOpcUaSafeNodeName(child.Name), dataportNodeValueType, dataportNodeTransferMode);
-            }
-            else
-            {
-                childNode = builder.Editors.DataPortTreeNode.AddTreeNode(dataportNodeDesignId, parent, GetOpcUaSafeNodeName(child.Name), dataportNodeValueType, dataportNodeTransferMode);
-            }
-
-            if (child.DataConfig is not null)
-            {
-                result[child.DataConfig.Node.Id] = new AggregationFunctionCloudInputs()
-                {
-                    Avg = new CloudInput() { InputTreeNode = childNode },
-                    Last = new CloudInput() { InputTreeNode = childNode },
-                    Max = new CloudInput() { InputTreeNode = childNode },
-                    Min = new CloudInput() { InputTreeNode = childNode },
-                    Value = new CloudInput() { InputTreeNode = childNode },
-                };
-            }
-
-            BuildDataportNodesRecursively(child.Children, dataPort, childNode, builder, result);
-        }
-    }
-
-    // Only Real/Text data points are wired up for now, matching MqttCloudDataflowGenerator's scope. The
-    // DataPort itself also defines DataPointBool/Integer/DateTime/Binary node types, so this can be
-    // extended once those DataType values are confirmed and their mapping to CLR types is settled.
-    private Type? GetDataportNodeValueType(TreeModel child)
-    {
-        if (child.DataConfig is null)
-        {
-            return null;
-        }
-
-        switch (child.DataConfig.Node.DataType)
-        {
-            case DataType.Real:
-                return typeof(float);
-            case DataType.Text:
-                return typeof(string);
-            default:
-                throw new NotSupportedException($"Data type {child.DataConfig.Node.DataType} is not supported.");
-        }
-    }
-
-    private DataPortTransferMode GetDataPortNodeTransferMode(TreeModel child)
-    {
-        if (child.DataConfig is null)
-        {
-            return DataPortTransferMode.None;
-        }
-
-        return DataPortTransferMode.OnChange;
-    }
-
-    private string GetDataPortNodeDesignId(TreeModel child)
-    {
-        if (child.DataConfig is null)
-        {
-            return PortDesignIdOpcUaFolder;
-        }
-
-        switch (child.DataConfig.Node.DataType)
-        {
-            case DataType.Real:
-                return PortDesignIdOpcUaDataPointFloat;
-            case DataType.Text:
-                return PortDesignIdOpcUaDataPointString;
-            default:
-                throw new NotSupportedException($"Data type {child.DataConfig.Node.DataType} is not supported.");
-        }
-    }
-
-    internal TreeModel? BuildLoggedTreeRecursively(IDeviceTreeBase node, IEnumerable<string> loggedNodeIds, List<ProcessDataConfiguration> loggedProcessDataNodes)
-    {
-        var children = new List<TreeModel>();
-
-        foreach (var child in node.Children)
-        {
-            var loggedChild = BuildLoggedTreeRecursively(child, loggedNodeIds, loggedProcessDataNodes);
-
-            if (loggedChild is not null)
-            {
-                children.Add(loggedChild);
-            }
-        }
-
-        if (loggedNodeIds.Contains(node.Id))
-        {
-            return new TreeModel()
-            {
-                Children = children,
-                DataConfig = loggedProcessDataNodes.FirstOrDefault(n => n.Node.Id == node.Id),
-                Id = node.Id,
-                Name = node.Name,
-            };
-        }
-
-        if (children.Any())
-        {
-            return new TreeModel()
-            {
-                Children = children,
-                Id = node.Id,
-                Name = node.Name,
-            };
-        }
-
-        return null;
     }
 
     private static DataPort GenerateDataPort(Connection connection, OpcUaServerConnection? opcUaConnection, IDeviceTreeMasterNode deviceTreeMaster, ClusterBuilder builder, Dataflow dataflow)

@@ -13,10 +13,11 @@ using ViciOne.DeviceTree.Contracts;
 namespace DataCollectionWizard.Internal.Tests.CloudDataflowGenerators;
 
 /// <summary>
-/// Tests for OpcUaCloudDataflowGenerator. BuildLoggedTreeRecursively is ported byte-for-byte from
-/// MqttCloudDataflowGenerator, so only a representative subset is re-verified here; see
-/// MqttCloudDataflowGeneratorTests for the exhaustive coverage of that logic. The remaining tests
-/// focus on what differs for OPC UA: node name sanitization rules and the DataPort's property schema.
+/// Tests for OpcUaCloudDataflowGenerator. BuildLoggedTreeRecursively and BuildDataportNodesRecursively
+/// live on the shared CloudDataflowTreeGenerator base class, so only a representative subset is
+/// re-verified here; see MqttCloudDataflowGeneratorTests for the exhaustive coverage of that logic. The
+/// remaining tests focus on what differs for OPC UA: node name sanitization rules and the DataPort's
+/// property schema.
 /// </summary>
 public class OpcUaCloudDataflowGeneratorTests
 {
