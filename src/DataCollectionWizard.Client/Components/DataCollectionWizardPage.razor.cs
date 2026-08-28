@@ -606,7 +606,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             return;
 
         SetNodesStatus(nodeIds, ConnectionStatus.Offline);
-        RefreshNodeStatuses(nodeIds);
+        RefreshNodeStatuses(nodeIds, expandToOfflineNodes: true);
         await InvokeAsync(StateHasChanged);
     }
 
@@ -624,9 +624,11 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     // their ancestors, so collapsed parents still show the status) and update the offline-nodes flag. Previously these
     // notifications called SetTree, which rebuilt the whole tree + grid on every status change and caused the grid to
     // flicker.
-    private void RefreshNodeStatuses(string[] nodeIds)
+    // Going offline unfolds the tree down to the affected value, the way the full rebuild used to; coming back
+    // online does not, since nothing needs pointing out then.
+    private void RefreshNodeStatuses(string[] nodeIds, bool expandToOfflineNodes = false)
     {
-        _adapter.UpdateNodeStatuses(nodeIds);
+        _adapter.UpdateNodeStatuses(nodeIds, expandToOfflineNodes);
 
         lock (_treeLock)
         {

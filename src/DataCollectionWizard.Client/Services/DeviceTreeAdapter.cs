@@ -264,13 +264,20 @@ internal sealed class DeviceTreeAdapter(bool isLiveView, DeviceTreeNodeIconProvi
     // and re-propagate their ancestors' inherited status (so a collapsed parent keeps its coloured bracket), then
     // re-render just those nodes. Avoids the full SetDeviceTree rebuild those notifications used to do, which rebuilt
     // the whole tree and grid on every status change and made the grid flicker.
-    public void UpdateNodeStatuses(IEnumerable<string> nodeIds)
+    /// <param name="nodeIds">The nodes whose status changed.</param>
+    /// <param name="expandToOfflineNodes">
+    /// Unfold the tree down to a value that has just gone offline, so it is visible without hunting for it. Only
+    /// the rebuild in <see cref="SetDeviceTree"/> ever did this, which is why these notifications stopped
+    /// expanding anything when they were moved off it.
+    /// </param>
+    public void UpdateNodeStatuses(IEnumerable<string> nodeIds, bool expandToOfflineNodes = false)
     {
         if (_rootNode is null)
             return;
 
         var nodesById = _rootNode.GetNodeAndDescendants().ToDictionary(node => node.Device.Id);
         var toRefresh = new HashSet<NodeBase>();
+        var toExpandTo = new List<NodeBase>();
 
         foreach (var nodeId in nodeIds)
         {
@@ -283,10 +290,37 @@ internal sealed class DeviceTreeAdapter(bool isLiveView, DeviceTreeNodeIconProvi
             RecalculateInheritedStatusToRoot(node.Parent);
             for (var current = node; current is not null; current = current.Parent)
                 toRefresh.Add(current);
+
+            if (expandToOfflineNodes && ShouldExpandTo(node))
+                toExpandTo.Add(node);
         }
 
         foreach (var node in toRefresh)
             Builder.Helper.RequestNodeRefresh(node);
+
+        foreach (var node in toExpandTo)
+            Builder.Expansion.ExpandToNode(node);
+    }
+
+    /// <summary>
+    /// Whether the tree should unfold down to this node because it has gone offline.
+    /// </summary>
+    /// <remarks>
+    /// The same rule the rebuild applies: a value that dropped out is worth showing, but not when its whole
+    /// master is offline - then everything below it is offline too and the tree would unfold entirely.
+    /// </remarks>
+    private static bool ShouldExpandTo(NodeBase node)
+    {
+        if (node.Device is not IDeviceTreeDataNode || !node.Status.HasFlag(NodeStatus.Offline))
+            return false;
+
+        for (var current = node.Parent; current is not null; current = current.Parent)
+        {
+            if (current.Device is IDeviceTreeMasterNode)
+                return !current.Status.HasFlag(NodeStatus.Offline);
+        }
+
+        return false;
     }
 
     internal void SetDeviceTree(DeviceTreeRoot root, bool expandOfflineNodes)

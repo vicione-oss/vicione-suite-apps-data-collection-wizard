@@ -124,13 +124,16 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         }
     }
 
+    // Only the affected nodes, not the whole tree. SetDeviceTree ends by raising SelectionChanged, which this
+    // page answers by dropping and rebuilding every subscription - on a status change there is nothing to rebuild,
+    // since the dataflow is unchanged and the connectors stay in place when a sensor drops out.
     private async Task NodesOffline(string[] nodeIds)
     {
         if (_tree is null)
             return;
 
         SetNodesStatus(nodeIds, ConnectionStatus.Offline);
-        SetTree(_tree, true);
+        _adapter.UpdateNodeStatuses(nodeIds, expandToOfflineNodes: true);
         await InvokeAsync(StateHasChanged);
     }
 
@@ -140,7 +143,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
             return;
 
         SetNodesStatus(nodeIds, ConnectionStatus.Online);
-        SetTree(_tree, false);
+        _adapter.UpdateNodeStatuses(nodeIds);
         await InvokeAsync(StateHasChanged);
     }
 
