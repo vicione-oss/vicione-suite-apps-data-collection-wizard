@@ -489,7 +489,13 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
     {
         var clusterBuilder = dataCollectionWizardState.ClusterBuilder ?? throw new InvalidOperationException("Cluster Builder is not initialized.");
 
-        var existingEngines = clusterBuilder.Cluster.GetAllEngines().Where(n => n.Name.StartsWith(EngineNamePrefix, StringComparison.Ordinal));
+        // The scanner carries the DCW prefix but belongs to no device, so it counts as vacant on every save -
+        // and a save that only deletes a device never puts it back. Ignoring case here and not above is
+        // deliberate: both err towards keeping.
+        var existingEngines = clusterBuilder.Cluster.GetAllEngines()
+            .Where(n => n.Name.StartsWith(EngineNamePrefix, StringComparison.Ordinal))
+            .Where(n => !string.Equals(n.Name, EngineNameDeviceScanner, StringComparison.OrdinalIgnoreCase));
+
         var existingDeviceEngineNames = allMasters.Select(GetMasterDeviceEngineName);
 
         foreach (var vacantEngine in existingEngines.ExceptBy(existingDeviceEngineNames, e => e.Name).ToArray())
