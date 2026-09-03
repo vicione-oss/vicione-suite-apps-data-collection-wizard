@@ -6,7 +6,7 @@
 
 ### Dependencies
 
-- `.NET` packages, update to version `10.0.10`
+- `.NET` packages, update to version `10.0.11`
 - `AspNetCore.SassCompiler` package, update version to `1.102.0`
 - `ViciOne.Ui.Design` package, update version to `2.3.0`
 - `ViciOne.Ui.MonochromeIcons.Components` package, update version to `4.15.0`
