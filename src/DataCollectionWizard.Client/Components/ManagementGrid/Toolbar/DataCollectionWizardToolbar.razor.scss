@@ -1,5 +1,12 @@
 ﻿@use "./../../../Styles/colours" as col;
 
+// The unsaved-changes animation reaches beyond the save button: the pulse throws a ring this far past
+// its edge, and the breath scales it up, adding roughly another 1.5px on each side of a button this
+// wide. Whatever stands next to the button has to keep clear of both, so the clearance is derived
+// from the reach instead of guessed - change the reach and the spacing follows.
+$save-ring-reach: 8px;
+$save-ring-clearance: $save-ring-reach + 4px;
+
 .header {
     color: col.$font-dark;
     font-size: 28px;
@@ -30,10 +37,15 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        margin: 0 4px 0 2px;
+        // Right margin keeps the "Not saved" text out of the pulsing button's ring.
+        margin: 0 $save-ring-clearance 0 2px;
         font-size: 12.5px;
         white-space: nowrap;
         color: col.$font-dark;
+        // Belt and braces: at larger text sizes the ring can still creep this far, and when it does the
+        // label has to stay readable rather than being washed over by it.
+        position: relative;
+        z-index: 1;
 
         .dot {
             width: 7px;
@@ -185,7 +197,7 @@
     }
 
     65% {
-        box-shadow: 0 0 0 10px rgba(255, 153, 0, 0);
+        box-shadow: 0 0 0 $save-ring-reach rgba(255, 153, 0, 0);
     }
 
     100% {
@@ -193,6 +205,8 @@
     }
 }
 
+// The button grows from its centre, so half of every percent goes towards the label. Kept small enough
+// that the button's own caption stays crisp while it breathes.
 @keyframes save-breath {
     0%,
     100% {
@@ -200,7 +214,7 @@
     }
 
     50% {
-        transform: scale(1.045);
+        transform: scale(1.03);
     }
 }
 
