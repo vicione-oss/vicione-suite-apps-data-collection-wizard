@@ -86,7 +86,7 @@ include:
       rules: *rules
       tags:
         - saas-linux-small-amd64
-  - component: $CI_SERVER_FQDN/vicione-oss/tooling/dotnet-component/dotnet-restore@2
+  - component: $CI_SERVER_FQDN/vicione-oss/tooling/dotnet-component/dotnet-restore@v2.7.1
     inputs:
       image: ${IMAGE_NAME}
       rules: *rules
@@ -106,7 +106,7 @@ include:
       tags:
         - saas-linux-small-amd64
   ### Test & Build ###
-  - component: $CI_SERVER_FQDN/vicione-oss/tooling/dotnet-component/dotnet-build@2
+  - component: $CI_SERVER_FQDN/vicione-oss/tooling/dotnet-component/dotnet-build@v2.7.1
     inputs:
       image: ${IMAGE_NAME}
       rules: *rules
@@ -115,20 +115,21 @@ include:
         - *update_nuget_source_ro
       tags:
         - ${RUNNER_TAG}
-  - component: $CI_SERVER_FQDN/vicione-oss/tooling/dotnet-component/dotnet-test@2
+  - component: $CI_SERVER_FQDN/vicione-oss/tooling/dotnet-component/dotnet-test@v2.7.1
     inputs:
       image: ${IMAGE_NAME}
       rules: *rules
       no_build: false
       filter: "/[(Category!=System)]"
       coverage: true
+      config_file: tests/testconfig.json
       before_script:
         - *activate_mise
         - *update_nuget_source_ro
       tags:
         - ${RUNNER_TAG}
   ### Pack & Push NuGet ###
-  - component: $CI_SERVER_FQDN/vicione-oss/tooling/dotnet-component/dotnet-pack@2
+  - component: $CI_SERVER_FQDN/vicione-oss/tooling/dotnet-component/dotnet-pack@v2.7.1
     inputs:
       name: "Pack NuGet DataCollectionWizard.Public"
       stage: "publish"
@@ -138,7 +139,7 @@ include:
       before_script:
         - *activate_mise
         - *update_nuget_source_ro
-  - component: $CI_SERVER_FQDN/vicione-oss/tooling/dotnet-component/dotnet-nuget-push@2
+  - component: $CI_SERVER_FQDN/vicione-oss/tooling/dotnet-component/dotnet-nuget-push@v2.7.1
     inputs:
       pack_job_name: "Pack NuGet DataCollectionWizard.Public"
       name: "Push NuGet DataCollectionWizard.Public"
