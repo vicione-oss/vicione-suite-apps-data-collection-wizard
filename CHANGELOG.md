@@ -9,8 +9,8 @@
 - `.NET` packages, update to version `10.0.11`
 - `AspNetCore.SassCompiler` package, update version to `1.102.0`
 - `ViciOne.Ui.Design` package, update version to `2.3.0`
-- `ViciOne.Ui.MonochromeIcons.Components` package, update version to `4.15.0`
-- `ViciOne.Ui.Blazor.Components` package, update version to `6.0.0-ci2820138023`
+- `ViciOne.Ui.MonochromeIcons.Components` package, update version to `4.18.0`
+- `ViciOne.Ui.Blazor.Components` package, update version to `6.0.0`
 - `ViciOne.Suite.ClusterManagement.Public` package, update version to `2.4.0-ci2729942661`
 - `ViciOne.Suite.Sdk` package, update version to `2.2.0`
 
