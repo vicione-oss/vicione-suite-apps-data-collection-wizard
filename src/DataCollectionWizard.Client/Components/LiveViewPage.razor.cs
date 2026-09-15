@@ -434,28 +434,14 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
             await DataCollectionWizardService.RequestExistingDevicesAsync(masterDevices.Where(v => v.Children.Count > 0), false, async receivedDevices =>
             {
-                var freshOrUnchangedDevices = receivedDevices
-                    .Select(r =>
-                    {
-                        // A scan result that confirms the master is online replaces the persisted node outright.
-                        if (r.device is not null && r.device.Status == ConnectionStatus.Online)
-                            return (IDeviceTreeBase?)r.device;
-
-                        // Otherwise the scan did not confirm it online (the engine reported it offline, or the
-                        // request timed out / no data arrived): keep the last known structure but mark it and its
-                        // children offline, instead of leaving a stale "online".
-                        var persisted = masterDevices.FirstOrDefault(m => m.Url == r.address) as IDeviceTreeBase;
-                        if (persisted is not null)
-                        {
-                            foreach (var node in persisted.GetNodeAndDescendants())
-                                node.Status = ConnectionStatus.Offline;
-                        }
-                        return persisted;
-                    })
-                    .Where(d => d is not null)
+                // Only a scan that confirms a master online is handed to the builder. A master left out keeps its
+                // last known structure, and the builder marks it and its children offline for lacking a counterpart.
+                var onlineDevices = receivedDevices
+                    .Select(r => r.device)
+                    .Where(device => device?.Status == ConnectionStatus.Online)
                     .Cast<IDeviceTreeBase>();
 
-                DeviceTreeBuilder.ExtendCurrentDeviceTree(_tree, [.. freshOrUnchangedDevices], []);
+                DeviceTreeBuilder.ExtendCurrentDeviceTree(_tree, [.. onlineDevices], []);
 
                 RemoveNewNodesRecursively(_tree);
 

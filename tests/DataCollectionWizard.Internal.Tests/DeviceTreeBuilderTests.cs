@@ -828,6 +828,67 @@ public class DeviceTreeBuilderTests
             Assert.Equal(ConnectionStatus.Offline, currentTree.Children[0].Status);
         }
 
+        /// <summary>
+        /// A master the scan cannot confirm online is simply left out of the parsed devices. The builder then marks
+        /// it and everything below it offline, keeps its structure, and leaves a master that was confirmed alone -
+        /// the pages rely on this instead of marking nodes offline themselves.
+        /// </summary>
+        [Fact]
+        public void SetsMasterAndDescendantsOfflineWhen_LeftOutOfParsedDevices()
+        {
+            static DeviceTreeIoLinkMaster Master(string id, string host) => new()
+            {
+                Children =
+                [
+                    new DeviceTreeIoLinkMasterPort
+                    {
+                        Children =
+                        [
+                            new DeviceTreeDevice
+                            {
+                                Children =
+                                [
+                                    new DeviceTreeProcessData
+                                    {
+                                        Id = $"{id}/Port 1/Device/Data",
+                                        Name = "Data",
+                                        Status = ConnectionStatus.Online,
+                                    }
+                                ],
+                                Id = $"{id}/Port 1/Device",
+                                Name = "Device",
+                                Status = ConnectionStatus.Online,
+                            }
+                        ],
+                        Id = $"{id}/Port 1",
+                        Name = "Port 1",
+                        Status = ConnectionStatus.Online,
+                    }
+                ],
+                Id = id,
+                MacAddress = "ab:ab:ab:ab:ab",
+                Name = id,
+                Status = ConnectionStatus.Online,
+                Url = new Uri($"http://{host}"),
+            };
+
+            var currentTree = new DeviceTreeRoot();
+            currentTree.Children.Add(Master("Unreachable", "127.0.0.1"));
+            currentTree.Children.Add(Master("Confirmed", "127.0.0.2"));
+
+            DeviceTreeBuilder.ExtendCurrentDeviceTree(currentTree, [Master("Confirmed", "127.0.0.2")], []);
+
+            Assert.Equal(2, currentTree.Children.Count);
+
+            var unreachable = currentTree.Children.Single(n => n.Id == "Unreachable");
+            Assert.Equal(4, unreachable.GetNodeAndDescendants().Count());
+            Assert.All(unreachable.GetNodeAndDescendants(), node => Assert.Equal(ConnectionStatus.Offline, node.Status));
+
+            var confirmed = currentTree.Children.Single(n => n.Id == "Confirmed");
+            Assert.Equal(4, confirmed.GetNodeAndDescendants().Count());
+            Assert.All(confirmed.GetNodeAndDescendants(), node => Assert.Equal(ConnectionStatus.Online, node.Status));
+        }
+
         [Fact]
         public void SetsMasterDeviceStatusWhen_RemoteTrue_CurrentTrue_IoTCoreTrue()
         {
