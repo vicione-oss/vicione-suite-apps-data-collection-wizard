@@ -1,5 +1,4 @@
 ﻿using DataCollectionWizard.Client.Models;
-using DataCollectionWizard.Client.Services;
 using DataCollectionWizard.Public.Extensions;
 using ViciOne.DeviceTree.Contracts;
 

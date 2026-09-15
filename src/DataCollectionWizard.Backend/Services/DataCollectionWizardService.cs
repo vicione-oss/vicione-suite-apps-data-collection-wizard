@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using System.Text.Json;
+﻿using System.Text.Json;
 using DataCollectionWizard.Backend.DbContext;
 using DataCollectionWizard.Internal;
 using DataCollectionWizard.Internal.Commands;
@@ -63,9 +62,8 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
         Guid DevicesNodeId);
 
     /// <summary>
-    /// The scanners the device scanner dataflow holds. A scanner keeps its place in this list, because the
-    /// place decides where its FunctionBlock sits in the dataflow - stacked one below the other rather than
-    /// all on the same spot, and staying put when another scanner is added later.
+    /// The scanners the device scanner dataflow holds. Their order here doesn't matter: a scanner missing from
+    /// the dataflow is placed below the blocks already in it.
     /// </summary>
     private static readonly DeviceScanner[] s_deviceScanners =
     [
@@ -190,14 +188,12 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
 
         // A scanner added later must end up in the dataflow of a cluster that already carries the earlier ones,
         // so every scanner is checked on its own rather than the dataflow as a whole.
-        for (var index = 0; index < s_deviceScanners.Length; index++)
+        foreach (var scanner in s_deviceScanners)
         {
-            var scanner = s_deviceScanners[index];
-
             if (scanDataflow.Root.GetAllNestedFunctionBlocks().Any(f => f.DesignId == scanner.DesignId))
                 continue;
 
-            AddDeviceScanner(clusterBuilder, scanDataflow, scanner, index);
+            AddDeviceScanner(clusterBuilder, scanDataflow, scanner);
             changed = true;
         }
 
@@ -220,14 +216,14 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
     /// Adds one scanner FunctionBlock to the device scanner dataflow and pins its trigger and result connectors
     /// to the ids clients address them by.
     /// </summary>
-    /// <param name="position">
-    /// The scanner's place in <see cref="s_deviceScanners"/>, which decides how far down its FunctionBlock
-    /// sits. Without a location of their own the blocks all land on the same spot and hide each other.
-    /// </param>
-    private static void AddDeviceScanner(ClusterBuilder clusterBuilder, Dataflow scanDataflow, DeviceScanner scanner, int position)
+    /// <remarks>
+    /// The block goes below the lowest one already in the dataflow, so its place follows what the dataflow
+    /// actually holds rather than the scanner's position in <see cref="s_deviceScanners"/> - removing or
+    /// reordering a scanner can't drop a new block onto one a deployed cluster already carries.
+    /// </remarks>
+    private static void AddDeviceScanner(ClusterBuilder clusterBuilder, Dataflow scanDataflow, DeviceScanner scanner)
     {
-        var location = new Point(0, position * FunctionBlocks.DefaultVerticalSeparation);
-        var scanFunctionBlock = clusterBuilder.Editors.Container.AddFunctionBlock(scanDataflow.Root, scanner.DesignId, scanner.Name, null, location);
+        var scanFunctionBlock = clusterBuilder.Editors.Container.AddSubFunctionBlock(scanDataflow, scanner.DesignId, scanner.Name, scanDataflow.Root, 0, FunctionBlocks.DefaultVerticalSeparation);
 
         var devicesConnector = scanFunctionBlock.GetConnectorByDesignId(scanner.DevicesDesignId)!;
         var triggerConnector = scanFunctionBlock.GetConnectorByDesignId(scanner.TriggerDesignId)!;

@@ -404,9 +404,9 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
         var cloudInputs = GenerateClouds(master, engine, dataflow, activePublishTargets, generateDataflowResult);
 
-        Container CompressorContainer() => builder.Editors.Container.AddContainer(dataflow.Root, ContainerNameCompressors, null, new Point { X = FunctionBlocks.DefaultHorizontalSeparation });
+        GenerateProcessDataLogging(dataflow, nodeAndDescendants, master, () => builder.Editors.Container.AddContainer(dataflow.Root, ContainerNameCompressors, null, new Point { X = FunctionBlocks.DefaultHorizontalSeparation }),
+            parents, compressorFbs, enabledConfigs, generateDataflowResult, cloudInputs, connectionNames);
 
-        GenerateProcessDataLogging(dataflow, nodeAndDescendants, master, CompressorContainer, parents, compressorFbs, enabledConfigs, generateDataflowResult, cloudInputs, connectionNames);
         GenerateSchedulableBlobLogging(dataflow, nodeAndDescendants, schedulerFbs, enabledConfigs, cloudInputs, connectionNames, generateDataflowResult);
         GenerateEventTriggerBlobLogging(dataflow, nodeAndDescendants, enabledConfigs, cloudInputs, connectionNames, generateDataflowResult);
 
