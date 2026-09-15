@@ -127,6 +127,10 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
     // Only the affected nodes, not the whole tree. SetDeviceTree ends by raising SelectionChanged, which this
     // page answers by dropping and rebuilding every subscription - on a status change there is nothing to rebuild,
     // since the dataflow is unchanged and the connectors stay in place when a sensor drops out.
+    //
+    // The grid has to be told to repaint, though. It takes no parameters, so this page re-rendering does not reach
+    // it, and otherwise it only repaints when values arrive - which a device that just went offline no longer sends,
+    // so its rows would keep looking online.
     private async Task NodesOffline(string[] nodeIds)
     {
         if (_tree is null)
@@ -134,6 +138,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
         SetNodesStatus(nodeIds, ConnectionStatus.Offline);
         _adapter.UpdateNodeStatuses(nodeIds, expandToOfflineNodes: true);
+        _service.RefreshImmediate();
         await InvokeAsync(StateHasChanged);
     }
 
@@ -144,6 +149,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
         SetNodesStatus(nodeIds, ConnectionStatus.Online);
         _adapter.UpdateNodeStatuses(nodeIds);
+        _service.RefreshImmediate();
         await InvokeAsync(StateHasChanged);
     }
 
