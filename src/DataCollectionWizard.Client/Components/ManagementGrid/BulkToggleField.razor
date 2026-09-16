@@ -1,10 +1,10 @@
 @using DataCollectionWizard.Client.Components.ManagementGrid.Models
 
 <div class="bulk-field">
-    <span class="k">@Label</span>
+    <span class="bulk-field-label">@Label</span>
 
     <div class="bulk-choice">
-        <div class="bulk-duo">
+        <div class="bulk-toggle-pair">
             <button class="@(Tally.All ? "primary" : string.Empty)"
                     @onclick="@(() => OnChoose.InvokeAsync(true))">
                 @Localization.DataCollectionWizardPage.BulkActivate
@@ -21,7 +21,7 @@
            of the two buttons one wants. *@
         @if (Tally.Total > 0)
         {
-            <span class="bulk-dist">
+            <span class="bulk-distribution">
                 <span class="bulk-meter"><i style="width: @(SharePercent)%"></i></span>
 
                 @* Written by wwwroot/js/count-up.js, so the figures run to their new value together with the
@@ -32,7 +32,7 @@
                    without it the whole panel would breathe in and out for the length of the animation. Sizing
                    it from the text rather than from a measured number keeps it right in a language whose words
                    are longer. *@
-                <span class="bulk-dist-text">
+                <span class="bulk-distribution-text">
                     <span class="sizer" aria-hidden="true">@WidestText</span>
                     <span data-counts="@(Tally.On),@(Tally.Off)"
                           data-count-format="@Localization.DataCollectionWizardPage.BulkDistribution"></span>

@@ -1,6 +1,6 @@
 @use "./../../Styles/colours" as col;
 
-.tt {
+.device-tooltip {
     // Grows to fit content but never wider than max-width; long names/values wrap instead of widening the tooltip.
     width: max-content;
     min-width: 220px;
@@ -21,30 +21,30 @@
     letter-spacing: normal;
     line-height: 1.45;
 
-    &.st-off {
+    &.status-error {
         border-top-color: col.$error;
     }
 
-    &.st-warn {
+    &.status-warning {
         border-top-color: col.$warning;
     }
 
-    &.st-new {
+    &.status-new {
         border-top-color: col.$add;
     }
 }
 
-.tt-top {
+.header {
     padding: 12px 14px 10px;
 }
 
-.tt-nameline {
+.name-line {
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
-.tt-name {
+.name {
     font-size: 15px;
     font-weight: 400;
     color: col.$font;
@@ -53,14 +53,14 @@
 
 // Same lock + "Auth" pill as the device scan list (.device-auth-lock / .device-auth-badge), so a master that wants
 // credentials is marked identically wherever it shows up.
-.tt-auth-lock {
+.auth-lock {
     display: flex;
     align-items: center;
     flex-shrink: 0;
     color: col.$font-dark;
 }
 
-.tt-auth-badge {
+.auth-badge {
     margin-left: auto;
     flex-shrink: 0;
     padding: 3px 9px;
@@ -73,22 +73,22 @@
     white-space: nowrap;
 }
 
-.tt-sub {
+.subtitle {
     margin-top: 3px;
     font-size: 12.5px;
     color: col.$font-dark;
     overflow-wrap: anywhere;
 }
 
-// Hero: the image on the left with its companion key/value fields beside it.
-.tt-hero {
+// Image row: the image on the left with its companion key/value fields beside it.
+.image-row {
     display: flex;
     gap: 13px;
     align-items: flex-start;
     padding: 2px 14px 12px;
 }
 
-.tt-img {
+.image {
     flex: 0 0 auto;
     box-sizing: border-box;
     width: 92px;
@@ -113,53 +113,53 @@
     }
 }
 
-.tt-ids {
+.identifiers {
     flex: 1;
     min-width: 0;
-    // Top-aligned with the image (the hero sets align-items:flex-start); not vertically centred, which looked off
+    // Top-aligned with the image (the image row sets align-items:flex-start); not vertically centred, which looked off
     // with only one or two fields.
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-.tt-body {
+.sections {
     padding: 0 14px 4px;
 }
 
 // A stacked label-over-value pair. The label is styled like a section heading ("Description" et al.).
-.kvs {
+.key-values {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-.kv {
+.key-value {
     display: flex;
     flex-direction: column;
     gap: 2px;
     min-width: 0;
 
-    .k {
+    .key {
         font-size: 10px;
         letter-spacing: 0.13em;
         text-transform: uppercase;
         color: col.$font-disabled;
     }
 
-    .v {
+    .value {
         color: col.$font;
         overflow-wrap: anywhere;
     }
 }
 
 // A section: an uppercase label with a trailing hairline, then rows / a description / a path.
-.grp {
+.section {
     padding: 9px 0;
 }
 
 // Section label: small uppercase heading with a trailing hairline.
-.grp-lbl {
+.section-label {
     display: flex;
     align-items: center;
     gap: 7px;
@@ -197,17 +197,17 @@
     }
 }
 
-.tt-desc {
+.description {
     line-height: 1.5;
 }
 
-.tt-path {
+.path {
     color: col.$font;
     overflow-wrap: anywhere;
     line-height: 1.4;
 }
 
-.tt-empty {
+.empty-hint {
     padding: 9px 0;
     font-size: 12.5px;
     font-style: italic;
@@ -215,14 +215,14 @@
 }
 
 // Status footer, always separated from the content above by a divider.
-.tt-flags {
+.status-flags {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
     padding: 11px 14px 13px;
     border-top: 1px solid col.$border;
 
-    .flag {
+    .status-flag {
         display: inline-flex;
         align-items: center;
         gap: 6px;
@@ -231,28 +231,28 @@
         border-radius: 7px;
         border: 1px solid transparent;
 
-        .d {
+        .status-flag-dot {
             width: 7px;
             height: 7px;
             border-radius: 50%;
         }
 
-        &.err {
+        &.error {
             color: #f4a89c;
             background: rgba(227, 75, 53, 0.12);
             border-color: rgba(227, 75, 53, 0.3);
 
-            .d {
+            .status-flag-dot {
                 background: col.$error;
             }
         }
 
-        &.warn {
+        &.warning {
             color: #ffe08a;
             background: rgba(255, 206, 0, 0.10);
             border-color: rgba(255, 206, 0, 0.28);
 
-            .d {
+            .status-flag-dot {
                 background: col.$warning;
             }
         }
@@ -262,7 +262,7 @@
             background: rgba(43, 140, 104, 0.12);
             border-color: rgba(43, 140, 104, 0.3);
 
-            .d {
+            .status-flag-dot {
                 background: col.$add;
             }
         }

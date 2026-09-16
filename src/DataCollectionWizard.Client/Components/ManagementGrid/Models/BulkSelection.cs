@@ -153,7 +153,7 @@ internal sealed class BulkSelection(IReadOnlyCollection<IDeviceTreeDataNode> sel
     /// </summary>
     private static BulkTally Tally(IEnumerable<bool> values)
     {
-        var on = 0;
+        var onCount = 0;
         var total = 0;
 
         foreach (var value in values)
@@ -161,10 +161,10 @@ internal sealed class BulkSelection(IReadOnlyCollection<IDeviceTreeDataNode> sel
             total++;
 
             if (value)
-                on++;
+                onCount++;
         }
 
-        return new BulkTally(on, total);
+        return new BulkTally(onCount, total);
     }
 
     private static T? Common<T>(IEnumerable<T> values)

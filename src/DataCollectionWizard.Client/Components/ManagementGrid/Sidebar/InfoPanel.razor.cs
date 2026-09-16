@@ -8,7 +8,7 @@ using ViciOne.Ui.Localization.Resources;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.Sidebar;
 
-// "Informationen" section at the bottom of the device-tree sidebar. Shows a live projection of the value throughput
+// "Information" section at the bottom of the device-tree sidebar. Shows a live projection of the value throughput
 // the current configuration produces - never a measurement, always recomputed from the config.
 public sealed partial class InfoPanel : ComponentBase, IDisposable
 {
@@ -319,7 +319,7 @@ public sealed partial class InfoPanel : ComponentBase, IDisposable
         => $"hue-{hue}";
 
     private static string GrowClass(int percent)
-        => $"g-{Math.Clamp(percent, 0, 100)}";
+        => $"grow-{Math.Clamp(percent, 0, 100)}";
 
     // The legend shows only the share %; the absolute value is kept here (with its period, so it isn't ambiguous).
     private static string ShareTooltip(Share share)

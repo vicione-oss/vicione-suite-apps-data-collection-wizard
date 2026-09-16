@@ -51,15 +51,15 @@ internal static class GridGrouping
 
         // Step 1: runs of consecutive rows sharing the same immediate parent.
         var parentGroups = new List<(string Key, List<TItem> Items)>();
-        var p = 0;
-        while (p < items.Count)
+        var itemIndex = 0;
+        while (itemIndex < items.Count)
         {
-            var key = breadcrumbOf(items[p]);
+            var key = breadcrumbOf(items[itemIndex]);
             var group = new List<TItem>();
-            while (p < items.Count && breadcrumbOf(items[p]) == key)
+            while (itemIndex < items.Count && breadcrumbOf(items[itemIndex]) == key)
             {
-                group.Add(items[p]);
-                p++;
+                group.Add(items[itemIndex]);
+                itemIndex++;
             }
 
             parentGroups.Add((key, group));
@@ -68,25 +68,25 @@ internal static class GridGrouping
         // Step 2: emit headers and rows.
         var rows = new List<GroupedRow<TItem>>();
         var dataRowIndex = 0;
-        var g = 0;
-        while (g < parentGroups.Count)
+        var groupIndex = 0;
+        while (groupIndex < parentGroups.Count)
         {
-            if (parentGroups[g].Items.Count > 1)
+            if (parentGroups[groupIndex].Items.Count > 1)
             {
-                AddGroup(parentGroups[g].Key, parentGroups[g].Items);
-                g++;
+                AddGroup(parentGroups[groupIndex].Key, parentGroups[groupIndex].Items);
+                groupIndex++;
                 continue;
             }
 
-            var rollupKey = ParentPath(parentGroups[g].Key);
-            var merged = new List<TItem>(parentGroups[g].Items);
-            var h = g + 1;
-            while (h < parentGroups.Count
-                   && parentGroups[h].Items.Count == 1
-                   && ParentPath(parentGroups[h].Key) == rollupKey)
+            var rollupKey = ParentPath(parentGroups[groupIndex].Key);
+            var merged = new List<TItem>(parentGroups[groupIndex].Items);
+            var nextGroupIndex = groupIndex + 1;
+            while (nextGroupIndex < parentGroups.Count
+                   && parentGroups[nextGroupIndex].Items.Count == 1
+                   && ParentPath(parentGroups[nextGroupIndex].Key) == rollupKey)
             {
-                merged.AddRange(parentGroups[h].Items);
-                h++;
+                merged.AddRange(parentGroups[nextGroupIndex].Items);
+                nextGroupIndex++;
             }
 
             if (merged.Count > 1)
@@ -94,7 +94,7 @@ internal static class GridGrouping
             else
                 AddRows(groupKey: null, merged);
 
-            g = h;
+            groupIndex = nextGroupIndex;
         }
 
         return rows;

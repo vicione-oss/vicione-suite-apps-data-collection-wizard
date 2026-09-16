@@ -9,6 +9,11 @@ namespace DataCollectionWizard.Client.Components.TreeNodeTemplates;
 
 public sealed partial class DeviceTreeNodeTooltip
 {
+    // Severity classes shared by the status badges and the hairline on top of the tooltip (as "status-<severity>").
+    private const string SeverityError = "error";
+    private const string SeverityWarning = "warning";
+    private const string SeverityNew = "new";
+
     private string _deviceImageDataBase64 = string.Empty;
 
     [Inject]
@@ -32,13 +37,13 @@ public sealed partial class DeviceTreeNodeTooltip
             var status = Device.GetStatus(IsLiveView) | (NodeStatus)InheritedStatus;
 
             if (status.HasFlag(NodeStatus.Offline))
-                return "st-off";
+                return $"status-{SeverityError}";
 
             if (status.HasFlag(NodeStatus.NotSupported) || status.HasFlag(NodeStatus.Unknown))
-                return "st-warn";
+                return $"status-{SeverityWarning}";
 
             if (status.HasFlag(NodeStatus.New))
-                return "st-new";
+                return $"status-{SeverityNew}";
 
             return string.Empty;
         }
@@ -59,7 +64,7 @@ public sealed partial class DeviceTreeNodeTooltip
     }
 
     // The status footer: the node's own status first, then the status inherited from its subtree ("Contains …"),
-    // each mapped to a severity class (err / warn / new) used for the badge colour and the top hairline.
+    // each mapped to a severity class (error / warning / new) used for the badge colour.
     private List<(string Text, string Severity)> GetStatusFlags()
     {
         var flags = new List<(string, string)>();
@@ -72,15 +77,15 @@ public sealed partial class DeviceTreeNodeTooltip
                 flags.Add((text, severity));
         }
 
-        Add(nodeStatus, NodeStatus.Offline, DeviceTreeTooltip.DeviceStatusOffline, "err");
-        Add(nodeStatus, NodeStatus.NotSupported, DeviceTreeTooltip.DeviceStatusNotSupported, "warn");
-        Add(nodeStatus, NodeStatus.Unknown, DeviceTreeTooltip.DeviceStatusUnknown, "warn");
-        Add(nodeStatus, NodeStatus.New, DeviceTreeTooltip.DeviceStatusNewlyCreated, "new");
+        Add(nodeStatus, NodeStatus.Offline, DeviceTreeTooltip.DeviceStatusOffline, SeverityError);
+        Add(nodeStatus, NodeStatus.NotSupported, DeviceTreeTooltip.DeviceStatusNotSupported, SeverityWarning);
+        Add(nodeStatus, NodeStatus.Unknown, DeviceTreeTooltip.DeviceStatusUnknown, SeverityWarning);
+        Add(nodeStatus, NodeStatus.New, DeviceTreeTooltip.DeviceStatusNewlyCreated, SeverityNew);
 
-        Add(inheritedStatus, NodeStatus.Offline, DeviceTreeTooltip.InheritedStatusOffline, "err");
-        Add(inheritedStatus, NodeStatus.NotSupported, DeviceTreeTooltip.InheritedStatusNotSupported, "warn");
-        Add(inheritedStatus, NodeStatus.Unknown, DeviceTreeTooltip.InheritedStatusUnknown, "warn");
-        Add(inheritedStatus, NodeStatus.New, DeviceTreeTooltip.InheritedStatusNewlyCreated, "new");
+        Add(inheritedStatus, NodeStatus.Offline, DeviceTreeTooltip.InheritedStatusOffline, SeverityError);
+        Add(inheritedStatus, NodeStatus.NotSupported, DeviceTreeTooltip.InheritedStatusNotSupported, SeverityWarning);
+        Add(inheritedStatus, NodeStatus.Unknown, DeviceTreeTooltip.InheritedStatusUnknown, SeverityWarning);
+        Add(inheritedStatus, NodeStatus.New, DeviceTreeTooltip.InheritedStatusNewlyCreated, SeverityNew);
 
         return flags;
     }

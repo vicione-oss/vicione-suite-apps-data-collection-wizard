@@ -24,11 +24,11 @@ public sealed partial class DataPointUsageMeter : ComponentBase, IAsyncDisposabl
         => Limit <= 0 ? 0 : (double)Count / Limit;
 
     private string StateClass
-        => Ratio >= 1.0 ? "err" : Ratio >= WarningThreshold ? "warn" : "ok";
+        => Ratio >= 1.0 ? "error" : Ratio >= WarningThreshold ? "warning" : "normal";
 
     // Fill width driven by a class (no inline style); the classes are generated in the SCSS.
     private string FillClass
-        => $"dp-w-{Math.Clamp((int)Math.Round(Ratio * 100), 0, 100)}";
+        => $"usage-width-{Math.Clamp((int)Math.Round(Ratio * 100), 0, 100)}";
 
     // Short qualifier shown only when amber/red; the count itself is already in the meter.
     private string? Hint
@@ -57,7 +57,7 @@ public sealed partial class DataPointUsageMeter : ComponentBase, IAsyncDisposabl
         if (firstRender)
             _countUpModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", CountUp.ModulePath);
 
-        // The bar beside it slides on its own - see the transition on .dp-fill.
+        // The bar beside it slides on its own - see the transition on .usage-fill.
         await CountUp.AnimateAsync(_countUpModule, _hostRef);
     }
 }

@@ -222,21 +222,21 @@
 
         @if (PublishTargetInfos.Count > 1 && !_bulkPanelOpen)
         {
-            <span class="bulk-sep"></span>
-            <span class="bulk-lbl">@TechnicalTerms.Cloud</span>
+            <span class="bulk-separator"></span>
+            <span class="bulk-label">@TechnicalTerms.Cloud</span>
 
             <select class="bulk-target" @bind="_bulkTargetIndex">
                 <option value="@PublishTargetInfos.Count">@Localization.DataCollectionWizardPage.AllClouds</option>
-                @for (var ti = 0; ti < PublishTargetInfos.Count; ti++)
+                @for (var targetIndex = 0; targetIndex < PublishTargetInfos.Count; targetIndex++)
                 {
-                    <option value="@ti">@PublishTargetInfos[ti].Connection.Name</option>
+                    <option value="@targetIndex">@PublishTargetInfos[targetIndex].Connection.Name</option>
                 }
             </select>
         }
 
-        <span class="bulk-sep"></span>
+        <span class="bulk-separator"></span>
 
-        <div class="bulk-duo bulk-duo-bar">
+        <div class="bulk-toggle-pair bulk-toggle-pair-in-bar">
             <button class="primary" @onclick="@(() => ApplyBulkEnableAsync(true))">
                 @Localization.DataCollectionWizardPage.BulkActivate
             </button>
@@ -248,7 +248,7 @@
 
         @if (Bulk.HasAnything)
         {
-            <span class="bulk-sep"></span>
+            <span class="bulk-separator"></span>
 
             @* The chevron is drawn in CSS, like the one on every select in this bar, so both sit on the right and
                look the same. *@
@@ -260,9 +260,9 @@
 
         @* Pushed to the far right, away from the actions - it dismisses the bar rather than doing something to
            the selection. *@
-        <span class="bulk-sep bulk-sep-end"></span>
+        <span class="bulk-separator bulk-separator-end"></span>
 
-        <button class="bulk-x" @onclick="@(() => Service.ClearSelection())" title="@CommonVocabulary.Cancel">✕</button>
+        <button class="bulk-close" @onclick="@(() => Service.ClearSelection())" title="@CommonVocabulary.Cancel">✕</button>
     </div>
 
     @* --- SETTINGS PANEL: the bar grows into it, so there is never a second floating element --- *@
@@ -282,9 +282,9 @@
                             @onclick="@(() => _bulkTargetIndex = PublishTargetInfos.Count)">
                         @Localization.DataCollectionWizardPage.AllClouds
                     </button>
-                    @for (var ti = 0; ti < PublishTargetInfos.Count; ti++)
+                    @for (var targetIndex = 0; targetIndex < PublishTargetInfos.Count; targetIndex++)
                     {
-                        var index = ti;
+                        var index = targetIndex;
                         var info = PublishTargetInfos[index];
                         <button class="@(_bulkTargetIndex == index ? "on" : string.Empty)"
                                 title="@info.Connection.Name"
@@ -311,9 +311,9 @@
                 @if (processNodes.Count > 0)
                 {
                     <div class="bulk-group">
-                        <div class="bulk-group-lbl">
+                        <div class="bulk-group-label">
                             <span>@Localization.DataCollectionWizardPage.BulkGroupProcessValues</span>
-                            <span class="n">@BulkRowCountText(processNodes.Count)</span>
+                            <span class="bulk-group-count">@BulkRowCountText(processNodes.Count)</span>
                         </div>
 
                         <BulkToggleField Label="@Localization.DataCollectionWizardPage.Enabled"
@@ -321,7 +321,7 @@
                                          OnChoose="@(value => ApplyBulkSettingAsync(BulkSetting.ProcessEnabled, value))" />
 
                         <div class="bulk-field">
-                            <span class="k">@Localization.DataCollectionWizardPage.BulkFieldAggregationInterval</span>
+                            <span class="bulk-field-label">@Localization.DataCollectionWizardPage.BulkFieldAggregationInterval</span>
                             <select value="@(bulk.Interval?.ToString() ?? string.Empty)" @onchange="OnBulkIntervalChangedAsync">
                                 @if (bulk.Interval is null)
                                 {
@@ -335,7 +335,7 @@
                         </div>
 
                         <div class="bulk-field">
-                            <span class="k">@Localization.DataCollectionWizardPage.BulkFieldAggregationFunction</span>
+                            <span class="bulk-field-label">@Localization.DataCollectionWizardPage.BulkFieldAggregationFunction</span>
                             <select value="@(bulk.Function?.ToString() ?? string.Empty)"
                                     disabled="@(bulk.FunctionFullyLocked)"
                                     @onchange="OnBulkFunctionChangedAsync">
@@ -352,7 +352,7 @@
 
                         @if (locked > 0)
                         {
-                            <div class="bulk-note sub">
+                            <div class="bulk-note indented">
                                 @(string.Format(System.Globalization.CultureInfo.CurrentCulture, Localization.DataCollectionWizardPage.BulkOnChangeLocked, locked))
                             </div>
                         }
@@ -362,16 +362,16 @@
                 @if (uncompressedNodes.Count > 0)
                 {
                     <div class="bulk-group">
-                        <div class="bulk-group-lbl">
+                        <div class="bulk-group-label">
                             <span>@Localization.DataCollectionWizardPage.BulkGroupUncompressed</span>
-                            <span class="n">@BulkRowCountText(uncompressedNodes.Count)</span>
+                            <span class="bulk-group-count">@BulkRowCountText(uncompressedNodes.Count)</span>
                         </div>
 
                         <BulkToggleField Label="@Localization.DataCollectionWizardPage.Enabled"
                                          Tally="@bulk.UncompressedEnabled"
                                          OnChoose="@(value => ApplyBulkSettingAsync(BulkSetting.UncompressedEnabled, value))" />
 
-                        <div class="bulk-note sub">@Localization.DataCollectionWizardPage.BulkNoSettings</div>
+                        <div class="bulk-note indented">@Localization.DataCollectionWizardPage.BulkNoSettings</div>
                     </div>
                 }
 
@@ -382,9 +382,9 @@
                        the same node. They are only shown when the selection actually holds nodes that have
                        them - an IO-Link BLOB is schedulable but has no raw-data settings. *@
                     <div class="bulk-group">
-                        <div class="bulk-group-lbl">
+                        <div class="bulk-group-label">
                             <span>@Localization.DataCollectionWizardPage.BulkGroupRecordings</span>
-                            <span class="n">@BulkRecordingCountText(recordingNodes.Count, bulk.RawDataNodes.Count)</span>
+                            <span class="bulk-group-count">@BulkRecordingCountText(recordingNodes.Count, bulk.RawDataNodes.Count)</span>
                         </div>
 
                         @if (recordingNodes.Count > 0)
@@ -394,7 +394,7 @@
                                          OnChoose="@(value => ApplyBulkSettingAsync(BulkSetting.RecordingEnabled, value))" />
 
                         <div class="bulk-field">
-                            <span class="k">@Localization.DataCollectionWizardPage.BulkFieldDays</span>
+                            <span class="bulk-field-label">@Localization.DataCollectionWizardPage.BulkFieldDays</span>
                             <select value="@(bulk.Days?.ToString() ?? string.Empty)" @onchange="OnBulkDaysChangedAsync">
                                 @if (bulk.Days is null)
                                 {
@@ -408,7 +408,7 @@
                         </div>
 
                         <div class="bulk-field">
-                            <span class="k">@Localization.DataCollectionWizardPage.BulkFieldTimesADay</span>
+                            <span class="bulk-field-label">@Localization.DataCollectionWizardPage.BulkFieldTimesADay</span>
                             <select value="@(bulk.TimesADay?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty)"
                                     @onchange="OnBulkTimesADayChangedAsync">
                                 @if (bulk.TimesADay is null)
@@ -426,7 +426,7 @@
                         @if (bulk.RawDataNodes.Count > 0)
                         {
                         <div class="bulk-field">
-                            <span class="k">@Localization.DataCollectionWizardPage.BulkFieldFrequency</span>
+                            <span class="bulk-field-label">@Localization.DataCollectionWizardPage.BulkFieldFrequency</span>
                             <select value="@(bulk.RawDataFrequency?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty)"
                                     @onchange="@(args => OnBulkNumberChangedAsync(BulkSetting.RawDataFrequency, args))">
                                 @if (bulk.RawDataFrequency is null)
@@ -441,7 +441,7 @@
                         </div>
 
                         <div class="bulk-field">
-                            <span class="k">@Localization.DataCollectionWizardPage.BulkFieldDuration</span>
+                            <span class="bulk-field-label">@Localization.DataCollectionWizardPage.BulkFieldDuration</span>
                             <select value="@(bulk.RawDataDuration?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty)"
                                     @onchange="@(args => OnBulkNumberChangedAsync(BulkSetting.RawDataDuration, args))">
                                 @if (bulk.RawDataDuration is null)
@@ -461,9 +461,9 @@
                 @if (bulk.TriggerNodes.Count > 0)
                 {
                     <div class="bulk-group">
-                        <div class="bulk-group-lbl">
+                        <div class="bulk-group-label">
                             <span>@Localization.DataCollectionWizardPage.BulkGroupTriggers</span>
-                            <span class="n">@($"{BulkRowCountText(bulk.TriggerNodes.Count)} · {bulk.TriggerConfigurationCount}")</span>
+                            <span class="bulk-group-count">@($"{BulkRowCountText(bulk.TriggerNodes.Count)} · {bulk.TriggerConfigurationCount}")</span>
                         </div>
 
                         <BulkToggleField Label="@Localization.DataCollectionWizardPage.Enabled"
@@ -479,7 +479,7 @@
                                          OnChoose="@(value => ApplyBulkSettingAsync(BulkSetting.TriggerOnWarning, value))" />
 
                         <div class="bulk-field">
-                            <span class="k">@Localization.DataCollectionWizardPage.BulkFieldDelay</span>
+                            <span class="bulk-field-label">@Localization.DataCollectionWizardPage.BulkFieldDelay</span>
                             <select value="@(bulk.TriggerDelay?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty)"
                                     @onchange="@(args => OnBulkNumberChangedAsync(BulkSetting.TriggerDelay, args))">
                                 @if (bulk.TriggerDelay is null)
@@ -499,7 +499,7 @@
 
                 @* Set apart from the settings above: this one discards them rather than writing one. *@
                 <div class="bulk-reset">
-                    <button class="bulk-btn ghost" @onclick="@ApplyBulkResetAsync">
+                    <button class="bulk-button ghost" @onclick="@ApplyBulkResetAsync">
                         @Localization.DataCollectionWizardPage.BulkReset
                     </button>
 

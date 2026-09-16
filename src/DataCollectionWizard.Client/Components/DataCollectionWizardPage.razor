@@ -7,7 +7,6 @@
 @using Sdk.Client.Modules
 @using ViciOne.Ui.Blazor.Components.Dialog.Components
 @using ViciOne.Ui.Blazor.Components.EditorLayout
-@using ViciOne.Ui.Blazor.Components.SearchBox
 @using ViciOne.Ui.Blazor.Components.TabStrip.Components
 @using ViciOne.Ui.Blazor.Components.TabStrip.Enums
 @using ViciOne.Ui.Blazor.Components.TextBox
@@ -98,7 +97,6 @@
     </Body>
 
     <Footer>
-        @* Names the action rather than saying "OK", so it is clear what confirming does. *@
         <DialogFooterButton CssClass="dcw-footer-button-danger"
                             OnClick="@OnDeleteDialogOkAsync"
                             Text="@CommonVocabulary.Delete" />
@@ -159,10 +157,8 @@
         Width="600px">
 
     <Body>
-        @* No dialog-card here, unlike the add dialogs: this dialog has a single area, so there is nothing for a
-           card to set apart. *@
+
         <div class="dialog-content dialog-content-alias">
-            @* Which device is being renamed - the dialog knows it via _editingNode, so it may as well say so. *@
             <div class="alias-subject">
                 <span class="alias-subject-name">@AliasSubjectName</span>
                 @if (!string.IsNullOrWhiteSpace(AliasSubjectDetail))
@@ -326,14 +322,14 @@
             </div>
 
             <div class="unsaved-footer">
-                <button class="unsaved-btn ghost" @onclick="@(() => ResolveUnsavedLeave(UnsavedLeaveChoice.Cancel))">
+                <button class="unsaved-button ghost" @onclick="@(() => ResolveUnsavedLeave(UnsavedLeaveChoice.Cancel))">
                     @CommonVocabulary.Cancel
                 </button>
                 <span class="unsaved-grow"></span>
-                <button class="unsaved-btn danger" @onclick="@(() => ResolveUnsavedLeave(UnsavedLeaveChoice.Discard))">
+                <button class="unsaved-button danger" @onclick="@(() => ResolveUnsavedLeave(UnsavedLeaveChoice.Discard))">
                     @Localization.DataCollectionWizardPage.Discard
                 </button>
-                <button class="unsaved-btn primary" @onclick="@(() => ResolveUnsavedLeave(UnsavedLeaveChoice.Save))">
+                <button class="unsaved-button primary" @onclick="@(() => ResolveUnsavedLeave(UnsavedLeaveChoice.Save))">
                     @CommonVocabulary.Save
                 </button>
             </div>
@@ -538,8 +534,6 @@
     </Body>
 
     <Footer>
-        @* Masters that require authentication turn this dialog into two steps. Without this strip the only sign
-           of which step is showing are the buttons beside it swapping. *@
         @if (_ioLinkShowCredentialStep || IoLinkScanNeedsCredentialStep())
         {
             <ol class="wizard-steps">

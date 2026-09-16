@@ -2,19 +2,19 @@
 @using ViciOne.Ui.Localization.Resources
 
 <div class="info-panel">
-    <div class="hero">
-        <div class="lbl">@Localization.DataCollectionWizardPage.InfoThroughput <span class="sub">@Localization.DataCollectionWizardPage.InfoProjection</span></div>
+    <div class="throughput-summary">
+        <div class="throughput-label">@Localization.DataCollectionWizardPage.InfoThroughput <span class="throughput-projection">@Localization.DataCollectionWizardPage.InfoProjection</span></div>
 
-        <div class="seg">
-            <button class="@(_period == Period.Hour ? "on" : string.Empty)" @onclick="@(() => SetPeriod(Period.Hour))">@PeriodName(Period.Hour)</button>
-            <button class="@(_period == Period.Day ? "on" : string.Empty)" @onclick="@(() => SetPeriod(Period.Day))">@PeriodName(Period.Day)</button>
-            <button class="@(_period == Period.Week ? "on" : string.Empty)" @onclick="@(() => SetPeriod(Period.Week))">@PeriodName(Period.Week)</button>
-            <button class="@(_period == Period.Month ? "on" : string.Empty)" @onclick="@(() => SetPeriod(Period.Month))">@PeriodName(Period.Month)</button>
+        <div class="period-switch">
+            <button class="@(_period == Period.Hour ? "selected" : string.Empty)" @onclick="@(() => SetPeriod(Period.Hour))">@PeriodName(Period.Hour)</button>
+            <button class="@(_period == Period.Day ? "selected" : string.Empty)" @onclick="@(() => SetPeriod(Period.Day))">@PeriodName(Period.Day)</button>
+            <button class="@(_period == Period.Week ? "selected" : string.Empty)" @onclick="@(() => SetPeriod(Period.Week))">@PeriodName(Period.Week)</button>
+            <button class="@(_period == Period.Month ? "selected" : string.Empty)" @onclick="@(() => SetPeriod(Period.Month))">@PeriodName(Period.Month)</button>
         </div>
 
-        <div class="num">
-            <span class="n">@HeadlineNumber</span>
-            <span class="u">@HeadlineUnit</span>
+        <div class="headline">
+            <span class="headline-number">@HeadlineNumber</span>
+            <span class="headline-unit">@HeadlineUnit</span>
         </div>
 
         @if (_totalPerHour > 0)
@@ -22,14 +22,14 @@
             <div class="subline">
                 @Localization.DataCollectionWizardPage.InfoDataVolume
                 <b>@VolumePerDay</b> /@Localization.DataCollectionWizardPage.InfoDay
-                <span class="dot">·</span>
+                <span class="separator">·</span>
                 <b>@VolumePerMonth</b> /@Localization.DataCollectionWizardPage.InfoMonth
             </div>
         }
 
         @if (HasUnsavedChanges)
         {
-            <div class="diff">
+            <div class="unsaved-difference">
                 <span class="badge @(IsUnsavedDiffPositive ? "up" : "down")">@UnsavedDiffBadge</span>
                 @Localization.DataCollectionWizardPage.InfoUnsavedChangesSuffix
             </div>
@@ -44,7 +44,7 @@
                 <span class="share-side">@TechnicalTerms.Cloud · @_cloudShares.Count</span>
             </div>
 
-            <div class="bar">
+            <div class="share-bar">
                 @foreach (var share in _cloudShares.Where(s => s.Percent > 0))
                 {
                     <span class="@HueClass(share.Hue) @GrowClass(share.Percent)" title="@ShareTooltip(share)"></span>
@@ -54,10 +54,10 @@
             <div class="legend">
                 @foreach (var share in _cloudShares)
                 {
-                    <div class="li">
-                        <span class="dot @HueClass(share.Hue)"></span>
-                        <span class="nm" title="@share.Name">@share.Name</span>
-                        <span class="pct">@(share.Percent)%</span>
+                    <div class="legend-entry">
+                        <span class="legend-swatch @HueClass(share.Hue)"></span>
+                        <span class="legend-name" title="@share.Name">@share.Name</span>
+                        <span class="legend-percent">@(share.Percent)%</span>
                     </div>
                 }
             </div>
@@ -72,7 +72,7 @@
                 <span class="share-side">@CommonVocabulary.DevicePlural · @_deviceShares.Count</span>
             </div>
 
-            <div class="bar">
+            <div class="share-bar">
                 @foreach (var share in _deviceShares.Where(s => s.Percent > 0))
                 {
                     <span class="@HueClass(share.Hue) @GrowClass(share.Percent)" title="@ShareTooltip(share)"></span>
@@ -82,10 +82,10 @@
             <div class="legend">
                 @foreach (var share in _deviceShares)
                 {
-                    <div class="li mono">
-                        <span class="dot @HueClass(share.Hue)"></span>
-                        <span class="nm" title="@share.Name">@share.Name</span>
-                        <span class="pct">@(share.Percent)%</span>
+                    <div class="legend-entry monospace">
+                        <span class="legend-swatch @HueClass(share.Hue)"></span>
+                        <span class="legend-name" title="@share.Name">@share.Name</span>
+                        <span class="legend-percent">@(share.Percent)%</span>
                     </div>
                 }
             </div>
@@ -94,20 +94,20 @@
 
     @if (_onChangeCount > 0 || _eventCount > 0)
     {
-        <div class="foot">
-            <div class="foot-label">@Localization.DataCollectionWizardPage.InfoNotProjectable</div>
+        <div class="not-projectable">
+            <div class="not-projectable-label">@Localization.DataCollectionWizardPage.InfoNotProjectable</div>
 
             @if (_onChangeCount > 0)
             {
-                <div class="foot-row"><span><b>@_onChangeCount</b>&nbsp;@Localization.DataCollectionWizardPage.InfoOnChangeSuffix</span></div>
+                <div class="not-projectable-row"><span><b>@_onChangeCount</b>&nbsp;@Localization.DataCollectionWizardPage.InfoOnChangeSuffix</span></div>
             }
 
             @if (_eventCount > 0)
             {
-                <div class="foot-row"><span class="pi"><MonochromeIcon Name="MonochromeIconName.ErrorSolid" Size="MonochromeIconSize.Small" /></span> <span><b>@_eventCount</b>&nbsp;@Localization.DataCollectionWizardPage.InfoRawRecordingsSuffix</span></div>
+                <div class="not-projectable-row"><span class="event-icon"><MonochromeIcon Name="MonochromeIconName.ErrorSolid" Size="MonochromeIconSize.Small" /></span> <span><b>@_eventCount</b>&nbsp;@Localization.DataCollectionWizardPage.InfoRawRecordingsSuffix</span></div>
             }
 
-            <div class="foot-hint">@Localization.DataCollectionWizardPage.InfoNotProjectableHint</div>
+            <div class="not-projectable-hint">@Localization.DataCollectionWizardPage.InfoNotProjectableHint</div>
         </div>
     }
 </div>

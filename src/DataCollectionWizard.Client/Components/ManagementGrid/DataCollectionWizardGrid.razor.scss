@@ -334,7 +334,7 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
         margin: 0 9px;
     }
 
-    // Start the breadcrumb under the "Pfad" column header (34px select column + the path column's left padding), and
+    // Start the breadcrumb under the "Path" column header (34px select column + the path column's left padding), and
     // use the same font as the column headers instead of the monospace face.
     .grid-group-label {
         margin-left: var(--width-padding);
@@ -399,19 +399,19 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
         white-space: nowrap;
     }
 
-    .bulk-lbl {
+    .bulk-label {
         font-size: 12.5px;
         color: col.$font-dark;
     }
 
-    .bulk-sep {
+    .bulk-separator {
         width: 1px;
         height: 22px;
         background: col.$content-hover;
     }
 
     // The last one takes the slack, so the close button sits at the far right rather than crowding the actions.
-    .bulk-sep-end {
+    .bulk-separator-end {
         margin-left: auto;
     }
 
@@ -436,7 +436,7 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
         text-overflow: ellipsis;
     }
 
-    .bulk-btn {
+    .bulk-button {
         height: 30px;
         padding: 0 14px;
         // A label that wraps does not fit the fixed height; the row beside it gives way instead.
@@ -465,7 +465,7 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
     // Square rather than just the glyph, so the hover has something to fill and the target is worth hitting.
     // Neutral, not red: this dismisses the bar, it does not delete anything - red is spoken for by the actions
     // that do.
-    .bulk-x {
+    .bulk-close {
         display: grid;
         place-items: center;
         width: 26px;
@@ -597,7 +597,7 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
         padding: 11px 0 4px;
     }
 
-    .bulk-group-lbl {
+    .bulk-group-label {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -616,7 +616,7 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
             background: col.$content-hover;
         }
 
-        .n {
+        .bulk-group-count {
             order: 2;
             letter-spacing: 0;
             text-transform: none;
@@ -638,7 +638,7 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
         gap: 10px;
         margin-bottom: 8px;
 
-        > .k {
+        > .bulk-field-label {
             font-size: 12.5px;
             color: col.$font-dark;
         }
@@ -673,7 +673,7 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
     // Activate / deactivate as one control rather than two loose buttons - the same shape the bar's own pair
     // uses, only smaller here. The state that applies is filled: the accent for "all on", a plain fill for
     // "all off", and neither while the selection disagrees.
-    ::deep .bulk-duo {
+    ::deep .bulk-toggle-pair {
         display: inline-flex;
         // Same width as the selects beside them, so a column has one left and one right edge instead of five.
         // The bar's own pair is not in a column and takes its width from its labels - see the modifier below.
@@ -682,7 +682,7 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
         height: 28px;
 
         // In the bar rather than in the panel: taller, and sized to its content.
-        &.bulk-duo-bar {
+        &.bulk-toggle-pair-in-bar {
             width: auto;
             height: 30px;
 
@@ -746,7 +746,7 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
         min-width: 0;
     }
 
-    ::deep .bulk-dist {
+    ::deep .bulk-distribution {
         display: inline-flex;
         align-items: center;
         gap: 7px;
@@ -758,7 +758,7 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
 
     // The running figure and its hidden twin share one grid cell: the cell takes the twin's width, the figure
     // is drawn over it. Nothing moves while the numbers change their digit count.
-    ::deep .bulk-dist-text {
+    ::deep .bulk-distribution-text {
         display: grid;
 
         > * {
@@ -812,7 +812,7 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
         line-height: 1.45;
         color: col.$font-disabled;
 
-        &.sub {
+        &.indented {
             margin-left: 114px;
         }
     }

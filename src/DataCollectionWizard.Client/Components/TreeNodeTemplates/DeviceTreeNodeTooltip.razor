@@ -6,7 +6,7 @@
     var hasImage = !string.IsNullOrWhiteSpace(_deviceImageDataBase64);
     var subtitle = Subtitle;
 
-    // When there is an image, its companion fields (the first key/value section) sit next to it in a hero row; the
+    // When there is an image, its companion fields (the first key/value section) sit next to it in an image row; the
     // remaining sections run full width below. Without an image everything is a single full-width column.
     var heroSection = hasImage ? sections.FirstOrDefault(section => section.Kind == TooltipSectionKind.KeyValues) : null;
     var bodySections = heroSection is null ? sections : sections.Where(section => section != heroSection).ToList();
@@ -14,29 +14,29 @@
     var isEmpty = sections.Count == 0 && !hasImage && statusFlags.Count == 0;
 
     RenderFragment<TooltipSection> renderSection = section =>
-        @<div class="grp">
+        @<div class="section">
             @if (!string.IsNullOrEmpty(section.Label))
             {
-                <div class="grp-lbl">@section.Label</div>
+                <div class="section-label">@section.Label</div>
             }
 
             @switch (section.Kind)
             {
                 case TooltipSectionKind.Description:
-                    <div class="tt-desc">@section.Text</div>
+                    <div class="description">@section.Text</div>
                     break;
 
                 case TooltipSectionKind.Path:
-                    <div class="tt-path">@section.Text</div>
+                    <div class="path">@section.Text</div>
                     break;
 
                 case TooltipSectionKind.KeyValues:
-                    <div class="kvs">
+                    <div class="key-values">
                         @foreach (var row in section.Rows)
                         {
-                            <div class="kv">
-                                <span class="k">@row.Label</span>
-                                <span class="v">@row.Value</span>
+                            <div class="key-value">
+                                <span class="key">@row.Label</span>
+                                <span class="value">@row.Value</span>
                             </div>
                         }
                     </div>
@@ -55,38 +55,38 @@
         </div>;
 }
 
-<div class="tt @TopStateClass">
-    <div class="tt-top">
-        <div class="tt-nameline">
-            <span class="tt-name">@Device.Name</span>
+<div class="device-tooltip @TopStateClass">
+    <div class="header">
+        <div class="name-line">
+            <span class="name">@Device.Name</span>
             @if (RequiresAuthentication)
             {
-                <span class="tt-auth-lock">
+                <span class="auth-lock">
                     <MonochromeIcon Name="@MonochromeIconName.LockActive" Size="@MonochromeIconSize.Small" />
                 </span>
-                <span class="tt-auth-badge">Auth</span>
+                <span class="auth-badge">Auth</span>
             }
         </div>
         @if (!string.IsNullOrWhiteSpace(subtitle))
         {
-            <div class="tt-sub">@subtitle</div>
+            <div class="subtitle">@subtitle</div>
         }
     </div>
 
     @if (hasImage)
     {
-        <div class="tt-hero">
-            <div class="tt-img">
+        <div class="image-row">
+            <div class="image">
                 <img src="data:image/jpeg;base64,@(_deviceImageDataBase64)" alt="" />
             </div>
             @if (heroSection is not null)
             {
-                <div class="tt-ids">
+                <div class="identifiers">
                     @foreach (var row in heroSection.Rows)
                     {
-                        <div class="kv">
-                            <span class="k">@row.Label</span>
-                            <span class="v">@row.Value</span>
+                        <div class="key-value">
+                            <span class="key">@row.Label</span>
+                            <span class="value">@row.Value</span>
                         </div>
                     }
                 </div>
@@ -96,10 +96,10 @@
 
     @if (bodySections.Count > 0 || isEmpty)
     {
-        <div class="tt-body">
+        <div class="sections">
             @if (isEmpty)
             {
-                <div class="tt-empty">@DeviceTreeTooltip.NoFurtherInformation</div>
+                <div class="empty-hint">@DeviceTreeTooltip.NoFurtherInformation</div>
             }
 
             @foreach (var section in bodySections)
@@ -111,10 +111,10 @@
 
     @if (statusFlags.Count > 0)
     {
-        <div class="tt-flags">
+        <div class="status-flags">
             @foreach (var (text, severity) in statusFlags)
             {
-                <span class="flag @severity"><span class="d"></span>@text</span>
+                <span class="status-flag @severity"><span class="status-flag-dot"></span>@text</span>
             }
         </div>
     }

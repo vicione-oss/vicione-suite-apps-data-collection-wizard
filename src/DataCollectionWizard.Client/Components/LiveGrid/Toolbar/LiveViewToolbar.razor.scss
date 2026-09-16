@@ -61,7 +61,6 @@
         background-color: col.$border;
         margin: 0px 8px;
         width: 1px;
-        // Explicit height needed now that the row centres its items (align-items:center) instead of stretching them.
         height: 20px;
     }
 }

@@ -1,6 +1,6 @@
 @use "./../../../Styles/colours" as col;
 
-// Overlay under the "Live Prozessdatenansicht" title, in the band between the toolbar and the grid - the same
+// Overlay under the "Live process data view" title, in the band between the toolbar and the grid - the same
 // place and the same offsets the configuration page uses for its datapoint meter, so the two pages read alike.
 // Absolutely positioned for the same reason as there: it is out of flow, so it never reflows the grid and the
 // toolbar stays a single row. Offsets: left = toolbar-container left margin (40) + title left margin (8);
