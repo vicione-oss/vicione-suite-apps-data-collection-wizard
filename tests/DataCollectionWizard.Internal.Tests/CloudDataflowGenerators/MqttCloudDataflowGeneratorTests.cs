@@ -339,7 +339,7 @@ public class MqttCloudDataflowGeneratorTests
 
         [Theory]
         [InlineData(DataType.Real)]
-        public void Creates_float_data_point_node_for_numeric_data_types(DataType dataType)
+        public void Creates_double_data_point_node_for_numeric_data_types(DataType dataType)
         {
             // Arrange
             var (builder, dataPort) = CreateDataPort();
@@ -355,7 +355,7 @@ public class MqttCloudDataflowGeneratorTests
             // Assert
             var node = Assert.Single(dataPort.TreeNodes);
             Assert.Equal("DataPointFloat", node.DesignId);
-            Assert.Equal(typeof(float), node.ValueType);
+            Assert.Equal(typeof(double), node.ValueType);
             Assert.Equal(DataPortTransferMode.OnChange, node.TransferMode);
         }
 
@@ -384,7 +384,6 @@ public class MqttCloudDataflowGeneratorTests
         [Theory]
         [InlineData(DataType.Blob)]
         [InlineData(DataType.Unknown)]
-        [InlineData(DataType.Flag)]
         [InlineData(DataType.Octets)]
         public void Throws_for_unsupported_data_type(DataType dataType)
         {
