@@ -4,11 +4,11 @@ using Sdk.Connections.Events;
 
 namespace DataCollectionWizard.Backend.Consumers;
 
-public sealed class ConnectionChangedConsumer(IConnectionChangedProcessor connectionChangeApplicationQueue) : IConsumer<ConnectionChanged>
+public sealed class ConnectionChangedConsumer(IConnectionChangedProcessor connectionChangedProcessor) : IConsumer<ConnectionChanged>
 {
     public Task Consume(ConsumeContext<ConnectionChanged> context)
     {
-        connectionChangeApplicationQueue.Enqueue(context.Message);
+        connectionChangedProcessor.Enqueue(context.Message);
         return Task.CompletedTask;
     }
 }

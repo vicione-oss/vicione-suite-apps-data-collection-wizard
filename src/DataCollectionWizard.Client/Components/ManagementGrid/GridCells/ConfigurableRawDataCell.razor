@@ -4,7 +4,7 @@
     <div></div>
 
     <ComboBox Enabled="@(IsSupportedConnection())"
-              Items="@(_frequencies)"
+              Items="@(s_frequencies)"
               TextSelector="@(s_intTextSelector)"
               TItem="@(ComboBoxOption<int>)"
               TValue="@(int)"
@@ -13,7 +13,7 @@
               ValueSelector="@(s_intValueSelector)"/>
 
     <ComboBox Enabled="@(IsSupportedConnection())"
-              Items="@(_durations)"
+              Items="@(s_durations)"
               TextSelector="@(s_intTextSelector)"
               TItem="@(ComboBoxOption<int>)"
               TValue="@(int)"

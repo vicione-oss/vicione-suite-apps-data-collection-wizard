@@ -1,11 +1,15 @@
-﻿using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
+﻿using DataCollectionWizard.Client.Components.ManagementGrid.Services;
+using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using Microsoft.AspNetCore.Components;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.GridCells;
 
 public sealed partial class UncompressableCell : ComponentBase
 {
+    [CascadingParameter]
+    private ManagementGridService Service { get; set; } = default!;
+
     [Parameter, EditorRequired]
     public IDeviceTreeCompressableDataNode CompressableDataNode { get; set; } = default!;
 
@@ -15,16 +19,17 @@ public sealed partial class UncompressableCell : ComponentBase
     [Parameter]
     public EventCallback OnDeviceTreeChanged { get; set; }
 
-    private bool IsPoolingEnabled()
+    private bool IsCompressionEnabled()
         // TODO: fängt ein paar Fehler in den Tests deren genauer Ursprung mit Jörg geklärt werden muss
         => (CompressableDataNode.CompressorConfigurations.Find(cc => cc.DataGroupIdentifier == Configuration.Connection.Id)?.Enabled).GetValueOrDefault();
 
-    private void PoolingEnabledChanged(bool isEnabled)
+    private void CompressionEnabledChanged(bool isEnabled)
     {
         CompressableDataNode.CompressorConfigurations
             .Single(cc => cc.DataGroupIdentifier == Configuration.Connection.Id)
             .Enabled = isEnabled;
 
+        Service.InvokeDataPointEnabledChanged(isEnabled);
         OnDeviceTreeChanged.InvokeAsync();
     }
 }

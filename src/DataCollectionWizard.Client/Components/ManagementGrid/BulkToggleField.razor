@@ -1,0 +1,43 @@
+@using DataCollectionWizard.Client.Components.ManagementGrid.Models
+
+<div class="bulk-field">
+    <span class="bulk-field-label">@Label</span>
+
+    <div class="bulk-choice">
+        <div class="bulk-toggle-pair">
+            <button class="@(Tally.All ? "primary" : string.Empty)"
+                    @onclick="@(() => OnChoose.InvokeAsync(true))">
+                @Localization.DataCollectionWizardPage.BulkActivate
+            </button>
+
+            <button class="@(Tally.None ? "marked" : string.Empty)"
+                    @onclick="@(() => OnChoose.InvokeAsync(false))">
+                @Localization.DataCollectionWizardPage.BulkDeactivate
+            </button>
+        </div>
+
+        @* How the selection stands right now. Without it, a mixed selection shows as "neither button marked",
+           which does not say whether nearly all of them are on or nearly none - and that is what decides which
+           of the two buttons one wants. *@
+        @if (Tally.Total > 0)
+        {
+            <span class="bulk-distribution">
+                <span class="bulk-meter"><i style="width: @(SharePercent)%"></i></span>
+
+                @* Written by wwwroot/js/count-up.js, so the figures run to their new value together with the
+                   meter beside them instead of jumping.
+
+                   The hidden twin holds the width open. While the figures run they pass through every digit
+                   count between the old value and the new one, and the bar sizes itself to its content - so
+                   without it the whole panel would breathe in and out for the length of the animation. Sizing
+                   it from the text rather than from a measured number keeps it right in a language whose words
+                   are longer. *@
+                <span class="bulk-distribution-text">
+                    <span class="sizer" aria-hidden="true">@WidestText</span>
+                    <span data-counts="@(Tally.On),@(Tally.Off)"
+                          data-count-format="@Localization.DataCollectionWizardPage.BulkDistribution"></span>
+                </span>
+            </span>
+        }
+    </div>
+</div>

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sdk.Backend.Messaging;
 using Sdk.Messaging;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Backend.Services;
 
@@ -56,7 +56,7 @@ public sealed partial class DeviceTreeUpdater(
                 catch (DbUpdateException e)
                 {
                     var error = new ErrorInfo(ErrorCodes.DbUpdateFailed, e.Message);
-                    await mediator.Publish(new DeviceTreeChangeErrorEvent(error), ct);
+                    await mediator.Publish(new DeviceTreeChangedErrorEvent(error), ct);
                     DiscardUpdateRequest(ticketId);
                     await mediator.Publish(new DeviceTreeApplicationEvent(error) { CorrelationId = correlationId }, ct);
                     return;
@@ -81,13 +81,10 @@ public sealed partial class DeviceTreeUpdater(
         {
             DiscardUpdateRequest(ticketId);
             await mediator.Publish(new DeviceTreeApplicationEvent(new ErrorInfo(-1, ex.Message)) { CorrelationId = correlationId }, ct);
-            LogApplicationFailedError(logger, ex.Message, ex.StackTrace ?? string.Empty);
+            LogApplicationFailedError(logger, ex);
         }
     }
 
     public void DiscardUpdateRequest(Guid ticketId)
         => clusterService.DiscardUpdateRequest(ticketId);
-
-    [LoggerMessage(LogLevel.Error, "Failed to apply DeviceTree: {message} {stackTrace}")]
-    public static partial void LogApplicationFailedError(ILogger logger, string message, string stackTrace);
 }

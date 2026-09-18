@@ -1,7 +1,7 @@
 ﻿using DataCollectionWizard.Client.Components.ManagementGrid.Services;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using Microsoft.AspNetCore.Components;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.GridCells;
 
@@ -44,6 +44,10 @@ public sealed partial class RawDataCell : ComponentBase
     private void ErrorChanged(bool error, EventTrigger eventTrigger)
     {
         eventTrigger.OnDamage = error;
+
+        // A trigger condition decides whether this recording is active (active = Enabled && (OnDamage || OnWarning)),
+        // so signal a recount for the header's "N active" count and the info panel - exactly like EnabledChanged.
+        Service.InvokeDataPointEnabledChanged(eventTrigger.Enabled);
         OnDeviceTreeChanged.InvokeAsync();
     }
 
@@ -69,6 +73,9 @@ public sealed partial class RawDataCell : ComponentBase
     private void WarningChanged(bool warning, EventTrigger eventTrigger)
     {
         eventTrigger.OnWarning = warning;
+
+        // See ErrorChanged: a trigger condition changes whether the recording counts as active, so recount live.
+        Service.InvokeDataPointEnabledChanged(eventTrigger.Enabled);
         OnDeviceTreeChanged.InvokeAsync();
     }
 }

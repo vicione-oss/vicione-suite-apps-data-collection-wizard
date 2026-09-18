@@ -8,11 +8,11 @@
         "resolved": "1.6.0",
         "contentHash": "fDshyYU+Yz8rVfqXjLYPeELZTlTXz8/T+pJPHeWACsE/CyhcQ3ybo+AzZdIyzjxs9M4tzqK4wil2loy694aMAQ=="
       },
-      "ViciOne.Driver.IoTCore.Contracts": {
+      "ViciOne.DeviceTree.Contracts": {
         "type": "Direct",
-        "requested": "[2.0.1, )",
-        "resolved": "2.0.1",
-        "contentHash": "eTAHCTRnPIBWQiXw9qm1idbA/nKfDKboxepqZorKPfOqaGmc9xDLd3/1GkVOcB4dbJnRMvVREU1FtS680zTNkA=="
+        "requested": "[2.0.2-ci2764114507, )",
+        "resolved": "2.0.2-ci2764114507",
+        "contentHash": "ea0DOmdL0w5xJiCTMhYggTF3EOdVjVxcEn5hDFsN3n7L+/+/m/YcB3GiBagxcSuyufjhpBxW8F3Ygn4sXidOVQ=="
       },
       "ViciOne.Suite.Sdk": {
         "type": "Direct",

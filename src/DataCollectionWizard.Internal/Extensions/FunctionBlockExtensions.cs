@@ -7,8 +7,8 @@ internal static class FunctionBlockExtensions
 {
     internal static ConnectorInput GetInputByDesignId(this FunctionBlock functionBlock, Guid designId)
     {
-        var output = functionBlock.GetAllInputs().FirstOrDefault(o => o.DesignId == designId);
-        return output ?? throw new ArgumentException($"{functionBlock.Name} does not have an input connector with the DesignId {designId}");
+        var input = functionBlock.GetAllInputs().FirstOrDefault(o => o.DesignId == designId);
+        return input ?? throw new ArgumentException($"{functionBlock.Name} does not have an input connector with the DesignId {designId}");
     }
 
     internal static ConnectorInput? GetInputByName(this FunctionBlock functionBlock, string name)

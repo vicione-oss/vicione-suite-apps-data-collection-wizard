@@ -124,7 +124,7 @@
     <value>Add VSE</value>
   </data>
   <data name="AliasDialogHeader" xml:space="preserve">
-    <value>Edit Alias</value>
+    <value>Edit alias</value>
   </data>
   <data name="Collapse" xml:space="preserve">
     <value>Collapse</value>
@@ -136,13 +136,22 @@
     <value>Delete device?</value>
   </data>
   <data name="DeleteDialogText" xml:space="preserve">
-    <value>The deleted device will only be applied after clicking "Save".</value>
+    <value>The deletion will only take effect after clicking "Save".</value>
   </data>
   <data name="DeleteOfflineNodes" xml:space="preserve">
     <value>Delete offline nodes</value>
   </data>
   <data name="Alias" xml:space="preserve">
     <value>Enter alias</value>
+  </data>
+  <data name="AliasTreePreview" xml:space="preserve">
+    <value>In the tree:</value>
+  </data>
+  <data name="AliasEmptyHint" xml:space="preserve">
+    <value>Leave empty to show only the device name.</value>
+  </data>
+  <data name="AliasCharacterCount" xml:space="preserve">
+    <value>{0} / {1}</value>
   </data>
   <data name="Expand" xml:space="preserve">
     <value>Expand</value>
@@ -169,16 +178,16 @@
     <value>Hide</value>
   </data>
   <data name="SetAllDatapointsCompression" xml:space="preserve">
-    <value>Set Compression Time</value>
+    <value>Set compression time</value>
   </data>
   <data name="SetAllDatapointsDisabled" xml:space="preserve">
-    <value>Disable All</value>
+    <value>Disable all</value>
   </data>
   <data name="SetAllDatapointsEnabled" xml:space="preserve">
-    <value>Enable All</value>
+    <value>Enable all</value>
   </data>
   <data name="SetDebugRawDataGrid" xml:space="preserve">
-    <value>Debug Raw Data Intervall</value>
+    <value>Debug raw data interval</value>
   </data>
   <data name="IoLinkMasterName" xml:space="preserve">
     <value>IO-Link Master</value>
@@ -188,9 +197,6 @@
   </data>
   <data name="AddIoLinkMasterDialogHeader" xml:space="preserve">
     <value>Add IO-Link Master</value>
-  </data>
-  <data name="PathVisible" xml:space="preserve">
-    <value>Display path</value>
   </data>
   <data name="ShowDebugTooling" xml:space="preserve">
     <value>Show debug tooling</value>
@@ -210,6 +216,135 @@
   <data name="Enabled" xml:space="preserve">
     <value>Enabled</value>
   </data>
+  <data name="Information" xml:space="preserve">
+    <value>Information</value>
+  </data>
+  <data name="InfoThroughput" xml:space="preserve">
+    <value>Throughput</value>
+  </data>
+  <data name="InfoThroughputShare" xml:space="preserve">
+    <value>Throughput share</value>
+  </data>
+  <data name="InfoProjection" xml:space="preserve">
+    <value>Projection</value>
+  </data>
+  <data name="InfoHour" xml:space="preserve">
+    <value>Hour</value>
+  </data>
+  <data name="InfoDay" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="InfoWeek" xml:space="preserve">
+    <value>Week</value>
+  </data>
+  <data name="InfoMonth" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="InfoNotProjectable" xml:space="preserve">
+    <value>Not projectable</value>
+  </data>
+  <data name="InfoOnChangeSuffix" xml:space="preserve">
+    <value>data points are only recorded on change</value>
+  </data>
+  <data name="InfoRawRecordingsSuffix" xml:space="preserve">
+    <value>raw-data recordings</value>
+  </data>
+  <data name="InfoNotProjectableHint" xml:space="preserve">
+    <value>Depend on the actual signal / event — not part of the projection.</value>
+  </data>
+  <data name="InfoDataVolume" xml:space="preserve">
+    <value>Data volume</value>
+  </data>
+  <data name="InfoUnsavedChangesSuffix" xml:space="preserve">
+    <value>from pending changes</value>
+  </data>
+  <data name="ActiveDatapointCount" xml:space="preserve">
+    <value>· {0} active</value>
+  </data>
+  <data name="BulkActivate" xml:space="preserve">
+    <value>Activate</value>
+  </data>
+  <data name="BulkDeactivate" xml:space="preserve">
+    <value>Deactivate</value>
+  </data>
+  <data name="AllClouds" xml:space="preserve">
+    <value>All clouds</value>
+  </data>
+  <data name="BulkSettings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="BulkReset" xml:space="preserve">
+    <value>Reset to defaults</value>
+  </data>
+  <data name="BulkResetHint" xml:space="preserve">
+    <value>Turns recording off and puts interval, aggregation, schedule and triggers back to each cloud's own defaults.</value>
+  </data>
+  <data name="BulkGroupProcessValues" xml:space="preserve">
+    <value>Process values</value>
+  </data>
+  <data name="BulkGroupUncompressed" xml:space="preserve">
+    <value>Without compression</value>
+  </data>
+  <data name="BulkGroupRecordings" xml:space="preserve">
+    <value>Recordings</value>
+  </data>
+  <data name="BulkFieldAggregationInterval" xml:space="preserve">
+    <value>Interval</value>
+  </data>
+  <data name="BulkFieldAggregationFunction" xml:space="preserve">
+    <value>Aggregation</value>
+  </data>
+  <data name="BulkFieldDays" xml:space="preserve">
+    <value>Weekdays</value>
+  </data>
+  <data name="BulkFieldTimesADay" xml:space="preserve">
+    <value>Times a day</value>
+  </data>
+  <data name="BulkGroupRawData" xml:space="preserve">
+    <value>Raw data</value>
+  </data>
+  <data name="BulkGroupTriggers" xml:space="preserve">
+    <value>Event triggers</value>
+  </data>
+  <data name="BulkFieldFrequency" xml:space="preserve">
+    <value>Frequency</value>
+  </data>
+  <data name="BulkFieldDuration" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="BulkFieldDelay" xml:space="preserve">
+    <value>Delay (h)</value>
+  </data>
+  <data name="BulkMixedValue" xml:space="preserve">
+    <value>— Multiple —</value>
+  </data>
+  <data name="BulkRowCount" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="BulkRowCountWithRawData" xml:space="preserve">
+    <value>{0} of {1} · {2} of them with raw data</value>
+  </data>
+  <data name="BulkDistribution" xml:space="preserve">
+    <value>{0} on · {1} off</value>
+  </data>
+  <data name="BulkNoSettings" xml:space="preserve">
+    <value>Only activating and deactivating</value>
+  </data>
+  <data name="BulkNothingApplicable" xml:space="preserve">
+    <value>The selection has no settings that can be changed together.</value>
+  </data>
+  <data name="BulkTargetNotConfigurable" xml:space="preserve">
+    <value>This cloud cannot be configured.</value>
+  </data>
+  <data name="BulkOnChangeLocked" xml:space="preserve">
+    <value>{0} of them are set to "On Change" — their function stays unchanged.</value>
+  </data>
+  <data name="BulkReducedOptions" xml:space="preserve">
+    <value>The clouds offer different options; only those available in all of them can be set here.</value>
+  </data>
+  <data name="BulkSelectionCount" xml:space="preserve">
+    <value>{0} selected</value>
+  </data>
   <data name="ProcessDataView" xml:space="preserve">
     <value>Process data view</value>
   </data>
@@ -225,17 +360,77 @@
   <data name="IoLinkMasterAddress" xml:space="preserve">
     <value>IO-Link Master address</value>
   </data>
+  <data name="IoLinkMasterUsername" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="IoLinkMasterPassword" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="IoLinkUseSameCredentialsForAll" xml:space="preserve">
+    <value>Use the same credentials for all</value>
+  </data>
+  <data name="IoLinkMasterCredentialsHint" xml:space="preserve">
+    <value>Only required for IO-Link Masters that use authentication</value>
+  </data>
+  <data name="IoLinkMasterAuthentication" xml:space="preserve">
+    <value>Authentication</value>
+  </data>
+  <data name="IoLinkMasterConnection" xml:space="preserve">
+    <value>Connection</value>
+  </data>
+  <data name="IoLinkMasterConnectionHint" xml:space="preserve">
+    <value>Network address of the IO-Link master</value>
+  </data>
+  <data name="IoLinkMasterAddressExample" xml:space="preserve">
+    <value>e.g. 192.168.178.96</value>
+  </data>
+  <data name="VseConnectionHint" xml:space="preserve">
+    <value>Network address of the VSE device</value>
+  </data>
+  <data name="VseAddressExample" xml:space="preserve">
+    <value>e.g. 192.168.178.100</value>
+  </data>
+  <data name="WizardNext" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="WizardStepDeviceSelection" xml:space="preserve">
+    <value>Select device</value>
+  </data>
+  <data name="WizardStepCredentials" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="IoLinkCredentialStepHint" xml:space="preserve">
+    <value>Credentials for the selected masters</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Saved</value>
+  </data>
+  <data name="NotSaved" xml:space="preserve">
+    <value>Not saved</value>
+  </data>
+  <data name="UnsavedChangesTitle" xml:space="preserve">
+    <value>Unsaved changes</value>
+  </data>
+  <data name="UnsavedChangesPrompt" xml:space="preserve">
+    <value>Save the changes before leaving?</value>
+  </data>
+  <data name="Discard" xml:space="preserve">
+    <value>Discard</value>
+  </data>
   <data name="UnsavedChanges" xml:space="preserve">
     <value>Unsaved changes may be lost.</value>
   </data>
-  <data name="DataPointLimitApproaching" xml:space="preserve">
-    <value>You are approaching the recommended limit of enabled data points ({0} of {1}).</value>
+  <data name="DataPointUsage" xml:space="preserve">
+    <value>Active data points</value>
   </data>
-  <data name="DataPointLimitReached" xml:space="preserve">
-    <value>You reached the recommended limit of enabled datapoints ({0} of {1}). Further enabling data points may result in system instability.</value>
+  <data name="DataPointLimitApproachingHint" xml:space="preserve">
+    <value>approaching the recommended limit</value>
+  </data>
+  <data name="DataPointLimitExceededHint" xml:space="preserve">
+    <value>recommended limit exceeded – may affect stability</value>
   </data>
   <data name="LogLevel" xml:space="preserve">
-    <value>Log Level</value>
+    <value>Log level</value>
   </data>
   <data name="Manual" xml:space="preserve">
     <value>Manual</value>
@@ -243,8 +438,8 @@
   <data name="Scan" xml:space="preserve">
     <value>Scan</value>
   </data>
-  <data name="SpinnerMessageTriggeringIoLinkScan" xml:space="preserve">
-    <value>Triggering IO-Link Master scan</value>
+  <data name="SpinnerMessageTriggeringDeviceScan" xml:space="preserve">
+    <value>Triggering device scan</value>
   </data>
   <data name="SpinnerMessageWaitingForScanResult" xml:space="preserve">
     <value>Waiting for scan result</value>
@@ -252,7 +447,7 @@
   <data name="SpinnerMessageGeneratingDataflow" xml:space="preserve">
     <value>Generating Dataflow</value>
   </data>
-  <data name="SpinnerMessageTriggeringDeviceScan" xml:space="preserve">
+  <data name="SpinnerMessageTriggeringDeviceTreeScan" xml:space="preserve">
     <value>Triggering DeviceTree scan</value>
   </data>
   <data name="SpinnerMessageDeployingDataflow" xml:space="preserve">
@@ -261,28 +456,31 @@
   <data name="SpinnerMessageSubscribingResultOutput" xml:space="preserve">
     <value>Subscribing result output</value>
   </data>
-  <data name="IoLinkScanErrorDuringScan" xml:space="preserve">
-    <value>Scanning for IO-Link Master devices failed:</value>
+  <data name="DeviceScanError" xml:space="preserve">
+    <value>The device scan failed:</value>
   </data>
   <data name="MoneoDeactivatedTooltip" xml:space="preserve">
     <value>The configuration of process values is generally supported for all data targets. For the moneo|cloud, this functionality will be enabled once the corresponding features are available. In the meantime, please use the configuration options provided directly in the moneo|cloud.</value>
   </data>
-  <data name="IoLinkScanNoResult" xml:space="preserve">
-    <value>No IO-Link Masters were found on the network...</value>
+  <data name="DeviceScanNoResult" xml:space="preserve">
+    <value>No further devices were found on the network...</value>
   </data>
-  <data name="IoLinkScanFilterNoResult" xml:space="preserve">
+  <data name="DeviceScanFilterNoResult" xml:space="preserve">
     <value>The filter applied did not produce any results...</value>
+  </data>
+  <data name="DeviceScanRequiresAuthentication" xml:space="preserve">
+    <value>This device requires authentication</value>
   </data>
   <data name="SpinnerMessageAwaitingCurrentDeployments" xml:space="preserve">
     <value>Waiting for deployments</value>
   </data>
   <data name="SpinnerMessageCreatingScanEngine" xml:space="preserve">
-    <value>Creating IO-Link scan engine</value>
+    <value>Creating scan engine</value>
   </data>
   <data name="ClusterOutOfDateDialogHeader" xml:space="preserve">
     <value>Configuration has changed</value>
   </data>
   <data name="ClusterOutOfDateDialogText" xml:space="preserve">
-    <value>Somebody else saved a configuration. Your changes may override changes made by them. If that does not matter to you, you may ignore this warning, otherwise, please close the Data Collection Wizard and open it again to continue working on the latest configuration.</value>
+    <value>Another participant saved a new configuration. Your changes may override changes made by them. If that does not matter to you, you may ignore this warning, otherwise, please close the Data Collection Wizard and open it again to continue working on the latest configuration.</value>
   </data>
 </root>

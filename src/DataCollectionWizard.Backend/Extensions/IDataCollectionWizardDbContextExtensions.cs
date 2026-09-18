@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using DataCollectionWizard.Backend.DbContext;
 using DataCollectionWizard.Internal;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Backend.Extensions;
 

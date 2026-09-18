@@ -2,7 +2,7 @@
 
 namespace DataCollectionWizard.Internal;
 
-public sealed class ContainerSizeManager
+internal sealed class ContainerSizeManager
 {
     private Container? _currentContainer;
     private int _elementCount = -1;

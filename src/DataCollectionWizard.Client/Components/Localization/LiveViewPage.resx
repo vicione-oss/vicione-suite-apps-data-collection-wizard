@@ -130,16 +130,13 @@
     <value>This column is updated only if the value has actually changed.</value>
   </data>
   <data name="LatestClusterNotRunningDialogHeader" xml:space="preserve">
-    <value>Latest Cluster is not Active</value>
+    <value>Latest cluster is not active</value>
   </data>
   <data name="LatestClusterNotRunningDialogText" xml:space="preserve">
-    <value>Live process data may not be able to be displayed. If that is the case, an error may have occured during the deployment. Please use the Cluster Manager to check if the latest cluster can be started. If not, contact an administrator.</value>
+    <value>Live process data may not be displayed. If that is the case, an error may have occurred during the deployment. Please use the Cluster Manager to check if the latest cluster can be started. If not, contact an administrator.</value>
   </data>
   <data name="LiveView" xml:space="preserve">
     <value>Live process data view</value>
-  </data>
-  <data name="PathVisible" xml:space="preserve">
-    <value>Display path</value>
   </data>
   <data name="ProcessValue" xml:space="preserve">
     <value>Process value</value>
@@ -155,5 +152,8 @@
   </data>
   <data name="Unit" xml:space="preserve">
     <value>Unit</value>
+  </data>
+  <data name="SessionInfo" xml:space="preserve">
+    <value>watching for {0} · {1:N0} values · avg {2:N1}/s · now {3:N1}/s</value>
   </data>
 </root>

@@ -1,4 +1,4 @@
-﻿using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+﻿using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.DeviceDataflowGenerators
 {

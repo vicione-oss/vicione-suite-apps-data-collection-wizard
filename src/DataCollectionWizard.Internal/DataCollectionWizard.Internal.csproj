@@ -6,17 +6,19 @@
   
   <ItemGroup>
     <PackageReference Include="ViciOne.Cluster.Builder" />
-    <PackageReference Include="ViciOne.Driver.IoTCore.Contracts" />
+    <PackageReference Include="ViciOne.DeviceTree.Contracts" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ViciOne.Suite.ClusterManagement.Public" />
-    <PackageReference Include="ViciOne.Suite.DataPort.Anna.Contracts" />
     <PackageReference Include="ViciOne.Suite.Sdk" />
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="DataCollectionWizard.Client.Tests" />
+    <InternalsVisibleTo Include="ViciOne.Suite.DataCollectionWizard.Internal.Tests" />
+    <InternalsVisibleTo Include="ViciOne.Suite.DataCollectionWizard.Client.Tests" />
+    <InternalsVisibleTo Include="ViciOne.Suite.DataCollectionWizard.Backend.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
   <ItemGroup>

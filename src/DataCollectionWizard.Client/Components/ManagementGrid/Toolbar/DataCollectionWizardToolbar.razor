@@ -1,0 +1,115 @@
+﻿@using DataCollectionWizard.Internal.Contracts
+@using DataCollectionWizard.Internal.Extensions
+@using Microsoft.Extensions.Logging
+@using ViciOne.Ui.Blazor.Components.SearchBox
+@using ViciOne.Ui.Localization.Resources
+
+<div class="toolbar-container">
+    <span class="header">
+        @Localization.DataCollectionWizardPage.ProcessDataView
+    </span>
+
+    <div class="searchbox-container">
+        <SearchBox Placeholder="@CommonVocabulary.Search" 
+                   @bind-Text="SearchText"
+                   @bind-Text:event="TextChanging" />
+    </div>
+
+    <div class="toolbar @(_showDebug ? "debug" : string.Empty)">
+        <span class="separator"></span>
+
+        <span class="save-state @(Service.DeviceTreeChanged ? "dirty" : "clean")">
+            <span class="dot"></span>
+            @(Service.DeviceTreeChanged ? Localization.DataCollectionWizardPage.NotSaved : Localization.DataCollectionWizardPage.Saved)
+        </span>
+
+        <button class="save-button @(Service.DeviceTreeChanged && !Service.DisableClusterActions ? "dirty" : string.Empty)"
+                @onclick="@(OnSaveButtonClicked)"
+                disabled="@(!Service.DeviceTreeChanged || Service.DisableClusterActions)"
+                title="@(_showDebug ? SaveReasons : CommonVocabulary.Save)">
+
+            <MonochromeIcon Name="@MonochromeIconName.SaveOutline" Size="@MonochromeIconSize.SmallMedium" />
+            <span>@CommonVocabulary.Save</span>
+        </button>
+
+        <span class="separator"></span>
+
+        <button disabled="@(!Service.HasOfflineNodes)"
+                @onclick="@OnDeleteOfflineNodesClicked"
+                title="@Localization.DataCollectionWizardPage.DeleteAllOfflineNodes">
+
+            <!--Todo: Icon? Papierkorb mit offline symbol drin?-->
+            <MonochromeIcon Name="@MonochromeIconName.Delete" Size="@MonochromeIconSize.SmallMedium" />
+        </button>
+
+        <span class="separator"></span>
+
+        <button disabled="@Service.DisableClusterActions"
+                title="@Localization.DataCollectionWizardPage.Rescan"
+                @onclick="@OnRebrowseClicked">
+
+            <MonochromeIcon Name="@MonochromeIconName.Refresh" Size="@MonochromeIconSize.SmallMedium" />
+        </button>
+
+        <button class="debug-button @(_showDebug ? "active" : string.Empty)"
+                title="@Localization.DataCollectionWizardPage.ShowDebugTooling"
+                @onclick="@(() => _showDebug ^= true)">
+
+            <MonochromeIcon Name="@MonochromeIconName.BugLight" Size="@MonochromeIconSize.SmallMedium" />
+        </button>
+
+        @if (_showDebug)
+        {
+            <span class="separator"></span>
+
+            <select @onchange="@(e => _debugAggregationInterval = ((string)e.Value!).ToAggregationInterval())">
+                @foreach (var value in Enum.GetValues(typeof(AggregationInterval)).Cast<AggregationInterval>())
+                {
+                    <option selected="@(value == _debugAggregationInterval)">
+                        @(value.AggregationIntervalToString())
+                    </option>
+                }
+            </select>
+
+            <button @onclick="@(() => SetAllDatapointsCompression(_debugAggregationInterval))"
+                    title="@Localization.DataCollectionWizardPage.SetAllDatapointsCompression">
+
+                <MonochromeIcon Name="@MonochromeIconName.Check" Size="@MonochromeIconSize.SmallMedium" />
+            </button>
+
+            <span class="separator"></span>
+
+            <button @onclick="@(() => SetAllDatapointsEnabled(true))"
+                    title="@Localization.DataCollectionWizardPage.SetAllDatapointsEnabled">
+
+                <MonochromeIcon Name="@MonochromeIconName.Toggle" Size="@MonochromeIconSize.SmallMedium" />
+            </button>
+
+            <button @onclick="@(() => SetAllDatapointsEnabled(false))"
+                    title="@Localization.DataCollectionWizardPage.SetAllDatapointsDisabled">
+
+                <MonochromeIcon Name="@MonochromeIconName.Clear" Size="@MonochromeIconSize.SmallMedium" />
+            </button>
+
+            <span class="separator"></span>
+
+            <button @onclick="@(() => SetDebugRawDataGrid())"
+                    title="@Localization.DataCollectionWizardPage.SetDebugRawDataGrid">
+
+                @((MarkupString)SvgIcons.debug_raw)
+            </button>
+
+            <span class="separator"></span>
+
+            <select @onchange="@(e => Service.LogLevel = StringToLogLevel((string)e.Value!))"
+                    title="@Localization.DataCollectionWizardPage.LogLevel">
+                @foreach (var value in Enum.GetValues(typeof(LogLevel)).Cast<LogLevel>())
+                {
+                    <option selected="@(value == Service.LogLevel)">
+                        @(LogLevelToString(value))
+                    </option>
+                }
+            </select>
+        }
+    </div>
+</div>

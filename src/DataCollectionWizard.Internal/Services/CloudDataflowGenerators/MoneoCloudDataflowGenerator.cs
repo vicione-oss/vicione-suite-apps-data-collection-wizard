@@ -8,7 +8,7 @@ using Sdk.Connections.Contracts;
 using Sdk.Connections.Extensions;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Model;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
@@ -44,7 +44,7 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
     private static DataPortTreeNode CreateMoneoDataPortTreeNode(ClusterBuilder builder, DataPortTreeNode parent, string processId)
         => builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdMqttDataPointFloat, parent, processId, typeof(object), DataPortTransferMode.OnChange);
 
-    public Dictionary<string, PoolingModesCloudInput> GenerateCloudDataflow(Connection connection, IDeviceTreeMasterNode deviceTreeMaster,
+    public Dictionary<string, AggregationFunctionCloudInputs> GenerateCloudDataflow(Connection connection, IDeviceTreeMasterNode deviceTreeMaster,
                                                                             ClusterBuilder builder, Dataflow dataflow, string machineIdentifier,
                                                                             Dictionary<string, DataOutputInfo> dataOutputs, uint engineCycleInterval,
                                                                             ChildContainer cloudContainer,
@@ -52,21 +52,21 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
                                                                             List<ProcessDataConfiguration> loggedProcessDataNodes,
                                                                             List<IDeviceTreeDataNode> loggedRawDataNodes)
     {
-        var result = new Dictionary<string, PoolingModesCloudInput>();
+        var result = new Dictionary<string, AggregationFunctionCloudInputs>();
 
-        var deviceContainerManager = new DeviceContainerManager(deviceTreeMaster, cloudContainer, builder);
+        var deviceContainerManager = new DeviceContainerManager(deviceTreeMaster, () => cloudContainer, dataflow, builder);
 
         var stringOutput = GetConstantStringOutput(builder, dataflow, cloudContainer);
         GenerateDataPort(connection, deviceTreeMaster, builder, dataflow, stringOutput, out var deviceId, out var deviceIdNode);
-        GenerateProcessData(builder, dataflow, engineCycleInterval, loggedProcessDataNodes, result, deviceId, deviceIdNode, deviceContainerManager, dataOutputs);
+        GenerateProcessData(builder, dataflow, engineCycleInterval, loggedProcessDataNodes, deviceId, deviceIdNode, deviceContainerManager, dataOutputs, result);
 
         return result;
     }
 
     private static void GenerateProcessData(ClusterBuilder builder, Dataflow dataflow, uint engineCycleInterval,
-                                            List<ProcessDataConfiguration> loggedProcessDataNodes, Dictionary<string, PoolingModesCloudInput> result,
+                                            List<ProcessDataConfiguration> loggedProcessDataNodes,
                                             string deviceId, DataPortTreeNode deviceIdNode, DeviceContainerManager containerManager,
-                                            Dictionary<string, DataOutputInfo> dataOutputs)
+                                            Dictionary<string, DataOutputInfo> dataOutputs, Dictionary<string, AggregationFunctionCloudInputs> result)
     {
         foreach (var currentProcessDataNode in loggedProcessDataNodes)
         {
@@ -87,7 +87,7 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
                 throw new InvalidOperationException($"Did not find ProcessDataInfo for id {currentProcessDataNode.Node.Id}");
             }
 
-            result[currentProcessDataNode.Node.Id] = new PoolingModesCloudInput()
+            result[currentProcessDataNode.Node.Id] = new AggregationFunctionCloudInputs()
             {
                 Avg = new CloudInput() { InputConnector = dataFormatterFb.GetInputByDesignId(FunctionBlocks.DataFormatter.Inputs.Value) },
                 Last = new CloudInput() { InputConnector = dataFormatterFb.GetInputByDesignId(FunctionBlocks.DataFormatter.Inputs.Value) },

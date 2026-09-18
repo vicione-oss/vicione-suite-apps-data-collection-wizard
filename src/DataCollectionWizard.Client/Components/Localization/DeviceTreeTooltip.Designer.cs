@@ -61,7 +61,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to newly added.
+        ///   Looks up a localized string similar to Newly added.
         /// </summary>
         internal static string DeviceStatusNewlyCreated {
             get {
@@ -79,7 +79,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to device is offline.
+        ///   Looks up a localized string similar to Device is offline.
         /// </summary>
         internal static string DeviceStatusOffline {
             get {
@@ -88,7 +88,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to unknown device.
+        ///   Looks up a localized string similar to Unknown device.
         /// </summary>
         internal static string DeviceStatusUnknown {
             get {
@@ -104,7 +104,49 @@ namespace DataCollectionWizard.Client.Components.Localization {
                 return ResourceManager.GetString("InfoPropertyAlias", resourceCulture);
             }
         }
-        
+
+        internal static string InfoPropertyAddress {
+            get {
+                return ResourceManager.GetString("InfoPropertyAddress", resourceCulture);
+            }
+        }
+
+        internal static string GroupNetwork {
+            get {
+                return ResourceManager.GetString("GroupNetwork", resourceCulture);
+            }
+        }
+
+        internal static string GroupHardware {
+            get {
+                return ResourceManager.GetString("GroupHardware", resourceCulture);
+            }
+        }
+
+        internal static string GroupIdentity {
+            get {
+                return ResourceManager.GetString("GroupIdentity", resourceCulture);
+            }
+        }
+
+        internal static string GroupData {
+            get {
+                return ResourceManager.GetString("GroupData", resourceCulture);
+            }
+        }
+
+        internal static string GroupSensor {
+            get {
+                return ResourceManager.GetString("GroupSensor", resourceCulture);
+            }
+        }
+
+        internal static string NoFurtherInformation {
+            get {
+                return ResourceManager.GetString("NoFurtherInformation", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to App specific tag.
         /// </summary>
@@ -160,7 +202,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Is writeable.
+        ///   Looks up a localized string similar to Is writable.
         /// </summary>
         internal static string InfoPropertyIsWritable {
             get {

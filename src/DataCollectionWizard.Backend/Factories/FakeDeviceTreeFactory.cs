@@ -1,4 +1,4 @@
-﻿using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+﻿using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Backend.Factories;
 
@@ -13,6 +13,7 @@ internal static class FakeDeviceTreeFactory
             {
                 new DeviceTreeVseDevice
                 {
+                    Alias = "VSE100 - 00179322",
                     Children =
                     {
                         new DeviceTreeStructureNode
@@ -24,9 +25,8 @@ internal static class FakeDeviceTreeFactory
                                     Alias = "OU02_Warning_02",
                                     Children =
                                     {
-                                        new DeviceTreeConstantData
+                                        new DeviceTreeAssignedName
                                         {
-                                            DataType = DataType.StringT,
                                             Id = "vse@127.0.0.1//Alarms/Alarm02__!__OU02_Warning_02/Name",
                                             Name = "Name",
                                             Value = "OU02_Warning_02",
@@ -37,15 +37,14 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.BooleanT,
+                                            DataType = DataType.Flag,
                                             Id = "vse@127.0.0.1//Alarms/Alarm02__!__OU02_Warning_02/Value",
                                             Name = "Value",
-                                            Visible = true,
                                         }
                                     },
                                     Id = "vse@127.0.0.1//Alarms//Alarm02__!__OU02_Warning_02",
@@ -58,9 +57,8 @@ internal static class FakeDeviceTreeFactory
                                     Alias = "IO01_Damage_03",
                                     Children =
                                     {
-                                        new DeviceTreeConstantData
+                                        new DeviceTreeAssignedName
                                         {
-                                            DataType = DataType.StringT,
                                             Id = "vse@127.0.0.1//Alarms//Alarm03__!__IO01_Damage_03/Name",
                                             Name = "Name",
                                             Value = "IO01_Damage_03",
@@ -71,16 +69,15 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
                                                     Enabled = true,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.BooleanT,
+                                            DataType = DataType.Flag,
                                             Id = "vse@127.0.0.1//Alarms//Alarm03__!__IO01_Damage_03/Value",
                                             Name = "Value",
-                                            Visible = true,
                                         }
                                     },
                                     Id = "vse@127.0.0.1//Alarms//Alarm03__!__IO01_Damage_03",
@@ -108,20 +105,18 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
                                                     Enabled = true,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Counters/Counter01__!__OB01_ObjectState_01/Limit",
                                             Name = "Limit",
-                                            Visible = true,
                                         },
-                                        new DeviceTreeConstantData
+                                        new DeviceTreeAssignedName
                                         {
-                                            DataType = DataType.StringT,
                                             Id = "vse@127.0.0.1//Counters/Counter01__!__OB01_ObjectState_01/Name",
                                             Name = "Name",
                                             Value = "OB01_ObjectState_01",
@@ -132,16 +127,15 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
                                                     Enabled = true,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.StringT,
+                                            DataType = DataType.Text,
                                             Id = "vse@127.0.0.1//Counters/Counter01__!__OB01_ObjectState_01/State",
                                             Name = "State",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -149,16 +143,15 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
                                                     Enabled = true,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.StringT,
+                                            DataType = DataType.Text,
                                             Id = "vse@127.0.0.1//Counters/Counter01__!__OB01_ObjectState_01/Unit",
                                             Name = "Unit",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -166,16 +159,15 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
                                                     Enabled = true,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Counters/Counter01__!__OB01_ObjectState_01/Value",
                                             Name = "Value",
-                                            Visible = true,
                                         }
                                     },
                                     Id = "vse@127.0.0.1//Counters/Counter01__!__OB01_ObjectState_01",
@@ -195,20 +187,18 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
                                                     Enabled = true,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Counters/Counter02__!__OB01_ObjectState_02/Limit",
                                             Name = "Limit",
-                                            Visible = true,
                                         },
-                                        new DeviceTreeConstantData
+                                        new DeviceTreeAssignedName
                                         {
-                                            DataType = DataType.StringT,
                                             Id = "vse@127.0.0.1//Counters/Counter02__!__OB01_ObjectState_02/Name",
                                             Name = "Name",
                                             Value = "OB01_ObjectState_02",
@@ -219,16 +209,15 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
                                                     Enabled = true,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.StringT,
+                                            DataType = DataType.Text,
                                             Id = "vse@127.0.0.1//Counters/Counter02__!__OB01_ObjectState_02/State",
                                             Name = "State",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -236,16 +225,15 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
                                                     Enabled = true,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.StringT,
+                                            DataType = DataType.Text,
                                             Id = "vse@127.0.0.1//Counters/Counter02__!__OB01_ObjectState_02/Unit",
                                             Name = "Unit",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -253,16 +241,15 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
                                                     Enabled = true,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Counters/Counter02__!__OB01_ObjectState_02/Value",
                                             Name = "Value",
-                                            Visible = true,
                                         }
                                     },
                                     Id = "vse@127.0.0.1//Counters/Counter02__!__OB01_ObjectState_02",
@@ -282,20 +269,18 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
                                                     Enabled = true,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Counters/Counter03__!__OB01_ObjectState_03/Limit",
                                             Name = "Limit",
-                                            Visible = true,
                                         },
-                                        new DeviceTreeConstantData
+                                        new DeviceTreeAssignedName
                                         {
-                                            DataType = DataType.StringT,
                                             Id = "vse@127.0.0.1//Counters/Counter03__!__OB01_ObjectState_03/Name",
                                             Name = "Name",
                                             Value = "OB01_ObjectState_03",
@@ -306,16 +291,15 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
                                                     Enabled = true,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.StringT,
+                                            DataType = DataType.Text,
                                             Id = "vse@127.0.0.1//Counters/Counter03__!__OB01_ObjectState_03/State",
                                             Name = "State",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -323,16 +307,15 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
                                                     Enabled = true,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.StringT,
+                                            DataType = DataType.Text,
                                             Id = "vse@127.0.0.1//Counters/Counter03__!__OB01_ObjectState_03/Unit",
                                             Name = "Unit",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -340,16 +323,15 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
                                                     Enabled = true,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Counters/Counter02__!__OB01_ObjectState_02/Value",
                                             Name = "Value",
-                                            Visible = true,
                                         }
                                     },
                                     Id = "vse@127.0.0.1//Counters/Counter03__!__OB01_ObjectState_03",
@@ -360,8 +342,8 @@ internal static class FakeDeviceTreeFactory
                                 }
                             },
                             Id  = "vse@127.0.0.1//Counters",
-                            IsOffline = true,
                             Name = "Counters",
+                            Status = ConnectionStatus.Offline,
                         },
                         new DeviceTreeStructureNode
                         {
@@ -376,9 +358,8 @@ internal static class FakeDeviceTreeFactory
                                             Alias = "External_01",
                                             Children =
                                             {
-                                                new DeviceTreeConstantData
+                                                new DeviceTreeAssignedName
                                                 {
-                                                    DataType = DataType.StringT,
                                                     Id = "vse@127.0.0.1//Inputs/External/Input01__!__External_01/Name",
                                                     Name = "Name",
                                                     Value = "External_01",
@@ -389,15 +370,14 @@ internal static class FakeDeviceTreeFactory
                                                     {
                                                         new CompressorConfiguration
                                                         {
+                                                            Aggregation = AggregationFunction.MinMaxAvg,
                                                             CompressionTime = 10000,
                                                             DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                            PoolingMode = PoolingMode.MinMaxAvg,
                                                         }
                                                     },
-                                                    DataType = DataType.StringT,
+                                                    DataType = DataType.Text,
                                                     Id = "vse@127.0.0.1//Inputs/External/Input01__!__External_01/Unit",
                                                     Name = "Unit",
-                                                    Visible = true,
                                                 },
                                                 new DeviceTreeProcessData
                                                 {
@@ -405,15 +385,14 @@ internal static class FakeDeviceTreeFactory
                                                     {
                                                         new CompressorConfiguration
                                                         {
+                                                            Aggregation = AggregationFunction.MinMaxAvg,
                                                             CompressionTime = 10000,
                                                             DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                            PoolingMode = PoolingMode.MinMaxAvg,
                                                         }
                                                     },
-                                                    DataType = DataType.Float32T,
+                                                    DataType = DataType.Real,
                                                     Id = "vse@127.0.0.1//Inputs/External/Input01__!__External_01/Value",
                                                     Name = "Value",
-                                                    Visible = true,
                                                 }
                                             },
                                             Id = "vse@127.0.0.1//Inputs/External/Input01__!__External_01",
@@ -427,9 +406,8 @@ internal static class FakeDeviceTreeFactory
                                             Alias = "External_02",
                                             Children =
                                             {
-                                                new DeviceTreeConstantData
+                                                new DeviceTreeAssignedName
                                                 {
-                                                    DataType = DataType.StringT,
                                                     Id = "vse@127.0.0.1//Inputs/External/Input02__!__External_02/Name",
                                                     Name = "Name",
                                                     Value = "External_02",
@@ -440,15 +418,14 @@ internal static class FakeDeviceTreeFactory
                                                     {
                                                         new CompressorConfiguration
                                                         {
+                                                            Aggregation = AggregationFunction.MinMaxAvg,
                                                             CompressionTime = 10000,
                                                             DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                            PoolingMode = PoolingMode.MinMaxAvg,
                                                         }
                                                     },
-                                                    DataType = DataType.StringT,
+                                                    DataType = DataType.Text,
                                                     Id = "vse@127.0.0.1//Inputs/External/Input02__!__External_02/Unit",
                                                     Name = "Unit",
-                                                    Visible = true,
                                                 },
                                                 new DeviceTreeProcessData
                                                 {
@@ -456,15 +433,14 @@ internal static class FakeDeviceTreeFactory
                                                     {
                                                         new CompressorConfiguration
                                                         {
+                                                            Aggregation = AggregationFunction.MinMaxAvg,
                                                             CompressionTime = 10000,
                                                             DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                            PoolingMode = PoolingMode.MinMaxAvg,
                                                         }
                                                     },
-                                                    DataType = DataType.Float32T,
+                                                    DataType = DataType.Real,
                                                     Id = "vse@127.0.0.1//Inputs/External/Input02__!__External_02/Value",
                                                     Name = "Value",
-                                                    Visible = true,
                                                 }
                                             },
                                             Id = "vse@127.0.0.1//Inputs/External/Input02__!__External_02",
@@ -478,9 +454,8 @@ internal static class FakeDeviceTreeFactory
                                             Alias = "External_03",
                                             Children =
                                             {
-                                                new DeviceTreeConstantData
+                                                new DeviceTreeAssignedName
                                                 {
-                                                    DataType = DataType.StringT,
                                                     Id = "vse@127.0.0.1//Inputs/External/Input03__!__External_03/Name",
                                                     Name = "Name",
                                                     Value = "External_03",
@@ -491,15 +466,14 @@ internal static class FakeDeviceTreeFactory
                                                     {
                                                         new CompressorConfiguration
                                                         {
+                                                            Aggregation = AggregationFunction.MinMaxAvg,
                                                             CompressionTime = 10000,
                                                             DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                            PoolingMode = PoolingMode.MinMaxAvg,
                                                         }
                                                     },
-                                                    DataType = DataType.StringT,
+                                                    DataType = DataType.Text,
                                                     Id = "vse@127.0.0.1//Inputs/External/Input03__!__External_03/Unit",
                                                     Name = "Unit",
-                                                    Visible = true,
                                                 },
                                                 new DeviceTreeProcessData
                                                 {
@@ -507,15 +481,14 @@ internal static class FakeDeviceTreeFactory
                                                     {
                                                         new CompressorConfiguration
                                                         {
+                                                            Aggregation = AggregationFunction.MinMaxAvg,
                                                             CompressionTime = 10000,
                                                             DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                            PoolingMode = PoolingMode.MinMaxAvg,
                                                         }
                                                     },
-                                                    DataType = DataType.Float32T,
+                                                    DataType = DataType.Real,
                                                     Id = "vse@127.0.0.1//Inputs/External/Input03__!__External_03/Value",
                                                     Name = "Value",
-                                                    Visible = true,
                                                 }
                                             },
                                             Id = "vse@127.0.0.1//Inputs/External/Input03__!__External_03",
@@ -529,9 +502,8 @@ internal static class FakeDeviceTreeFactory
                                             Alias = "External_04",
                                             Children =
                                             {
-                                                new DeviceTreeConstantData
+                                                new DeviceTreeAssignedName
                                                 {
-                                                    DataType = DataType.StringT,
                                                     Id = "vse@127.0.0.1//Inputs/External/Input04__!__External_04/Name",
                                                     Name = "Name",
                                                     Value = "External_04",
@@ -542,15 +514,14 @@ internal static class FakeDeviceTreeFactory
                                                     {
                                                         new CompressorConfiguration
                                                         {
+                                                            Aggregation = AggregationFunction.MinMaxAvg,
                                                             CompressionTime = 10000,
                                                             DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                            PoolingMode = PoolingMode.MinMaxAvg,
                                                         }
                                                     },
-                                                    DataType = DataType.StringT,
+                                                    DataType = DataType.Text,
                                                     Id = "vse@127.0.0.1//Inputs/External/Input04__!__External_04/Unit",
                                                     Name = "Unit",
-                                                    Visible = true,
                                                 },
                                                 new DeviceTreeProcessData
                                                 {
@@ -558,15 +529,14 @@ internal static class FakeDeviceTreeFactory
                                                     {
                                                         new CompressorConfiguration
                                                         {
+                                                            Aggregation = AggregationFunction.MinMaxAvg,
                                                             CompressionTime = 10000,
                                                             DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                            PoolingMode = PoolingMode.MinMaxAvg,
                                                         }
                                                     },
-                                                    DataType = DataType.Float32T,
+                                                    DataType = DataType.Real,
                                                     Id = "vse@127.0.0.1//Inputs/External/Input04__!__External_04/Value",
                                                     Name = "Value",
-                                                    Visible = true,
                                                 }
                                             },
                                             Id = "vse@127.0.0.1//Inputs/External/Input04__!__External_04",
@@ -582,8 +552,8 @@ internal static class FakeDeviceTreeFactory
                             },
                             Id = "vse@127.0.0.1//Inputs",
                             IsNew = true,
-                            IsOffline = true,
-                            Name = "Inputs"
+                            Name = "Inputs",
+                            Status = ConnectionStatus.Offline
                         },
                         new DeviceTreeStructureNode
                         {
@@ -600,16 +570,15 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/Average",
                                             IsNew = true,
                                             Name = "Average",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -617,16 +586,15 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/AveragingPeriod",
                                             IsNew = true,
                                             Name = "AveragingPeriod",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -634,16 +602,15 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/BaseLine",
                                             IsNew = true,
                                             Name = "BaseLine",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -651,17 +618,16 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/Damage",
                                             IsNew = true,
-                                            IsOffline = true,
                                             Name = "Damage",
-                                            Visible = true,
+                                            Status = ConnectionStatus.Offline,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -669,17 +635,16 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/Error",
                                             IsNew = true,
-                                            IsOffline = true,
                                             Name = "Error",
-                                            Visible = true,
+                                            Status = ConnectionStatus.Offline,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -687,17 +652,16 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/Maximum",
                                             IsNew = true,
-                                            IsOffline = true,
                                             Name = "Maximum",
-                                            Visible = true,
+                                            Status = ConnectionStatus.Offline,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -705,24 +669,22 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/Minimum",
                                             IsNew = true,
-                                            IsOffline = true,
                                             Name = "Minimum",
-                                            Visible = true,
+                                            Status = ConnectionStatus.Offline,
                                         },
-                                        new DeviceTreeConstantData
+                                        new DeviceTreeAssignedName
                                         {
-                                            DataType = DataType.StringT,
                                             Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/Name",
-                                            IsOffline = true,
                                             Name = "Name",
+                                            Status = ConnectionStatus.Offline,
                                             Value = "EX01_UpperLimit_01",
                                         },
                                         new DeviceTreeProcessData
@@ -731,16 +693,15 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/RefValue",
-                                            IsOffline = true,
                                             Name = "RefValue",
-                                            Visible = true,
+                                            Status = ConnectionStatus.Offline,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -748,16 +709,15 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/RotSpeed",
-                                            IsOffline = true,
                                             Name = "RotSpeed",
-                                            Visible = true,
+                                            Status = ConnectionStatus.Offline,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -765,16 +725,15 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.StringT,
+                                            DataType = DataType.Text,
                                             Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/Unit",
-                                            IsOffline = true,
                                             Name = "Unit",
-                                            Visible = true,
+                                            Status = ConnectionStatus.Offline,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -782,15 +741,14 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01/Warning",
                                             Name = "Warning",
-                                            Visible = true,
                                         },
                                     },
                                     Id = "vse@127.0.0.1//Objects/Object01__!__EX01_UpperLimit_01",
@@ -813,15 +771,14 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/Average",
                                             Name = "Average",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -829,15 +786,14 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/AveragingPeriod",
                                             Name = "AveragingPeriod",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -845,15 +801,14 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/BaseLine",
                                             Name = "BaseLine",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -861,15 +816,14 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/Damage",
                                             Name = "Damage",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -877,15 +831,14 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/Error",
                                             Name = "Error",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -893,15 +846,14 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/Maximum",
                                             Name = "Maximum",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -909,19 +861,17 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/Minimum",
                                             Name = "Minimum",
-                                            Visible = true,
                                         },
-                                        new DeviceTreeConstantData
+                                        new DeviceTreeAssignedName
                                         {
-                                            DataType = DataType.StringT,
                                             Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/Name",
                                             Name = "Name",
                                             Value = "EX02_UpperLimit_02",
@@ -932,15 +882,14 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/RefValue",
                                             Name = "RefValue",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -948,15 +897,14 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/RotSpeed",
                                             Name = "RotSpeed",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -964,15 +912,14 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.StringT,
+                                            DataType = DataType.Text,
                                             Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/Unit",
                                             Name = "Unit",
-                                            Visible = true,
                                         },
                                         new DeviceTreeProcessData
                                         {
@@ -980,15 +927,14 @@ internal static class FakeDeviceTreeFactory
                                             {
                                                 new CompressorConfiguration
                                                 {
+                                                    Aggregation = AggregationFunction.MinMaxAvg,
                                                     CompressionTime = 10000,
                                                     DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                                    PoolingMode = PoolingMode.MinMaxAvg,
                                                 }
                                             },
-                                            DataType = DataType.Float32T,
+                                            DataType = DataType.Real,
                                             Id = "vse@127.0.0.1//Objects/Object02__!__EX02_UpperLimit_02/Warning",
                                             Name = "Warning",
-                                            Visible = true,
                                         },
                                     },
                                     Id = "vse@127.0.0.1//Objects/Object02__!__EX01_UpperLimit_02",
@@ -1101,7 +1047,6 @@ internal static class FakeDeviceTreeFactory
                                             Times = { { DayOfWeek.Monday, [TimeSpan.FromSeconds(0)] }  },
                                         }
                                     },
-                                    Unit = "m/s²",
                                 },
                                 new DeviceTreeVseRawData
                                 {
@@ -1195,7 +1140,6 @@ internal static class FakeDeviceTreeFactory
                                             Times = { { DayOfWeek.Monday, [TimeSpan.FromSeconds(0)] }  },
                                         }
                                     },
-                                    Unit = "m/s²",
                                 }
                             },
                             Id = "vse@127.0.0.1//RawData",
@@ -1211,16 +1155,15 @@ internal static class FakeDeviceTreeFactory
                                     {
                                         new CompressorConfiguration
                                         {
+                                            Aggregation = AggregationFunction.MinMaxAvg,
                                             CompressionTime = 10000,
                                             DataGroupIdentifier = s_annaDataGroupIdentifier,
-                                            PoolingMode = PoolingMode.MinMaxAvg,
                                         }
                                     },
-                                    DataType = DataType.IntegerT,
+                                    DataType = DataType.Whole,
                                     Id = "vse@127.0.0.1//Variants/ActiveVariant",
                                     IsWriteable = true,
                                     Name = "ActiveVariant",
-                                    Visible = true,
                                 }
                             },
                             Id = "vse@127.0.0.1//Variants",
@@ -1235,7 +1178,6 @@ internal static class FakeDeviceTreeFactory
                     Id = "vse@127.0.0.1/",
                     MacAddress = "aa:bb:cc::ff",
                     Name = "VSE100 - 00179322",
-                    NameAlias = "VSE100 - 00179322",
                     Url = new UriBuilder("127.0.0.1").Uri
                 }
             },

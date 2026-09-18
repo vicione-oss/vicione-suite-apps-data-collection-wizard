@@ -1,6 +1,11 @@
 ﻿@use "./../../Styles/colours" as col;
 @use 'sass:color';
 
+// One chevron for everything in the bulk bar that opens something: the native select arrow differs per browser
+// and cannot be moved away from the edge, so the selects draw this instead. The stroke is col.$font-dark, spelled
+// out because a colour cannot be interpolated into a data URI without escaping it by hand.
+$chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='6' viewBox='0 0 9 6'%3E%3Cpath d='M1 1l3.5 4L8 1' fill='none' stroke='%23bababa' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+
 .data-collection-wizard-grid {
     --width-padding: 8px;
 
@@ -23,6 +28,9 @@
 
 .header-template {
     >div {
+        // Top/bottom divider lines bracket only the (bottom-aligned) label row; the cloud-name row sits above them,
+        // outside the box. Bottom-aligning the columns in .grid-header is what keeps these rules continuous across
+        // columns - without it the taller cloud columns pushed their rule down and tore the line.
         border-top: 1px solid col.$content-hover;
         border-bottom: 1px solid col.$content-hover;
         padding: 16px 0px 16px var(--width-padding);
@@ -47,6 +55,14 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    // Subtle "x active" summary shown next to each cloud's name in the header.
+    .active-count {
+        margin-left: 6px;
+        font-size: 12px;
+        font-weight: normal;
+        opacity: 0.55;
     }
 }
 
@@ -91,13 +107,18 @@
     top: 0;
     z-index: 15;
 
+    // Bottom-align every column's header content so all the labels share one baseline just above the bottom rule
+    // (the cloud-name columns are two rows tall; the others are one).
     >div {
-        align-content: end;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
     }
 
     >.device-name {
         background-color: col.$background;
-        left: 0;
+        // Offset by the width of the sticky select column so both stay frozen without overlapping.
+        left: 34px;
         max-width: 320px;
         min-width: 160px;
         position: sticky;
@@ -119,29 +140,20 @@
     >.device-name {
         align-items: center;
         display: flex;
-        left: 0;
+        // Offset by the width of the sticky select column (see header device-name).
+        left: 34px;
         max-width: 320px;
         min-width: 160px;
         position: sticky;
         z-index: 10;
-    }
-
-    >.device-path {
-        align-content: start;
-        max-width: 520px;
-        min-width: 190px;
-
-        .device-path-container {
-            align-items: center;
-            display: flex;
-            min-height: 24px;
-
-            >span {
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-        }
+        // Tighter than the other cells so the name plus its context line fit the height the row already has.
+        // That height comes from the publish-target cells, whose controls need the full padding; this cell was
+        // leaving the difference unused.
+        padding-top: 5px;
+        padding-bottom: 5px;
+        // Every other cell can run to its column edge; this one cannot, because a long name would otherwise sit
+        // flush against the next column's label. Ellipsis takes over that much earlier instead.
+        padding-right: 12px;
     }
 
     // Alternating row backgrounds — applied via index-based classes because
@@ -163,6 +175,645 @@
 
         ::deep .device-identifier-cell .caption.sensors span:nth-of-type(even) {
             background-color: color.adjust(col.$background, $lightness: 2%);
+        }
+    }
+
+    // Orange tint for rows ticked via the multi-select checkboxes. A solid mix (not an alpha overlay) so the tint
+    // looks identical on the alternating even/odd row backgrounds. Wins over row-even/row-odd by coming later at
+    // equal specificity.
+    &.selected>div {
+        background-color: color.mix(col.$accent, col.$background, 10%);
+    }
+}
+
+// ─── Multi-select ──────────────────────────────────────────────────────────
+
+// Custom tick box used for row / group / select-all selection - matches the scan dialog's checkbox (an orange
+// checkmark that scales in).
+.grid-select {
+    appearance: none;
+    display: grid;
+    place-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    border: 1px solid col.$border;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+
+    &::before {
+        content: "";
+        width: 9px;
+        height: 9px;
+        background-color: col.$accent;
+        clip-path: polygon(0 50%, 35% 86%, 100% 21%, 85% 6%, 35% 60%, 13% 38%);
+        transform: scale(0);
+        transition: 40ms transform ease-in;
+    }
+
+    &:checked::before {
+        transform: scale(1);
+    }
+
+    // Third state: some of the rows below are ticked, not all. A dash instead of a checkmark - the native
+    // `indeterminate` is a property rather than an attribute and cannot be set from markup, but this box draws
+    // its own mark anyway, so it costs nothing to draw a different one. Must come after :checked, which it ties
+    // with on specificity.
+    &.mixed::before {
+        clip-path: none;
+        width: 9px;
+        height: 2px;
+        border-radius: 1px;
+        transform: scale(1);
+    }
+}
+
+// Left-most frozen selection column. The header cell reuses the two-row .header-template so the select-all box and
+// the divider line sit exactly like the other column headers; the row cell aligns its box to the first text line
+// (not the vertical centre) so tall rows (e.g. raw-data sensors) keep the box next to the name.
+.grid-header>.row-select-col {
+    background-color: col.$background;
+    position: sticky;
+    left: 0;
+    z-index: 21;
+}
+
+.grid-header>.row-select-col .select-all-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    // Drop the header-template's left text-indent so the box centres in the full 34px column, lining up with the
+    // row checkboxes.
+    padding-left: 0;
+    // The 16px checkbox is 2px taller than the 14px text line, so trim 1px top/bottom to keep this cell the same
+    // height as the text columns - otherwise its top divider line sits 2px higher and jogs the rule.
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.grid-row>.row-select-col {
+    display: grid;
+    // Centre the box in the cell so it lines up with the vertically-centred data-point name.
+    place-items: center;
+    padding: 0;
+    position: sticky;
+    left: 0;
+    z-index: 11;
+}
+
+// A captioned row is several lines tall and its name sits at the top, so a centred box ends up beside one of the
+// captions rather than the name it selects. Line it up with the name instead: the cell's 5px top padding plus
+// half of the 24px name row, less half of the 16px box.
+.grid-row.captioned>.row-select-col {
+    align-content: start;
+    padding-top: 9px;
+}
+
+// Points out the cells a bulk change reached. Re-keying the rows rebuilds these elements, which is what starts
+// the animation; the class is dropped again once it has played (see HighlightDurationMs).
+// The tint is a background-image, not a background-color: the row already sets its own colour there - alternating
+// even/odd, or the orange mix of a selected row - and animating that property would replace it, leaving the cell
+// showing whatever sits behind the grid instead of the row it belongs to. An image layers on top and lets the
+// row's colour stay underneath.
+@keyframes publish-target-changed {
+    from {
+        background-image: linear-gradient(rgba(255, 153, 0, 0.28), rgba(255, 153, 0, 0.28));
+        box-shadow: inset 0px 0px 0px 1px col.$accent;
+    }
+
+    to {
+        background-image: linear-gradient(rgba(255, 153, 0, 0), rgba(255, 153, 0, 0));
+        box-shadow: inset 0px 0px 0px 1px rgba(255, 153, 0, 0);
+    }
+}
+
+.grid-row>.publish-target-changed {
+    animation: publish-target-changed 1.1s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .grid-row>.publish-target-changed {
+        animation: none;
+        background-image: linear-gradient(rgba(255, 153, 0, 0.18), rgba(255, 153, 0, 0.18));
+        box-shadow: inset 0px 0px 0px 1px col.$accent;
+    }
+}
+
+// Full-width "container" header row woven between the data rows - a lighter shade so it reads as a section.
+.grid-group-row {
+    // Span every column so the lighter band + borders fill the whole row. The generic `.grid-body>div:not(.grid-row)`
+    // rule did not reliably reach this row, so only the max-content `.grid-group-header` showed as a floating box.
+    grid-column: 1 / -1;
+    background-color: color.adjust(col.$background, $lightness: 5%);
+    border-top: 1px solid col.$content-hover;
+    border-bottom: 1px solid col.$content-hover;
+}
+
+.grid-group-header {
+    position: sticky;
+    left: 0;
+    width: max-content;
+    display: inline-flex;
+    align-items: center;
+    // Match a data (process-value) row's height so the fixed-height virtualization (ItemSize=48) does not drift and
+    // the scroll position stays stable - the group row was ~34px, noticeably shorter than a 48px data row. 46px here
+    // plus the .grid-group-row's 1px top/bottom border = 48px.
+    box-sizing: border-box;
+    min-height: 46px;
+    padding: 0;
+    background-color: color.adjust(col.$background, $lightness: 5%);
+    cursor: pointer;
+    font-size: 12.5px;
+    color: col.$font;
+    z-index: 5;
+
+    // Centre the group checkbox within the 34px frozen select column (9 + 16 + 9) so it lines up with the header and
+    // row checkboxes.
+    .grid-select {
+        margin: 0 9px;
+    }
+
+    // Start the breadcrumb under the "Path" column header (34px select column + the path column's left padding), and
+    // use the same font as the column headers instead of the monospace face.
+    .grid-group-label {
+        margin-left: var(--width-padding);
+    }
+
+    .grid-group-count {
+        margin-left: 6px;
+        opacity: 0.55;
+    }
+}
+
+// ─── Bulk action bar ───────────────────────────────────────────────────────
+.bulk-bar {
+    position: fixed;
+    left: 50%;
+    bottom: 26px;
+    // Hidden resting state: faded out and nudged down, non-interactive. The .show class fades/slides it in.
+    transform: translateX(-50%) translateY(12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    // The bar is now a column: the row of buttons, and below it the settings panel it grows into. Keeping it one
+    // element means there is never a second floating thing that could cover this one.
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    background: col.$content-dark;
+    border: 1px solid col.$content-hover;
+    border-radius: 8px;
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
+    color: col.$font;
+    z-index: 50;
+
+    &.show {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .bulk-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+    }
+
+    // Drag grip: lets the user move the bar out of the way (see makeDraggable in the JS module).
+    .bulk-grip {
+        cursor: move;
+        color: col.$font-dark;
+        font-size: 14px;
+        line-height: 1;
+        padding: 0 2px;
+        touch-action: none;
+        user-select: none;
+    }
+
+    .bulk-count {
+        padding: 0 4px;
+        font-weight: 500;
+        color: col.$accent;
+        white-space: nowrap;
+    }
+
+    .bulk-label {
+        font-size: 12.5px;
+        color: col.$font-dark;
+    }
+
+    .bulk-separator {
+        width: 1px;
+        height: 22px;
+        background: col.$content-hover;
+    }
+
+    // The last one takes the slack, so the close button sits at the far right rather than crowding the actions.
+    .bulk-separator-end {
+        margin-left: auto;
+    }
+
+    .bulk-target {
+        height: 30px;
+        // Room on the right for the chevron below, which sits 10px off the edge like every other one here.
+        padding: 0 26px 0 8px;
+        appearance: none;
+        background-color: col.$content-dark;
+        background-image: $chevron;
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        border: 1px solid col.$content-hover;
+        border-radius: 4px;
+        color: col.$font;
+        // Cap the width so a long cloud name doesn't blow up the floating bar; the closed value truncates with an
+        // ellipsis while the open native popup still shows the full name. (ellipsis on a <select> needs
+        // overflow:hidden + white-space:nowrap to take effect.)
+        max-width: 170px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .bulk-button {
+        height: 30px;
+        padding: 0 14px;
+        // A label that wraps does not fit the fixed height; the row beside it gives way instead.
+        white-space: nowrap;
+        flex-shrink: 0;
+        border-radius: 4px;
+        border: 1px solid transparent;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+
+        &.accent {
+            background: col.$accent;
+            border-color: col.$accent;
+            color: #1c1200;
+        }
+
+        &.ghost {
+            background: transparent;
+            border-color: col.$content-hover;
+            color: col.$font;
+        }
+    }
+
+    // Square rather than just the glyph, so the hover has something to fill and the target is worth hitting.
+    // Neutral, not red: this dismisses the bar, it does not delete anything - red is spoken for by the actions
+    // that do.
+    .bulk-close {
+        display: grid;
+        place-items: center;
+        width: 26px;
+        height: 26px;
+        padding: 0px;
+        background: none;
+        border: none;
+        border-radius: 4px;
+        color: col.$font-dark;
+        font-size: 15px;
+        cursor: pointer;
+        transition: background 0.12s ease, color 0.12s ease;
+
+        &:hover {
+            background: col.$background-hover;
+            color: col.$font;
+        }
+
+        &:focus:not(:focus-visible) {
+            outline: none;
+        }
+    }
+
+    .bulk-more {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        height: 30px;
+        padding: 0 10px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        background: transparent;
+        color: col.$font;
+        font-family: inherit;
+        font-size: 13px;
+        cursor: pointer;
+
+        &:hover,
+        &.open {
+            background: col.$background-hover;
+        }
+
+        // The same chevron the selects draw, on the same side and at the same distance from the edge; it turns
+        // over when the panel is open.
+        &::after {
+            content: "";
+            width: 9px;
+            height: 6px;
+            margin-left: 3px;
+            background-image: $chevron;
+            background-repeat: no-repeat;
+            transition: transform 0.15s ease;
+        }
+
+        &.open::after {
+            transform: rotate(180deg);
+        }
+    }
+
+    // ── settings panel ───────────────────────────────────────────────────────
+    // Laid out in the tooltip's language: uppercase section labels with a trailing hairline, muted secondary text.
+    .bulk-panel {
+        // One width for every control in the panel, so a column has a single left and a single right edge
+        // instead of one per field. The buttons share it out between them rather than taking it from their
+        // labels, which keeps it aligned in a language where those are longer.
+        --bulk-control-width: 198px;
+
+        display: flex;
+        flex-direction: column;
+        padding: 4px 14px 14px;
+        border-top: 1px solid col.$content-hover;
+        // A wide selection can produce more groups than fit above the grid; scroll inside rather than growing
+        // past the viewport.
+        max-height: 52vh;
+        overflow-y: auto;
+    }
+
+    // The groups side by side rather than stacked: with the controls no longer stretched across the bar there is
+    // room for two, and four groups then fit without scrolling. One group keeps one column - two would leave
+    // half the bar empty.
+    .bulk-groups {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0px 30px;
+        align-items: start;
+
+        &.two-columns {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .bulk-tabs {
+        display: flex;
+        gap: 2px;
+        margin: 10px 0 4px;
+        padding: 2px;
+        background: col.$background;
+        border: 1px solid col.$border;
+        border-radius: 6px;
+
+        button {
+            flex: 1;
+            min-width: 0;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: col.$font-dark;
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+
+            &.on {
+                background: col.$background-hover;
+                color: col.$font;
+            }
+
+            // Selection is shown by .on; don't draw the app's focus ring on a mouse click. Keep it for keyboard.
+            &:focus:not(:focus-visible) {
+                outline: none;
+            }
+        }
+    }
+
+    .bulk-group {
+        padding: 11px 0 4px;
+    }
+
+    .bulk-group-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 9px;
+        font-size: 10px;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: col.$font-disabled;
+
+        // Hairline filling the rest of the row, as in the device tooltip's section labels.
+        &::after {
+            content: "";
+            flex: 1;
+            order: 1;
+            height: 1px;
+            background: col.$content-hover;
+        }
+
+        .bulk-group-count {
+            order: 2;
+            letter-spacing: 0;
+            text-transform: none;
+            font-size: 11px;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+    }
+
+    // Listed twice because BulkToggleField renders its own row and carries its own CSS scope; one definition
+    // reaches both rather than a second copy living over there.
+    .bulk-field,
+    ::deep .bulk-field {
+        display: grid;
+        // The value column no longer stretches to the bar's width - "1s" does not need 860px, and the height
+        // that was wasted on is what made the panel scroll.
+        grid-template-columns: 104px max-content;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+
+        > .bulk-field-label {
+            font-size: 12.5px;
+            color: col.$font-dark;
+        }
+
+        select {
+            // The same width the button pairs use - not 100%, which has nothing to resolve against in a
+            // max-content track.
+            width: var(--bulk-control-width);
+            min-width: 0;
+            height: 28px;
+            padding: 0 26px 0 7px;
+            appearance: none;
+            background-color: col.$content-dark;
+            background-image: $chevron;
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            border: 1px solid col.$content-hover;
+            border-radius: 4px;
+            color: col.$font;
+            font-family: inherit;
+            font-size: 12.5px;
+
+            &:disabled {
+                opacity: 0.45;
+                cursor: not-allowed;
+            }
+        }
+    }
+
+    // Activate / deactivate as two buttons rather than a switch: while the selection disagrees neither state is
+    // true, and a switch has no honest position for that - here simply neither button is marked.
+    // Activate / deactivate as one control rather than two loose buttons - the same shape the bar's own pair
+    // uses, only smaller here. The state that applies is filled: the accent for "all on", a plain fill for
+    // "all off", and neither while the selection disagrees.
+    ::deep .bulk-toggle-pair {
+        display: inline-flex;
+        // Same width as the selects beside them, so a column has one left and one right edge instead of five.
+        // The bar's own pair is not in a column and takes its width from its labels - see the modifier below.
+        width: var(--bulk-control-width, auto);
+        box-sizing: border-box;
+        height: 28px;
+
+        // In the bar rather than in the panel: taller, and sized to its content.
+        &.bulk-toggle-pair-in-bar {
+            width: auto;
+            height: 30px;
+
+            button {
+                padding: 0px 14px;
+                font-size: 13px;
+                font-weight: 500;
+            }
+        }
+        border: 1px solid col.$content-hover;
+        border-radius: 4px;
+        overflow: hidden;
+        background: col.$content-dark;
+
+        button {
+            flex: 1;
+            min-width: 0;
+            padding: 0px 10px;
+            border: none;
+            background: transparent;
+            color: col.$font;
+            font-family: inherit;
+            font-size: 12.5px;
+            cursor: pointer;
+            white-space: nowrap;
+
+            + button {
+                border-left: 1px solid col.$content-hover;
+            }
+
+            &:hover {
+                background: rgba(255, 255, 255, 0.06);
+            }
+
+            &.primary {
+                background: col.$accent;
+                color: #1c1200;
+
+                &:hover {
+                    background: color.adjust(col.$accent, $lightness: 7%);
+                }
+            }
+
+            // "Everything is off" is a statement too, so it is marked - but without claiming the accent.
+            &.marked {
+                background: col.$background-hover;
+                color: col.$font;
+            }
+
+            &:focus:not(:focus-visible) {
+                outline: none;
+            }
+        }
+    }
+
+    // The buttons and, beside them, how the selection currently stands.
+    ::deep .bulk-choice {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    ::deep .bulk-distribution {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 11.5px;
+        font-variant-numeric: tabular-nums;
+        color: col.$font-disabled;
+        white-space: nowrap;
+    }
+
+    // The running figure and its hidden twin share one grid cell: the cell takes the twin's width, the figure
+    // is drawn over it. Nothing moves while the numbers change their digit count.
+    ::deep .bulk-distribution-text {
+        display: grid;
+
+        > * {
+            grid-area: 1 / 1;
+        }
+
+        .sizer {
+            visibility: hidden;
+        }
+    }
+
+    ::deep .bulk-meter {
+        width: 60px;
+        height: 5px;
+        flex-shrink: 0;
+        border-radius: 3px;
+        background: col.$content;
+        overflow: hidden;
+
+        > i {
+            display: block;
+            height: 100%;
+            background: col.$accent;
+        }
+    }
+
+    // Sits below the settings behind a rule, because it undoes them rather than being one of them.
+    .bulk-reset {
+        display: flex;
+        align-items: center;
+        // Narrow enough and the note drops below the button rather than squeezing it.
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid col.$content-hover;
+    }
+
+    .bulk-reset-note {
+        // Takes what is left and wraps within it, so it never widens the row.
+        flex: 1 1 0px;
+        min-width: 0px;
+        font-size: 11.5px;
+        line-height: 1.4;
+        color: col.$font-disabled;
+    }
+
+    .bulk-note {
+        margin: 6px 0 2px;
+        font-size: 11.5px;
+        line-height: 1.45;
+        color: col.$font-disabled;
+
+        &.indented {
+            margin-left: 114px;
         }
     }
 }

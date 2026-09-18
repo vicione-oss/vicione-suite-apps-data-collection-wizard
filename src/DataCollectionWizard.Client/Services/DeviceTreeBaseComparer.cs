@@ -1,4 +1,4 @@
-﻿using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+﻿using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Client.Services;
 
@@ -20,11 +20,11 @@ internal sealed class DeviceTreeBaseComparer : IComparer<IDeviceTreeBase>
         var nameX = x.Name;
         var nameY = y.Name;
 
-        if (x is IDeviceTreeAliasNode deviceTreeAliasNodeX && !string.IsNullOrWhiteSpace(deviceTreeAliasNodeX.NameAlias))
-            nameX = deviceTreeAliasNodeX.NameAlias + "." + x.Name;
+        if (x is IDeviceTreeUserAliasNode deviceTreeAliasNodeX && !string.IsNullOrWhiteSpace(deviceTreeAliasNodeX.Alias))
+            nameX = deviceTreeAliasNodeX.Alias + "." + x.Name;
 
-        if (y is IDeviceTreeAliasNode deviceTreeAliasNodeY && !string.IsNullOrWhiteSpace(deviceTreeAliasNodeY.NameAlias))
-            nameY = deviceTreeAliasNodeY.NameAlias + "." + y.Name;
+        if (y is IDeviceTreeUserAliasNode deviceTreeAliasNodeY && !string.IsNullOrWhiteSpace(deviceTreeAliasNodeY.Alias))
+            nameY = deviceTreeAliasNodeY.Alias + "." + y.Name;
 
         return AlphanumericComparer.Default.Compare(nameX, nameY);
     }
@@ -43,7 +43,7 @@ internal sealed class AlphanumericComparer(StringComparison textComparison = Str
         if (x is null) return -1;
         if (y is null) return 1;
 
-        // Regel: Strings, die mit Ziffern beginnen, kommen vor Strings, die mit Buchstaben beginnen
+        // Strings starting with a digit sort before strings starting with a letter.
         if (x.Length > 0 && y.Length > 0)
         {
             var xStartsDigit = char.IsDigit(x[0]);
@@ -51,82 +51,100 @@ internal sealed class AlphanumericComparer(StringComparison textComparison = Str
             if (xStartsDigit != yStartsDigit) return xStartsDigit ? -1 : 1;
         }
 
-        int i = 0, j = 0;
-        int nx = x.Length, ny = y.Length;
+        int indexX = 0, indexY = 0;
 
-        while (i < nx && j < ny)
+        while (indexX < x.Length && indexY < y.Length)
         {
-            var cx = x[i];
-            var cy = y[j];
+            var characterX = x[indexX];
+            var characterY = y[indexY];
 
-            // KATEGORIEN: Separator < Letter < Digit
-            var sx = IsSeparator(cx);
-            var sy = IsSeparator(cy);
-            var dx = char.IsDigit(cx);
-            var dy = char.IsDigit(cy);
+            // Categories: separator < letter < digit.
+            var isSeparatorX = IsSeparator(characterX);
+            var isSeparatorY = IsSeparator(characterY);
+            var isDigitX = char.IsDigit(characterX);
+            var isDigitY = char.IsDigit(characterY);
 
-            // optional: Separatoren ignorieren
             if (_ignoreSeparators)
             {
-                if (sx) { i++; continue; }
-                if (sy) { j++; continue; }
+                if (isSeparatorX) { indexX++; continue; }
+                if (isSeparatorY) { indexY++; continue; }
             }
 
-            // 1) Einer ist Separator, der andere nicht -> Separator kommt VOR (z.B. "A>1" < "A1")
-            if (sx != sy) return sx ? -1 : 1;
+            // Exactly one is a separator: the separator comes first ("A>1" < "A1").
+            if (isSeparatorX != isSeparatorY) return isSeparatorX ? -1 : 1;
 
-            // 2) Beide Separatoren -> normal vergleichen und weiter
-            if (sx && sy)
+            // Both are separators: compare them as characters and move on.
+            if (isSeparatorX && isSeparatorY)
             {
-                var csep = cx.CompareTo(cy);
-                if (csep != 0) return csep;
-                i++; j++;
+                var separatorOrder = characterX.CompareTo(characterY);
+                if (separatorOrder != 0) return separatorOrder;
+                indexX++; indexY++;
                 continue;
             }
 
-            // 3) Beide Ziffern-Runs -> numerischer Vergleich (führende Nullen ignorieren)
-            if (dx && dy)
+            // Both start a run of digits: compare the numbers, ignoring leading zeros.
+            if (isDigitX && isDigitY)
             {
-                var zsx = i; while (i < nx && x[i] == '0') i++;
-                var sxNum = i; while (i < nx && char.IsDigit(x[i])) i++;
+                var digitRunResult = CompareDigitRun(x, y, ref indexX, ref indexY);
+                if (digitRunResult is not null) return digitRunResult.Value;
 
-                var zsy = j; while (j < ny && y[j] == '0') j++;
-                var syNum = j; while (j < ny && char.IsDigit(y[j])) j++;
-
-                var lenX = i - sxNum; // ohne führende Nullen
-                var lenY = j - syNum;
-
-                if (lenX != lenY) return lenX < lenY ? -1 : 1;
-
-                for (var k = 0; k < lenX; k++)
-                {
-                    var diff = x[sxNum + k] - y[syNum + k];
-                    if (diff != 0) return diff < 0 ? -1 : 1;
-                }
-
-                // numerisch gleich -> kürzere Gesamtdarstellung (inkl. Nullen) zuerst
-                int totalX = i - zsx, totalY = j - zsy;
-                if (totalX != totalY) return totalX < totalY ? -1 : 1;
-
-                continue; // nächster Run
+                continue; // next run
             }
 
-            // 4) Genau einer ist Ziffer -> Buchstabe vor Ziffer (z.B. "A" < "A1")
-            if (dx != dy) return dx ? 1 : -1;
+            // Exactly one is a digit: the letter comes first ("A" < "A1").
+            if (isDigitX != isDigitY) return isDigitX ? 1 : -1;
 
-            // 5) Beide Text-Runs (Buchstaben/sonstige Nicht-Ziffern, keine Separatoren)
-            var tx = i; while (i < nx && !char.IsDigit(x[i]) && !IsSeparator(x[i])) i++;
-            var ty = j; while (j < ny && !char.IsDigit(y[j]) && !IsSeparator(y[j])) j++;
-
-            var common = Math.Min(i - tx, j - ty);
-            var cmp = string.Compare(x, tx, y, ty, common, _textComparison);
-            if (cmp != 0) return cmp;
-
-            if ((i - tx) != (j - ty)) return (i - tx) < (j - ty) ? -1 : 1;
+            // Both start a run of text (anything that is neither a digit nor a separator).
+            var textRunResult = CompareTextRun(x, y, ref indexX, ref indexY, _textComparison);
+            if (textRunResult is not null) return textRunResult.Value;
         }
 
-        return nx.CompareTo(ny);
+        return x.Length.CompareTo(y.Length);
     }
 
-    private static bool IsSeparator(char c) => !char.IsLetterOrDigit(c);
+    private static int? CompareDigitRun(string x, string y, ref int indexX, ref int indexY)
+    {
+        var runStartX = indexX; while (indexX < x.Length && x[indexX] == '0') indexX++;
+        var digitsStartX = indexX; while (indexX < x.Length && char.IsDigit(x[indexX])) indexX++;
+
+        var runStartY = indexY; while (indexY < y.Length && y[indexY] == '0') indexY++;
+        var digitsStartY = indexY; while (indexY < y.Length && char.IsDigit(y[indexY])) indexY++;
+
+        // Without leading zeros, a number with more digits is the larger one.
+        var digitCountX = indexX - digitsStartX;
+        var digitCountY = indexY - digitsStartY;
+
+        if (digitCountX != digitCountY) return digitCountX < digitCountY ? -1 : 1;
+
+        for (var offset = 0; offset < digitCountX; offset++)
+        {
+            var difference = x[digitsStartX + offset] - y[digitsStartY + offset];
+            if (difference != 0) return difference < 0 ? -1 : 1;
+        }
+
+        // Numerically equal: the shorter spelling, leading zeros included, comes first.
+        int runLengthX = indexX - runStartX, runLengthY = indexY - runStartY;
+        if (runLengthX != runLengthY) return runLengthX < runLengthY ? -1 : 1;
+
+        return null;
+    }
+
+    private static int? CompareTextRun(string x, string y, ref int indexX, ref int indexY, StringComparison textComparison)
+    {
+        var runStartX = indexX; while (indexX < x.Length && !char.IsDigit(x[indexX]) && !IsSeparator(x[indexX])) indexX++;
+        var runStartY = indexY; while (indexY < y.Length && !char.IsDigit(y[indexY]) && !IsSeparator(y[indexY])) indexY++;
+
+        var runLengthX = indexX - runStartX;
+        var runLengthY = indexY - runStartY;
+
+        var sharedLength = Math.Min(runLengthX, runLengthY);
+        var textOrder = string.Compare(x, runStartX, y, runStartY, sharedLength, textComparison);
+        if (textOrder != 0) return textOrder;
+
+        if (runLengthX != runLengthY) return runLengthX < runLengthY ? -1 : 1;
+
+        return null;
+    }
+
+    private static bool IsSeparator(char character) => !char.IsLetterOrDigit(character);
 }

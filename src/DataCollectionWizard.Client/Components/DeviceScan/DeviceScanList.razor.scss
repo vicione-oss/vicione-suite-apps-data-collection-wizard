@@ -1,0 +1,110 @@
+﻿@use "./../../Styles/_colours.scss" as col;
+
+.device-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    height: 87%;
+    overflow-y: auto;
+    // Keep the cards off the scrollbar.
+    padding-right: 8px;
+
+    // Each found device is a selectable card: the whole card toggles selection, the checkbox just reflects it.
+    .device-list-entry {
+        display: grid;
+        grid-template-columns: 20px auto;
+        column-gap: 11px;
+        padding: 11px 14px;
+        border: 1px solid #3d3d3d;
+        border-radius: 10px;
+        background: col.$content-dark;
+        cursor: pointer;
+        transition: background 0.12s ease, border-color 0.12s ease;
+
+        &:hover {
+            background: #404040;
+        }
+
+        &.selected {
+            border-color: rgba(255, 153, 0, 0.55);
+            background: rgba(255, 153, 0, 0.10);
+        }
+
+        input[type="checkbox"] {
+            align-content: center;
+            appearance: none;
+            border: 1px solid col.$border;
+            border-radius: 4px;
+            display: grid;
+            height: 16px;
+            justify-content: center;
+            margin-top: 2px;
+            outline: none;
+            width: 16px;
+            pointer-events: none;
+
+            &:before {
+                background-color: col.$accent;
+                clip-path: polygon(0 50%, 35% 86%, 100% 21%, 85% 6%, 35% 60%, 13% 38%);
+                content: "";
+                display: block;
+                height: 9px;
+                transform: scale(0);
+                transition: 40ms transform ease-in;
+                width: 9px;
+            }
+
+            &:checked::before {
+                transform: scale(1);
+            }
+        }
+
+        // A found device is rendered by the dialog that owns the list, so its markup carries that
+        // component's scope and only ::deep reaches it from here.
+        ::deep .device-list-entry-name {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+            font-weight: 500;
+
+            // Centre the lock icon on the text line.
+            .device-auth-lock {
+                display: flex;
+                align-items: center;
+            }
+
+            // "Auth" pill, pushed to the right edge of the card.
+            .device-auth-badge {
+                margin-left: auto;
+                padding: 3px 9px;
+                border: 1px solid col.$border;
+                border-radius: 999px;
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: 0.03em;
+                color: col.$font-dark;
+                white-space: nowrap;
+            }
+        }
+
+        ::deep .device-list-entry-info {
+            grid-column: 2;
+            margin-top: 4px;
+            font-size: 12.5px;
+            font-family: "Cascadia Code", "Consolas", ui-monospace, monospace;
+            letter-spacing: 0.2px;
+            color: #9a9a9a;
+        }
+    }
+}
+
+.validation-message {
+    overflow: hidden;
+    padding-top: 6px;
+    font-size: 14px;
+
+    &.validation-message-info {
+        color: col.$font;
+    }
+}

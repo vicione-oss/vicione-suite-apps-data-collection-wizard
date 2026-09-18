@@ -2,7 +2,7 @@
 
 namespace DataCollectionWizard.Internal.Validation;
 
-public sealed class IsNotEqualAttribute(string comparisonDateTimeMemberName) : ValidationAttribute
+internal sealed class IsNotEqualAttribute(string comparisonDateTimeMemberName) : ValidationAttribute
 {
     public string ComparisonDateTimeMemberName { get; } = string.IsNullOrWhiteSpace(comparisonDateTimeMemberName)
             ? throw new ArgumentNullException(nameof(comparisonDateTimeMemberName))

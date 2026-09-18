@@ -12,8 +12,8 @@ using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Public.Extensions;
 using Microsoft.AspNetCore.Components;
 using Sdk.Client.Modules;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.DeviceTree.Contracts;
+using ViciOne.DeviceTree.Contracts.Extensions;
 using ViciOne.Ui.Blazor.Components.Dialog.Components;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Factories;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Models;
@@ -39,7 +39,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         new()
         {
             DisplayDuration = 3,
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceTreeScan,
         },
         TimedMessageFactory.CreateGap(1),
         new()
@@ -71,7 +71,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
     private LiveGridRowModel[] CalculateGridItems(List<IDeviceTreeLiveDataNode> _)
     {
         return [.. _adapter.GetRelevantDataNodes()
-            .Where(n => n.Visible && n.DataType.SupportedForLiveView())
+            .Where(n => n is not IDeviceTreeHiddenNode && n.DataType.SupportsLiveView)
             .Select(DataNodeToGridModel)
             .Distinct()];
 
@@ -124,23 +124,32 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         }
     }
 
-    private async Task NodesOffline(string[] arg)
+    // Only the affected nodes, not the whole tree. SetDeviceTree ends by raising SelectionChanged, which this
+    // page answers by dropping and rebuilding every subscription - on a status change there is nothing to rebuild,
+    // since the dataflow is unchanged and the connectors stay in place when a sensor drops out.
+    //
+    // The grid has to be told to repaint, though. It takes no parameters, so this page re-rendering does not reach
+    // it, and otherwise it only repaints when values arrive - which a device that just went offline no longer sends,
+    // so its rows would keep looking online.
+    private async Task NodesOffline(string[] nodeIds)
     {
         if (_tree is null)
             return;
 
-        SetNodesIsOffline(arg, true);
-        SetTree(_tree, true);
+        SetNodesStatus(nodeIds, ConnectionStatus.Offline);
+        _adapter.UpdateNodeStatuses(nodeIds, expandToOfflineNodes: true);
+        _service.RefreshImmediate();
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task NodesOnline(string[] arg)
+    private async Task NodesOnline(string[] nodeIds)
     {
         if (_tree is null)
             return;
 
-        SetNodesIsOffline(arg, false);
-        SetTree(_tree, false);
+        SetNodesStatus(nodeIds, ConnectionStatus.Online);
+        _adapter.UpdateNodeStatuses(nodeIds);
+        _service.RefreshImmediate();
         await InvokeAsync(StateHasChanged);
     }
 
@@ -169,7 +178,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
             }
             catch (Exception ex)
             {
-                LogAwaitingDeploymentWarning(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+                LogAwaitingDeploymentWarning(Logger, ex);
             }
         });
 
@@ -213,10 +222,14 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
             await UnsubscribeAllAsync();
             await SubscribeAllAsync(_cancelSubscribing.Token);
+
+            // Reported once the rebuild has settled - in between there is nothing subscribed, and that gap is
+            // not the end of the observation window.
+            _service.Session.SetWatching(!_handles.IsEmpty);
         }
         catch (Exception ex)
         {
-            LogSubscribeAllError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogSubscribeAllError(Logger, ex);
         }
         finally
         {
@@ -249,14 +262,15 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
             _cancelSubscribing.Dispose();
             _cancelSubscribing = new();
             await UnsubscribeAllAsync();
-            _gridNodes = [.. _adapter.GetRelevantDataNodes().OfType<IDeviceTreeLiveDataNode>().Where(n => n.Visible)];
+            _gridNodes = [.. _adapter.GetRelevantDataNodes().OfType<IDeviceTreeLiveDataNode>().Where(n => n is not IDeviceTreeHiddenNode)];
             _service.SetGridItems(CalculateGridItems(_gridNodes), false);
             await SubscribeAllAsync(_cancelSubscribing.Token);
+            _service.Session.SetWatching(!_handles.IsEmpty);
             _service.RefreshImmediate();
         }
         catch (Exception ex)
         {
-            LogSubscribeAllError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogSubscribeAllError(Logger, ex);
         }
         finally
         {
@@ -286,7 +300,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         }
     }
 
-    private void SetNodesIsOffline(string[] nodeIds, bool isOffline)
+    private void SetNodesStatus(string[] nodeIds, ConnectionStatus status)
     {
         if (_tree is null)
             return;
@@ -297,7 +311,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         {
             if (allNodes.TryGetValue(nodeId, out var node))
             {
-                node.IsOffline = isOffline;
+                node.Status = status;
             }
         }
     }
@@ -365,6 +379,10 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
                     ? TimeZoneInfo.ConvertTime(t, TimeProvider.LocalTimeZone).ToString(culture)
                     : string.Empty;
 
+                // Here rather than at render time: Refresh coalesces to twice a second, so counting there would
+                // count pictures instead of values.
+                _service.Session.Note();
+
                 _service.Refresh();
                 return Task.CompletedTask;
             }
@@ -373,7 +391,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         }
         catch (Exception ex)
         {
-            LogSubscribeTopicError(Logger, mapData.ValueOutputIdUI, node.Id, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogSubscribeTopicError(Logger, mapData.ValueOutputIdUI, node.Id, ex);
         }
 
         IAsyncDisposable? unitHandle = null;
@@ -400,7 +418,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
             }
             catch (Exception ex)
             {
-                LogSubscribeTopicError(Logger, mapData.ValueOutputIdUI, $"{node.Id} (Unit)", ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+                LogSubscribeTopicError(Logger, mapData.ValueOutputIdUI, $"{node.Id} (Unit)", ex);
             }
         }
 
@@ -422,14 +440,14 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
 
             await DataCollectionWizardService.RequestExistingDevicesAsync(masterDevices.Where(v => v.Children.Count > 0), false, async receivedDevices =>
             {
-                var freshOrUnchangedDevices = receivedDevices
-                    .Select(r => r.device is not null && !r.device.IsOffline
-                        ? r.device
-                        : masterDevices.FirstOrDefault(m => m.Url == r.address) as IDeviceTreeBase)
-                    .Where(d => d is not null)
+                // Only a scan that confirms a master online is handed to the builder. A master left out keeps its
+                // last known structure, and the builder marks it and its children offline for lacking a counterpart.
+                var onlineDevices = receivedDevices
+                    .Select(r => r.device)
+                    .Where(device => device?.Status == ConnectionStatus.Online)
                     .Cast<IDeviceTreeBase>();
 
-                DeviceTreeBuilder.ExtendCurrentDeviceTree(_tree, [.. freshOrUnchangedDevices], []);
+                DeviceTreeBuilder.ExtendCurrentDeviceTree(_tree, [.. onlineDevices], []);
 
                 RemoveNewNodesRecursively(_tree);
 
@@ -442,7 +460,7 @@ public sealed partial class LiveViewPage : ModulePageBase<DataCollectionWizardCl
         }
         catch (Exception ex)
         {
-            LogUpdateDeviceTreeError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogUpdateDeviceTreeError(Logger, ex);
         }
     }
 

@@ -4,7 +4,7 @@ using DataCollectionWizard.Client.Extensions;
 using DataCollectionWizard.Client.Models;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using Microsoft.AspNetCore.Components;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.GridCells;
 

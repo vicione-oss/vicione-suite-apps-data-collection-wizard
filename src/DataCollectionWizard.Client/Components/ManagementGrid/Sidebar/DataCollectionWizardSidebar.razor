@@ -1,14 +1,3 @@
-﻿@using ViciOne.Ui.Blazor.Components.ExpandableMenu.Components
-@using ViciOne.Ui.Blazor.Components.Sidebar
-@using ViciOne.Ui.Blazor.Components.Sidebar.Enums
-
-<Sidebar @bind-FluidWidth="_sidebarFluidWidth"
-         CompactWidth="56"
-         FluidMinimumWidth="300"
-         FluidMaximumWidth="680"
-         Mode="GetSidebarMode()"
-         Placement="SidebarPlacement.Left">
-
-    <ExpandableMenu @bind-CompactMode="_compactMode"
-                    Entries="@(_entries)" />
-</Sidebar>
+@* The device tree and the "Information" section are both ExpandableMenu entries (the menu provides the
+   expand/collapse and bottom-docking via IsSticky), so no custom sidebar layout is needed here. *@
+<ResizableSidebar Entries="@(_entries)" />

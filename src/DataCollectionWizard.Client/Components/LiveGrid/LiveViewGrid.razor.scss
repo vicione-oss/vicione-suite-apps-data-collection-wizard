@@ -1,9 +1,17 @@
-﻿@use "./../../Styles/_colours.scss" as col;
+@use "./../../Styles/colours" as col;
 @use 'sass:color';
 
+// Laid out like the configuration grid (see DataCollectionWizardGrid.razor.scss): one master grid whose column
+// tracks header and rows share via subgrid. The differences are deliberate and few - no selection column, and
+// group headers are not clickable because there is nothing to select here.
 .live-view-grid {
+    --width-padding: 8px;
+
+    align-content: start;
     bottom: 0;
     color: col.$font-dark;
+    display: grid;
+    grid-template-columns: var(--grid-columns);
     left: 0;
     overflow: auto;
     position: absolute;
@@ -12,132 +20,154 @@
 }
 
 .header-template {
-    > div {
+    >div {
         border-top: 1px solid col.$content-hover;
         border-bottom: 1px solid col.$content-hover;
         padding: 16px 0px 16px var(--width-padding);
-
-        &.publish-target {
-            display: grid;
-            grid-column-gap: 8px;
-            grid-template-columns: 70px auto;
-
-            > span:first-of-type {
-                text-align: center;
-            }
-        }
     }
 
-    > span {
+    >span {
         padding: 0px 0px 8px 16px;
         display: block;
         font-weight: normal;
         font-size: 14px;
         line-height: 1em;
+    }
+}
+
+// ─── Shared subgrid layout ─────────────────────────────────────────────────
+
+.grid-header,
+.grid-body,
+.grid-row {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+}
+
+// Virtualize inserts unstyled spacer <div>s directly inside .grid-body.
+.grid-body>div:not(.grid-row) {
+    grid-column: 1 / -1;
+}
+
+// ─── Header ────────────────────────────────────────────────────────────────
+
+.grid-header {
+    background-color: col.$background;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1em;
+    position: sticky;
+    top: 0;
+    z-index: 15;
+
+    >div {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    >.device-name {
+        background-color: col.$background;
+        left: 0;
+        max-width: 320px;
+        min-width: 160px;
+        position: sticky;
+        z-index: 20;
+    }
+
+    // The icon in the "last changed" header is taller than the 14px text line, so that column's box grew and -
+    // being bottom-aligned - carried its top rule above the neighbouring columns', tearing the rule across the
+    // header. Pinning the label row to the text height keeps every column's rule on one line.
+    .header-template>div {
+        align-items: center;
+        display: flex;
+        height: 1em;
+    }
+
+    .icon-header {
+        display: inline-flex;
+        margin-left: 6px;
+    }
+
+    // The "Value" heading follows its column to the right edge, so heading and figures share one edge.
+    >.value .header-template>div {
+        justify-content: flex-end;
+        padding-left: 0px;
+        padding-right: var(--width-padding);
+    }
+}
+
+// ─── Body rows ─────────────────────────────────────────────────────────────
+
+.grid-row {
+    >div {
+        align-content: center;
+        padding: 11px 0px 11px var(--width-padding);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
-}
 
-table {
-    --width-padding: 8px;
-
-    border: none;
-    width: 100%;
-
-    tbody {
-        > tr:nth-child(even) > td {
-            background-color: color.adjust(col.$background, $lightness: 2%);
-        }
-    }
-
-    td, th {
-        &.device-name {
-            --max-width: 320px;
-
-            background-color: col.$background;
-            left: 0px;
-            min-width: 160px;
-            max-width: var(--max-width);
-            position: sticky;
-        }
-
-        &.device-path {
-            min-width: 190px;
-            max-width: 520px;
-        }
-
-        &.last-changed, &.unit, &.value {
-            min-width: 200px;
-            max-width: 200px;
-        }
-
-        &.spacer {
-            max-width: calc(8px * var(--spacer-width, 0));
-            min-width: calc(8px * var(--spacer-width, 0));
-
-            &.absorbtion {
-                width: 100%;
-            }
-        }
-
-        &.unit {
-            text-align: left;
-        }
-
-        &.value {
-            text-align: right;
-        }
-    }
-
-    td {
-        align-content: center;
-        padding: 11px 0px 11px var(--width-padding);
-
-        &.device-name {
-            align-items: center;
-            display: flex;
-            z-index: 10;
-        }
-
-        &.device-path {
-            .device-path-container {
-                align-items: center;
-                display: flex;
-
-                > span {
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                }
-            }
-        }
-
-        &.last-changed, &.unit, &.value {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-    }
-
-    th {
-        align-content: end;
-        background-color: col.$background;
-        font-size: 14px;
-        font-weight: normal;
-        line-height: 1em;
+    // Sticky left column — device name. Tighter than the others so the name and its path line fit the row height
+    // the value columns already establish.
+    >.device-name {
+        align-items: center;
+        display: flex;
+        left: 0;
+        max-width: 320px;
+        min-width: 160px;
         position: sticky;
-        top: 0px;
-        z-index: 15;
+        z-index: 10;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
 
-        &.device-name {
-            z-index: 20;
-        }
+    // The number ends where the unit begins, so the two read as one figure. Left-aligned numbers of differing
+    // length make the eye search for the decimal point in a different place on every row.
+    >.value {
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+        padding-left: 0px;
+        padding-right: var(--width-padding);
+    }
+
+    // Alternating row backgrounds — applied via index-based classes because <Virtualize> inserts spacer divs
+    // that break CSS :nth-child selectors.
+    &.row-even>div {
+        background-color: color.adjust(col.$background, $lightness: 2%);
+    }
+
+    &.row-odd>div {
+        background-color: col.$background;
     }
 }
 
-::deep .icon-header {
-    margin: -5px 3px;
-    position: absolute;
+// ─── Group headers ─────────────────────────────────────────────────────────
+
+.grid-group-row {
+    grid-column: 1 / -1;
+    background-color: color.adjust(col.$background, $lightness: 3%);
+    border-top: 1px solid col.$content-hover;
+    border-bottom: 1px solid col.$content-hover;
+}
+
+.grid-group-header {
+    position: sticky;
+    left: 0;
+    width: max-content;
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-height: 46px;
+    padding: 0 var(--width-padding);
+    background-color: color.adjust(col.$background, $lightness: 3%);
+    font-size: 12.5px;
+    color: col.$font;
+    z-index: 5;
+
+    .grid-group-count {
+        margin-left: 6px;
+        opacity: 0.55;
+    }
 }

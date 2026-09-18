@@ -3,7 +3,7 @@ using ViciOne.Cluster.Builder.Extensions;
 
 namespace DataCollectionWizard.Internal.Extensions;
 
-public static class ClusterBuilderExtensions
+internal static class ClusterBuilderExtensions
 {
     public static void AddDataPortDesign(this ClusterBuilder builder, string dataPortDesignId)
     {

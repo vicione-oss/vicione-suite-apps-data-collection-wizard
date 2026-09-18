@@ -1,38 +1,47 @@
-﻿using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+﻿using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Public.Extensions;
 
 public static class DataTypeExtensions
 {
-    public static bool SupportedForCompression(this DataType dataType)
-        => dataType switch
+    extension(DataType dataType)
+    {
+        /// <summary>
+        /// Whether this data type's values are suitable for compression (see <see cref="IDeviceTreeCompressableDataNode"/>).
+        /// </summary>
+        public bool SupportsCompression => dataType switch
         {
-            DataType.Float32T => true,
-            DataType.IntegerT => true,
-            DataType.UIntegerT => true,
-            DataType.BooleanT => true,
-            _ => false
+            DataType.Flag => true,
+            DataType.Whole => true,
+            DataType.UnsignedWhole => true,
+            DataType.Real => true,
+            _ => false,
         };
 
-    public static bool SupportedForLiveView(this DataType dataType)
-        => dataType switch
+        /// <summary>
+        /// Whether this data type's values are suitable for the live view (see <see cref="IDeviceTreeLiveDataNode"/>).
+        /// </summary>
+        public bool SupportsLiveView => dataType switch
         {
-            DataType.BooleanT => true,
-            DataType.IntegerT => true,
-            DataType.UIntegerT => true,
-            DataType.Float32T => true,
-            DataType.StringT => true,
-            _ => false
+            DataType.Flag => true,
+            DataType.Whole => true,
+            DataType.UnsignedWhole => true,
+            DataType.Real => true,
+            DataType.Text => true,
+            _ => false,
         };
 
-    public static bool SupportedForLogging(this DataType dataType)
-        => dataType switch
+        /// <summary>
+        /// Whether this data type's values are suitable for logging.
+        /// </summary>
+        public bool SupportsLogging => dataType switch
         {
-            DataType.Float32T => true,
-            DataType.IntegerT => true,
-            DataType.UIntegerT => true,
-            DataType.BlobT => true,
-            DataType.BooleanT => true,
-            _ => false
+            DataType.Flag => true,
+            DataType.Whole => true,
+            DataType.UnsignedWhole => true,
+            DataType.Real => true,
+            DataType.Blob => true,
+            _ => false,
         };
+    }
 }

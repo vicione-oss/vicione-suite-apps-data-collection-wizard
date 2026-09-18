@@ -1,11 +1,13 @@
 ﻿@using DataCollectionWizard.Client.Components.ManagementGrid.GridCells
-@using ViciOne.Ui.Localization.Resources
 @using DataCollectionWizard.Client.Components.ManagementGrid.Models
 @using DataCollectionWizard.Client.Extensions
+@using DataCollectionWizard.Internal.Contracts
+@using DataCollectionWizard.Internal.Extensions
 @using DataCollectionWizard.Client.Models
 @using DataCollectionWizard.Public.Extensions
 @using Microsoft.AspNetCore.Components.Web.Virtualization
-@using ViciOne.Driver.IoTCore.Contracts.DeviceTree
+@using ViciOne.DeviceTree.Contracts
+@using ViciOne.Ui.Localization.Resources
 
 <div @ref="@(_mainContainerRef)"
      class="data-collection-wizard-grid"
@@ -13,25 +15,19 @@
 
     @* --- HEADER --- *@
     <div class="grid-header">
-        @if (Service.PathVisible)
-        {
-            <div class="device-path">
-                <div class="header-template">
-                    <span></span>
-                    <div>
-                        <span>@CommonVocabulary.Path</span>
-                    </div>
+        <div class="row-select-col header">
+            <div class="header-template">
+                <span></span>
+                <div class="select-all-cell">
+                    @* Three states, not two: "mixed" draws a dash, because a partial selection otherwise looks
+                       exactly like an empty one. Clicking it still selects everything. *@
+                    <input type="checkbox"
+                           class="grid-select @(IsVisibleSelectionMixed ? "mixed" : string.Empty)"
+                           checked="@AreAllVisibleSelected"
+                           @onchange="@(e => ToggleSelectAll((bool)e.Value!))" />
                 </div>
             </div>
-
-            <div class="spacer">
-                <!-- spacer column -->
-                <div class="header-template">
-                    <span></span>
-                    <div>&nbsp;</div>
-                </div>
-            </div>
-        }
+        </div>
 
         <div class="device-name">
             <div class="header-template">
@@ -48,7 +44,15 @@
 
             <div class="publish-target">
                 <div class="header-template">
-                    <span>@(targetInfo.Connection.Name)</span>
+                    <span>
+                        @(targetInfo.Connection.Name)
+                        @* Filled by wwwroot/js/count-up.js, which counts it up to the new value rather than
+                           swapping the number - a bulk change can move it by hundreds, and a number that simply
+                           jumps is easy to miss. *@
+                        <span class="active-count"
+                              data-counts="@(_activeCounts.GetValueOrDefault(targetInfo.Connection.Id))"
+                              data-count-format="@Localization.DataCollectionWizardPage.ActiveDatapointCount"></span>
+                    </span>
 
                     <div class="publish-target">
                         <span>
@@ -86,34 +90,49 @@
     @* --- BODY (virtualized) --- *@
     <div class="grid-body">
         <Virtualize @ref="_virtualizeRef"
-                    TItem="IndexedItem<ManagementGridRowModel>"
+                    TItem="IndexedItem<GroupedRow<ManagementGridRowModel>>"
                     Items="@_indexedItems"
                     Context="entry"
                     ItemSize="48"
                     OverscanCount="10">
 
-            <div class="grid-row @(entry.Index % 2 == 0 ? "row-even" : "row-odd")">
-                @{
-                    var item = entry.Item;
-                }
+            @{
+                var row = entry.Item;
+            }
 
-                @if (Service.PathVisible)
-                {
-                    <div class="device-path"
-                         title="@(item.Breadcrumb)">
+            @if (row.IsHeader)
+            {
+                <div class="grid-group-row" @key="(row.IsHeader, entry.Index)">
+                    <label class="grid-group-header">
+                        <input type="checkbox"
+                               class="grid-select @(IsGroupSelectionMixed(row) ? "mixed" : string.Empty)"
+                               checked="@IsGroupSelected(row)"
+                               @onchange="@(e => ToggleGroup(row, (bool)e.Value!))" />
 
-                        <div class="device-path-container">
-                            <span>@(item.Breadcrumb)</span>
-                        </div>
-                    </div>
+                        <span class="grid-group-label">@row.GroupLabel</span>
+                        <span class="grid-group-count">· @row.GroupItems!.Count</span>
+                    </label>
+                </div>
+            }
+            else
+            {
+                var item = row.Item!;
 
-                    <div class="spacer">
-                        <!-- spacer column -->
-                    </div>
-                }
+                <div class="grid-row @(row.IsEvenDataRow ? "row-even" : "row-odd") @(Service.IsNodeSelected(item.DataNode) ? "selected" : string.Empty) @(item.DataNode.HasCaptions() ? "captioned" : string.Empty)" @key="(row.IsHeader, entry.Index)">
+
+                <div class="row-select-col">
+                    <input type="checkbox"
+                           class="grid-select"
+                           checked="@Service.IsNodeSelected(item.DataNode)"
+                           @onchange="@(e => Service.SetNodeSelected(item.DataNode, (bool)e.Value!))" />
+                </div>
 
                 <div class="device-name">
+                    @* Where the value sits, in the row itself. A grouped row only needs the part below its
+                       header - which is empty when the header already names its parent, so nothing is shown
+                       there. An ungrouped row carries its full path. *@
                     <DeviceIdentifierCell AllNodes="@AllNodes"
+                                          Context="@(row.IsGrouped ? row.GroupRelativePath : item.Breadcrumb)"
                                           ExpandedChanged="@(RefreshAsync)"
                                           Model="item"
                                           PublishTargetInfos="@PublishTargetInfos" />
@@ -123,7 +142,7 @@
                 {
                     var targetInfo = PublishTargetInfos[ci];
 
-                    <div class="publish-target"
+                    <div class="publish-target @(_highlight.Covers(item.DataNode, targetInfo.Connection.Id) ? "publish-target-changed" : string.Empty)"
                          title="@(targetInfo.Kind == Internal.Services.CloudDataflowGenerators.ConnectionKind.Moneo ? Localization.DataCollectionWizardPage.MoneoDeactivatedTooltip : string.Empty)">
 
                         <div class="publish-target-cell-wrapper @(item.DataNode.HasCaptions() ? "captioned" : string.Empty)"
@@ -157,12 +176,15 @@
                                                  RawDataNode="@rawData" />
                                 }
 
-                                if (item.DataNode is IDeviceTreeCompressableDataNode dataNode && dataNode.DataType.SupportedForLogging())
+                                if (item.DataNode is IDeviceTreeCompressableDataNode dataNode && dataNode.DataType.SupportsLogging)
                                 {
-                                    if (dataNode.DataType.SupportedForCompression())
+                                    if (dataNode.DataType.SupportsCompression)
                                     {
+                                        @* The only cell that blocks its own re-render, so the only one that needs
+                                           telling when a bulk change wrote its configuration from outside. *@
                                         <CompressableCell CompressableDataNode="@dataNode"
                                                           Configuration="@targetInfo"
+                                                          RenderEpoch="@_rowRenderEpoch"
                                                           OnDeviceTreeChanged="@(() => OnDeviceTreeChanged.InvokeAsync(masterNode))" />
                                     }
                                     else
@@ -187,7 +209,303 @@
                 <div class="spacer absorbtion">
                     <!-- space absorption column -->
                 </div>
-            </div>
+                </div>
+            }
         </Virtualize>
     </div>
+</div>
+
+<div class="bulk-bar @(Service.SelectionCount > 0 ? "show" : string.Empty)" @ref="_bulkBarRef">
+    <div class="bulk-row">
+        <span class="bulk-grip" @ref="_bulkGripRef">⠿</span>
+        <span class="bulk-count">@BulkSelectionText</span>
+
+        @if (PublishTargetInfos.Count > 1 && !_bulkPanelOpen)
+        {
+            <span class="bulk-separator"></span>
+            <span class="bulk-label">@TechnicalTerms.Cloud</span>
+
+            <select class="bulk-target" @bind="_bulkTargetIndex">
+                <option value="@PublishTargetInfos.Count">@Localization.DataCollectionWizardPage.AllClouds</option>
+                @for (var targetIndex = 0; targetIndex < PublishTargetInfos.Count; targetIndex++)
+                {
+                    <option value="@targetIndex">@PublishTargetInfos[targetIndex].Connection.Name</option>
+                }
+            </select>
+        }
+
+        <span class="bulk-separator"></span>
+
+        <div class="bulk-toggle-pair bulk-toggle-pair-in-bar">
+            <button class="primary" @onclick="@(() => ApplyBulkEnableAsync(true))">
+                @Localization.DataCollectionWizardPage.BulkActivate
+            </button>
+
+            <button @onclick="@(() => ApplyBulkEnableAsync(false))">
+                @Localization.DataCollectionWizardPage.BulkDeactivate
+            </button>
+        </div>
+
+        @if (Bulk.HasAnything)
+        {
+            <span class="bulk-separator"></span>
+
+            @* The chevron is drawn in CSS, like the one on every select in this bar, so both sit on the right and
+               look the same. *@
+            <button class="bulk-more @(_bulkPanelOpen ? "open" : string.Empty)"
+                    @onclick="@(() => _bulkPanelOpen = !_bulkPanelOpen)">
+                @Localization.DataCollectionWizardPage.BulkSettings
+            </button>
+        }
+
+        @* Pushed to the far right, away from the actions - it dismisses the bar rather than doing something to
+           the selection. *@
+        <span class="bulk-separator bulk-separator-end"></span>
+
+        <button class="bulk-close" @onclick="@(() => Service.ClearSelection())" title="@CommonVocabulary.Cancel">✕</button>
+    </div>
+
+    @* --- SETTINGS PANEL: the bar grows into it, so there is never a second floating element --- *@
+    @if (_bulkPanelOpen && Bulk.HasAnything)
+    {
+        var bulk = Bulk;
+        var processNodes = bulk.ProcessNodes;
+        var uncompressedNodes = bulk.UncompressedNodes;
+        var recordingNodes = bulk.RecordingNodes;
+        var locked = bulk.LockedOnChangeCount;
+
+        <div class="bulk-panel">
+            @if (PublishTargetInfos.Count > 1)
+            {
+                <div class="bulk-tabs">
+                    <button class="@(_bulkTargetIndex == PublishTargetInfos.Count ? "on" : string.Empty)"
+                            @onclick="@(() => _bulkTargetIndex = PublishTargetInfos.Count)">
+                        @Localization.DataCollectionWizardPage.AllClouds
+                    </button>
+                    @for (var targetIndex = 0; targetIndex < PublishTargetInfos.Count; targetIndex++)
+                    {
+                        var index = targetIndex;
+                        var info = PublishTargetInfos[index];
+                        <button class="@(_bulkTargetIndex == index ? "on" : string.Empty)"
+                                title="@info.Connection.Name"
+                                @onclick="@(() => _bulkTargetIndex = index)">
+                            @info.Connection.Name
+                        </button>
+                    }
+                </div>
+            }
+
+            @if (BulkTargetUnconfigurable)
+            {
+                <div class="bulk-note">@Localization.DataCollectionWizardPage.BulkTargetNotConfigurable</div>
+            }
+            else
+            {
+                @if (BulkOptionsReduced)
+                {
+                    <div class="bulk-note">@Localization.DataCollectionWizardPage.BulkReducedOptions</div>
+                }
+
+                <div class="bulk-groups @(BulkGroupCount > 1 ? "two-columns" : string.Empty)">
+
+                @if (processNodes.Count > 0)
+                {
+                    <div class="bulk-group">
+                        <div class="bulk-group-label">
+                            <span>@Localization.DataCollectionWizardPage.BulkGroupProcessValues</span>
+                            <span class="bulk-group-count">@BulkRowCountText(processNodes.Count)</span>
+                        </div>
+
+                        <BulkToggleField Label="@Localization.DataCollectionWizardPage.Enabled"
+                                         Tally="@bulk.ProcessEnabled"
+                                         OnChoose="@(value => ApplyBulkSettingAsync(BulkSetting.ProcessEnabled, value))" />
+
+                        <div class="bulk-field">
+                            <span class="bulk-field-label">@Localization.DataCollectionWizardPage.BulkFieldAggregationInterval</span>
+                            <select value="@(bulk.Interval?.ToString() ?? string.Empty)" @onchange="OnBulkIntervalChangedAsync">
+                                @if (bulk.Interval is null)
+                                {
+                                    <option value="">@Localization.DataCollectionWizardPage.BulkMixedValue</option>
+                                }
+                                @foreach (var interval in BulkIntervals)
+                                {
+                                    <option value="@interval">@interval.AggregationIntervalToString()</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="bulk-field">
+                            <span class="bulk-field-label">@Localization.DataCollectionWizardPage.BulkFieldAggregationFunction</span>
+                            <select value="@(bulk.Function?.ToString() ?? string.Empty)"
+                                    disabled="@(bulk.FunctionFullyLocked)"
+                                    @onchange="OnBulkFunctionChangedAsync">
+                                @if (bulk.Function is null)
+                                {
+                                    <option value="">@Localization.DataCollectionWizardPage.BulkMixedValue</option>
+                                }
+                                @foreach (var function in BulkFunctions)
+                                {
+                                    <option value="@function">@function.AggregationFunctionToString()</option>
+                                }
+                            </select>
+                        </div>
+
+                        @if (locked > 0)
+                        {
+                            <div class="bulk-note indented">
+                                @(string.Format(System.Globalization.CultureInfo.CurrentCulture, Localization.DataCollectionWizardPage.BulkOnChangeLocked, locked))
+                            </div>
+                        }
+                    </div>
+                }
+
+                @if (uncompressedNodes.Count > 0)
+                {
+                    <div class="bulk-group">
+                        <div class="bulk-group-label">
+                            <span>@Localization.DataCollectionWizardPage.BulkGroupUncompressed</span>
+                            <span class="bulk-group-count">@BulkRowCountText(uncompressedNodes.Count)</span>
+                        </div>
+
+                        <BulkToggleField Label="@Localization.DataCollectionWizardPage.Enabled"
+                                         Tally="@bulk.UncompressedEnabled"
+                                         OnChoose="@(value => ApplyBulkSettingAsync(BulkSetting.UncompressedEnabled, value))" />
+
+                        <div class="bulk-note indented">@Localization.DataCollectionWizardPage.BulkNoSettings</div>
+                    </div>
+                }
+
+                @if (recordingNodes.Count > 0 || bulk.RawDataNodes.Count > 0)
+                {
+                    @* Frequency and duration belong here rather than in a group of their own: they say what a
+                       recording captures, while the fields above say when it runs, and on a VSE both come from
+                       the same node. They are only shown when the selection actually holds nodes that have
+                       them - an IO-Link BLOB is schedulable but has no raw-data settings. *@
+                    <div class="bulk-group">
+                        <div class="bulk-group-label">
+                            <span>@Localization.DataCollectionWizardPage.BulkGroupRecordings</span>
+                            <span class="bulk-group-count">@BulkRecordingCountText(recordingNodes.Count, bulk.RawDataNodes.Count)</span>
+                        </div>
+
+                        @if (recordingNodes.Count > 0)
+                        {
+                        <BulkToggleField Label="@Localization.DataCollectionWizardPage.Enabled"
+                                         Tally="@bulk.RecordingEnabled"
+                                         OnChoose="@(value => ApplyBulkSettingAsync(BulkSetting.RecordingEnabled, value))" />
+
+                        <div class="bulk-field">
+                            <span class="bulk-field-label">@Localization.DataCollectionWizardPage.BulkFieldDays</span>
+                            <select value="@(bulk.Days?.ToString() ?? string.Empty)" @onchange="OnBulkDaysChangedAsync">
+                                @if (bulk.Days is null)
+                                {
+                                    <option value="">@Localization.DataCollectionWizardPage.BulkMixedValue</option>
+                                }
+                                @foreach (var days in Enum.GetValues<DaysOfWeek>())
+                                {
+                                    <option value="@days">@days.DaysOfWeekToString()</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="bulk-field">
+                            <span class="bulk-field-label">@Localization.DataCollectionWizardPage.BulkFieldTimesADay</span>
+                            <select value="@(bulk.TimesADay?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty)"
+                                    @onchange="OnBulkTimesADayChangedAsync">
+                                @if (bulk.TimesADay is null)
+                                {
+                                    <option value="">@Localization.DataCollectionWizardPage.BulkMixedValue</option>
+                                }
+                                @foreach (var times in BulkTimesADay)
+                                {
+                                    <option value="@times">@($"{times}x")</option>
+                                }
+                            </select>
+                        </div>
+                        }
+
+                        @if (bulk.RawDataNodes.Count > 0)
+                        {
+                        <div class="bulk-field">
+                            <span class="bulk-field-label">@Localization.DataCollectionWizardPage.BulkFieldFrequency</span>
+                            <select value="@(bulk.RawDataFrequency?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty)"
+                                    @onchange="@(args => OnBulkNumberChangedAsync(BulkSetting.RawDataFrequency, args))">
+                                @if (bulk.RawDataFrequency is null)
+                                {
+                                    <option value="">@Localization.DataCollectionWizardPage.BulkMixedValue</option>
+                                }
+                                @foreach (var frequency in RawDataOptions.Frequencies)
+                                {
+                                    <option value="@frequency">@RawDataOptions.FrequencyToString(frequency)</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="bulk-field">
+                            <span class="bulk-field-label">@Localization.DataCollectionWizardPage.BulkFieldDuration</span>
+                            <select value="@(bulk.RawDataDuration?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty)"
+                                    @onchange="@(args => OnBulkNumberChangedAsync(BulkSetting.RawDataDuration, args))">
+                                @if (bulk.RawDataDuration is null)
+                                {
+                                    <option value="">@Localization.DataCollectionWizardPage.BulkMixedValue</option>
+                                }
+                                @foreach (var duration in RawDataOptions.Durations)
+                                {
+                                    <option value="@duration">@RawDataOptions.DurationToString(duration)</option>
+                                }
+                            </select>
+                        </div>
+                        }
+                    </div>
+                }
+
+                @if (bulk.TriggerNodes.Count > 0)
+                {
+                    <div class="bulk-group">
+                        <div class="bulk-group-label">
+                            <span>@Localization.DataCollectionWizardPage.BulkGroupTriggers</span>
+                            <span class="bulk-group-count">@($"{BulkRowCountText(bulk.TriggerNodes.Count)} · {bulk.TriggerConfigurationCount}")</span>
+                        </div>
+
+                        <BulkToggleField Label="@Localization.DataCollectionWizardPage.Enabled"
+                                         Tally="@bulk.TriggerEnabled"
+                                         OnChoose="@(value => ApplyBulkSettingAsync(BulkSetting.TriggerEnabled, value))" />
+
+                        <BulkToggleField Label="@Localization.DataCollectionWizardPage.Damage"
+                                         Tally="@bulk.TriggerOnDamage"
+                                         OnChoose="@(value => ApplyBulkSettingAsync(BulkSetting.TriggerOnDamage, value))" />
+
+                        <BulkToggleField Label="@CommonVocabulary.Warning"
+                                         Tally="@bulk.TriggerOnWarning"
+                                         OnChoose="@(value => ApplyBulkSettingAsync(BulkSetting.TriggerOnWarning, value))" />
+
+                        <div class="bulk-field">
+                            <span class="bulk-field-label">@Localization.DataCollectionWizardPage.BulkFieldDelay</span>
+                            <select value="@(bulk.TriggerDelay?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty)"
+                                    @onchange="@(args => OnBulkNumberChangedAsync(BulkSetting.TriggerDelay, args))">
+                                @if (bulk.TriggerDelay is null)
+                                {
+                                    <option value="">@Localization.DataCollectionWizardPage.BulkMixedValue</option>
+                                }
+                                @foreach (var hours in DelayHours)
+                                {
+                                    <option value="@hours">@($"{hours} h")</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                }
+
+                </div>
+
+                @* Set apart from the settings above: this one discards them rather than writing one. *@
+                <div class="bulk-reset">
+                    <button class="bulk-button ghost" @onclick="@ApplyBulkResetAsync">
+                        @Localization.DataCollectionWizardPage.BulkReset
+                    </button>
+
+                    <span class="bulk-reset-note">@Localization.DataCollectionWizardPage.BulkResetHint</span>
+                </div>
+            }
+        </div>
+    }
 </div>

@@ -6,8 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sdk.Connections.Events;
 using Sdk.Messaging;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.DeviceTree.Contracts;
+using ViciOne.DeviceTree.Contracts.Extensions;
 
 namespace DataCollectionWizard.Backend.Services;
 
@@ -56,7 +56,7 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
             }
             catch (Exception ex)
             {
-                LogErrorAfterConnectionChange(_logger, ex.GetType(), ex.Message, ex.StackTrace);
+                LogErrorAfterConnectionChange(_logger, ex);
             }
             finally
             {
@@ -155,7 +155,4 @@ public sealed partial class ConnectionChangedProcessor : IConnectionChangedProce
                || hasRelevantEventTriggerDataNodes
                || hasRelevantSchedulableDataNodes;
     }
-
-    [LoggerMessage(LogLevel.Warning, "An error occurred after connection change queue elapsed: {exType}, {message} {stackTrace}")]
-    public static partial void LogErrorAfterConnectionChange(ILogger logger, Type exType, string message, string? stackTrace);
 }

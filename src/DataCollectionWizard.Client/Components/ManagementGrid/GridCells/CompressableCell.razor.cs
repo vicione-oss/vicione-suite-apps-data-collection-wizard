@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using DataCollectionWizard.Client.Components.ManagementGrid.Models;
 using DataCollectionWizard.Client.Components.ManagementGrid.Services;
 using DataCollectionWizard.Client.Extensions;
 using DataCollectionWizard.Client.Models;
@@ -6,54 +7,36 @@ using DataCollectionWizard.Internal.Contracts;
 using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using Microsoft.AspNetCore.Components;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Client.Components.ManagementGrid.GridCells;
 
 public sealed partial class CompressableCell : ComponentBase
 {
-    private static readonly ComboBoxOption<PoolingGrid>[] s_poolingGridsAnna =
-    [
-        new() { Text = PoolingGrid.OnChange.PoolingGridToString(), Value = PoolingGrid.OnChange, },
-        new() { Text = PoolingGrid.SecondsOne.PoolingGridToString(), Value = PoolingGrid.SecondsOne, },
-        new() { Text = PoolingGrid.SecondsFive.PoolingGridToString(), Value = PoolingGrid.SecondsFive, },
-        new() { Text = PoolingGrid.SecondsTen.PoolingGridToString(), Value = PoolingGrid.SecondsTen, },
-        new() { Text = PoolingGrid.SecondsThirty.PoolingGridToString(), Value = PoolingGrid.SecondsThirty, },
-        new() { Text = PoolingGrid.MinutesOne.PoolingGridToString(), Value = PoolingGrid.MinutesOne, },
-        new() { Text = PoolingGrid.MinutesTwo.PoolingGridToString(), Value = PoolingGrid.MinutesTwo, },
-        new() { Text = PoolingGrid.MinutesFive.PoolingGridToString(), Value = PoolingGrid.MinutesFive, },
-        new() { Text = PoolingGrid.MinutesTen.PoolingGridToString(), Value = PoolingGrid.MinutesTen, },
-        new() { Text = PoolingGrid.MinutesThirty.PoolingGridToString(), Value = PoolingGrid.MinutesThirty, },
-        new() { Text = PoolingGrid.HoursOne.PoolingGridToString(), Value = PoolingGrid.HoursOne, },
-    ];
-    private static readonly ComboBoxOption<PoolingGrid>[] s_poolingGridsMoneo =
-    [
-        new() { Text = PoolingGrid.SecondsOne.PoolingGridToString(), Value = PoolingGrid.SecondsOne, },
-        new() { Text = PoolingGrid.SecondsTen.PoolingGridToString(), Value = PoolingGrid.SecondsTen, },
-        new() { Text = PoolingGrid.MinutesOne.PoolingGridToString(), Value = PoolingGrid.MinutesOne, },
-    ];
-    private static readonly ComboBoxOption<PoolingMode>[] s_poolingModesAnna =
-    [
-        new() { Text = PoolingMode.MinMaxAvg.PoolingModeToString(), Value = PoolingMode.MinMaxAvg, },
-        new() { Text = PoolingMode.Avg.PoolingModeToString(), Value = PoolingMode.Avg, },
-        new() { Text = PoolingMode.Min.PoolingModeToString(), Value = PoolingMode.Min, },
-        new() { Text = PoolingMode.Max.PoolingModeToString(), Value = PoolingMode.Max, },
-    ];
-    private static readonly ComboBoxOption<PoolingMode>[] s_poolingModesMoneo =
-    [
-        new() { Text = PoolingMode.Last.PoolingModeToString(), Value = PoolingMode.Last, },
-        new() { Text = PoolingMode.Avg.PoolingModeToString(), Value = PoolingMode.Avg, },
-        new() { Text = PoolingMode.Min.PoolingModeToString(), Value = PoolingMode.Min, },
-        new() { Text = PoolingMode.Max.PoolingModeToString(), Value = PoolingMode.Max, },
-    ];
-    private static readonly Expression<Func<ComboBoxOption<PoolingGrid>, string>> s_poolingGridTextSelector = e => e.Text;
-    private static readonly Expression<Func<ComboBoxOption<PoolingGrid>, PoolingGrid>> s_poolingGridValueSelector = e => e.Value;
-    private static readonly Expression<Func<ComboBoxOption<PoolingMode>, string>> s_poolingModeTextSelector = e => e.Text;
-    private static readonly Expression<Func<ComboBoxOption<PoolingMode>, PoolingMode>> s_poolingModeValueSelector = e => e.Value;
+    // Which options exist per connection kind lives in AggregationOptions, shared with the bulk panel; this only
+    // wraps them for the ComboBox.
+    private static readonly Dictionary<ConnectionKind, ComboBoxOption<AggregationInterval>[]> s_aggregationIntervals =
+        Enum.GetValues<ConnectionKind>().ToDictionary(
+            kind => kind,
+            kind => AggregationOptions.IntervalsFor(kind)
+                .Select(interval => new ComboBoxOption<AggregationInterval> { Text = interval.AggregationIntervalToString(), Value = interval, })
+                .ToArray());
+
+    private static readonly Dictionary<ConnectionKind, ComboBoxOption<AggregationFunction>[]> s_aggregationFunctions =
+        Enum.GetValues<ConnectionKind>().ToDictionary(
+            kind => kind,
+            kind => AggregationOptions.FunctionsFor(kind)
+                .Select(function => new ComboBoxOption<AggregationFunction> { Text = function.AggregationFunctionToString(), Value = function, })
+                .ToArray());
+    private static readonly Expression<Func<ComboBoxOption<AggregationInterval>, string>> s_aggregationIntervalTextSelector = e => e.Text;
+    private static readonly Expression<Func<ComboBoxOption<AggregationInterval>, AggregationInterval>> s_aggregationIntervalValueSelector = e => e.Value;
+    private static readonly Expression<Func<ComboBoxOption<AggregationFunction>, string>> s_aggregationFunctionTextSelector = e => e.Text;
+    private static readonly Expression<Func<ComboBoxOption<AggregationFunction>, AggregationFunction>> s_aggregationFunctionValueSelector = e => e.Value;
     private CompressorConfiguration? _cachedConfig;
     private bool _shouldRender = true;
     private IDeviceTreeCompressableDataNode? _previousDataNode;
     private PublishTargetInfo? _previousConfiguration;
+    private int _previousRenderEpoch;
 
     [CascadingParameter]
     private ManagementGridService Service { get; set; } = default!;
@@ -67,34 +50,38 @@ public sealed partial class CompressableCell : ComponentBase
     [Parameter]
     public EventCallback OnDeviceTreeChanged { get; set; }
 
+    /// <summary>
+    /// Bumped by the grid whenever something outside this cell wrote its configuration.
+    /// </summary>
+    /// <remarks>
+    /// The cell renders once per parameter change and then blocks, and a bulk change writes the configuration
+    /// object in place - so nothing it can see has changed and it would keep showing the old toggle and combo.
+    /// A changing number is enough to let one render through. The grid used to re-key every row for this, which
+    /// tore down and rebuilt every visible row's components for the sake of the few fields that actually moved.
+    /// </remarks>
+    [Parameter]
+    public int RenderEpoch { get; set; }
+
     private CompressorConfiguration Config
         => _cachedConfig ??= CompressableDataNode.CompressorConfigurations
             .Single(cc => cc.DataGroupIdentifier == Configuration.Connection.Id);
 
-    private ComboBoxOption<PoolingGrid>[] PoolingGrids
-        => Configuration.Kind switch
-        {
-            ConnectionKind.Anna => s_poolingGridsAnna,
-            ConnectionKind.Moneo => s_poolingGridsMoneo,
-            _ => [],
-        };
+    private ComboBoxOption<AggregationInterval>[] AggregationIntervals
+        => s_aggregationIntervals.TryGetValue(Configuration.Kind, out var intervals) ? intervals : [];
 
-    private ComboBoxOption<PoolingMode>[] PoolingModes
-        => Configuration.Kind switch
-        {
-            ConnectionKind.Anna => s_poolingModesAnna,
-            ConnectionKind.Moneo => s_poolingModesMoneo,
-            _ => [],
-        };
+    private ComboBoxOption<AggregationFunction>[] AggregationFunctions
+        => s_aggregationFunctions.TryGetValue(Configuration.Kind, out var functions) ? functions : [];
 
     protected override void OnParametersSet()
     {
-        if (ReferenceEquals(_previousDataNode, CompressableDataNode) &&
+        if (_previousRenderEpoch == RenderEpoch &&
+            ReferenceEquals(_previousDataNode, CompressableDataNode) &&
             ReferenceEquals(_previousConfiguration, Configuration))
         {
             return;
         }
 
+        _previousRenderEpoch = RenderEpoch;
         _previousDataNode = CompressableDataNode;
         _previousConfiguration = Configuration;
         _cachedConfig = null;
@@ -110,22 +97,22 @@ public sealed partial class CompressableCell : ComponentBase
         return true;
     }
 
-    private PoolingGrid GetSelectedPoolingGrid()
-        => Config.CompressionTime.ToPoolingGrid();
+    private AggregationInterval GetSelectedAggregationInterval()
+        => Config.CompressionTime.ToAggregationInterval();
 
-    private PoolingMode GetSelectedPoolingMode()
-        => Config.PoolingMode;
+    private AggregationFunction GetSelectedAggregationFunction()
+        => Config.Aggregation;
 
     public bool IsOnChange()
         => Config.CompressionTime == -1;
 
-    private bool IsPoolingEnabled()
+    private bool IsCompressionEnabled()
         => Config.Enabled;
 
     private bool IsSupportedConnection()
         => Configuration?.IsSupportedForConfiguration(CompressableDataNode) ?? false;
 
-    private void PoolingEnabledChanged(bool isEnabled)
+    private void CompressionEnabledChanged(bool isEnabled)
     {
         Config.Enabled = isEnabled;
         _shouldRender = true;
@@ -134,19 +121,21 @@ public sealed partial class CompressableCell : ComponentBase
         OnDeviceTreeChanged.InvokeAsync();
     }
 
-    private void PoolingGridChanged(PoolingGrid poolingGrid)
+    private void AggregationIntervalChanged(AggregationInterval aggregationInterval)
     {
-        Config.CompressionTime = (int)poolingGrid;
+        Config.CompressionTime = (int)aggregationInterval;
         _shouldRender = true;
 
+        Service.InvokeConfigChanged();
         OnDeviceTreeChanged.InvokeAsync();
     }
 
-    private void PoolingModeChanged(PoolingMode poolingMode)
+    private void AggregationFunctionChanged(AggregationFunction aggregationFunction)
     {
-        Config.PoolingMode = poolingMode;
+        Config.Aggregation = aggregationFunction;
         _shouldRender = true;
 
+        Service.InvokeConfigChanged();
         OnDeviceTreeChanged.InvokeAsync();
     }
 }

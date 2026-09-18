@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using DataCollectionWizard.Public.Extensions;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Public;
 
@@ -51,7 +51,7 @@ public static class MoneoUtils
     }
 
     public static string GetFallbackIdentifier(IDeviceTreeMasterNode deviceTreeMaster)
-        => GetFallbackIdentifier(deviceTreeMaster.GetMacAddress(), deviceTreeMaster.ManufacturerId, deviceTreeMaster.SerialNumber);
+        => GetFallbackIdentifier(deviceTreeMaster.GetMacAddress(), null, deviceTreeMaster.SerialNumber);
 
     public static string GetFallbackIdentifier(string macAddress, string? manufacturerId, string? serialNumber)
     {

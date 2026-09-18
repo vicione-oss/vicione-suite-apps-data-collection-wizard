@@ -16,9 +16,10 @@ public static class FunctionBlocks
     public static DataFormatter DataFormatter { get; } = new();
     public static ErrorStateGuard ErrorStateGuard { get; } = new();
     public static IoLinkBooleanSubscriber IoLinkBooleanSubscriber { get; } = new();
-    public static IoLinkDeviceTreeSubscriber IoLinkDeviceTreeSubscriber { get; } = new();
+    public static IoTCoreConfiguration IoTCoreConfiguration { get; } = new();
     public static IoLinkDoubleSubscriber IoLinkDoubleSubscriber { get; } = new();
-    public static IoLinkMasterFinder IoLinkMasterFinder { get; } = new();
+    public static IoLinkMasterDiagnosticSubscriber IoLinkMasterDiagnosticSubscriber { get; } = new();
+    public static IoLinkMasterScanner IoLinkMasterScanner { get; } = new();
     public static IoLinkStringSubscriber IoLinkStringSubscriber { get; } = new();
     public static LongToDouble LongToDouble { get; } = new();
     public static MqttDataPort MqttDataPort { get; } = new();
@@ -30,5 +31,6 @@ public static class FunctionBlocks
     public static VseInputSubscriber VseInputSubscriber { get; } = new();
     public static VseObjectSubscriber VseObjectSubscriber { get; } = new();
     public static VseRawDataSubscriber VseRawDataSubscriber { get; } = new();
+    public static VseScanner VseScanner { get; } = new();
     public static VseVariantSubscriber VseVariantSubscriber { get; } = new();
 }

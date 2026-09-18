@@ -55,11 +55,12 @@ public sealed partial class ClusterService(
 
         try
         {
+            var compressedCluster = await ClusterSerializer.CompressAsync(cluster, cancellationToken: ct);
             var command = new DeployCluster(cluster.Id, null)
             {
                 CorrelationId = correlationId,
                 DeletePreviousVersionOnSuccess = true,
-                Options = new DeployClusterOptions(ClusterSerializer.Compress(cluster))
+                Options = new DeployClusterOptions(compressedCluster)
             };
             var taskCompletionSource = new TaskCompletionSource<ErrorInfo?>();
             state.TaskCompletionSourceMap[correlationId] = taskCompletionSource;
@@ -80,7 +81,7 @@ public sealed partial class ClusterService(
         {
             DiscardUpdateRequest(ticketId);
             await mediator.Publish(new DeviceTreeApplicationEvent(new ErrorInfo(-1, ex.Message)) { CorrelationId = correlationId }, ct);
-            LogApplicationFailedError(logger, ex.Message, ex.StackTrace ?? string.Empty);
+            LogApplicationFailedError(logger, ex);
         }
     }
 
@@ -121,16 +122,4 @@ public sealed partial class ClusterService(
         => (await QueryClusterInfosAsync())
         .GroupBy(n => n.Id, n => n.Version)
         .ToDictionary(g => g.Key, g => g.ToList());
-
-    [LoggerMessage(LogLevel.Error, "Failed to apply DeviceTree: {Message} {StackTrace}")]
-    public static partial void LogApplicationFailedError(ILogger logger, string message, string stackTrace);
-
-    [LoggerMessage(LogLevel.Debug, "Discarding update request for ticket {TicketId}")]
-    partial void LogDiscardingUpdateRequestForTicket(Guid ticketId);
-
-    [LoggerMessage(LogLevel.Debug, "Cluster service issued ticket: {TicketId}")]
-    partial void LogIssuedTicket(Guid ticketId);
-
-    [LoggerMessage(LogLevel.Debug, "Ticket timer elapsed")]
-    partial void LogTicketTimerElapsed();
 }

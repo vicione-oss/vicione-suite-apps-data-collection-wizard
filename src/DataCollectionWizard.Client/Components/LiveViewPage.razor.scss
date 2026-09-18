@@ -31,7 +31,11 @@
         }
 
         .content__top {
-            overflow-x: auto;
+            // Positioning context for the session line under the title, and it must stay visible: the line is
+            // an absolute overlay that reaches past this row, and overflow-x:auto would turn that into a
+            // scrollbar here. Same reason the configuration page keeps it visible for its datapoint meter.
+            position: relative;
+            overflow: visible;
         }
     }
 }

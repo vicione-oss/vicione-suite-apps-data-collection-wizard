@@ -5,7 +5,6 @@ using DataCollectionWizard.Backend.Services;
 using DataCollectionWizard.Public.Requests;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
-using NSubstitute;
 using Sdk.Testing.Backend;
 
 namespace DataCollectionWizard.Backend.Tests.Consumers;

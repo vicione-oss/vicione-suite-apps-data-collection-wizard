@@ -1,5 +1,8 @@
-﻿using DataCollectionWizard.Client.Components.LiveGrid.Services;
+﻿using DataCollectionWizard.Client.Components.LiveGrid.Models;
+using DataCollectionWizard.Client.Components.LiveGrid.Services;
+using DataCollectionWizard.Client.Models;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
 
 namespace DataCollectionWizard.Client.Components.LiveGrid;
@@ -9,9 +12,14 @@ public sealed partial class LiveViewGrid : ComponentBase, IDisposable, IAsyncDis
     private IJSObjectReference? _jsModule;
     private ElementReference _mainContainerRef = default!;
     private bool _resetScrollPositionAfterNextRender;
+    private Virtualize<IndexedItem<GroupedRow<LiveGridRowModel>>>? _virtualizeRef;
+    private List<IndexedItem<GroupedRow<LiveGridRowModel>>> _indexedItems = [];
+    private IEnumerable<LiveGridRowModel>? _groupedSource;
 
     [CascadingParameter]
     private LiveGridService Service { get; set; } = default!;
+
+    private static string GridColumnsStyle => "max-content 150px 80px 200px 1fr";
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
@@ -61,14 +69,45 @@ public sealed partial class LiveViewGrid : ComponentBase, IDisposable, IAsyncDis
     {
         Service.FilteredGridItemsChanged += OnFilteredGridItemsChanged;
         Service.RefreshRequested += RefreshAsync;
+        RebuildIndexedItems();
     }
 
     private void OnFilteredGridItemsChanged()
     {
-        _resetScrollPositionAfterNextRender = true;
+        RebuildIndexedItems();
         RefreshAsync();
     }
 
+    // Grouped by the same rules as the configuration grid, so a value appears under the same header in both.
+    private void RebuildIndexedItems()
+    {
+        // RefreshRequested fires twice a second with new live values, but the list itself rarely changes -
+        // regrouping only pays off when it was actually replaced.
+        if (ReferenceEquals(_groupedSource, Service.FilteredGridItems))
+            return;
+
+        _groupedSource = Service.FilteredGridItems;
+
+        var rows = GridGrouping.Build([.. Service.FilteredGridItems], item => item.Breadcrumb);
+
+        _indexedItems = [.. rows.Select((row, index) => new IndexedItem<GroupedRow<LiveGridRowModel>>(index, row))];
+
+        // Different values are showing now, so the offset scrolled to in the previous ones means nothing. This
+        // belongs here rather than in the changed-handler for the same reason the rebuild does: browsing a node
+        // replaces the list without raising that event, so the handler never sees it.
+        _resetScrollPositionAfterNextRender = true;
+    }
+
     private async void RefreshAsync()
-        => await InvokeAsync(StateHasChanged);
+        => await InvokeAsync(async () =>
+        {
+            // LiveViewPage installs a new item list with notify:false and only then calls RefreshImmediate, so
+            // FilteredGridItemsChanged never fires for a browse. Without this the grid would keep showing the
+            // rows from before - or, on the first browse, none at all.
+            RebuildIndexedItems();
+
+            StateHasChanged();
+            if (_virtualizeRef is not null)
+                await _virtualizeRef.RefreshDataAsync();
+        });
 }

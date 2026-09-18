@@ -1,6 +1,6 @@
-﻿@using DataCollectionWizard.Client.Extensions
-@using ViciOne.Driver.IoTCore.Contracts.DeviceTree
-@using DataCollectionWizard.Client.Components.Localization
+﻿@using DataCollectionWizard.Client.Components.Localization
+@using DataCollectionWizard.Client.Extensions
+@using ViciOne.DeviceTree.Contracts
 
 <div class="device-identifier-cell">
     <div class="device-name-container"
@@ -15,6 +15,13 @@
             @(Model.DataNode.Name)
         </span>
     </div>
+
+    @* Where this value sits, for rows the path column is not telling. Without it two values of the same name -
+       "OUT1" on two ports, say - are indistinguishable once the path column is hidden. *@
+    @if (!string.IsNullOrWhiteSpace(Context))
+    {
+        <div class="device-context" title="@Context">@Context</div>
+    }
 
     @if (PublishTargetInfos.Count > 0 && Model.DataNode.HasCaptions())
     {
@@ -42,7 +49,7 @@
                     {
                         var canGetName = AllNodes.TryGetValue(trigger.ReferenceNodeId, out var node);
                         var nodeNew = node?.IsNew ?? false;
-                        var nodeOffline = node?.IsOffline ?? false;
+                        var nodeOffline = node is not null && node.Status != ConnectionStatus.Online;
 
                         <TooltipContainer>
                             <ChildContent>

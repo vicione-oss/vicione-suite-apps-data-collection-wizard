@@ -1,0 +1,225 @@
+﻿@use "./../../../Styles/colours" as col;
+
+// The unsaved-changes animation reaches beyond the save button: the pulse throws a ring this far past
+// its edge, and the breath scales it up, adding roughly another 1.5px on each side of a button this
+// wide. Whatever stands next to the button has to keep clear of both, so the clearance is derived
+// from the reach instead of guessed - change the reach and the spacing follows.
+$save-ring-reach: 8px;
+$save-ring-clearance: $save-ring-reach + 4px;
+
+.header {
+    color: col.$font-dark;
+    font-size: 28px;
+    font-weight: lighter;
+    line-height: 1em;
+    margin-left: 8px;
+    white-space: nowrap;
+}
+
+.searchbox-container {
+    min-width: 200px;
+
+    ::deep .search-box {
+        width: 100%;
+    }
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    // Fixed height (matches LiveViewToolbar) so the shared icons - notably Refresh - sit at the same vertical
+    // position in both views, independent of the save button being taller than the plain icon buttons.
+    height: 30px;
+
+    // Save state text ("Saved" / "Not saved") shown next to the save button.
+    .save-state {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        // Right margin keeps the "Not saved" text out of the pulsing button's ring.
+        margin: 0 $save-ring-clearance 0 2px;
+        font-size: 12.5px;
+        white-space: nowrap;
+        color: col.$font-dark;
+        // Belt and braces: at larger text sizes the ring can still creep this far, and when it does the
+        // label has to stay readable rather than being washed over by it.
+        position: relative;
+        z-index: 1;
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: col.$add;
+        }
+
+        &.dirty .dot {
+            background: col.$accent;
+            box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.16);
+        }
+    }
+
+    // Labeled save button. Subdued/disabled while saved; accent + pulsing while there are unsaved changes.
+    .save-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        height: 30px;
+        width: auto;
+        padding: 0 13px;
+        border: 1px solid col.$border;
+        border-radius: 5px;
+        background: transparent;
+        color: col.$font-dark;
+        font-size: 13px;
+
+        ::deep .monochrome-icon::before {
+            background-color: col.$font-dark;
+        }
+
+        ::deep svg path {
+            fill: col.$font-dark;
+        }
+
+        &:disabled {
+            color: col.$content-dark-disabled;
+
+            ::deep .monochrome-icon::before,
+            ::deep svg path {
+                background-color: col.$content-dark-disabled;
+                fill: col.$content-dark-disabled;
+            }
+
+            &:hover {
+                background: transparent;
+            }
+        }
+
+        &:not(:disabled):hover {
+            background: col.$background-hover;
+        }
+
+        &.dirty {
+            background: col.$accent;
+            border-color: col.$accent;
+            color: #1c1200;
+            animation: save-pulse 1.5s ease-in-out infinite, save-breath 1.5s ease-in-out infinite;
+
+            ::deep .monochrome-icon::before {
+                background-color: #1c1200;
+            }
+
+            ::deep svg path {
+                fill: #1c1200;
+            }
+
+            &:hover {
+                background: #ffa724;
+            }
+        }
+    }
+
+    > button {
+        display: grid;
+        place-items: center;
+        border-radius: 4px;
+        height: 28px;
+        width: 28px;
+        padding: 0;
+
+        &:disabled {
+            ::deep .monochrome-icon::before {
+                background-color: col.$content-dark-disabled;
+            }
+
+            &:hover {
+                background-color: transparent;
+            }
+        }
+
+        &:hover {
+            background-color: col.$background-hover;
+        }
+
+        &.active {
+            ::deep .monochrome-icon::before {
+                background-color: col.$accent;
+            }
+        }
+
+        &.debug-button {
+            display: none;
+        }
+
+        ::deep svg path {
+            fill: col.$font;
+        }
+    }
+
+    > select {
+        background-color: col.$content-dark;
+        border-color: col.$border;
+        border-style: solid;
+        border-width: 1px;
+        color: col.$font;
+        width: 100px;
+
+        &:focus {
+            border-color: col.$accent;
+            outline: unset;
+        }
+    }
+
+    > span.separator {
+        background-color: col.$border;
+        margin: 0px 8px;
+        width: 1px;
+        height: 20px;
+        flex-shrink: 0;
+    }
+}
+
+.toolbar-container {
+    align-items: center;
+    display: grid;
+    grid-column-gap: 8px;
+    grid-template-columns: auto 200px min-content;
+    // Title keeps its original top position (40px); only the bottom margin is tightened so the grid comes up. The
+    // remaining bottom band leaves room for the fixed datapoint meter (DataPointUsageMeter) that overlays it. Kept
+    // identical in LiveViewToolbar so both views line up.
+    margin: 40px 40px 24px 40px;
+}
+
+@keyframes save-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 153, 0, 0.65);
+    }
+
+    65% {
+        box-shadow: 0 0 0 $save-ring-reach rgba(255, 153, 0, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 153, 0, 0);
+    }
+}
+
+// The button grows from its centre, so half of every percent goes towards the label. Kept small enough
+// that the button's own caption stays crisp while it breathes.
+@keyframes save-breath {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.03);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toolbar .save-button.dirty {
+        animation: none;
+    }
+}

@@ -97,7 +97,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Latest Cluster is not Active.
+        ///   Looks up a localized string similar to Latest cluster is not active.
         /// </summary>
         internal static string LatestClusterNotRunningDialogHeader {
             get {
@@ -106,7 +106,7 @@ namespace DataCollectionWizard.Client.Components.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Live process data may not be able to be displayed. If that is the case, an error may have occured during the deployment. Please use the Cluster Manager to check if the latest cluster can be started. If not, contact an administrator..
+        ///   Looks up a localized string similar to Live process data may not be displayed. If that is the case, an error may have occurred during the deployment. Please use the Cluster Manager to check if the latest cluster can be started. If not, contact an administrator..
         /// </summary>
         internal static string LatestClusterNotRunningDialogText {
             get {
@@ -125,12 +125,6 @@ namespace DataCollectionWizard.Client.Components.Localization {
         
         /// <summary>
         ///   Looks up a localized string similar to Display path.
-        /// </summary>
-        internal static string PathVisible {
-            get {
-                return ResourceManager.GetString("PathVisible", resourceCulture);
-            }
-        }
         
         /// <summary>
         ///   Looks up a localized string similar to Process value.
@@ -174,6 +168,15 @@ namespace DataCollectionWizard.Client.Components.Localization {
         internal static string Unit {
             get {
                 return ResourceManager.GetString("Unit", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to watching for {0} · {1:N0} values · avg {2:N1}/s · now {3:N1}/s.
+        /// </summary>
+        internal static string SessionInfo {
+            get {
+                return ResourceManager.GetString("SessionInfo", resourceCulture);
             }
         }
     }

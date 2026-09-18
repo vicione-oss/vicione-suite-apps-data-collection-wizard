@@ -121,7 +121,7 @@
     <value>Knoten konfigurieren</value>
   </data>
   <data name="EditAlias" xml:space="preserve">
-    <value>Alias editieren</value>
+    <value>Alias bearbeiten</value>
   </data>
   <data name="DeleteNode" xml:space="preserve">
     <value>Knoten löschen</value>

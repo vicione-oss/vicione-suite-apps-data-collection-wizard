@@ -2,8 +2,12 @@
 using System.Net;
 using System.Net.Sockets;
 using ClusterManagement.Public.Services;
+using DataCollectionWizard.Client.Components.ManagementGrid;
+using DataCollectionWizard.Client.Components.ManagementGrid.GridCells;
 using DataCollectionWizard.Client.Components.ManagementGrid.Models;
 using DataCollectionWizard.Client.Components.ManagementGrid.Services;
+using DataCollectionWizard.Client.Components.TreeNodeTemplates;
+using DataCollectionWizard.Client.Extensions;
 using DataCollectionWizard.Client.Models.DeviceTree;
 using DataCollectionWizard.Client.Services;
 using DataCollectionWizard.Internal.Commands;
@@ -15,16 +19,14 @@ using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using DataCollectionWizard.Public.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.JSInterop;
 using Sdk.Client.Infrastructure;
 using Sdk.Client.Modules;
 using Sdk.Client.Services;
 using Sdk.Connections.Contracts;
 using Sdk.MessageBanner.Contracts;
-using ViciOne.Driver.IoTCore.Contracts.Constants;
-using ViciOne.Driver.IoTCore.Contracts.Dcp;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.DeviceTree.Contracts;
+using ViciOne.DeviceTree.Contracts.Extensions;
+using ViciOne.DeviceTree.Contracts.Scanning;
 using ViciOne.Ui.Blazor.Components.Dialog.Components;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Factories;
 using ViciOne.Ui.Blazor.Components.LoadingSpinner.Models;
@@ -35,11 +37,16 @@ namespace DataCollectionWizard.Client.Components;
 
 public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollectionWizardClientModule>, IEventConsumer<DeviceTreeApplicationEvent>
 {
-    private const string IoLinkMasterDialogHeightNormal = "350px";
-    private const string IoLinkMasterDialogHeightList = "600px";
+    private const string VseDialogHeightManual = "405px";
+    private const string IoLinkMasterDialogHeightManual = "565px";
+    private const string ScanDialogHeight = "680px";
     private const int MaxRecommendedDataPoints = 100;
-    private const double MaxRecommendedMessageDisplayBoundary = 0.6;
 
+
+    /// <summary>
+    /// Longest alias the dialog accepts.
+    /// </summary>
+    private const int AliasMaximumLength = 64;
     private DeviceTreeAdapter _adapter = default!;
     private Dictionary<string, IDeviceTreeBase> _allNodes = [];
     private readonly List<IDeviceTreeMasterNode> _changedMasterDevices = [];
@@ -81,7 +88,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         new()
         {
             DisplayDuration = 3,
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceTreeScan,
         },
         TimedMessageFactory.CreateGap(1),
         new()
@@ -111,7 +118,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         new()
         {
             DisplayDuration = 3,
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceTreeScan,
         },
         TimedMessageFactory.CreateGap(1),
         new()
@@ -119,12 +126,12 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             Message = Localization.DataCollectionWizardPage.SpinnerMessageWaitingForScanResult,
         },
     ];
-    private readonly TimedMessage[] _loadingSpinnerMessagesScanIoLink =
+    private readonly TimedMessage[] _loadingSpinnerMessagesNetworkScan =
     [
         new()
         {
             DisplayDuration = 3,
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringIoLinkScan,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
         },
         TimedMessageFactory.CreateGap(1),
         new()
@@ -142,7 +149,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         new()
         {
             DisplayDuration = 3,
-            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceScan,
+            Message = Localization.DataCollectionWizardPage.SpinnerMessageTriggeringDeviceTreeScan,
         },
         TimedMessageFactory.CreateGap(1),
         new()
@@ -162,12 +169,31 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private Dialog? _refDataInvalidDialog;
     private Dialog? _refDeleteDialog;
     private Dialog? _refDeleteAllOfflineDialog;
+    private bool _showUnsavedChanges;
+    private TaskCompletionSource<UnsavedLeaveChoice>? _unsavedLeaveChoice;
 
     private List<DcpDevice>? _scannedIoLinkDevices;
     private readonly List<string> _selectedIoLinkDevices = [];
+    // Credentials entered for IO-Link masters that require authentication, keyed by the device address string as
+    // held in _selectedIoLinkDevices. Applied to each created DeviceTreeIoLinkMaster on confirm.
+    private readonly Dictionary<string, (string User, string Password)> _ioLinkCredentials = new(StringComparer.OrdinalIgnoreCase);
+    private string _newIoLinkMasterUser = string.Empty;
+    private string _newIoLinkMasterPassword = string.Empty;
+    // "Same credentials for all" mode for the scan tab (only meaningful when more than one selected master requires
+    // authentication): one shared username/password applied to all of them instead of one pair per device.
+    private bool _ioLinkUseSharedCredentials;
+    private string _ioLinkSharedUser = string.Empty;
+    private string _ioLinkSharedPassword = string.Empty;
+    private bool _ioLinkShowCredentialStep;
+    private List<VseScanDevice>? _scannedVseDevices;
+    private readonly List<string> _selectedVseDevices = [];
+    private string _vseDialogHeight = VseDialogHeightManual;
+    private int _vseTabIndex;
+    private string _vseFilter = string.Empty;
+    private List<string> _scanVseErrors = [];
     private DeviceTreeRoot? _tree;
     private readonly Lock _treeLock = new();
-    private string _ioLinkMasterDialogHeight = IoLinkMasterDialogHeightNormal;
+    private string _ioLinkMasterDialogHeight = IoLinkMasterDialogHeightManual;
     private int _ioLinkMasterTabIndex;
     private CancellationTokenSource _dcwScanTokenSource = new();
     private bool _isIoLinkMasterUriValid = true;
@@ -182,13 +208,36 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private readonly ManagementGridService _service = new();
     private IDisposable? _subscriptionHandleDeviceTreeApplication;
 
+    /// <summary>
+    /// The name of the device the alias dialog is currently editing.
+    /// </summary>
+    private string AliasSubjectName => _editingNode?.Device.Name ?? string.Empty;
+
+    /// <summary>
+    /// A second line identifying that device - its family and address, as far as the node reports them.
+    /// </summary>
+    private string? AliasSubjectDetail
+        => _editingNode?.Device is IDeviceTreeMasterNode master
+            ? DeviceTooltipFormat.Join(master.DeviceFamily, DeviceTooltipFormat.Address(master.Url))
+            : null;
+
+    /// <summary>
+    /// How the node will read in the tree with the alias currently typed - the alias does not replace the
+    /// device's name but precedes it, which is not otherwise visible while typing.
+    /// </summary>
+    private string AliasTreePreviewText
+        => DeviceTreeNodeNameProvider.GetUserAliasDisplayText(_deviceAlias, AliasSubjectName);
+
+    private string AliasCharacterCountText
+        => string.Format(CultureInfo.CurrentCulture, Localization.DataCollectionWizardPage.AliasCharacterCount,
+            _deviceAlias.Length, AliasMaximumLength);
+
     protected override string PageTitle => Localization.DataCollectionWizardPage.Title;
 
     [Inject] private IConnectionService ConnectionService { get; set; } = null!;
     [Inject] private IEnumerable<ICloudFilter> CloudFilters { get; set; } = null!;
     [Inject] private IDataCollectionWizardService DataCollectionWizardService { get; set; } = null!;
     [Inject] private IResourceDownloadStateService ResourceDownloadState { get; set; } = null!;
-    [Inject] private IJSRuntime Js { get; set; } = default!;
     [Inject] private IMessageBannerService MessageBannerService { get; set; } = default!;
     [Inject] private IUiMediator Mediator { get; set; } = default!;
     [Inject] private DeviceTreeNodeIconProvider IconProvider { get; set; } = default!;
@@ -269,29 +318,17 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             }
         }
 
-        var dataPointPrecentageToRecommended = 1.0 * _currentlyEnabledDataPoints / MaxRecommendedDataPoints;
-        if (dataPointPrecentageToRecommended is >= MaxRecommendedMessageDisplayBoundary and < 1.0)
-        {
-            MessageBannerService.ShowMessageBanner(MessageType.Information, string.Format(
-                CultureInfo.InvariantCulture,
-                Localization.DataCollectionWizardPage.DataPointLimitApproaching,
-                _currentlyEnabledDataPoints,
-                MaxRecommendedDataPoints
-            ));
-        }
-        else if (dataPointPrecentageToRecommended >= 1.0)
-        {
-            MessageBannerService.ShowMessageBanner(MessageType.Warning, string.Format(
-                CultureInfo.InvariantCulture,
-                Localization.DataCollectionWizardPage.DataPointLimitReached,
-                _currentlyEnabledDataPoints,
-                MaxRecommendedDataPoints
-            ));
-        }
-        else
-        {
-            MessageBannerService.CloseMessageBanner();
-        }
+        // The count is surfaced by the passive usage meter under the title (see DataCollectionWizardToolbar), which
+        // colours itself amber/red near/over the limit - so just re-render; no more pop-up banner.
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    // How the user answered the "unsaved changes" dialog when leaving the page.
+    private enum UnsavedLeaveChoice
+    {
+        Cancel,  // stay on the page
+        Discard, // leave without saving
+        Save,    // save (then leave)
     }
 
     private async Task ConfirmLeave(LocationChangingContext context)
@@ -299,12 +336,31 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         if (!_service.DeviceTreeChanged)
             return;
 
-        var confirmed = await Js.InvokeAsync<bool>("window.confirm", Localization.DataCollectionWizardPage.UnsavedChanges);
-        if (!confirmed)
+        _unsavedLeaveChoice = new TaskCompletionSource<UnsavedLeaveChoice>();
+        _showUnsavedChanges = true;
+        StateHasChanged();
+
+        var choice = await _unsavedLeaveChoice.Task;
+        _showUnsavedChanges = false;
+        StateHasChanged();
+
+        switch (choice)
         {
-            context.PreventNavigation();
+            case UnsavedLeaveChoice.Cancel:
+                context.PreventNavigation();
+                break;
+            case UnsavedLeaveChoice.Save:
+                // Trigger the save just like the toolbar button; the deploy runs in the background and the tree is
+                // already marked unchanged, so navigation may proceed.
+                SaveButtonAsync();
+                break;
+            case UnsavedLeaveChoice.Discard:
+                break; // let the navigation proceed
         }
     }
+
+    private void ResolveUnsavedLeave(UnsavedLeaveChoice choice)
+        => _unsavedLeaveChoice?.TrySetResult(choice);
 
     private void FillPublishTargets()
     {
@@ -321,20 +377,19 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
             return new PublishTargetInfo(c, cloudFilter.ConnectionKind, cloudFilter.TreeNodesSupportedForConfiguration);
         })];
+
+        // Share the clouds with the service so the sidebar info panel can project the throughput per cloud, and
+        // recompute once now that the target list is known.
+        _service.PublishTargets = _publishTargetInfos;
+        _service.InvokeConfigChanged();
     }
 
-    private IEnumerable<DcpDevice> FilterScannedDevices(IEnumerable<DcpDevice> devices)
-        => devices.Where(d =>
-        {
-            if (string.IsNullOrWhiteSpace(_ioLinkMasterFilter))
-                return true;
-
-            return (d.Address?.ToString()?.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase) ?? false)
-                || d.DeviceName.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
-                || d.MacAddress.Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
-                || d.VendorId.ToString(CultureInfo.InvariantCulture).Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase)
-                || d.DeviceId.ToString(CultureInfo.InvariantCulture).Contains(_ioLinkMasterFilter, StringComparison.OrdinalIgnoreCase);
-        });
+    private static bool MatchesIoLinkFilter(DcpDevice device, string filter)
+        => (device.Network.Address?.ToString()?.Contains(filter, StringComparison.OrdinalIgnoreCase) ?? false)
+            || device.Identity.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)
+            || device.Network.MacAddress.Contains(filter, StringComparison.OrdinalIgnoreCase)
+            || device.Identity.VendorId.ToString(CultureInfo.InvariantCulture).Contains(filter, StringComparison.OrdinalIgnoreCase)
+            || device.Identity.DeviceId.ToString(CultureInfo.InvariantCulture).Contains(filter, StringComparison.OrdinalIgnoreCase);
 
     protected override ValueTask DisposeInternal()
     {
@@ -364,11 +419,11 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         return base.DisposeInternal();
     }
 
-    private static bool HasChangedUnits(IDeviceTreeMasterNode masterNode, Dictionary<string, string?> oldStructureUnits)
+    private static bool HasChangedUnits(IDeviceTreeMasterNode masterNode, Dictionary<string, string> oldStructureUnits)
     {
         foreach (var processData in masterNode.GetNodeAndDescendants().OfType<DeviceTreeProcessData>())
         {
-            if (oldStructureUnits.TryGetValue(processData.Id, out var oldUnit) && oldUnit != processData.StructureUnit)
+            if (oldStructureUnits.TryGetValue(processData.Id, out var oldUnit) && oldUnit != processData.Unit)
             {
                 return true;
             }
@@ -405,24 +460,97 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         {
             await ResourceDownloadState.WaitForCompletion();
             await DataCollectionWizardService.WaitForCurrentDeployment(new TimeSpan(0, 1, 0));
-            await DataCollectionWizardService.AddIoLinkScannerDataflow(_service.LogLevel);
+            await DataCollectionWizardService.AddDeviceScannerDataflow(_service.LogLevel);
             await UpdateDeviceTreeAsync(false, false);
         }
         catch (Exception ex)
         {
-            LogInitDcwError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace);
+            LogInitDcwError(Logger, ex);
             await InvokeAsync(() => MessageBannerService.ShowMessageBanner(MessageType.Warning, CommonVocabulary.Error));
         }
     }
 
     private bool IsIoLinkMasterDialogOkEnabled()
-        => _ioLinkMasterTabIndex == 0
-            ? !string.IsNullOrWhiteSpace(_newIoLinkMasterAddress) && _isIoLinkMasterUriValid && _isIoLinkMasterUriUnique
-            : _selectedIoLinkDevices.Count > 0;
+    {
+        if (_ioLinkMasterTabIndex == 0)
+            return !string.IsNullOrWhiteSpace(_newIoLinkMasterAddress);
+
+        if (_selectedIoLinkDevices.Count == 0)
+            return false;
+
+        var authAddresses = SelectedAuthRequiredAddresses();
+        // In "same credentials for all" mode one shared username covers every auth-required master; otherwise each
+        // selected auth-required master needs its own username entered.
+        return _ioLinkUseSharedCredentials && authAddresses.Count > 1
+            ? !string.IsNullOrEmpty(_ioLinkSharedUser)
+            : authAddresses.All(address => !string.IsNullOrEmpty(GetIoLinkCredentialUser(address)));
+    }
+
+    private bool IoLinkScanNeedsCredentialStep()
+        => _ioLinkMasterTabIndex == 1 && _selectedIoLinkDevices.Count > 0 && SelectedAuthRequiredAddresses().Count > 0;
+
+    private void GoToIoLinkCredentialStep() => _ioLinkShowCredentialStep = true;
+
+    private void BackToIoLinkSelection() => _ioLinkShowCredentialStep = false;
+
+    /// <summary>
+    /// The addresses of the currently selected scanned masters that reported they require authentication.
+    /// </summary>
+    private List<string> SelectedAuthRequiredAddresses()
+        => [.. (_scannedIoLinkDevices ?? [])
+            .Where(device => device.Security.RequiresAuthentication &&
+                             device.Network.Address is not null &&
+                             _selectedIoLinkDevices.Contains(device.Network.Address.ToString()!))
+            .Select(device => device.Network.Address!.ToString())];
+
+    private string DeviceNameForAddress(string address)
+        => (_scannedIoLinkDevices ?? [])
+            .FirstOrDefault(device => string.Equals(device.Network.Address?.ToString(), address, StringComparison.OrdinalIgnoreCase))
+            ?.Identity.Name ?? address;
+
+    // The device names repeat across masters, so each credential block is headed by the master's IP instead.
+    private string DeviceIpForAddress(string address)
+        => (_scannedIoLinkDevices ?? [])
+            .FirstOrDefault(device => string.Equals(device.Network.Address?.ToString(), address, StringComparison.OrdinalIgnoreCase))
+            ?.Network.Address is { } uri
+            ? $"{uri.DnsSafeHost}:{uri.Port}"
+            : address;
+
+    private string GetIoLinkCredentialUser(string address)
+        => _ioLinkCredentials.TryGetValue(address, out var credential) ? credential.User : string.Empty;
+
+    private string GetIoLinkCredentialPassword(string address)
+        => _ioLinkCredentials.TryGetValue(address, out var credential) ? credential.Password : string.Empty;
+
+    private void SetIoLinkCredentialUser(string address, string user)
+        => _ioLinkCredentials[address] = (user, GetIoLinkCredentialPassword(address));
+
+    private void SetIoLinkCredentialPassword(string address, string password)
+        => _ioLinkCredentials[address] = (GetIoLinkCredentialUser(address), password);
+
+    /// <summary>
+    /// Toggles "same credentials for all" mode. When turning it off, the shared credentials are copied into the
+    /// per-device fields so nothing entered is lost on the switch back.
+    /// </summary>
+    private void OnUseSharedCredentialsChanged(bool useShared, List<string> authAddresses)
+    {
+        _ioLinkUseSharedCredentials = useShared;
+        if (useShared)
+            return;
+
+        foreach (var address in authAddresses)
+        {
+            if (!string.IsNullOrEmpty(_ioLinkSharedUser))
+                SetIoLinkCredentialUser(address, _ioLinkSharedUser);
+            if (!string.IsNullOrEmpty(_ioLinkSharedPassword))
+                SetIoLinkCredentialPassword(address, _ioLinkSharedPassword);
+        }
+    }
 
     private void SetIoLinkMasterDialogScanHeight(int tabIndex)
     {
-        _ioLinkMasterDialogHeight = tabIndex == 1 ? IoLinkMasterDialogHeightList : IoLinkMasterDialogHeightNormal;
+        _ioLinkShowCredentialStep = false;
+        _ioLinkMasterDialogHeight = tabIndex == 1 ? ScanDialogHeight : IoLinkMasterDialogHeightManual;
         InvokeAsync(StateHasChanged);
     }
 
@@ -452,10 +580,15 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
         _nodePaths = GetNodePaths([_tree]);
         _adapter.SetDeviceTree(_tree, expandToOfflineNodes);
-        _service.HasOfflineNodes = _tree.GetNodeAndDescendants().Any(n => n.IsOffline && n is not IDeviceTreeMasterNode);
+        _service.HasOfflineNodes = _tree.GetNodeAndDescendants().Any(n => n.Status != ConnectionStatus.Online && n is not IDeviceTreeMasterNode);
 
         foreach (var dataNode in treeNodes.OfType<IDeviceTreeDataNode>())
             dataNode.AddConfigurations(_publishTargets);
+
+        // Give the info panel the whole tree so its throughput projection covers every device (not just the
+        // selected one), and trigger a recompute now that the per-cloud configs are in place.
+        _service.TreeRoot = _tree;
+        _service.InvokeConfigChanged();
     }
 
     private bool TryGetExistingDeviceTreeMaster(IDeviceTreeMasterNode device, out IDeviceTreeMasterNode? existingDevice)
@@ -467,28 +600,48 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         return existingDevice is not null;
     }
 
-    private async Task NodesOffline(string[] arg)
+    private async Task NodesOffline(string[] nodeIds)
     {
         if (_tree is null)
             return;
 
-        SetNodesIsOffline(arg, true);
-        SetTree(_tree, true);
+        SetNodesStatus(nodeIds, ConnectionStatus.Offline);
+        RefreshNodeStatuses(nodeIds, expandToOfflineNodes: true);
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task NodesOnline(string[] arg)
+    private async Task NodesOnline(string[] nodeIds)
     {
         if (_tree is null)
             return;
 
-        SetNodesIsOffline(arg, false);
-        SetTree(_tree, false);
+        SetNodesStatus(nodeIds, ConnectionStatus.Online);
+        RefreshNodeStatuses(nodeIds);
         await InvokeAsync(StateHasChanged);
+    }
+
+    // Apply a live status change to the tree without a full rebuild: refresh only the affected nodes' brackets (and
+    // their ancestors, so collapsed parents still show the status) and update the offline-nodes flag. Previously these
+    // notifications called SetTree, which rebuilt the whole tree + grid on every status change and caused the grid to
+    // flicker.
+    // Going offline unfolds the tree down to the affected value, the way the full rebuild used to; coming back
+    // online does not, since nothing needs pointing out then.
+    private void RefreshNodeStatuses(string[] nodeIds, bool expandToOfflineNodes = false)
+    {
+        _adapter.UpdateNodeStatuses(nodeIds, expandToOfflineNodes);
+
+        lock (_treeLock)
+        {
+            _service.HasOfflineNodes = _tree!.GetNodeAndDescendants()
+                .Any(n => n.Status != ConnectionStatus.Online && n is not IDeviceTreeMasterNode);
+        }
     }
 
     private async Task OnAddVSEDialogCloseAsync()
-        => await _refAddVSEDialog!.CloseAsync();
+    {
+        CancelDcwScan();
+        await _refAddVSEDialog!.CloseAsync();
+    }
 
     private void OnAdapterNodeDeleted(NodeBase node, NodeBase? parent)
     {
@@ -503,10 +656,10 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
     private void OnAdapterNodeEdited(NodeBase node)
     {
-        if (node.Device is not IDeviceTreeAliasNode aliasNode)
+        if (node.Device is not IDeviceTreeUserAliasNode aliasNode)
             return;
 
-        _deviceAlias = aliasNode.NameAlias ?? string.Empty;
+        _deviceAlias = aliasNode.Alias ?? string.Empty;
         _editingNode = node;
         _refAliasDialog!.ShowAsync();
     }
@@ -567,7 +720,14 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     }
 
     private async void OnAddVSERequestedAsync()
-        => await _refAddVSEDialog!.ShowAsync();
+    {
+        _vseTabIndex = 0;
+        _dcwScanTokenSource = new CancellationTokenSource();
+        ScanVseDevices(_dcwScanTokenSource.Token);
+
+        await _refAddVSEDialog!.ShowAsync();
+    }
+
 
     private async Task OnAddIoLinkMasterDialogCloseAsync()
     {
@@ -615,6 +775,28 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
             _selectedIoLinkDevices.Clear();
             _selectedIoLinkDevices.Add(_newIoLinkMasterAddress);
+            if (!string.IsNullOrEmpty(_newIoLinkMasterUser))
+                _ioLinkCredentials[_newIoLinkMasterAddress] = (_newIoLinkMasterUser, _newIoLinkMasterPassword);
+        }
+
+        // Resolve the entered credentials to the normalized address the node callback receives, so each created
+        // master can be matched to its credentials there. In "same credentials for all" mode the shared pair
+        // covers every auth-required selected master.
+        var resolvedCredentials = new Dictionary<string, (string User, string Password)>(StringComparer.OrdinalIgnoreCase);
+        var authAddresses = SelectedAuthRequiredAddresses();
+        var useSharedCredentials = _ioLinkUseSharedCredentials && authAddresses.Count > 1;
+        var authAddressSet = new HashSet<string>(authAddresses, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var selectedAddress in _selectedIoLinkDevices)
+        {
+            (string User, string Password) credential;
+            if (useSharedCredentials && authAddressSet.Contains(selectedAddress))
+                credential = (_ioLinkSharedUser, _ioLinkSharedPassword);
+            else if (!_ioLinkCredentials.TryGetValue(selectedAddress, out credential))
+                continue;
+
+            if (!string.IsNullOrEmpty(credential.User))
+                resolvedCredentials[new UriBuilder(selectedAddress).Uri.AbsoluteUri] = credential;
         }
 
         _loadingSpinnerMessages = _loadingSpinnerMessagesScanDevice;
@@ -622,11 +804,16 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         await _refAddIoLinkMasterDialog!.CloseAsync();
         var numberOfReceivedDevices = 0;
 
-        var deviceEngineInfos = _selectedIoLinkDevices.Select(d => new DeviceEngineInfo(new UriBuilder(d).Uri, typeof(DeviceTreeIoLinkMaster).AssemblyQualifiedName!));
+        var deviceEngineInfos = _selectedIoLinkDevices.Select(d =>
+        {
+            var uri = new UriBuilder(d).Uri;
+            resolvedCredentials.TryGetValue(uri.AbsoluteUri, out var credential);
+            return new DeviceEngineInfo(uri, typeof(DeviceTreeIoLinkMaster).AssemblyQualifiedName!, credential.User, credential.Password);
+        });
 
         await DataCollectionWizardService.RequestNewDevicesDeviceTreeAsync(
             deviceEngineInfos,
-            async (d, _, a) =>
+            async (d, a, _) =>
             {
                 var uri = new UriBuilder(a).Uri;
 
@@ -640,11 +827,17 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                             Text = "an ifm IO-Link device",
                         },
                         Id = $"IoLink@{uri.DnsSafeHost}:{uri.Port}",
-                        IsOffline = true,
                         MacAddress = "ff:ff:ff:ff:ff",
                         Name = "IO-Link Master",
+                        Status = ConnectionStatus.Offline,
                         Url = uri,
                     };
+                }
+
+                if (d is DeviceTreeIoLinkMaster masterNode && resolvedCredentials.TryGetValue(uri.AbsoluteUri, out var credential))
+                {
+                    masterNode.Username = credential.User;
+                    masterNode.Password = credential.Password;
                 }
 
                 await AddDeviceToDeviceTree(d);
@@ -662,6 +855,14 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
     private async Task OnAddVSEDialogOkAsync()
     {
+        CancelDcwScan();
+
+        if (_vseTabIndex == 1)
+        {
+            await AddScannedVseDevicesAsync();
+            return;
+        }
+
         _newVSEAddress = _newVSEAddress.Trim();
         Uri? vseAddress = null;
 
@@ -710,9 +911,9 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                         Text = "an ifm VSE device",
                     },
                     Id = $"vse@{vseAddress}",
-                    IsOffline = true,
                     MacAddress = "ff:ff:ff:ff:ff",
                     Name = "VSE Device",
+                    Status = ConnectionStatus.Offline,
                     Url = VseAddresses.GetVseAddressWithPort(vseAddress.DnsSafeHost),
                 };
             }
@@ -723,6 +924,54 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         }, true, _service.LogLevel);
     }
 
+    /// <summary>
+    /// Adds every VSE device ticked on the dialog's scan tab, the same way the IO-Link dialog adds its
+    /// selection.
+    /// </summary>
+    private async Task AddScannedVseDevicesAsync()
+    {
+        _loadingSpinnerMessages = _loadingSpinnerMessagesScanDevice;
+        _displayLoadingSpinner = true;
+        await _refAddVSEDialog!.CloseAsync();
+
+        var numberOfReceivedDevices = 0;
+        var deviceEngineInfos = _selectedVseDevices.Select(
+            d => new DeviceEngineInfo(VseAddresses.GetVseAddressWithPort(d), typeof(DeviceTreeVseDevice).AssemblyQualifiedName!));
+
+        await DataCollectionWizardService.RequestNewDevicesDeviceTreeAsync(
+            deviceEngineInfos,
+            async (d, a, _) =>
+            {
+                if (d is not DeviceTreeVseDevice)
+                {
+                    LogUnexpectedNullDeviceError(Logger, a.DnsSafeHost);
+                    d = new DeviceTreeVseDevice
+                    {
+                        Description = new DeviceTreeNodeDescription
+                        {
+                            Text = "an ifm VSE device",
+                        },
+                        Id = $"vse@{a}",
+                        MacAddress = "ff:ff:ff:ff:ff",
+                        Name = "VSE Device",
+                        Status = ConnectionStatus.Offline,
+                        Url = VseAddresses.GetVseAddressWithPort(a.DnsSafeHost),
+                    };
+                }
+
+                await AddDeviceToDeviceTree(d);
+                numberOfReceivedDevices++;
+
+                if (numberOfReceivedDevices >= _selectedVseDevices.Count)
+                {
+                    _displayLoadingSpinner = false;
+                    await InvokeAsync(StateHasChanged);
+                }
+            },
+            true,
+            _service.LogLevel);
+    }
+
     private async Task OnAliasDialogCloseAsync()
         => await _refAliasDialog!.CloseAsync();
 
@@ -730,13 +979,13 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     {
         await _refAliasDialog!.CloseAsync();
 
-        if (_editingNode!.Device is not IDeviceTreeAliasNode aliasNode)
+        if (_editingNode!.Device is not IDeviceTreeUserAliasNode aliasNode)
             return;
 
-        if (_deviceAlias == aliasNode.NameAlias)
+        if (_deviceAlias == aliasNode.Alias)
             return;
 
-        aliasNode.NameAlias = string.IsNullOrWhiteSpace(_deviceAlias) ? null : _deviceAlias.Trim();
+        aliasNode.Alias = string.IsNullOrWhiteSpace(_deviceAlias) ? null : _deviceAlias.Trim();
         _service.DeviceTreeChanged = true;
 
         _editingNode.DisplayText = DeviceTreeNodeNameProvider.GetTreeDisplayText(_editingNode.Device);
@@ -778,7 +1027,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             }
             catch (Exception ex)
             {
-                LogAwaitingDeploymentWarning(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+                LogAwaitingDeploymentWarning(Logger, ex);
             }
         });
 
@@ -828,6 +1077,12 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             _changedMasterDevices.Add(parentMaster!);
             _saveReasons += " nodes have been deleted;";
         }
+
+        // The node was removed from the tree in place (RemoveNodeFromParent), so TreeRoot is not otherwise
+        // re-assigned. Re-assign it to bump TreeVersion (invalidates the info panel's node cache) and raise
+        // ConfigChanged so cache-by-version consumers - notably the info panel - recompute without the deleted node.
+        _service.TreeRoot = _tree!;
+        _service.InvokeConfigChanged();
 
         await _refDeleteDialog!.CloseAsync();
 
@@ -894,7 +1149,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
     private void OnScannedDeviceSelectionChanged(bool selected, DcpDevice device)
     {
-        var deviceAddress = device.Address?.ToString();
+        var deviceAddress = device.Network.Address?.ToString();
 
         if (deviceAddress is null)
         {
@@ -909,22 +1164,11 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     }
 
     private void OnTreeSelectionChangedAsync()
-        // SelectionChanged can fire from a background thread (e.g. DataflowEventBroker
-        // calling SetDeviceTree inside UpdateDeviceTreeAsync), so InvokeAsync is required
-        // to marshal back to the Blazor circuit dispatcher before touching component state.
-        //
-        // Two-phase render to show the tree selection highlight before the grid is rebuilt:
-        //   Phase 1 — clear the grid and queue a render via StateHasChanged. Blazor will
-        //             include both the empty grid and the sidebar's own selection-highlight
-        //             render in the same batch and send it to the browser.
-        //   Phase 2 — OnAfterRenderedAsync is invoked only after that batch has been sent,
-        //             so SetGridItems() always runs in a subsequent render cycle.
-        //
-        // Note: if Blazor coalesces this StateHasChanged with another pending render
-        // (e.g. a simultaneous node-online event), Phase 1 and Phase 2 may still appear
-        // together. This is expected Blazor Server batching behaviour.
         => _ = InvokeAsync(() =>
         {
+            // Selecting a different tree node shows a different set of rows, so clear the multi-select (and with it
+            // the bulk bar). Otherwise rows ticked on the previous node stay selected but invisible - easy to forget.
+            _service.ClearSelection();
             _service.GridItems = [];
             _gridNeedsRebuild = true;
             StateHasChanged();
@@ -961,7 +1205,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         }
         catch (Exception ex)
         {
-            LogRebrowseButtonError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogRebrowseButtonError(Logger, ex);
         }
     }
 
@@ -973,7 +1217,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         {
             var child = tree.Children[i];
 
-            if (child.IsOffline && child is not IDeviceTreeMasterNode)
+            if (child.Status != ConnectionStatus.Online && child is not IDeviceTreeMasterNode)
             {
                 result.Add(child);
                 tree.Children.RemoveAt(i);
@@ -1001,7 +1245,14 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _newIoLinkMasterAddress = string.Empty;
         _isIoLinkMasterUriUnique = true;
         _isIoLinkMasterUriValid = true;
-        _ioLinkMasterDialogHeight = IoLinkMasterDialogHeightNormal;
+        _ioLinkMasterDialogHeight = IoLinkMasterDialogHeightManual;
+        _ioLinkCredentials.Clear();
+        _newIoLinkMasterUser = string.Empty;
+        _newIoLinkMasterPassword = string.Empty;
+        _ioLinkUseSharedCredentials = false;
+        _ioLinkSharedUser = string.Empty;
+        _ioLinkSharedPassword = string.Empty;
+        _ioLinkShowCredentialStep = false;
     }
 
     private void OnAddVSEAddressChanged(string value)
@@ -1016,6 +1267,8 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _newVSEAddress = string.Empty;
         _isVSEUriUnique = true;
         _isVSEUriValid = true;
+        _vseFilter = string.Empty;
+        _vseDialogHeight = VseDialogHeightManual;
     }
 
     private async void SaveButtonAsync()
@@ -1069,13 +1322,13 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                 }
                 catch (Exception ex)
                 {
-                    LogWhileSaveDeviceTreeError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+                    LogWhileSaveDeviceTreeError(Logger, ex);
                 }
             });
         }
         catch (Exception ex)
         {
-            LogWhileSaveDeviceTreeError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogWhileSaveDeviceTreeError(Logger, ex);
         }
     }
 
@@ -1099,9 +1352,13 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
                 _scannedIoLinkDevices = [.. scanResult.Devices
                                                       .Where(d => !d.IsUnreachable)
-                                                      // Todo: Vergleich zuverlässiger machen
-                                                      .Where(d => !currentIoLinkMasters.Any(m => m.Url == d.Address))
-                                                      .OrderBy(d => d.Address.ToString())];
+                                                      // Match by host, not the full URL: an already-added master stores its
+                                                      // URL with the scheme/port it is actually reached on (e.g. https:443
+                                                      // after an authenticated master upgrades from the scanned http:80), so
+                                                      // a full-URL compare would offer it again as if it were new.
+                                                      .Where(d => !currentIoLinkMasters.Any(m =>
+                                                          string.Equals(m.Url.DnsSafeHost, d.Network.Address?.DnsSafeHost, StringComparison.OrdinalIgnoreCase)))
+                                                      .OrderBy(d => d.Network.Address.ToString())];
 
                 _scanIoLinkErrors = scanResult.Messages;
 
@@ -1109,12 +1366,86 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             }
             catch (Exception ex)
             {
-                _scanIoLinkErrors.Add($"An error occured while trying to scan for IO-Link Masters: {ex.GetType()}: {ex.Message}");
+                _scanIoLinkErrors.Add($"An error occurred while trying to scan for IO-Link Masters: {ex.GetType()}: {ex.Message}");
             }
         }, cancellationToken);
     }
 
-    private void SetAllDatapointsCompression(PoolingGrid poolingGrid)
+    private void ScanVseDevices(CancellationToken cancellationToken)
+    {
+        _scannedVseDevices = null;
+        _scanVseErrors = [];
+        _selectedVseDevices.Clear();
+
+        DeviceTreeVseDevice[] currentVseDevices;
+        lock (_treeLock)
+        {
+            currentVseDevices = [.. _tree!.GetNodeAndDescendants().OfType<DeviceTreeVseDevice>()];
+        }
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var scanResult = await DataCollectionWizardService.ScanVseDevicesAsync(_service.LogLevel, cancellationToken);
+
+                _scannedVseDevices = [.. scanResult.Devices
+                                                   .Where(d => !currentVseDevices.Any(v => v.Url == VseScanDeviceAddress(d)))
+                                                   .OrderBy(d => d.IpAddress, StringComparer.Ordinal)];
+
+                _scanVseErrors = scanResult.Messages;
+
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (Exception ex)
+            {
+                _scanVseErrors.Add($"An error occurred while trying to scan for VSE devices: {ex.GetType()}: {ex.Message}");
+            }
+        }, cancellationToken);
+    }
+
+    /// <summary>
+    /// The address a scanned VSE device is reached at. The scan reports host and port separately, while the
+    /// device tree identifies a VSE by the same URL the manual entry produces.
+    /// </summary>
+    private static Uri VseScanDeviceAddress(VseScanDevice device)
+        => VseAddresses.GetVseAddressWithPort(device.IpAddress);
+
+    private static bool MatchesVseFilter(VseScanDevice device, string filter)
+        => device.IpAddress.Contains(filter, StringComparison.OrdinalIgnoreCase)
+            || device.HostName.Contains(filter, StringComparison.OrdinalIgnoreCase)
+            || device.MacAddress.Contains(filter, StringComparison.OrdinalIgnoreCase)
+            || device.DeviceType.Contains(filter, StringComparison.OrdinalIgnoreCase);
+
+    private void OnRescanVseDevicesClicked()
+        => ScanVseDevices(_dcwScanTokenSource.Token);
+
+    private void OnScannedVseDeviceSelectionChanged(bool selected, VseScanDevice device)
+    {
+        if (string.IsNullOrWhiteSpace(device.IpAddress))
+        {
+            LogMissingAddressSelectedWarning(Logger);
+            return;
+        }
+
+        if (selected)
+            _selectedVseDevices.Add(device.IpAddress);
+        else
+            _selectedVseDevices.Remove(device.IpAddress);
+    }
+
+    private bool IsVseDialogOkEnabled()
+        => _vseTabIndex == 0
+            ? !string.IsNullOrWhiteSpace(_newVSEAddress)
+            : _selectedVseDevices.Count > 0;
+
+    private void SetVseDialogScanHeight(int tabIndex)
+    {
+        _vseDialogHeight = tabIndex == 1 ? ScanDialogHeight : VseDialogHeightManual;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void SetAllDatapointsCompression(AggregationInterval aggregationInterval)
     {
         if (_tree is null)
             return;
@@ -1127,7 +1458,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
             foreach (var compressorConfiguration in compressorConfigurations)
             {
-                compressorConfiguration.CompressionTime = (int)poolingGrid;
+                compressorConfiguration.CompressionTime = (int)aggregationInterval;
             }
 
             _changedMasterDevices.Clear();
@@ -1171,6 +1502,293 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _service.DeviceTreeChanged = true;
     }
 
+    // Multi-select reset: puts the selection's settings back to what a freshly discovered data point is given.
+    // The values themselves live in DeviceTreeDataNodeExtensions, next to the code that creates configurations in
+    // the first place, so the two cannot drift apart.
+    private void OnBulkResetSelection(BulkResetRequest request)
+    {
+        if (_tree is null)
+            return;
+
+        var connections = (request.Target is null
+                ? _publishTargets.Where(connection => IsConfigurable(connection))
+                : [request.Target.Connection])
+            .ToList();
+
+        if (connections.Count == 0)
+            return;
+
+        var selectedNodes = _service.SelectedNodes;
+
+        // Collected while writing, so the grid can point out the cells this reached.
+        var changedNodes = new HashSet<IDeviceTreeDataNode>();
+
+        lock (_treeLock)
+        {
+            foreach (var node in selectedNodes)
+            {
+                if (node.ResetConfigurations(connections))
+                    changedNodes.Add(node);
+            }
+
+            _changedMasterDevices.Clear();
+            _changedMasterDevices.AddRange(_tree.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>());
+        }
+
+        _saveReasons += " data point settings reset via multi-select;";
+
+        CheckDataPointRecommendedLimit(true);
+        _service.DeviceTreeChanged = true;
+        _service.InvokeBulkEnableApplied(
+            new BulkChangeHighlight(changedNodes, connections.Select(connection => connection.Id).ToHashSet()));
+    }
+
+    // Multi-select bulk enable/disable: applies to the process-value data points in the grid selection for the
+    // chosen publish target (or all targets). RawData/event-triggered recordings are intentionally left out for
+    // now - they carry more than one toggle, so they need their own bulk action.
+    private void OnBulkEnableSelection(BulkEnableRequest request)
+    {
+        if (_tree is null)
+            return;
+
+        var targetConnections = request.Target is null
+            ? (IEnumerable<Connection>)_publishTargets
+            : [request.Target.Connection];
+        var connectionIds = targetConnections.Select(connection => connection.Id).ToHashSet();
+
+        var selectedNodes = _service.SelectedNodes;
+
+        // Collected while writing, so the grid can point out exactly the cells this reached.
+        var changedNodes = new HashSet<IDeviceTreeDataNode>();
+
+        lock (_treeLock)
+        {
+            foreach (var node in selectedNodes.OfType<IDeviceTreeCompressableDataNode>())
+            {
+                foreach (var configuration in node.CompressorConfigurations
+                             .Where(configuration => connectionIds.Contains(configuration.DataGroupIdentifier)))
+                {
+                    configuration.Enabled = request.Enabled;
+                    changedNodes.Add(node);
+                }
+            }
+
+            var nonMoneoConnectionIds = _publishTargets
+                .Except(new MoneoCloudFilter().GetCloudConnections(_publishTargets))
+                .Select(connection => connection.Id)
+                .ToHashSet();
+
+            foreach (var node in selectedNodes.OfType<IDeviceTreeSchedulableDataNode>())
+            {
+                foreach (var configuration in node.SchedulerConfigurations
+                             .Where(configuration => connectionIds.Contains(configuration.DataGroupIdentifier)
+                                                     && nonMoneoConnectionIds.Contains(configuration.DataGroupIdentifier)))
+                {
+                    configuration.Enabled = request.Enabled;
+                    changedNodes.Add(node);
+                }
+            }
+
+            _changedMasterDevices.Clear();
+            _changedMasterDevices.AddRange(_tree.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>());
+        }
+
+        _saveReasons += " data points enabled via multi-select;";
+
+        CheckDataPointRecommendedLimit(true);
+        _service.DeviceTreeChanged = true;
+        _service.InvokeBulkEnableApplied(new BulkChangeHighlight(changedNodes, connectionIds));
+    }
+
+    // Multi-select bulk settings: writes one setting on the grid selection for the chosen publish target (or all
+    // configurable ones). Enabling stays in OnBulkEnableSelection; this handles everything the panel adds.
+    private void OnBulkSettingSelection(BulkSettingRequest request)
+    {
+        if (_tree is null)
+            return;
+
+        var targetIds = (request.Target is null
+                ? _publishTargets.Where(connection => IsConfigurable(connection))
+                : [request.Target.Connection])
+            .Select(connection => connection.Id)
+            .ToHashSet();
+
+        if (targetIds.Count == 0)
+            return;
+
+        var selectedNodes = _service.SelectedNodes;
+
+        // Collected while writing, so the grid can point out exactly the cells this reached. A setting only
+        // applies to the data types that support it, so this is usually a subset of the selection.
+        var changedNodes = new HashSet<IDeviceTreeDataNode>();
+
+        lock (_treeLock)
+        {
+            switch (request.Setting)
+            {
+                case BulkSetting.ProcessEnabled:
+                case BulkSetting.UncompressedEnabled:
+                    foreach (var (node, configuration) in CompressorConfigurations(request.Setting == BulkSetting.ProcessEnabled))
+                    {
+                        configuration.Enabled = (bool)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.ProcessAggregationInterval:
+                    foreach (var (node, configuration) in CompressorConfigurations(compressible: true))
+                    {
+                        configuration.CompressionTime = (int)(AggregationInterval)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.ProcessAggregationFunction:
+                    // "On Change" locks the function in the single-row editor, so a bulk change must leave those
+                    // configurations alone rather than writing a value that could not be set there.
+                    foreach (var (node, configuration) in CompressorConfigurations(compressible: true)
+                                 .Where(entry => entry.Configuration.CompressionTime != (int)AggregationInterval.OnChange))
+                    {
+                        configuration.Aggregation = (AggregationFunction)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.RecordingEnabled:
+                    foreach (var (node, configuration) in SchedulerConfigurations())
+                    {
+                        configuration.Enabled = (bool)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.RecordingDays:
+                    foreach (var (node, configuration) in SchedulerConfigurations().Where(entry => entry.Configuration.Times.Count > 0))
+                    {
+                        Reschedule(configuration, configuration.Times.First().Value.Length, ((DaysOfWeek)request.Value).AsEnumerable());
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.RecordingTimesADay:
+                    foreach (var (node, configuration) in SchedulerConfigurations().Where(entry => entry.Configuration.Times.Count > 0))
+                    {
+                        Reschedule(configuration, (int)request.Value, [.. configuration.Times.Keys]);
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                // Enabled is written on its own: it is the switch that turns a trigger off without losing how it
+                // was set up, so enabling one restores exactly what was configured there.
+                case BulkSetting.TriggerEnabled:
+                    foreach (var (node, trigger) in Triggers())
+                    {
+                        trigger.Enabled = (bool)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.TriggerOnDamage:
+                    foreach (var (node, trigger) in Triggers())
+                    {
+                        trigger.OnDamage = (bool)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.TriggerOnWarning:
+                    foreach (var (node, trigger) in Triggers())
+                    {
+                        trigger.OnWarning = (bool)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.TriggerDelay:
+                    foreach (var (node, trigger) in Triggers())
+                    {
+                        trigger.Delay = (int)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.RawDataFrequency:
+                    foreach (var (node, settings) in RawDataSettings())
+                    {
+                        settings.Frequency = (int)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                case BulkSetting.RawDataDuration:
+                    foreach (var (node, settings) in RawDataSettings())
+                    {
+                        settings.Duration = (int)request.Value;
+                        changedNodes.Add(node);
+                    }
+                    break;
+
+                default:
+                    return;
+            }
+
+            _changedMasterDevices.Clear();
+            _changedMasterDevices.AddRange(_tree.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>());
+        }
+
+        _saveReasons += " data point settings changed via multi-select;";
+
+        CheckDataPointRecommendedLimit(true);
+        _service.DeviceTreeChanged = true;
+        _service.InvokeBulkEnableApplied(new BulkChangeHighlight(changedNodes, targetIds));
+
+        // Each of these yields the owning node alongside the configuration, so the caller can record which rows a
+        // change actually reached without walking the selection a second time.
+        IEnumerable<(IDeviceTreeDataNode Node, CompressorConfiguration Configuration)> CompressorConfigurations(bool compressible)
+            => selectedNodes.OfType<IDeviceTreeCompressableDataNode>()
+                .Where(node => node.DataType.SupportsLogging && node.DataType.SupportsCompression == compressible)
+                .SelectMany(node => node.CompressorConfigurations
+                    .Where(configuration => targetIds.Contains(configuration.DataGroupIdentifier))
+                    .Select(configuration => ((IDeviceTreeDataNode)node, configuration)));
+
+        IEnumerable<(IDeviceTreeDataNode Node, SchedulerConfiguration Configuration)> SchedulerConfigurations()
+            => selectedNodes.OfType<IDeviceTreeSchedulableDataNode>()
+                .SelectMany(node => node.SchedulerConfigurations
+                    .Where(configuration => targetIds.Contains(configuration.DataGroupIdentifier))
+                    .Select(configuration => ((IDeviceTreeDataNode)node, configuration)));
+
+        // One selected row carries a trigger per sensor and per cloud, so a change reaches more configurations
+        // than the selection has rows.
+        IEnumerable<(IDeviceTreeDataNode Node, EventTrigger Trigger)> Triggers()
+            => selectedNodes.OfType<IDeviceTreeEventTriggerDataNode>()
+                .SelectMany(node => node.EventTriggerConfigurations
+                    .SelectMany(sensor => sensor.Triggers)
+                    .Where(trigger => targetIds.Contains(trigger.DataGroupIdentifier))
+                    .Select(trigger => ((IDeviceTreeDataNode)node, trigger)));
+
+        IEnumerable<(IDeviceTreeDataNode Node, RawDataSettings Settings)> RawDataSettings()
+            => selectedNodes.OfType<IDeviceTreeConfigurableRawDataNode>()
+                .SelectMany(node => node.RawDataConfigurations
+                    .Where(entry => targetIds.Contains(entry.Key))
+                    .Select(entry => ((IDeviceTreeDataNode)node, entry.Value)));
+
+        // Rebuilds the schedule the same way the single-row editor does, so both produce identical Times.
+        static void Reschedule(SchedulerConfiguration configuration, int timesADay, IEnumerable<DayOfWeek> days)
+        {
+            var scheduling = BlobDataCell.GetNewScheduling(timesADay, days);
+            configuration.Times.Clear();
+
+            foreach (var entry in scheduling)
+                configuration.Times[entry.Key] = entry.Value;
+        }
+    }
+
+    // A publish target whose cloud filter supports no node type at all cannot be configured (moneo today), so a
+    // bulk change scoped to "all clouds" must skip it instead of writing settings the grid would not let you set.
+    private bool IsConfigurable(Connection connection)
+        => _publishTargetInfos.FirstOrDefault(info => info.Connection.Id == connection.Id)
+            is { TreeNodesSupportedForConfiguration.Count: > 0 };
+
     public void SetDebugRawDataGrid()
         => _rawDataPullingMaxTimesADay = 24 * 60 / 5;
 
@@ -1181,7 +1799,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             return;
 
         _service.GridItems = [.. _adapter.GetRelevantDataNodes()
-            .Where(dn => dn.Visible && dn.DataType.SupportedForLogging() && nodePaths!.ContainsKey(dn))
+            .Where(dn => dn is not IDeviceTreeHiddenNode && dn.DataType.SupportsLogging && nodePaths!.ContainsKey(dn))
             .Select(DataNodeToGridModel)
         ];
 
@@ -1193,7 +1811,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             };
     }
 
-    private void SetNodesIsOffline(string[] nodeIds, bool isOffline)
+    private void SetNodesStatus(string[] nodeIds, ConnectionStatus status)
     {
         if (_tree is null)
             return;
@@ -1206,7 +1824,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             {
                 if (allNodes.TryGetValue(nodeId, out var node))
                 {
-                    node.IsOffline = isOffline;
+                    node.Status = status;
                 }
             }
         }
@@ -1239,15 +1857,15 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                 lock (_treeLock)
                 {
 
-                    var oldStructureUnits = _tree.GetNodeAndDescendants().OfType<DeviceTreeProcessData>().ToDictionary(n => n.Id, n => n.StructureUnit);
-                    var freshOrUnchangedDevices = receivedDevices
-                        .Select(r => r.device is not null && !r.device.IsOffline
-                            ? r.device
-                            : devices.FirstOrDefault(m => m.Url == r.address) as IDeviceTreeBase)
-                        .Where(d => d is not null)
+                    var oldStructureUnits = _tree.GetNodeAndDescendants().OfType<DeviceTreeProcessData>().ToDictionary(n => n.Id, n => n.Unit);
+                    // Only a scan that confirms a master online is handed to the builder. A master left out keeps its
+                    // last known structure, and the builder marks it and its children offline for lacking a counterpart.
+                    var onlineDevices = receivedDevices
+                        .Select(r => r.device)
+                        .Where(device => device?.Status == ConnectionStatus.Online)
                         .Cast<IDeviceTreeBase>();
 
-                    DeviceTreeBuilder.ExtendCurrentDeviceTree(_tree, [.. freshOrUnchangedDevices], _publishTargets, retainNewFlags);
+                    DeviceTreeBuilder.ExtendCurrentDeviceTree(_tree, [.. onlineDevices], _publishTargets, retainNewFlags);
 
                     _tree.Name = CommonVocabulary.DevicePlural;
                     SetTreeCore(_tree, true);
@@ -1290,7 +1908,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         }
         catch (Exception ex)
         {
-            LogUpdateDeviceTreeError(Logger, ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogUpdateDeviceTreeError(Logger, ex);
         }
     }
 

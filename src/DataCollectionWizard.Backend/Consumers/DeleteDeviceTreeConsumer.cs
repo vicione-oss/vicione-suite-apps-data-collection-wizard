@@ -35,10 +35,7 @@ public sealed partial class DeleteDeviceTreeConsumer(IDataCollectionWizardDbCont
         }
         catch (DbUpdateException e)
         {
-            await context.Publish(new DeviceTreeChangeErrorEvent(new ErrorInfo(ErrorCodes.DbUpdateFailed, e.Message)));
+            await context.Publish(new DeviceTreeChangedErrorEvent(new ErrorInfo(ErrorCodes.DbUpdateFailed, e.Message)));
         }
     }
-
-    [LoggerMessage(LogLevel.Debug, "Consume {command} CorrelationId:{correlationId} DeviceAddress:{deviceAddress}")]
-    public static partial void LogConsume(ILogger logger, string command, Guid? correlationId, string deviceAddress);
 }

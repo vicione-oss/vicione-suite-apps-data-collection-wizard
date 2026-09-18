@@ -1,6 +1,6 @@
 ﻿namespace DataCollectionWizard.Internal;
 
-public static class NodeNames
+internal static class NodeNames
 {
     public const string Alarms = "Alarms";
     public const string Counters = "Counters";

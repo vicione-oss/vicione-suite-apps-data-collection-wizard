@@ -1,8 +1,8 @@
-﻿using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+﻿using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Extensions;
 
-public static class SchedulerConfigurationExtension
+internal static class SchedulerConfigurationExtension
 {
     private const string TimeEntriesSeparator = ";";
     private const string TimePairSeparator = "#";

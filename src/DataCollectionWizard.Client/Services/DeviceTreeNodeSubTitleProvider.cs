@@ -1,4 +1,4 @@
-﻿using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+﻿using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Client.Services;
 
@@ -9,7 +9,7 @@ public static class DeviceTreeNodeSubTitleProvider
         {
             DeviceTreeIoLinkMaster masterDevice => $"{masterDevice.Url.DnsSafeHost}:{masterDevice.Url.Port}",
             DeviceTreeVseDevice vseDevice => $"{vseDevice.Url.DnsSafeHost}:{vseDevice.Url.Port}",
-            IAliasStructureNode aliasStructureNode => aliasStructureNode.Name,
+            IDeviceTreeDeviceAliasNode aliasStructureNode => aliasStructureNode.Name,
             _ => null
         };
 }

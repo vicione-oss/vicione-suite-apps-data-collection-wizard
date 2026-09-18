@@ -51,8 +51,12 @@
         <IsPublishable>true</IsPublishable>
         <!-- Microsoft Testing Platform command line experience -->
         <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
-        <!-- Emit test results per project to match with 'tests/**/TestResults/*.cobertura.xml' expected in CI -->
-        <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --results-directory "$(MSBuildProjectDirectory)/bin/$(Configuration)/$(TargetFramework)/TestResults"</TestingPlatformCommandLineArguments>
+        <!-- Test results land per project in 'tests/**/bin/$(Configuration)/$(TargetFramework)/TestResults',
+             which is where CI picks up 'tests/**/TestResults/*.cobertura.xml'. That is already the testing
+             platform's own default, so this must not set a results directory of its own: the option would
+             then appear twice as soon as a caller supplies one, and the platform rejects that before running
+             a single test. -->
+
         <TestingPlatformConfigurationFilePath>$(MSBuildThisFileDirectory)/tests/testconfig.json</TestingPlatformConfigurationFilePath>
     </PropertyGroup>
 

@@ -2,7 +2,7 @@
 
 namespace DataCollectionWizard.Internal.Services;
 
-public class IoTSubscriberDesignTuple
+internal class IoTSubscriberDesignTuple
 {
     public Guid FunctionBlock { get; set; }
     public required IIoLinkSubscriberOutputs Outputs { get; set; }

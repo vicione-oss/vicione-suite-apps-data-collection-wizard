@@ -1,5 +1,5 @@
 ﻿using DataCollectionWizard.Internal.Extensions;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Tests;
 

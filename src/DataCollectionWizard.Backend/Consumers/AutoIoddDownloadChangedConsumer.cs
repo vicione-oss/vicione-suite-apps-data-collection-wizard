@@ -2,7 +2,7 @@
 using DataCollectionWizard.Public.Services;
 using MassTransit;
 using Microsoft.Extensions.Logging;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
+using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Backend.Consumers;
 
@@ -36,16 +36,7 @@ public sealed partial class AutoIoddDownloadChangedConsumer(IDeviceTreeUpdater d
         {
             if (ticket is not null)
                 deviceTreeUpdater.DiscardUpdateRequest(ticket.Value);
-            LogApplicationFailedError(logger, ex.Message, ex.StackTrace ?? string.Empty);
+            LogApplicationFailedError(logger, ex);
         }
     }
-
-    [LoggerMessage(LogLevel.Error, "Failed to apply DeviceTree: {message} {stackTrace}")]
-    public static partial void LogApplicationFailedError(ILogger logger, string message, string stackTrace);
-
-    [LoggerMessage(LogLevel.Debug, "Consume {command} CorrelationId: {correlationId}")]
-    public static partial void LogConsume(ILogger logger, string command, Guid? correlationId);
-
-    [LoggerMessage(LogLevel.Debug, "No io link devices found, skipping dataflow generation.")]
-    public static partial void LogNoDevices(ILogger logger);
 }

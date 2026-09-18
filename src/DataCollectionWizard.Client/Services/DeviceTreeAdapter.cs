@@ -3,8 +3,8 @@ using DataCollectionWizard.Client.Extensions;
 using DataCollectionWizard.Client.Models;
 using DataCollectionWizard.Client.Models.DeviceTree;
 using DataCollectionWizard.Internal.Services;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree;
-using ViciOne.Driver.IoTCore.Contracts.DeviceTree.Extensions;
+using ViciOne.DeviceTree.Contracts;
+using ViciOne.DeviceTree.Contracts.Extensions;
 using ViciOne.Ui.MonochromeIcons.Core.Enums;
 using ViciOne.Ui.TreeEditor.Builder.Interface;
 using ViciOne.Ui.TreeEditor.Builder.Interface.Enums;
@@ -205,8 +205,8 @@ internal sealed class DeviceTreeAdapter(bool isLiveView, DeviceTreeNodeIconProvi
 
     private bool IsRelevantChild(IDeviceTreeBase node)
          => isLiveView
-             ? node.Visible && node.GetNodeAndDescendants().OfType<IDeviceTreeLiveDataNode>().Any(n => n.Visible)
-             : node.Visible;
+             ? node is not IDeviceTreeHiddenNode && node.GetNodeAndDescendants().OfType<IDeviceTreeLiveDataNode>().Any(n => n is not IDeviceTreeHiddenNode)
+             : node is not IDeviceTreeHiddenNode;
 
     private void OnExpansionChanged(ITreeNode node, bool expanded)
     {
@@ -258,6 +258,69 @@ internal sealed class DeviceTreeAdapter(bool isLiveView, DeviceTreeNodeIconProvi
 
             node = node.Parent;
         }
+    }
+
+    // Lightweight live-status update for the online/offline notifications: refresh only the affected nodes' own status
+    // and re-propagate their ancestors' inherited status (so a collapsed parent keeps its coloured bracket), then
+    // re-render just those nodes. Avoids the full SetDeviceTree rebuild those notifications used to do, which rebuilt
+    // the whole tree and grid on every status change and made the grid flicker.
+    /// <param name="nodeIds">The nodes whose status changed.</param>
+    /// <param name="expandToOfflineNodes">
+    /// Unfold the tree down to a value that has just gone offline, so it is visible without hunting for it. Only
+    /// the rebuild in <see cref="SetDeviceTree"/> ever did this, which is why these notifications stopped
+    /// expanding anything when they were moved off it.
+    /// </param>
+    public void UpdateNodeStatuses(IEnumerable<string> nodeIds, bool expandToOfflineNodes = false)
+    {
+        if (_rootNode is null)
+            return;
+
+        var nodesById = _rootNode.GetNodeAndDescendants().ToDictionary(node => node.Device.Id);
+        var toRefresh = new HashSet<NodeBase>();
+        var toExpandTo = new List<NodeBase>();
+
+        foreach (var nodeId in nodeIds)
+        {
+            if (!nodesById.TryGetValue(nodeId, out var node))
+                continue;
+
+            node.Status = node.Device.GetStatus(isLiveView);
+
+            // The node's own bracket may change, and every ancestor's inherited bracket up to the root.
+            RecalculateInheritedStatusToRoot(node.Parent);
+            for (var current = node; current is not null; current = current.Parent)
+                toRefresh.Add(current);
+
+            if (expandToOfflineNodes && ShouldExpandTo(node))
+                toExpandTo.Add(node);
+        }
+
+        foreach (var node in toRefresh)
+            Builder.Helper.RequestNodeRefresh(node);
+
+        foreach (var node in toExpandTo)
+            Builder.Expansion.ExpandToNode(node);
+    }
+
+    /// <summary>
+    /// Whether the tree should unfold down to this node because it has gone offline.
+    /// </summary>
+    /// <remarks>
+    /// The same rule the rebuild applies: a value that dropped out is worth showing, but not when its whole
+    /// master is offline - then everything below it is offline too and the tree would unfold entirely.
+    /// </remarks>
+    private static bool ShouldExpandTo(NodeBase node)
+    {
+        if (node.Device is not IDeviceTreeDataNode || !node.Status.HasFlag(NodeStatus.Offline))
+            return false;
+
+        for (var current = node.Parent; current is not null; current = current.Parent)
+        {
+            if (current.Device is IDeviceTreeMasterNode)
+                return !current.Status.HasFlag(NodeStatus.Offline);
+        }
+
+        return false;
     }
 
     internal void SetDeviceTree(DeviceTreeRoot root, bool expandOfflineNodes)
