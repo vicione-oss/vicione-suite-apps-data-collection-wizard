@@ -96,7 +96,8 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
         switch (child.DataConfig.Node.DataType)
         {
             case DataType.Real:
-                return typeof(float);
+            case DataType.Flag:
+                return typeof(double);
             case DataType.Text:
                 return typeof(string);
             default:
@@ -124,7 +125,7 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
         switch (child.DataConfig.Node.DataType)
         {
             case DataType.Real:
-
+            case DataType.Flag:
                 return PortDesignIdMqttDataPointFloat;
             case DataType.Text:
                 return PortDesignIdMqttDataPointString;

@@ -1,4 +1,5 @@
-﻿using DataCollectionWizard.Public;
+﻿using DataCollectionWizard.Internal.Contracts;
+using DataCollectionWizard.Public;
 using Sdk.Connections.Contracts;
 using ViciOne.DeviceTree.Contracts;
 
@@ -16,6 +17,27 @@ public sealed class AnnaCloudFilter : ICloudFilter
         ];
 
     public ConnectionKind ConnectionKind => ConnectionKind.Anna;
+
+    public IReadOnlyCollection<AggregationInterval> SupportedAggregationIntervals => [
+        AggregationInterval.OnChange,
+        AggregationInterval.SecondsOne,
+        AggregationInterval.SecondsFive,
+        AggregationInterval.SecondsTen,
+        AggregationInterval.SecondsThirty,
+        AggregationInterval.MinutesOne,
+        AggregationInterval.MinutesTwo,
+        AggregationInterval.MinutesFive,
+        AggregationInterval.MinutesTen,
+        AggregationInterval.MinutesThirty,
+        AggregationInterval.HoursOne,
+        ];
+
+    public IReadOnlyCollection<AggregationFunction> SupportedAggregationFunctions => [
+        AggregationFunction.MinMaxAvg,
+        AggregationFunction.Avg,
+        AggregationFunction.Min,
+        AggregationFunction.Max,
+        ];
 
     public IEnumerable<Connection> GetCloudConnections(IEnumerable<Connection> connections)
         => [.. connections.Where(IsAnnaConnection)];

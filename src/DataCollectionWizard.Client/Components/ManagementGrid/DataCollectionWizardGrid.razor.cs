@@ -146,10 +146,10 @@ public sealed partial class DataCollectionWizardGrid : ComponentBase, IDisposabl
         => BulkTargets.Select(info => info.Kind).Distinct().Count() > 1;
 
     private IReadOnlyList<AggregationInterval> BulkIntervals
-        => AggregationOptions.IntervalsForAll(BulkTargets.Select(info => info.Kind));
+        => AggregationOptions.IntervalsForAll(BulkTargets);
 
     private IReadOnlyList<AggregationFunction> BulkFunctions
-        => AggregationOptions.FunctionsForAll(BulkTargets.Select(info => info.Kind));
+        => AggregationOptions.FunctionsForAll(BulkTargets);
 
     /// <summary>
     /// How many times a day a recording may run, matching the single-row editor's upper bound.

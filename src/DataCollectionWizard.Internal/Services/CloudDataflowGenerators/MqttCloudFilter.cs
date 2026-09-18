@@ -1,4 +1,5 @@
-﻿using DataCollectionWizard.Public;
+﻿using DataCollectionWizard.Internal.Contracts;
+using DataCollectionWizard.Public;
 using Sdk.Connections.Contracts;
 using ViciOne.DeviceTree.Contracts;
 
@@ -11,6 +12,28 @@ public class MqttCloudFilter : ICloudFilter
     public IReadOnlyCollection<Type> TreeNodesSupportedForConfiguration =>  [typeof(IDeviceTreeCompressableDataNode),];
 
     public ConnectionKind ConnectionKind => ConnectionKind.Mqtt;
+
+    public IReadOnlyCollection<AggregationInterval> SupportedAggregationIntervals => [
+        AggregationInterval.OnChange,
+        AggregationInterval.SecondsOne,
+        AggregationInterval.SecondsFive,
+        AggregationInterval.SecondsTen,
+        AggregationInterval.SecondsThirty,
+        AggregationInterval.MinutesOne,
+        AggregationInterval.MinutesTwo,
+        AggregationInterval.MinutesFive,
+        AggregationInterval.MinutesTen,
+        AggregationInterval.MinutesThirty,
+        AggregationInterval.HoursOne,
+        ];
+
+    public IReadOnlyCollection<AggregationFunction> SupportedAggregationFunctions => [
+        AggregationFunction.Avg,
+        AggregationFunction.Min,
+        AggregationFunction.Max,
+        AggregationFunction.Last,
+        ];
+
 
     public IEnumerable<Connection> GetCloudConnections(IEnumerable<Connection> connections)
         => [.. connections.Where(k => k.Type == ConnectionType.Mqtt && !k.Managed && !k.Tags.Contains(Constants.MoneoConnectCloud))];
