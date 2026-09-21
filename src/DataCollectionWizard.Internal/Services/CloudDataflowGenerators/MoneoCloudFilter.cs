@@ -20,10 +20,10 @@ public sealed class MoneoCloudFilter : ICloudFilter
         ];
 
     public IReadOnlyCollection<AggregationFunction> SupportedAggregationFunctions => [
-        AggregationFunction.Last,
         AggregationFunction.Avg,
         AggregationFunction.Min,
         AggregationFunction.Max,
+        AggregationFunction.Last,
         ];
 
     public IEnumerable<Connection> GetCloudConnections(IEnumerable<Connection> connections)
