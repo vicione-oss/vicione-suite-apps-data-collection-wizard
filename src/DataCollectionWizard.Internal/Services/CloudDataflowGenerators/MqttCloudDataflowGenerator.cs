@@ -14,7 +14,6 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
     private const string PortDesignIdMqttDataPointFloat = "DataPointFloat";
     private const string PortDesignIdMqttDataPointString = "DataPointString";
     private const string PortDesignIdMqttFolder = "Folder";
-    private const string ViciOneRootTopic = "vicione";
 
     public string Name => "mqtt";
 
@@ -39,8 +38,7 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
 
         var dataport = GenerateDataPort(connection, deviceTreeMaster, builder, dataflow);
 
-        var vicioneNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdMqttFolder, dataport, ViciOneRootTopic, null, DataPortTransferMode.None);
-        var edgeNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdMqttFolder, vicioneNode, instanceInformationProvider.Local.Name ?? instanceInformationProvider.Local.SerialNumber, null, DataPortTransferMode.None);
+        var edgeNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdMqttFolder, dataport, instanceInformationProvider.Local.Name ?? instanceInformationProvider.Local.SerialNumber, null, DataPortTransferMode.None);
         var deviceNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdMqttFolder, edgeNode, GetMqttSafeTopicName(deviceTreeMaster.Url.DnsSafeHost), null, DataPortTransferMode.None);
 
         BuildDataportNodesRecursively(loggedTree!.Children, dataport, deviceNode, builder, result);
@@ -95,6 +93,8 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
 
         switch (child.DataConfig.Node.DataType)
         {
+            case DataType.UnsignedWhole:
+            case DataType.Whole:
             case DataType.Real:
             case DataType.Flag:
                 return typeof(double);
@@ -124,6 +124,8 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
 
         switch (child.DataConfig.Node.DataType)
         {
+            case DataType.UnsignedWhole:
+            case DataType.Whole:
             case DataType.Real:
             case DataType.Flag:
                 return PortDesignIdMqttDataPointFloat;

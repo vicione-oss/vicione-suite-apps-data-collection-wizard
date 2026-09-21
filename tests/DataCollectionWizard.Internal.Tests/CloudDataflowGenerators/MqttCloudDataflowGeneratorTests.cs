@@ -472,7 +472,7 @@ public class MqttCloudDataflowGeneratorTests
 
     /// <summary>
     /// Tests for the public GenerateCloudDataflow entry point, covering the folder scaffold
-    /// (vicione/edge/device) and the empty-result short-circuit when nothing is logged.
+    /// (edge/device) and the empty-result short-circuit when nothing is logged.
     /// </summary>
     public class GenerateCloudDataflowTests
     {
@@ -515,7 +515,7 @@ public class MqttCloudDataflowGeneratorTests
         }
 
         [Fact]
-        public void Builds_folder_hierarchy_rooted_at_vicione_edge_name_and_sanitized_device_host()
+        public void Builds_folder_hierarchy_rooted_at_edge_name_and_sanitized_device_host()
         {
             // Arrange
             using var builder = CreateBuilder(out var dataflow);
@@ -541,9 +541,7 @@ public class MqttCloudDataflowGeneratorTests
 
             // Assert
             var dataPort = Assert.Single(dataflow.DataPorts);
-            var vicioneNode = Assert.Single(dataPort.TreeNodes);
-            Assert.Equal("vicione", vicioneNode.Name);
-            var edgeNode = Assert.Single(vicioneNode.Children);
+            var edgeNode = Assert.Single(dataPort.TreeNodes);
             Assert.Equal("Edge One", edgeNode.Name); // unlike the device host and data node names below, the edge name is used as-is, not sanitized
             var deviceNode = Assert.Single(edgeNode.Children);
             Assert.Equal("my_broker_local", deviceNode.Name); // dots are not MQTT-safe, port is stripped by DnsSafeHost
@@ -580,8 +578,7 @@ public class MqttCloudDataflowGeneratorTests
 
             // Assert
             var dataPort = Assert.Single(dataflow.DataPorts);
-            var vicioneNode = Assert.Single(dataPort.TreeNodes);
-            var edgeNode = Assert.Single(vicioneNode.Children);
+            var edgeNode = Assert.Single(dataPort.TreeNodes);
             Assert.Equal("SN-42", edgeNode.Name);
         }
 
