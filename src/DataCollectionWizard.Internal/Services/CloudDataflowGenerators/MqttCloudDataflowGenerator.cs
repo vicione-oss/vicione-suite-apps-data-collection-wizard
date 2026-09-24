@@ -46,11 +46,11 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
         return result;
     }
 
-    private string GetMqttSafeTopicName(string dnsSafeHost)
+    private static string GetMqttSafeTopicName(string dnsSafeHost)
         // Replace any characters that are not allowed in MQTT topic names with underscores
-        => new string (dnsSafeHost.Select(c => char.IsLetterOrDigit(c) || c == '-' || c == '_' ? c : '_').ToArray());
+        => new([.. dnsSafeHost.Select(c => char.IsLetterOrDigit(c) || c == '-' || c == '_' ? c : '_')]);
 
-    internal void BuildDataportNodesRecursively(List<TreeModel> children, DataPort dataPort, DataPortTreeNode? parent, ClusterBuilder builder, Dictionary<string, AggregationFunctionCloudInputs> result)
+    internal static void BuildDataportNodesRecursively(List<TreeModel> children, DataPort dataPort, DataPortTreeNode? parent, ClusterBuilder builder, Dictionary<string, AggregationFunctionCloudInputs> result)
     {
         foreach (var child in children)
         {
@@ -84,28 +84,22 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
         }
     }
 
-    private Type? GetDataportNodeValueType(TreeModel child)
+    private static Type? GetDataportNodeValueType(TreeModel child)
     {
         if (child.DataConfig is null)
         {
             return null;
         }
 
-        switch (child.DataConfig.Node.DataType)
+        return child.DataConfig.Node.DataType switch
         {
-            case DataType.UnsignedWhole:
-            case DataType.Whole:
-            case DataType.Real:
-            case DataType.Flag:
-                return typeof(double);
-            case DataType.Text:
-                return typeof(string);
-            default:
-                throw new NotSupportedException($"Data type {child.DataConfig.Node.DataType} is not supported.");
-        }
+            DataType.UnsignedWhole or DataType.Whole or DataType.Real or DataType.Flag => typeof(double),
+            DataType.Text => typeof(string),
+            _ => throw new NotSupportedException($"Data type {child.DataConfig.Node.DataType} is not supported."),
+        };
     }
 
-    private DataPortTransferMode GetDataPortNodeTransferMode(TreeModel child)
+    private static DataPortTransferMode GetDataPortNodeTransferMode(TreeModel child)
     {
         if (child.DataConfig is null)
         {
@@ -115,28 +109,22 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
         return DataPortTransferMode.OnChange;
     }
 
-    private string GetDataPortNodeDesignId(TreeModel child)
+    private static string GetDataPortNodeDesignId(TreeModel child)
     {
         if (child.DataConfig is null)
         {
             return PortDesignIdMqttFolder;
         }
 
-        switch (child.DataConfig.Node.DataType)
+        return child.DataConfig.Node.DataType switch
         {
-            case DataType.UnsignedWhole:
-            case DataType.Whole:
-            case DataType.Real:
-            case DataType.Flag:
-                return PortDesignIdMqttDataPointFloat;
-            case DataType.Text:
-                return PortDesignIdMqttDataPointString;
-            default:
-                throw new NotSupportedException($"Data type {child.DataConfig.Node.DataType} is not supported.");
-        }
+            DataType.UnsignedWhole or DataType.Whole or DataType.Real or DataType.Flag => PortDesignIdMqttDataPointFloat,
+            DataType.Text => PortDesignIdMqttDataPointString,
+            _ => throw new NotSupportedException($"Data type {child.DataConfig.Node.DataType} is not supported."),
+        };
     }
 
-    internal TreeModel? BuildLoggedTreeRecursively(IDeviceTreeBase node, IEnumerable<string> loggedNodeIds, List<ProcessDataConfiguration> loggedProcessDataNodes)
+    internal static TreeModel? BuildLoggedTreeRecursively(IDeviceTreeBase node, IEnumerable<string> loggedNodeIds, List<ProcessDataConfiguration> loggedProcessDataNodes)
     {
         var children = new List<TreeModel>();
 
@@ -161,7 +149,7 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
             };
         }
 
-        if (children.Any())
+        if (children.Count != 0)
         {
             return new TreeModel()
             {

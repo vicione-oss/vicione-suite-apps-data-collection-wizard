@@ -9,7 +9,7 @@ public class MqttCloudFilter : ICloudFilter
 {
     public Type CloudDataflowGeneratorType => typeof(MqttCloudDataflowGenerator);
 
-    public IReadOnlyCollection<Type> TreeNodesSupportedForConfiguration =>  [typeof(IDeviceTreeCompressableDataNode),];
+    public IReadOnlyCollection<Type> TreeNodesSupportedForConfiguration => [typeof(IDeviceTreeCompressableDataNode),];
 
     public ConnectionKind ConnectionKind => ConnectionKind.Mqtt;
 
