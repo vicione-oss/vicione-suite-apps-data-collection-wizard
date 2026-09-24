@@ -12,7 +12,7 @@ namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 public abstract class CloudDataflowTreeGenerator
 {
     protected abstract string PortDesignIdFolder { get; }
-    protected abstract  string PortDesignIdDataPointFloat { get; }
+    protected abstract  string PortDesignIdDataPointDouble { get; }
     protected abstract string PortDesignIdDataPointString { get; }
 
     /// <summary>
@@ -104,8 +104,11 @@ public abstract class CloudDataflowTreeGenerator
 
         switch (child.DataConfig.Node.DataType)
         {
+            case DataType.Flag:
+            case DataType.UnsignedWhole:
+            case DataType.Whole:
             case DataType.Real:
-                return typeof(float);
+                return typeof(double);
             case DataType.Text:
                 return typeof(string);
             default:
@@ -133,7 +136,10 @@ public abstract class CloudDataflowTreeGenerator
         switch (child.DataConfig.Node.DataType)
         {
             case DataType.Real:
-                return PortDesignIdDataPointFloat;
+            case DataType.Flag:
+            case DataType.UnsignedWhole:
+            case DataType.Whole:
+                return PortDesignIdDataPointDouble;
             case DataType.Text:
                 return PortDesignIdDataPointString;
             default:

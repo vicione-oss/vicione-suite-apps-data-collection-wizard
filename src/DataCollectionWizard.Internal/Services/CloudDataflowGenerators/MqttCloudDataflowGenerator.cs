@@ -22,7 +22,7 @@ public sealed class MqttCloudDataflowGenerator(IInstanceInformationProvider inst
     public string Name => "mqtt";
 
     protected override string PortDesignIdFolder => "Folder";
-    protected override string PortDesignIdDataPointFloat => "DataPointFloat";
+    protected override string PortDesignIdDataPointDouble => "DataPointDouble";
     protected override string PortDesignIdDataPointString => "DataPointString";
 
     public Dictionary<string, AggregationFunctionCloudInputs> GenerateCloudDataflow(Connection connection,

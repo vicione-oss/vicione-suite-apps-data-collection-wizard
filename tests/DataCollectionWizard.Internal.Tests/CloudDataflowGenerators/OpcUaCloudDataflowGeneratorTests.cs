@@ -271,7 +271,7 @@ public class OpcUaCloudDataflowGeneratorTests
         private static Connection CreateOpcUaConnection(string name = "MyServer")
         {
             var connection = new Connection { Id = Guid.NewGuid(), Name = name, Type = ConnectionType.OpcUaServer };
-            connection.SetOpcUaServerConnection(new OpcUaServerConnection { Server = "0.0.0.0", Port = 4840 });
+            connection.SetOpcUaServerConnection(new OpcUaServerConnection { Port = 4840, Server = "0.0.0.0" });
             return connection;
         }
 
@@ -281,7 +281,7 @@ public class OpcUaCloudDataflowGeneratorTests
             // Arrange
             using var builder = CreateBuilder(out var dataflow);
             var connection = CreateOpcUaConnection();
-            var deviceTreeMaster = new DeviceTreeVseDevice { Id = "id", MacAddress = "aa:bb", Name = "Dev", Alias = "Dev", Url = new Uri("http://10.0.0.1") };
+            var deviceTreeMaster = new DeviceTreeVseDevice { Alias = "Dev", Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
             var generator = new OpcUaCloudDataflowGenerator(Substitute.For<IInstanceInformationProvider>());
 
             // Act
@@ -303,11 +303,11 @@ public class OpcUaCloudDataflowGeneratorTests
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
             var deviceTreeMaster = new DeviceTreeVseDevice
             {
+                Alias = "Dev",
                 Children = [dataNode],
                 Id = "id",
                 MacAddress = "aa:bb",
                 Name = "Dev",
-                Alias = "Dev",
                 Url = new Uri("http://my.server.local:4840"),
             };
             var instanceInfo = Substitute.For<IInstanceInformationProvider>();
@@ -341,11 +341,11 @@ public class OpcUaCloudDataflowGeneratorTests
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
             var deviceTreeMaster = new DeviceTreeVseDevice
             {
+                Alias = "Dev",
                 Children = [dataNode],
                 Id = "id",
                 MacAddress = "aa:bb",
                 Name = "Dev",
-                Alias = "Dev",
                 Url = new Uri("http://10.0.0.1"),
             };
             var instanceInfo = Substitute.For<IInstanceInformationProvider>();
@@ -372,9 +372,9 @@ public class OpcUaCloudDataflowGeneratorTests
             var connection = new Connection { Id = Guid.NewGuid(), Name = "MyServer", Type = ConnectionType.OpcUaServer };
             var opcUaConnection = new OpcUaServerConnection
             {
-                ApplicationCertificateSubject = "CN=Test Server",
                 ApplicationCertificatesStorePath = "CurrentUser\\My",
                 ApplicationCertificatesStoreType = OpcUaCertificateStoreType.X509Store,
+                ApplicationCertificateSubject = "CN=Test Server",
                 ApplicationName = "Test Server",
                 ApplicationUri = "urn:test:server",
                 AuthenticationMode = OpcUaAuthenticationMode.UsernamePassword,
@@ -399,11 +399,11 @@ public class OpcUaCloudDataflowGeneratorTests
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
             var deviceTreeMaster = new DeviceTreeVseDevice
             {
+                Alias = "Dev",
                 Children = [dataNode],
                 Id = "id",
                 MacAddress = "aa:bb",
                 Name = "Dev",
-                Alias = "Dev",
                 Url = new Uri("http://10.0.0.1"),
             };
             var instanceInfo = Substitute.For<IInstanceInformationProvider>();

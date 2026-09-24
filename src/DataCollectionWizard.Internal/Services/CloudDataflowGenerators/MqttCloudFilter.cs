@@ -34,7 +34,6 @@ public sealed class MqttCloudFilter : ICloudFilter
         AggregationFunction.Last,
         ];
 
-
     public IEnumerable<Connection> GetCloudConnections(IEnumerable<Connection> connections)
         => [.. connections.Where(IsMqttConnection)];
 
