@@ -36,5 +36,8 @@ public class MqttCloudFilter : ICloudFilter
 
 
     public IEnumerable<Connection> GetCloudConnections(IEnumerable<Connection> connections)
-        => [.. connections.Where(k => k.Type == ConnectionType.Mqtt && !k.Managed && !k.Tags.Contains(Constants.MoneoConnectCloud))];
+        => [.. connections.Where(IsMqttConnection)];
+
+    public static bool IsMqttConnection(Connection connection)
+        => connection.Type == ConnectionType.Mqtt && !connection.Managed && !connection.Tags.Contains(Constants.MoneoConnectCloud);
 }

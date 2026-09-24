@@ -52,6 +52,11 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
                                                                             List<ProcessDataConfiguration> loggedProcessDataNodes,
                                                                             List<IDeviceTreeDataNode> loggedRawDataNodes)
     {
+        if (!MoneoCloudFilter.IsMoneoConnection(connection))
+        {
+            throw new ArgumentException("Invalid connection type", nameof(connection));
+        }
+
         var result = new Dictionary<string, AggregationFunctionCloudInputs>();
 
         var deviceContainerManager = new DeviceContainerManager(deviceTreeMaster, () => cloudContainer, dataflow, builder);
@@ -87,13 +92,15 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
                 throw new InvalidOperationException($"Did not find ProcessDataInfo for id {currentProcessDataNode.Node.Id}");
             }
 
+            var valueInput = dataFormatterFb.GetInputByDesignId(FunctionBlocks.DataFormatter.Inputs.Value);
+
             result[currentProcessDataNode.Node.Id] = new AggregationFunctionCloudInputs()
             {
-                Avg = new CloudInput() { InputConnector = dataFormatterFb.GetInputByDesignId(FunctionBlocks.DataFormatter.Inputs.Value) },
-                Last = new CloudInput() { InputConnector = dataFormatterFb.GetInputByDesignId(FunctionBlocks.DataFormatter.Inputs.Value) },
-                Max = new CloudInput() { InputConnector = dataFormatterFb.GetInputByDesignId(FunctionBlocks.DataFormatter.Inputs.Value) },
-                Min = new CloudInput() { InputConnector = dataFormatterFb.GetInputByDesignId(FunctionBlocks.DataFormatter.Inputs.Value) },
-                Value = new CloudInput() { InputConnector = dataFormatterFb.GetInputByDesignId(FunctionBlocks.DataFormatter.Inputs.Value) },
+                Avg = new CloudInput() { InputConnector = valueInput },
+                Last = new CloudInput() { InputConnector = valueInput },
+                Max = new CloudInput() { InputConnector = valueInput },
+                Min = new CloudInput() { InputConnector = valueInput },
+                Value = new CloudInput() { InputConnector = valueInput },
             };
         }
     }

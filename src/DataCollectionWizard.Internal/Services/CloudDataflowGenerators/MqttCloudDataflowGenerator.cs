@@ -29,6 +29,11 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
                                                                             List<ProcessDataConfiguration> loggedProcessDataNodes,
                                                                             List<IDeviceTreeDataNode> loggedRawDataNodes)
     {
+        if (!MqttCloudFilter.IsMqttConnection(connection))
+        {
+            throw new ArgumentException("Invalid connection type", nameof(connection));
+        }
+
         var result = new Dictionary<string, AggregationFunctionCloudInputs>();
         var loggedNodeIds = loggedProcessDataNodes.Select(n => n.Node.Id).ToHashSet();
         var loggedTree = BuildLoggedTreeRecursively(deviceTreeMaster, loggedNodeIds, loggedProcessDataNodes);
@@ -38,7 +43,7 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
 
         var dataport = GenerateDataPort(connection, deviceTreeMaster, builder, dataflow);
 
-        var edgeNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdMqttFolder, dataport, instanceInformationProvider.Local.Name ?? instanceInformationProvider.Local.SerialNumber, null, DataPortTransferMode.None);
+        var edgeNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdMqttFolder, dataport, GetMqttSafeTopicName(instanceInformationProvider.Local.Name ?? instanceInformationProvider.Local.SerialNumber), null, DataPortTransferMode.None);
         var deviceNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdMqttFolder, edgeNode, GetMqttSafeTopicName(deviceTreeMaster.Url.DnsSafeHost), null, DataPortTransferMode.None);
 
         BuildDataportNodesRecursively(loggedTree!.Children, dataport, deviceNode, builder, result);
@@ -46,26 +51,46 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
         return result;
     }
 
-    private static string GetMqttSafeTopicName(string dnsSafeHost)
+    private static string GetMqttSafeTopicName(string name)
         // Replace any characters that are not allowed in MQTT topic names with underscores
-        => new([.. dnsSafeHost.Select(c => char.IsLetterOrDigit(c) || c == '-' || c == '_' ? c : '_')]);
+        => new([.. name.Select(c => char.IsLetterOrDigit(c) || c == '-' || c == '_' ? c : '_')]);
+
+    /// <summary>
+    /// Returns <paramref name="name"/>, or <paramref name="name"/> with a "_2", "_3", ... suffix if a sibling
+    /// already uses it. Different device tree names can sanitize to the same topic level (e.g. "Temp.1" and
+    /// "Temp_1"), and two siblings sharing a topic would publish over each other.
+    /// </summary>
+    private static string GetUniqueSiblingName(string name, HashSet<string> siblingNames)
+    {
+        var uniqueName = name;
+
+        for (var suffix = 2; !siblingNames.Add(uniqueName); suffix++)
+        {
+            uniqueName = $"{name}_{suffix}";
+        }
+
+        return uniqueName;
+    }
 
     internal static void BuildDataportNodesRecursively(List<TreeModel> children, DataPort dataPort, DataPortTreeNode? parent, ClusterBuilder builder, Dictionary<string, AggregationFunctionCloudInputs> result)
     {
+        var siblingNames = new HashSet<string>(StringComparer.Ordinal);
+
         foreach (var child in children)
         {
             var dataportNodeDesignId = GetDataPortNodeDesignId(child);
             var dataportNodeTransferMode = GetDataPortNodeTransferMode(child);
             var dataportNodeValueType = GetDataportNodeValueType(child);
+            var dataportNodeName = GetUniqueSiblingName(GetMqttSafeTopicName(child.Name), siblingNames);
             DataPortTreeNode childNode;
 
             if (parent is null)
             {
-                childNode = builder.Editors.DataPort.AddTreeNode(dataportNodeDesignId, dataPort, GetMqttSafeTopicName(child.Name), dataportNodeValueType, dataportNodeTransferMode);
+                childNode = builder.Editors.DataPort.AddTreeNode(dataportNodeDesignId, dataPort, dataportNodeName, dataportNodeValueType, dataportNodeTransferMode);
             }
             else
             {
-                childNode = builder.Editors.DataPortTreeNode.AddTreeNode(dataportNodeDesignId, parent, GetMqttSafeTopicName(child.Name), dataportNodeValueType, dataportNodeTransferMode);
+                childNode = builder.Editors.DataPortTreeNode.AddTreeNode(dataportNodeDesignId, parent, dataportNodeName, dataportNodeValueType, dataportNodeTransferMode);
             }
 
             if (child.DataConfig is not null)

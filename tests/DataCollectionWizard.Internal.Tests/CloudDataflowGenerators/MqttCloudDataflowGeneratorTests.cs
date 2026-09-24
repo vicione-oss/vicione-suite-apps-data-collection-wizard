@@ -1,6 +1,7 @@
 ﻿using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using DataCollectionWizard.Internal.Services.DesignIds;
+using DataCollectionWizard.Public;
 using Sdk.Connections.Contracts;
 using Sdk.Connections.Extensions;
 using Sdk.Instance;
@@ -448,6 +449,46 @@ public class MqttCloudDataflowGeneratorTests
             Assert.Equal("Data_1", dataPointNode.Name);
             Assert.Equal("n1", Assert.Single(result.Keys));
         }
+
+        [Fact]
+        public void Suffixes_siblings_whose_sanitized_names_collide()
+        {
+            // Arrange
+            var (builder, dataPort) = CreateDataPort();
+            var result = new Dictionary<string, AggregationFunctionCloudInputs>();
+            var children = new List<TreeModel>
+            {
+                new() { Id = "a", Name = "Temp.1" },
+                new() { Id = "b", Name = "Temp_1" },
+                new() { Id = "c", Name = "Temp_1_2" }, // already taken by the suffixed "Temp_1" above
+                new() { Id = "d", Name = "Temp 1" },
+            };
+
+            // Act
+            MqttCloudDataflowGenerator.BuildDataportNodesRecursively(children, dataPort, null, builder, result);
+
+            // Assert
+            Assert.Equal(["Temp_1", "Temp_1_2", "Temp_1_2_2", "Temp_1_3"], dataPort.TreeNodes.Select(n => n.Name));
+        }
+
+        [Fact]
+        public void Keeps_identical_names_under_different_parents()
+        {
+            // Arrange
+            var (builder, dataPort) = CreateDataPort();
+            var result = new Dictionary<string, AggregationFunctionCloudInputs>();
+            var children = new List<TreeModel>
+            {
+                new() { Children = [new() { Id = "a1", Name = "Value" }], Id = "a", Name = "A" },
+                new() { Children = [new() { Id = "b1", Name = "Value" }], Id = "b", Name = "B" },
+            };
+
+            // Act
+            MqttCloudDataflowGenerator.BuildDataportNodesRecursively(children, dataPort, null, builder, result);
+
+            // Assert
+            Assert.All(dataPort.TreeNodes, n => Assert.Equal("Value", Assert.Single(n.Children).Name));
+        }
     }
 
     /// <summary>
@@ -522,13 +563,34 @@ public class MqttCloudDataflowGeneratorTests
             // Assert
             var dataPort = Assert.Single(dataflow.DataPorts);
             var edgeNode = Assert.Single(dataPort.TreeNodes);
-            Assert.Equal("Edge One", edgeNode.Name); // unlike the device host and data node names below, the edge name is used as-is, not sanitized
+            Assert.Equal("Edge_One", edgeNode.Name); // space is not MQTT-safe
             var deviceNode = Assert.Single(edgeNode.Children);
             Assert.Equal("my_broker_local", deviceNode.Name); // dots are not MQTT-safe, port is stripped by DnsSafeHost
             var dataPointNode = Assert.Single(deviceNode.Children);
             Assert.Equal("DataPointFloat", dataPointNode.DesignId);
             Assert.Equal("n1", Assert.Single(result.Keys));
         }
+
+        [Theory]
+        [MemberData(nameof(NonMqttConnections))]
+        public void Throws_for_connection_that_is_not_a_plain_mqtt_connection(Connection connection)
+        {
+            // Arrange
+            using var builder = CreateBuilder(out var dataflow);
+            var deviceTreeMaster = new DeviceTreeVseDevice { Alias = "Dev", Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
+            var generator = new MqttCloudDataflowGenerator(Substitute.For<IInstanceInformationProvider>());
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
+                [], 1000, null!, [], [], []));
+        }
+
+        public static TheoryData<Connection> NonMqttConnections() => new()
+        {
+            new Connection { Id = Guid.NewGuid(), Name = "Http", Type = ConnectionType.Http },
+            new Connection { Id = Guid.NewGuid(), Managed = true, Name = "Managed", Type = ConnectionType.Mqtt },
+            new Connection { Id = Guid.NewGuid(), Name = "Moneo", Tags = [Constants.MoneoConnectCloud], Type = ConnectionType.Mqtt },
+        };
 
         [Fact]
         public void Falls_back_to_serial_number_when_instance_name_is_null()

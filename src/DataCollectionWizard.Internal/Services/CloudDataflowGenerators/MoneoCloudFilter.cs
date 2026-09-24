@@ -27,5 +27,8 @@ public sealed class MoneoCloudFilter : ICloudFilter
         ];
 
     public IEnumerable<Connection> GetCloudConnections(IEnumerable<Connection> connections)
-        => [.. connections.Where(k => k.Tags.Contains(Constants.MoneoConnectCloud) && k.Type == ConnectionType.Mqtt)];
+        => [.. connections.Where(IsMoneoConnection)];
+
+    public static bool IsMoneoConnection(Connection connection)
+        => connection.Tags.Contains(Constants.MoneoConnectCloud) && connection.Type == ConnectionType.Mqtt;
 }
