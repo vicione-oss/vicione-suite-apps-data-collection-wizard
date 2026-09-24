@@ -30,10 +30,9 @@ public class OpcUaCloudDataflowGeneratorTests
             var node = new DeviceTreeStructureNode { Id = "node1", Name = "Node 1" };
             var loggedNodeIds = new HashSet<string> { "node2", "node3" };
             var loggedProcessDataNodes = new List<ProcessDataConfiguration>();
-            var generator = new OpcUaCloudDataflowGenerator(Substitute.For<IInstanceInformationProvider>());
 
             // Act
-            var result = generator.BuildLoggedTreeRecursively(node, loggedNodeIds, loggedProcessDataNodes);
+            var result = CloudDataflowTreeGenerator.BuildLoggedTreeRecursively(node, loggedNodeIds, loggedProcessDataNodes);
 
             // Assert
             Assert.Null(result);
@@ -48,10 +47,9 @@ public class OpcUaCloudDataflowGeneratorTests
             var processDataConfig = new ProcessDataConfiguration(mockDataNode, new CompressorConfiguration() { DataGroupIdentifier = Guid.Parse("12300000-0000-0000-1234-000000000000") });
             var loggedNodeIds = new HashSet<string> { loggedNodeId };
             var loggedProcessDataNodes = new List<ProcessDataConfiguration> { processDataConfig };
-            var generator = new OpcUaCloudDataflowGenerator(Substitute.For<IInstanceInformationProvider>());
 
             // Act
-            var result = generator.BuildLoggedTreeRecursively(mockDataNode, loggedNodeIds, loggedProcessDataNodes);
+            var result = CloudDataflowTreeGenerator.BuildLoggedTreeRecursively(mockDataNode, loggedNodeIds, loggedProcessDataNodes);
 
             // Assert
             Assert.NotNull(result);
@@ -68,14 +66,13 @@ public class OpcUaCloudDataflowGeneratorTests
             var childNodeId = "child";
 
             var childNode = new DeviceTreeStructureNode { Id = childNodeId, Name = "Child" };
-            var parentNode = new DeviceTreeStructureNode { Children = new List<IDeviceTreeBase> { childNode }, Id = parentNodeId, Name = "Parent" };
+            var parentNode = new DeviceTreeStructureNode { Children = [childNode], Id = parentNodeId, Name = "Parent" };
 
             var loggedNodeIds = new HashSet<string> { childNodeId }; // Only child is logged
             var loggedProcessDataNodes = new List<ProcessDataConfiguration>();
-            var generator = new OpcUaCloudDataflowGenerator(Substitute.For<IInstanceInformationProvider>());
 
             // Act
-            var result = generator.BuildLoggedTreeRecursively(parentNode, loggedNodeIds, loggedProcessDataNodes);
+            var result = CloudDataflowTreeGenerator.BuildLoggedTreeRecursively(parentNode, loggedNodeIds, loggedProcessDataNodes);
 
             // Assert
             Assert.NotNull(result); // Parent should be included because child is logged
@@ -133,14 +130,18 @@ public class OpcUaCloudDataflowGeneratorTests
             Assert.Empty(result); // folders never get an entry in the cloud input dictionary
         }
 
-        [Fact]
-        public void Creates_float_data_point_node_for_real_data_type()
+        [Theory]
+        [InlineData(DataType.Flag)]
+        [InlineData(DataType.Real)]
+        [InlineData(DataType.UnsignedWhole)]
+        [InlineData(DataType.Whole)]
+        public void Creates_double_data_point_node_for_numeric_data_types(DataType dataType)
         {
             // Arrange
             var (builder, dataPort) = CreateDataPort();
             var generator = CreateGenerator();
             var result = new Dictionary<string, AggregationFunctionCloudInputs>();
-            var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Value" };
+            var dataNode = new DeviceTreeProcessData { DataType = dataType, Id = "n1", Name = "Value" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
             var children = new List<TreeModel> { new() { DataConfig = config, Id = "n1", Name = "Value" } };
 
@@ -149,8 +150,8 @@ public class OpcUaCloudDataflowGeneratorTests
 
             // Assert
             var node = Assert.Single(dataPort.TreeNodes);
-            Assert.Equal("DataPointFloat", node.DesignId);
-            Assert.Equal(typeof(float), node.ValueType);
+            Assert.Equal("DataPointDouble", node.DesignId);
+            Assert.Equal(typeof(double), node.ValueType);
             Assert.Equal(DataPortTransferMode.OnChange, node.TransferMode);
         }
 
@@ -178,7 +179,6 @@ public class OpcUaCloudDataflowGeneratorTests
         [Theory]
         [InlineData(DataType.Blob)]
         [InlineData(DataType.Unknown)]
-        [InlineData(DataType.Flag)]
         [InlineData(DataType.Octets)]
         public void Throws_for_unsupported_data_type(DataType dataType)
         {
@@ -327,7 +327,7 @@ public class OpcUaCloudDataflowGeneratorTests
             var deviceNode = Assert.Single(edgeNode.Children);
             Assert.Equal("my.server.local", deviceNode.Name); // dots are allowed for OPC UA node names, only control characters are stripped
             var dataPointNode = Assert.Single(deviceNode.Children);
-            Assert.Equal("DataPointFloat", dataPointNode.DesignId);
+            Assert.Equal("DataPointDouble", dataPointNode.DesignId);
             Assert.Equal("n1", Assert.Single(result.Keys));
         }
 

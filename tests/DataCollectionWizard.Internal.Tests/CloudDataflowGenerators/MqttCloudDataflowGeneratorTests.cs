@@ -30,7 +30,7 @@ public class MqttCloudDataflowGeneratorTests
             var loggedProcessDataNodes = new List<ProcessDataConfiguration>();
 
             // Act
-            var result = MqttCloudDataflowGenerator.BuildLoggedTreeRecursively(node, loggedNodeIds, loggedProcessDataNodes);
+            var result = CloudDataflowTreeGenerator.BuildLoggedTreeRecursively(node, loggedNodeIds, loggedProcessDataNodes);
 
             // Assert
             Assert.Null(result);
@@ -46,7 +46,7 @@ public class MqttCloudDataflowGeneratorTests
             var loggedProcessDataNodes = new List<ProcessDataConfiguration>();
 
             // Act
-            var result = MqttCloudDataflowGenerator.BuildLoggedTreeRecursively(node, loggedNodeIds, loggedProcessDataNodes);
+            var result = CloudDataflowTreeGenerator.BuildLoggedTreeRecursively(node, loggedNodeIds, loggedProcessDataNodes);
 
             // Assert
             Assert.NotNull(result);
@@ -68,7 +68,7 @@ public class MqttCloudDataflowGeneratorTests
             var loggedProcessDataNodes = new List<ProcessDataConfiguration> { processDataConfig };
 
             // Act
-            var result = MqttCloudDataflowGenerator.BuildLoggedTreeRecursively(mockDataNode, loggedNodeIds, loggedProcessDataNodes);
+            var result = CloudDataflowTreeGenerator.BuildLoggedTreeRecursively(mockDataNode, loggedNodeIds, loggedProcessDataNodes);
 
             // Assert
             Assert.NotNull(result);
@@ -93,7 +93,7 @@ public class MqttCloudDataflowGeneratorTests
             var loggedProcessDataNodes = new List<ProcessDataConfiguration>();
 
             // Act
-            var result = MqttCloudDataflowGenerator.BuildLoggedTreeRecursively(parentNode, loggedNodeIds, loggedProcessDataNodes);
+            var result = CloudDataflowTreeGenerator.BuildLoggedTreeRecursively(parentNode, loggedNodeIds, loggedProcessDataNodes);
 
             // Assert
             Assert.NotNull(result);
@@ -120,7 +120,7 @@ public class MqttCloudDataflowGeneratorTests
             var loggedProcessDataNodes = new List<ProcessDataConfiguration>();
 
             // Act
-            var result = MqttCloudDataflowGenerator.BuildLoggedTreeRecursively(parentNode, loggedNodeIds, loggedProcessDataNodes);
+            var result = CloudDataflowTreeGenerator.BuildLoggedTreeRecursively(parentNode, loggedNodeIds, loggedProcessDataNodes);
 
             // Assert
             Assert.NotNull(result); // Parent should be included because child is logged
@@ -146,7 +146,7 @@ public class MqttCloudDataflowGeneratorTests
             var loggedProcessDataNodes = new List<ProcessDataConfiguration>();
 
             // Act
-            var result = MqttCloudDataflowGenerator.BuildLoggedTreeRecursively(parentNode, loggedNodeIds, loggedProcessDataNodes);
+            var result = CloudDataflowTreeGenerator.BuildLoggedTreeRecursively(parentNode, loggedNodeIds, loggedProcessDataNodes);
 
             // Assert
             Assert.NotNull(result);
@@ -173,7 +173,7 @@ public class MqttCloudDataflowGeneratorTests
             var loggedProcessDataNodes = new List<ProcessDataConfiguration>();
 
             // Act
-            var result = MqttCloudDataflowGenerator.BuildLoggedTreeRecursively(level1Node, loggedNodeIds, loggedProcessDataNodes);
+            var result = CloudDataflowTreeGenerator.BuildLoggedTreeRecursively(level1Node, loggedNodeIds, loggedProcessDataNodes);
 
             // Assert
             Assert.NotNull(result);
@@ -198,7 +198,7 @@ public class MqttCloudDataflowGeneratorTests
             var loggedProcessDataNodes = new List<ProcessDataConfiguration>();
 
             // Act
-            var result = MqttCloudDataflowGenerator.BuildLoggedTreeRecursively(node, loggedNodeIds, loggedProcessDataNodes);
+            var result = CloudDataflowTreeGenerator.BuildLoggedTreeRecursively(node, loggedNodeIds, loggedProcessDataNodes);
 
             // Assert
             Assert.NotNull(result);
@@ -224,7 +224,7 @@ public class MqttCloudDataflowGeneratorTests
             var node1 = new DeviceTreeStructureNode { Children = [mockNode2], Id = node1Id, Name = "Node 1" };
 
             // Act
-            var result = MqttCloudDataflowGenerator.BuildLoggedTreeRecursively(node1, loggedNodeIds, loggedProcessDataNodes);
+            var result = CloudDataflowTreeGenerator.BuildLoggedTreeRecursively(node1, loggedNodeIds, loggedProcessDataNodes);
 
             // Assert
             Assert.NotNull(result);
@@ -260,7 +260,7 @@ public class MqttCloudDataflowGeneratorTests
             var loggedProcessDataNodes = new List<ProcessDataConfiguration>();
 
             // Act
-            var result = MqttCloudDataflowGenerator.BuildLoggedTreeRecursively(root, loggedNodeIds, loggedProcessDataNodes);
+            var result = CloudDataflowTreeGenerator.BuildLoggedTreeRecursively(root, loggedNodeIds, loggedProcessDataNodes);
 
             // Assert
             Assert.NotNull(result);
@@ -304,11 +304,15 @@ public class MqttCloudDataflowGeneratorTests
             return (builder, dataPort);
         }
 
+        private static MqttCloudDataflowGenerator CreateGenerator()
+            => new(Substitute.For<IInstanceInformationProvider>());
+
         [Fact]
         public void Creates_folder_node_with_sanitized_name_for_child_without_data_config()
         {
             // Arrange
             var (builder, dataPort) = CreateDataPort();
+            var generator = CreateGenerator();
             var result = new Dictionary<string, AggregationFunctionCloudInputs>();
             var children = new List<TreeModel> { new() { DataConfig = null, Id = "folder1", Name = "My Folder!" } };
 
@@ -325,11 +329,15 @@ public class MqttCloudDataflowGeneratorTests
         }
 
         [Theory]
+        [InlineData(DataType.Flag)]
         [InlineData(DataType.Real)]
+        [InlineData(DataType.UnsignedWhole)]
+        [InlineData(DataType.Whole)]
         public void Creates_double_data_point_node_for_numeric_data_types(DataType dataType)
         {
             // Arrange
             var (builder, dataPort) = CreateDataPort();
+            var generator = CreateGenerator();
             var result = new Dictionary<string, AggregationFunctionCloudInputs>();
             var dataNode = new DeviceTreeProcessData { DataType = dataType, Id = "n1", Name = "Value" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
@@ -340,7 +348,7 @@ public class MqttCloudDataflowGeneratorTests
 
             // Assert
             var node = Assert.Single(dataPort.TreeNodes);
-            Assert.Equal("DataPointFloat", node.DesignId);
+            Assert.Equal("DataPointDouble", node.DesignId);
             Assert.Equal(typeof(double), node.ValueType);
             Assert.Equal(DataPortTransferMode.OnChange, node.TransferMode);
         }
@@ -351,6 +359,7 @@ public class MqttCloudDataflowGeneratorTests
         {
             // Arrange
             var (builder, dataPort) = CreateDataPort();
+            var generator = CreateGenerator();
             var result = new Dictionary<string, AggregationFunctionCloudInputs>();
             var dataNode = new DeviceTreeProcessData { DataType = dataType, Id = "n1", Name = "Value" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
@@ -374,6 +383,7 @@ public class MqttCloudDataflowGeneratorTests
         {
             // Arrange
             var (builder, dataPort) = CreateDataPort();
+            var generator = CreateGenerator();
             var result = new Dictionary<string, AggregationFunctionCloudInputs>();
             var dataNode = new DeviceTreeProcessData { DataType = dataType, Id = "n1", Name = "Value" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
@@ -388,6 +398,7 @@ public class MqttCloudDataflowGeneratorTests
         {
             // Arrange
             var (builder, dataPort) = CreateDataPort();
+            var generator = CreateGenerator();
             var result = new Dictionary<string, AggregationFunctionCloudInputs>();
             var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Value" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
@@ -411,6 +422,7 @@ public class MqttCloudDataflowGeneratorTests
         {
             // Arrange
             var (builder, dataPort) = CreateDataPort();
+            var generator = CreateGenerator();
             var result = new Dictionary<string, AggregationFunctionCloudInputs>();
             var children = new List<TreeModel> { new() { DataConfig = null, Id = "folder1", Name = "Root" } };
 
@@ -426,6 +438,7 @@ public class MqttCloudDataflowGeneratorTests
         {
             // Arrange
             var (builder, dataPort) = CreateDataPort();
+            var generator = CreateGenerator();
             var result = new Dictionary<string, AggregationFunctionCloudInputs>();
             var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Data 1" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
@@ -567,7 +580,7 @@ public class MqttCloudDataflowGeneratorTests
             var deviceNode = Assert.Single(edgeNode.Children);
             Assert.Equal("my_broker_local", deviceNode.Name); // dots are not MQTT-safe, port is stripped by DnsSafeHost
             var dataPointNode = Assert.Single(deviceNode.Children);
-            Assert.Equal("DataPointFloat", dataPointNode.DesignId);
+            Assert.Equal("DataPointDouble", dataPointNode.DesignId);
             Assert.Equal("n1", Assert.Single(result.Keys));
         }
 

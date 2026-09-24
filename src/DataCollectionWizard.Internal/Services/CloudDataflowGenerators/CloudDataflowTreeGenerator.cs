@@ -12,7 +12,7 @@ namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 public abstract class CloudDataflowTreeGenerator
 {
     protected abstract string PortDesignIdFolder { get; }
-    protected abstract  string PortDesignIdDataPointDouble { get; }
+    protected abstract string PortDesignIdDataPointDouble { get; }
     protected abstract string PortDesignIdDataPointString { get; }
 
     /// <summary>
@@ -20,7 +20,7 @@ public abstract class CloudDataflowTreeGenerator
     /// </summary>
     private protected abstract string GetSafeNodeName(string name);
 
-    internal TreeModel? BuildLoggedTreeRecursively(IDeviceTreeBase node, IEnumerable<string> loggedNodeIds, List<ProcessDataConfiguration> loggedProcessDataNodes)
+    internal static TreeModel? BuildLoggedTreeRecursively(IDeviceTreeBase node, IEnumerable<string> loggedNodeIds, List<ProcessDataConfiguration> loggedProcessDataNodes)
     {
         var children = new List<TreeModel>();
 
@@ -45,7 +45,7 @@ public abstract class CloudDataflowTreeGenerator
             };
         }
 
-        if (children.Any())
+        if (children.Count != 0)
         {
             return new TreeModel()
             {
@@ -95,28 +95,22 @@ public abstract class CloudDataflowTreeGenerator
     // Only Real/Text data points are wired up for now. The DataPorts also define
     // DataPointBool/Integer/DateTime/Binary node types, so this can be extended once those DataType
     // values are confirmed and their mapping to CLR types is settled.
-    private Type? GetDataportNodeValueType(TreeModel child)
+    private static Type? GetDataportNodeValueType(TreeModel child)
     {
         if (child.DataConfig is null)
         {
             return null;
         }
 
-        switch (child.DataConfig.Node.DataType)
+        return child.DataConfig.Node.DataType switch
         {
-            case DataType.Flag:
-            case DataType.UnsignedWhole:
-            case DataType.Whole:
-            case DataType.Real:
-                return typeof(double);
-            case DataType.Text:
-                return typeof(string);
-            default:
-                throw new NotSupportedException($"Data type {child.DataConfig.Node.DataType} is not supported.");
-        }
+            DataType.Flag or DataType.UnsignedWhole or DataType.Whole or DataType.Real => typeof(double),
+            DataType.Text => typeof(string),
+            _ => throw new NotSupportedException($"Data type {child.DataConfig.Node.DataType} is not supported."),
+        };
     }
 
-    private DataPortTransferMode GetDataPortNodeTransferMode(TreeModel child)
+    private static DataPortTransferMode GetDataPortNodeTransferMode(TreeModel child)
     {
         if (child.DataConfig is null)
         {
@@ -133,17 +127,11 @@ public abstract class CloudDataflowTreeGenerator
             return PortDesignIdFolder;
         }
 
-        switch (child.DataConfig.Node.DataType)
+        return child.DataConfig.Node.DataType switch
         {
-            case DataType.Real:
-            case DataType.Flag:
-            case DataType.UnsignedWhole:
-            case DataType.Whole:
-                return PortDesignIdDataPointDouble;
-            case DataType.Text:
-                return PortDesignIdDataPointString;
-            default:
-                throw new NotSupportedException($"Data type {child.DataConfig.Node.DataType} is not supported.");
-        }
+            DataType.Real or DataType.Flag or DataType.UnsignedWhole or DataType.Whole => PortDesignIdDataPointDouble,
+            DataType.Text => PortDesignIdDataPointString,
+            _ => throw new NotSupportedException($"Data type {child.DataConfig.Node.DataType} is not supported."),
+        };
     }
 }
