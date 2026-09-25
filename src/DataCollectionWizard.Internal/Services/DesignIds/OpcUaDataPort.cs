@@ -1,10 +1,9 @@
 namespace DataCollectionWizard.Internal.Services.DesignIds;
 
-// DesignId taken from the OPC-UA Server DataPort's own node id ("OPCUA-Server" under Root.ChildNodes).
-// Type follows the MQTTDataPort/ANNADataPort naming convention (protocol acronym + "DataPort") but is
-// not confirmed against the actual DataPort registration — verify before relying on this in a real deploy.
+// Both ids come from the OPC-UA Server DataPort's ruleset (OpcUaServer.yaml): DesignId is the server node
+// under Root.ChildNodes, Type is Root.Id, which cluster management resolves the ruleset by.
 public class OpcUaDataPort : IDataPort
 {
     public string DesignId => "OPCUA-Server";
-    public string Type => "OPCUADataPort";
+    public string Type => "OpcUaServerDataPort";
 }

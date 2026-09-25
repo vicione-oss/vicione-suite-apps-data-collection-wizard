@@ -135,7 +135,7 @@ public class OpcUaCloudDataflowGeneratorTests
         [InlineData(DataType.Real)]
         [InlineData(DataType.UnsignedWhole)]
         [InlineData(DataType.Whole)]
-        public void Creates_double_data_point_node_for_numeric_data_types(DataType dataType)
+        public void Creates_float_data_point_node_for_numeric_data_types(DataType dataType)
         {
             // Arrange
             var (builder, dataPort) = CreateDataPort();
@@ -150,7 +150,7 @@ public class OpcUaCloudDataflowGeneratorTests
 
             // Assert
             var node = Assert.Single(dataPort.TreeNodes);
-            Assert.Equal("DataPointDouble", node.DesignId);
+            Assert.Equal("DataPointFloat", node.DesignId);
             Assert.Equal(typeof(double), node.ValueType);
             Assert.Equal(DataPortTransferMode.OnChange, node.TransferMode);
         }
@@ -327,7 +327,7 @@ public class OpcUaCloudDataflowGeneratorTests
             var deviceNode = Assert.Single(edgeNode.Children);
             Assert.Equal("my.server.local", deviceNode.Name); // dots are allowed for OPC UA node names, only control characters are stripped
             var dataPointNode = Assert.Single(deviceNode.Children);
-            Assert.Equal("DataPointDouble", dataPointNode.DesignId);
+            Assert.Equal("DataPointFloat", dataPointNode.DesignId);
             Assert.Equal("n1", Assert.Single(result.Keys));
         }
 

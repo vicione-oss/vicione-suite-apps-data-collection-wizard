@@ -18,7 +18,7 @@ public class OpcUaCloudDataflowGenerator(IInstanceInformationProvider instanceIn
     public string Name => "opcua";
 
     protected override string PortDesignIdFolder => "Folder";
-    protected override string PortDesignIdDataPointDouble => "DataPointDouble";
+    protected override string PortDesignIdDataPointDouble => "DataPointFloat";
     protected override string PortDesignIdDataPointString => "DataPointString";
 
     public Dictionary<string, AggregationFunctionCloudInputs> GenerateCloudDataflow(Connection connection,
@@ -70,10 +70,6 @@ public class OpcUaCloudDataflowGenerator(IInstanceInformationProvider instanceIn
         var dataPort = builder.Editors.Dataflow.AddDataPort(dataflow, FunctionBlocks.OpcUaDataPort.DesignId,
                                     $"{connection.Name} - {deviceTreeMaster.Url}", DataPortDirection.Out, FunctionBlocks.OpcUaDataPort.Type);
 
-        // Property design ids mirror the OpcUaServerConnection property groups and follow the same naming
-        // the OPC-UA Client DataPort mapping uses; the server-only ids (Namespace, SecurityPolicy,
-        // TransportQuotas, Min/MaxPublishingInterval) are not confirmed against the actual OPC-UA Server
-        // DataPort registration — verify before relying on this in a real deploy.
 
         // ---- Connection ----
         builder.Editors.DataPort.AddProperty("ApplicationName", dataPort, null, opcUaConnection.ApplicationName);
