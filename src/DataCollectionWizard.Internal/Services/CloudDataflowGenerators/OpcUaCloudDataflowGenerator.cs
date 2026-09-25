@@ -13,9 +13,10 @@ namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 public class OpcUaCloudDataflowGenerator(IInstanceInformationProvider instanceInformationProvider) : CloudDataflowTreeGenerator, ICloudDataflowGenerator
 {
     private const string DefaultRootNodeName = "vicione";
-    private const int MaxNodeNameLength = 256;
 
     public string Name => "opcua";
+
+    private protected override int? MaxNodeNameLength => 256;
 
     protected override string PortDesignIdFolder => "Folder";
     protected override string PortDesignIdDataPointDouble => "DataPointFloat";
@@ -47,7 +48,7 @@ public class OpcUaCloudDataflowGenerator(IInstanceInformationProvider instanceIn
         // always rooted at a fixed folder named after the suite.
         var rootNodeName = GetSafeNodeName(DefaultRootNodeName);
         var rootNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdFolder, dataport, rootNodeName, null, DataPortTransferMode.None);
-        var edgeNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdFolder, rootNode, instanceInformationProvider.Local.Name ?? instanceInformationProvider.Local.SerialNumber, null, DataPortTransferMode.None);
+        var edgeNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdFolder, rootNode, GetSafeNodeName(instanceInformationProvider.Local.Name ?? instanceInformationProvider.Local.SerialNumber), null, DataPortTransferMode.None);
         var deviceNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdFolder, edgeNode, GetSafeNodeName(deviceTreeMaster.Url.DnsSafeHost), null, DataPortTransferMode.None);
 
         BuildDataportNodesRecursively(loggedTree!.Children, dataport, deviceNode, builder, result);
@@ -60,7 +61,7 @@ public class OpcUaCloudDataflowGenerator(IInstanceInformationProvider instanceIn
     private protected override string GetSafeNodeName(string name)
     {
         var sanitized = new string([.. name.Where(c => !char.IsControl(c))]);
-        return sanitized.Length > MaxNodeNameLength ? sanitized[..MaxNodeNameLength] : sanitized;
+        return sanitized.Length > MaxNodeNameLength ? sanitized[..MaxNodeNameLength.Value] : sanitized;
     }
 
     private static DataPort GenerateDataPort(Connection connection, OpcUaServerConnection? opcUaConnection, IDeviceTreeMasterNode deviceTreeMaster, ClusterBuilder builder, Dataflow dataflow)

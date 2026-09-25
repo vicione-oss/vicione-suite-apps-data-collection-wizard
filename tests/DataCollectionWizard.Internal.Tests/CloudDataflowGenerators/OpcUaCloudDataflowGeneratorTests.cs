@@ -219,6 +219,27 @@ public class OpcUaCloudDataflowGeneratorTests
         }
 
         [Fact]
+        public void Fits_sibling_suffix_within_the_name_length_limit()
+        {
+            // Arrange
+            var (builder, dataPort) = CreateDataPort();
+            var generator = CreateGenerator();
+            var result = new Dictionary<string, AggregationFunctionCloudInputs>();
+            var longName = new string('a', 256);
+            var children = new List<TreeModel>
+            {
+                new() { Id = "a", Name = longName + "-first" }, // both truncate to the same 256 characters
+                new() { Id = "b", Name = longName + "-second" },
+            };
+
+            // Act
+            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, result);
+
+            // Assert
+            Assert.Equal([longName, longName[..254] + "_2"], dataPort.TreeNodes.Select(n => n.Name));
+        }
+
+        [Fact]
         public void Nests_child_node_under_parent_instead_of_data_port()
         {
             // Arrange

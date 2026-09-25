@@ -20,6 +20,34 @@ public abstract class CloudDataflowTreeGenerator
     /// </summary>
     private protected abstract string GetSafeNodeName(string name);
 
+    /// <summary>
+    /// The longest DataPort tree node name the target protocol accepts, or null if it has no limit.
+    /// </summary>
+    private protected virtual int? MaxNodeNameLength => null;
+
+    /// <summary>
+    /// Returns <paramref name="name"/>, or <paramref name="name"/> with a "_2", "_3", ... suffix if a sibling
+    /// already uses it. Different device tree names can sanitize to the same node name (e.g. "Temp.1" and
+    /// "Temp_1"), and two siblings sharing a name would publish over each other. With a length limit the name
+    /// is shortened to make room for the suffix, so truncation cannot cut it off again.
+    /// </summary>
+    private string GetUniqueSiblingName(string name, HashSet<string> siblingNames)
+    {
+        var uniqueName = name;
+
+        for (var suffix = 2; !siblingNames.Add(uniqueName); suffix++)
+        {
+            var suffixText = $"_{suffix}";
+            var baseName = MaxNodeNameLength is { } maxLength && name.Length + suffixText.Length > maxLength
+                ? name[..(maxLength - suffixText.Length)]
+                : name;
+
+            uniqueName = baseName + suffixText;
+        }
+
+        return uniqueName;
+    }
+
     internal static TreeModel? BuildLoggedTreeRecursively(IDeviceTreeBase node, IEnumerable<string> loggedNodeIds, List<ProcessDataConfiguration> loggedProcessDataNodes)
     {
         var children = new List<TreeModel>();
@@ -60,20 +88,23 @@ public abstract class CloudDataflowTreeGenerator
 
     internal void BuildDataportNodesRecursively(List<TreeModel> children, DataPort dataPort, DataPortTreeNode? parent, ClusterBuilder builder, Dictionary<string, AggregationFunctionCloudInputs> result)
     {
+        var siblingNames = new HashSet<string>(StringComparer.Ordinal);
+
         foreach (var child in children)
         {
             var dataportNodeDesignId = GetDataPortNodeDesignId(child);
             var dataportNodeTransferMode = GetDataPortNodeTransferMode(child);
             var dataportNodeValueType = GetDataportNodeValueType(child);
+            var dataportNodeName = GetUniqueSiblingName(GetSafeNodeName(child.Name), siblingNames);
             DataPortTreeNode childNode;
 
             if (parent is null)
             {
-                childNode = builder.Editors.DataPort.AddTreeNode(dataportNodeDesignId, dataPort, GetSafeNodeName(child.Name), dataportNodeValueType, dataportNodeTransferMode);
+                childNode = builder.Editors.DataPort.AddTreeNode(dataportNodeDesignId, dataPort, dataportNodeName, dataportNodeValueType, dataportNodeTransferMode);
             }
             else
             {
-                childNode = builder.Editors.DataPortTreeNode.AddTreeNode(dataportNodeDesignId, parent, GetSafeNodeName(child.Name), dataportNodeValueType, dataportNodeTransferMode);
+                childNode = builder.Editors.DataPortTreeNode.AddTreeNode(dataportNodeDesignId, parent, dataportNodeName, dataportNodeValueType, dataportNodeTransferMode);
             }
 
             if (child.DataConfig is not null)

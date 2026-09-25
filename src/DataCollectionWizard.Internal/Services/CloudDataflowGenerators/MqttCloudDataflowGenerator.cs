@@ -51,7 +51,7 @@ public sealed class MqttCloudDataflowGenerator(IInstanceInformationProvider inst
 
         var dataport = GenerateDataPort(connection, deviceTreeMaster, builder, dataflow);
 
-        var edgeNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdFolder, dataport, instanceInformationProvider.Local.Name ?? instanceInformationProvider.Local.SerialNumber, null, DataPortTransferMode.None);
+        var edgeNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdFolder, dataport, GetSafeNodeName(instanceInformationProvider.Local.Name ?? instanceInformationProvider.Local.SerialNumber), null, DataPortTransferMode.None);
         var deviceNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdFolder, edgeNode, GetSafeNodeName(deviceTreeMaster.Url.DnsSafeHost), null, DataPortTransferMode.None);
 
         BuildDataportNodesRecursively(loggedTree!.Children, dataport, deviceNode, builder, dataOutputs, result);
