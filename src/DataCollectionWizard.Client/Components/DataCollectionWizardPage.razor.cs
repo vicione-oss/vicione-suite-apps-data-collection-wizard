@@ -1489,11 +1489,11 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         }
 
 
-        var nonMoneoConnections = _publishTargets.Except(new MoneoCloudFilter().GetCloudConnections(_publishTargets));
+        var schedulerConnectionIds = ConnectionIdsSupporting<IDeviceTreeSchedulableDataNode>();
 
         var schedulerConfigurations = dataNodes.OfType<IDeviceTreeSchedulableDataNode>()
                                                .SelectMany(n => n.SchedulerConfigurations)
-                                               .Where(s => nonMoneoConnections.Any(c => c.Id == s.DataGroupIdentifier));
+                                               .Where(s => schedulerConnectionIds.Contains(s.DataGroupIdentifier));
 
         foreach (var schedulerConfiguration in schedulerConfigurations)
         {
@@ -1578,16 +1578,13 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                 }
             }
 
-            var nonMoneoConnectionIds = _publishTargets
-                .Except(new MoneoCloudFilter().GetCloudConnections(_publishTargets))
-                .Select(connection => connection.Id)
-                .ToHashSet();
+            var schedulerConnectionIds = ConnectionIdsSupporting<IDeviceTreeSchedulableDataNode>();
 
             foreach (var node in selectedNodes.OfType<IDeviceTreeSchedulableDataNode>())
             {
                 foreach (var configuration in node.SchedulerConfigurations
                              .Where(configuration => connectionIds.Contains(configuration.DataGroupIdentifier)
-                                                     && nonMoneoConnectionIds.Contains(configuration.DataGroupIdentifier)))
+                                                     && schedulerConnectionIds.Contains(configuration.DataGroupIdentifier)))
                 {
                     configuration.Enabled = request.Enabled;
                     changedNodes.Add(node);
@@ -1620,6 +1617,10 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
         if (targetIds.Count == 0)
             return;
+
+        var schedulerTargetIds = targetIds.Intersect(ConnectionIdsSupporting<IDeviceTreeSchedulableDataNode>()).ToHashSet();
+        var triggerTargetIds = targetIds.Intersect(ConnectionIdsSupporting<IDeviceTreeEventTriggerDataNode>()).ToHashSet();
+        var rawDataTargetIds = targetIds.Intersect(ConnectionIdsSupporting<IDeviceTreeConfigurableRawDataNode>()).ToHashSet();
 
         var selectedNodes = _service.SelectedNodes;
 
@@ -1759,7 +1760,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         IEnumerable<(IDeviceTreeDataNode Node, SchedulerConfiguration Configuration)> SchedulerConfigurations()
             => selectedNodes.OfType<IDeviceTreeSchedulableDataNode>()
                 .SelectMany(node => node.SchedulerConfigurations
-                    .Where(configuration => targetIds.Contains(configuration.DataGroupIdentifier))
+                    .Where(configuration => schedulerTargetIds.Contains(configuration.DataGroupIdentifier))
                     .Select(configuration => ((IDeviceTreeDataNode)node, configuration)));
 
         // One selected row carries a trigger per sensor and per cloud, so a change reaches more configurations
@@ -1768,13 +1769,13 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             => selectedNodes.OfType<IDeviceTreeEventTriggerDataNode>()
                 .SelectMany(node => node.EventTriggerConfigurations
                     .SelectMany(sensor => sensor.Triggers)
-                    .Where(trigger => targetIds.Contains(trigger.DataGroupIdentifier))
+                    .Where(trigger => triggerTargetIds.Contains(trigger.DataGroupIdentifier))
                     .Select(trigger => ((IDeviceTreeDataNode)node, trigger)));
 
         IEnumerable<(IDeviceTreeDataNode Node, RawDataSettings Settings)> RawDataSettings()
             => selectedNodes.OfType<IDeviceTreeConfigurableRawDataNode>()
                 .SelectMany(node => node.RawDataConfigurations
-                    .Where(entry => targetIds.Contains(entry.Key))
+                    .Where(entry => rawDataTargetIds.Contains(entry.Key))
                     .Select(entry => ((IDeviceTreeDataNode)node, entry.Value)));
 
         // Rebuilds the schedule the same way the single-row editor does, so both produce identical Times.
@@ -1793,6 +1794,13 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
     private bool IsConfigurable(Connection connection)
         => _publishTargetInfos.FirstOrDefault(info => info.Connection.Id == connection.Id)
             is { TreeNodesSupportedForConfiguration.Count: > 0 };
+
+    // The publish targets whose cloud filter lets a TNode be configured, so a bulk change never enables, say, a
+    // blob recording on a cloud that cannot publish one.
+    private HashSet<Guid> ConnectionIdsSupporting<TNode>() where TNode : IDeviceTreeBase
+        => [.. _publishTargetInfos
+            .Where(info => info.TreeNodesSupportedForConfiguration.Contains(typeof(TNode)))
+            .Select(info => info.Connection.Id)];
 
     public void SetDebugRawDataGrid()
         => _rawDataPullingMaxTimesADay = 24 * 60 / 5;
