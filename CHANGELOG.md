@@ -6,13 +6,13 @@
 
 ### Dependencies
 
-- `.NET` packages, update to version `10.0.11`
+- `.NET` packages, update to version `10.0.12`
 - `AspNetCore.SassCompiler` package, update version to `1.102.0`
-- `ViciOne.Ui.Design` package, update version to `2.3.0`
+- `ViciOne.Ui.Design` package, update version to `2.5.0`
 - `ViciOne.Ui.MonochromeIcons.Components` package, update version to `4.18.0`
-- `ViciOne.Ui.Blazor.Components` package, update version to `6.0.0`
+- `ViciOne.Ui.Blazor.Components` package, update version to `6.1.1`
 - `ViciOne.Suite.ClusterManagement.Public` package, update version to `2.4.0-ci2729942661`
-- `ViciOne.Suite.Sdk` package, update version to `2.2.0`
+- `ViciOne.Suite.Sdk` package, update version to `3.1.0`
 
 ## 2.1.2 - 2026-06-23
 
