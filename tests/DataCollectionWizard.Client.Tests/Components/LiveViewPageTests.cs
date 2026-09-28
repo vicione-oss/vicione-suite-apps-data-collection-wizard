@@ -8,6 +8,7 @@ using Sdk.Testing.Client;
 using ViciOne.DeviceTree.Contracts;
 using ViciOne.Ui.Blazor.Components.Dialog.Extensions;
 using ViciOne.Ui.Blazor.Components.ExpandableMenu.Extensions;
+using ViciOne.Ui.Blazor.Components.Sidebar.Extensions;
 using ViciOne.Ui.Blazor.Components.Tooltip.Extensions;
 using ViciOne.Ui.MonochromeIcons.Assets.Services;
 
@@ -45,6 +46,7 @@ public class LiveViewPageTests
         ctx.Services.AddDialog();
         ctx.Services.AddExpandableMenu();
         ctx.Services.AddTooltip();
+        ctx.Services.AddSidebar();
 
         // Act
         var page = ctx.Render<LiveViewPage>();

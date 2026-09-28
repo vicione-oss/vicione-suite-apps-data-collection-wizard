@@ -9,6 +9,7 @@ using Sdk.Testing.Client;
 using ViciOne.DeviceTree.Contracts;
 using ViciOne.Ui.Blazor.Components.Dialog.Extensions;
 using ViciOne.Ui.Blazor.Components.ExpandableMenu.Extensions;
+using ViciOne.Ui.Blazor.Components.Sidebar.Extensions;
 using ViciOne.Ui.Blazor.Components.Tooltip.Extensions;
 using ViciOne.Ui.MonochromeIcons.Assets.Services;
 
@@ -41,6 +42,7 @@ public class DataCollectionWizardPageTests
         ctx.Services.AddScoped(_ => Substitute.For<IMonochromeIconSvgMarkupProvider>());
         ctx.Services.AddScoped<DeviceTreeNodeIconProvider>();
         ctx.Services.AddDialog();
+        ctx.Services.AddSidebar();
 
         // Act
         var page = ctx.Render<DataCollectionWizardPage>();

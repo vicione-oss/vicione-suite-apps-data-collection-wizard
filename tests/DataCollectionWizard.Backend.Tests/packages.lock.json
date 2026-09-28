@@ -1139,7 +1139,7 @@
       },
       "ViciOne.Ui.Blazor.Components": {
         "type": "CentralTransitive",
-        "requested": "[5.19.0, )",
+        "requested": "[6.0.0, )",
         "resolved": "5.19.0",
         "contentHash": "nBMdBplB/3GPu66CL4H17gbrIl7E/BsMJhgcy3IEfrIOWy7xC1mLXFuWFb41yqbepfG4ZVRf8Tt3NLr/2JemSw==",
         "dependencies": {
@@ -1151,7 +1151,7 @@
       },
       "ViciOne.Ui.MonochromeIcons.Components": {
         "type": "CentralTransitive",
-        "requested": "[4.15.0, )",
+        "requested": "[4.18.0, )",
         "resolved": "4.15.0",
         "contentHash": "PpyOL0Ed0KklTNUV4SoOI3hymOsYSBDhn3PXWe7XYAJvyrjNLghVR5ThR5/DsfQPvtwnURnoOekcK/7PquQVYg==",
         "dependencies": {
