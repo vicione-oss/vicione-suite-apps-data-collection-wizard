@@ -12,8 +12,6 @@ namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
 public class OpcUaCloudDataflowGenerator(IInstanceInformationProvider instanceInformationProvider) : CloudDataflowTreeGenerator, ICloudDataflowGenerator
 {
-    private const string DefaultRootNodeName = "vicione";
-
     public string Name => "opcua";
 
     private protected override int? MaxNodeNameLength => 256;
@@ -43,13 +41,7 @@ public class OpcUaCloudDataflowGenerator(IInstanceInformationProvider instanceIn
 
         var opcUaConnection = connection.GetOpcUaServerConnection();
         var dataport = GenerateDataPort(connection, opcUaConnection, deviceTreeMaster, builder, dataflow);
-
-        // The OPC-UA Server DataPort has no client-side "RootNodeId" setting; the exposed address space is
-        // always rooted at a fixed folder named after the suite.
-        var rootNodeName = GetSafeNodeName(DefaultRootNodeName);
-        var rootNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdFolder, dataport, rootNodeName, null, DataPortTransferMode.None);
-        var edgeNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdFolder, rootNode, GetSafeNodeName(instanceInformationProvider.Local.Name ?? instanceInformationProvider.Local.SerialNumber), null, DataPortTransferMode.None);
-        var deviceNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdFolder, edgeNode, GetSafeNodeName(deviceTreeMaster.Url.DnsSafeHost), null, DataPortTransferMode.None);
+        var deviceNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdFolder, dataport, GetSafeNodeName(deviceTreeMaster.Url.DnsSafeHost), null, DataPortTransferMode.None);
 
         BuildDataportNodesRecursively(loggedTree!.Children, dataport, deviceNode, builder, result);
 
