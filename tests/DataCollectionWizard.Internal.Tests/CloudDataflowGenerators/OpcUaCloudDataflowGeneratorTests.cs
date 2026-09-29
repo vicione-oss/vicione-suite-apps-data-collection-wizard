@@ -4,7 +4,6 @@ using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using Sdk.Connections.Contracts;
-using Sdk.Instance;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Builder.Abstractions;
 using ViciOne.Cluster.Model;
@@ -107,7 +106,7 @@ public class OpcUaCloudDataflowGeneratorTests
         }
 
         private static OpcUaCloudDataflowGenerator CreateGenerator()
-            => new(Substitute.For<IInstanceInformationProvider>());
+            => new();
 
         [Fact]
         public void Creates_folder_node_and_only_strips_control_characters_from_name()
@@ -303,7 +302,7 @@ public class OpcUaCloudDataflowGeneratorTests
             using var builder = CreateBuilder(out var dataflow);
             var connection = CreateOpcUaConnection();
             var deviceTreeMaster = new DeviceTreeVseDevice { Alias = "Dev", Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
-            var generator = new OpcUaCloudDataflowGenerator(Substitute.For<IInstanceInformationProvider>());
+            var generator = new OpcUaCloudDataflowGenerator();
 
             // Act
             var result = generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
@@ -315,7 +314,7 @@ public class OpcUaCloudDataflowGeneratorTests
         }
 
         [Fact]
-        public void Builds_folder_hierarchy_rooted_at_default_name()
+        public void Builds_folder_hierarchy_rooted_at_device_host()
         {
             // Arrange
             using var builder = CreateBuilder(out var dataflow);
@@ -331,9 +330,7 @@ public class OpcUaCloudDataflowGeneratorTests
                 Name = "Dev",
                 Url = new Uri("http://my.server.local:4840"),
             };
-            var instanceInfo = Substitute.For<IInstanceInformationProvider>();
-            instanceInfo.Local.Name.Returns("Edge One");
-            var generator = new OpcUaCloudDataflowGenerator(instanceInfo);
+            var generator = new OpcUaCloudDataflowGenerator();
 
             // Act
             var result = generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
@@ -341,11 +338,7 @@ public class OpcUaCloudDataflowGeneratorTests
 
             // Assert
             var dataPort = Assert.Single(dataflow.DataPorts);
-            var rootNode = Assert.Single(dataPort.TreeNodes);
-            Assert.Equal("vicione", rootNode.Name);
-            var edgeNode = Assert.Single(rootNode.Children);
-            Assert.Equal("Edge One", edgeNode.Name);
-            var deviceNode = Assert.Single(edgeNode.Children);
+            var deviceNode = Assert.Single(dataPort.TreeNodes);
             Assert.Equal("my.server.local", deviceNode.Name); // dots are allowed for OPC UA node names, only control characters are stripped
             var dataPointNode = Assert.Single(deviceNode.Children);
             Assert.Equal("DataPointFloat", dataPointNode.DesignId);
@@ -353,36 +346,17 @@ public class OpcUaCloudDataflowGeneratorTests
         }
 
         [Fact]
-        public void Falls_back_to_serial_number_when_instance_name_is_null()
+        public void Throws_for_connection_that_is_not_an_opcua_server_connection()
         {
             // Arrange
             using var builder = CreateBuilder(out var dataflow);
-            var connection = CreateOpcUaConnection();
-            var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Value" };
-            var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
-            var deviceTreeMaster = new DeviceTreeVseDevice
-            {
-                Alias = "Dev",
-                Children = [dataNode],
-                Id = "id",
-                MacAddress = "aa:bb",
-                Name = "Dev",
-                Url = new Uri("http://10.0.0.1"),
-            };
-            var instanceInfo = Substitute.For<IInstanceInformationProvider>();
-            instanceInfo.Local.Name.Returns((string?)null);
-            instanceInfo.Local.SerialNumber.Returns("SN-42");
-            var generator = new OpcUaCloudDataflowGenerator(instanceInfo);
+            var connection = new Connection { Id = Guid.NewGuid(), Name = "Mqtt", Type = ConnectionType.Mqtt };
+            var deviceTreeMaster = new DeviceTreeVseDevice { Alias = "Dev", Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
+            var generator = new OpcUaCloudDataflowGenerator();
 
-            // Act
-            generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
-                [], 1000, null!, [], [config], []);
-
-            // Assert
-            var dataPort = Assert.Single(dataflow.DataPorts);
-            var rootNode = Assert.Single(dataPort.TreeNodes);
-            var edgeNode = Assert.Single(rootNode.Children);
-            Assert.Equal("SN-42", edgeNode.Name);
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
+                [], 1000, null!, [], [], []));
         }
 
         [Fact]
@@ -427,9 +401,7 @@ public class OpcUaCloudDataflowGeneratorTests
                 Name = "Dev",
                 Url = new Uri("http://10.0.0.1"),
             };
-            var instanceInfo = Substitute.For<IInstanceInformationProvider>();
-            instanceInfo.Local.Name.Returns("Edge");
-            var generator = new OpcUaCloudDataflowGenerator(instanceInfo);
+            var generator = new OpcUaCloudDataflowGenerator();
 
             // Act
             generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",

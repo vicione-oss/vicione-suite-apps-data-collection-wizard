@@ -9,11 +9,11 @@ public sealed class MqttCloudFilter : ICloudFilter
 {
     public Type CloudDataflowGeneratorType => typeof(MqttCloudDataflowGenerator);
 
-    public IReadOnlyCollection<Type> TreeNodesSupportedForConfiguration => [typeof(IDeviceTreeCompressableDataNode),];
+    public IReadOnlyCollection<Type> TreeNodesSupportedForConfiguration { get; } = [typeof(IDeviceTreeCompressableDataNode),];
 
     public ConnectionKind ConnectionKind => ConnectionKind.Mqtt;
 
-    public IReadOnlyCollection<AggregationInterval> SupportedAggregationIntervals => [
+    public IReadOnlyCollection<AggregationInterval> SupportedAggregationIntervals { get; } = [
         AggregationInterval.OnChange,
         AggregationInterval.SecondsOne,
         AggregationInterval.SecondsFive,
@@ -27,7 +27,7 @@ public sealed class MqttCloudFilter : ICloudFilter
         AggregationInterval.HoursOne,
         ];
 
-    public IReadOnlyCollection<AggregationFunction> SupportedAggregationFunctions => [
+    public IReadOnlyCollection<AggregationFunction> SupportedAggregationFunctions { get; } = [
         AggregationFunction.Avg,
         AggregationFunction.Min,
         AggregationFunction.Max,

@@ -9,7 +9,7 @@ public sealed class AnnaCloudFilter : ICloudFilter
 {
     public Type CloudDataflowGeneratorType => typeof(AnnaCloudDataflowGenerator);
 
-    public IReadOnlyCollection<Type> TreeNodesSupportedForConfiguration => [
+    public IReadOnlyCollection<Type> TreeNodesSupportedForConfiguration { get; } = [
         typeof(IDeviceTreeCompressableDataNode),
         typeof(IDeviceTreeConfigurableRawDataNode),
         typeof(IDeviceTreeEventTriggerDataNode),
@@ -18,7 +18,7 @@ public sealed class AnnaCloudFilter : ICloudFilter
 
     public ConnectionKind ConnectionKind => ConnectionKind.Anna;
 
-    public IReadOnlyCollection<AggregationInterval> SupportedAggregationIntervals => [
+    public IReadOnlyCollection<AggregationInterval> SupportedAggregationIntervals { get; } = [
         AggregationInterval.OnChange,
         AggregationInterval.SecondsOne,
         AggregationInterval.SecondsFive,
@@ -32,7 +32,7 @@ public sealed class AnnaCloudFilter : ICloudFilter
         AggregationInterval.HoursOne,
         ];
 
-    public IReadOnlyCollection<AggregationFunction> SupportedAggregationFunctions => [
+    public IReadOnlyCollection<AggregationFunction> SupportedAggregationFunctions { get; } = [
         AggregationFunction.MinMaxAvg,
         AggregationFunction.Avg,
         AggregationFunction.Min,

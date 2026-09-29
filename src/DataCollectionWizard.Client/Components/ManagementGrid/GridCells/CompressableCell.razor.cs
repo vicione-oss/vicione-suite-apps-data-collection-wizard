@@ -17,6 +17,8 @@ public sealed partial class CompressableCell : ComponentBase
     private static readonly Expression<Func<ComboBoxOption<AggregationFunction>, string>> s_aggregationFunctionTextSelector = e => e.Text;
     private static readonly Expression<Func<ComboBoxOption<AggregationFunction>, AggregationFunction>> s_aggregationFunctionValueSelector = e => e.Value;
     private CompressorConfiguration? _cachedConfig;
+    private ComboBoxOption<AggregationInterval>[]? _aggregationIntervals;
+    private ComboBoxOption<AggregationFunction>[]? _aggregationFunctions;
     private bool _shouldRender = true;
     private IDeviceTreeCompressableDataNode? _previousDataNode;
     private PublishTargetInfo? _previousConfiguration;
@@ -51,13 +53,14 @@ public sealed partial class CompressableCell : ComponentBase
             .Single(cc => cc.DataGroupIdentifier == Configuration.Connection.Id);
 
     // Which options this row's cloud offers comes straight from its ICloudFilter, via Configuration
-    // (PublishTargetInfo) - this only wraps them for the ComboBox.
+    // (PublishTargetInfo) - this only wraps them for the ComboBox. Cached per Configuration so each render hands
+    // the ComboBox the same Items instance.
     private ComboBoxOption<AggregationInterval>[] AggregationIntervals
-        => [.. Configuration.SupportedAggregationIntervals
+        => _aggregationIntervals ??= [.. Configuration.SupportedAggregationIntervals
             .Select(interval => new ComboBoxOption<AggregationInterval> { Text = interval.AggregationIntervalToString(), Value = interval, })];
 
     private ComboBoxOption<AggregationFunction>[] AggregationFunctions
-        => [.. Configuration.SupportedAggregationFunctions
+        => _aggregationFunctions ??= [.. Configuration.SupportedAggregationFunctions
             .Select(function => new ComboBoxOption<AggregationFunction> { Text = function.AggregationFunctionToString(), Value = function, })];
 
     protected override void OnParametersSet()
@@ -67,6 +70,12 @@ public sealed partial class CompressableCell : ComponentBase
             ReferenceEquals(_previousConfiguration, Configuration))
         {
             return;
+        }
+
+        if (!ReferenceEquals(_previousConfiguration, Configuration))
+        {
+            _aggregationIntervals = null;
+            _aggregationFunctions = null;
         }
 
         _previousRenderEpoch = RenderEpoch;

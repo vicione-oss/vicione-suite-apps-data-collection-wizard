@@ -5,15 +5,15 @@ using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
-public class OpcUaCloudFilter : ICloudFilter
+public sealed class OpcUaCloudFilter : ICloudFilter
 {
     public Type CloudDataflowGeneratorType => typeof(OpcUaCloudDataflowGenerator);
 
-    public IReadOnlyCollection<Type> TreeNodesSupportedForConfiguration => [typeof(IDeviceTreeCompressableDataNode),];
+    public IReadOnlyCollection<Type> TreeNodesSupportedForConfiguration { get; } = [typeof(IDeviceTreeCompressableDataNode),];
 
     public ConnectionKind ConnectionKind => ConnectionKind.OpcUa;
 
-    public IReadOnlyCollection<AggregationInterval> SupportedAggregationIntervals => [
+    public IReadOnlyCollection<AggregationInterval> SupportedAggregationIntervals { get; } = [
         AggregationInterval.OnChange,
         AggregationInterval.SecondsOne,
         AggregationInterval.SecondsFive,
@@ -27,7 +27,7 @@ public class OpcUaCloudFilter : ICloudFilter
         AggregationInterval.HoursOne,
         ];
 
-    public IReadOnlyCollection<AggregationFunction> SupportedAggregationFunctions => [
+    public IReadOnlyCollection<AggregationFunction> SupportedAggregationFunctions { get; } = [
         AggregationFunction.Avg,
         AggregationFunction.Min,
         AggregationFunction.Max,
@@ -35,5 +35,8 @@ public class OpcUaCloudFilter : ICloudFilter
         ];
 
     public IEnumerable<Connection> GetCloudConnections(IEnumerable<Connection> connections)
-        => [.. connections.Where(k => k.Type == ConnectionType.OpcUaServer)];
+        => [.. connections.Where(IsOpcUaConnection)];
+
+    public static bool IsOpcUaConnection(Connection connection)
+        => connection.Type == ConnectionType.OpcUaServer;
 }

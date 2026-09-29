@@ -8,7 +8,6 @@ using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using DataCollectionWizard.Public;
 using Microsoft.Extensions.Logging;
 using Sdk.Connections.Contracts;
-using Sdk.Instance;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Builder.Abstractions;
 using ViciOne.Cluster.Model;
@@ -32,13 +31,11 @@ public class DataflowGeneratorTests
     {
         // Arrange
         var opcUaConnection = CreateOpcUaConnection();
-        var instanceInfo = Substitute.For<IInstanceInformationProvider>();
-        instanceInfo.Local.Name.Returns("Edge");
         var master = CreateMaster(opcUaConnection.Id);
         var deviceGenerator = new FakeDeviceDataflowGenerator();
         using var builder = CreateBuilder(out var dataflow, out var engine);
         var generator = CreateDataflowGenerator(builder, deviceGenerator,
-            [new OpcUaCloudDataflowGenerator(instanceInfo)], [new OpcUaCloudFilter()]);
+            [new OpcUaCloudDataflowGenerator()], [new OpcUaCloudFilter()]);
 
         // Act
         var exception = Record.Exception(() => generator.Generate(master, [opcUaConnection], dataflow, engine, out _, out _, out _));

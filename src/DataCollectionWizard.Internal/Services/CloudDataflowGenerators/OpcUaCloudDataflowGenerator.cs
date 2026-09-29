@@ -3,14 +3,13 @@ using ClusterManagement.Public.Connections.Extensions;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using Sdk.Connections.Contracts;
-using Sdk.Instance;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Model;
 using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
-public class OpcUaCloudDataflowGenerator(IInstanceInformationProvider instanceInformationProvider) : CloudDataflowTreeGenerator, ICloudDataflowGenerator
+public sealed class OpcUaCloudDataflowGenerator :CloudDataflowTreeGenerator, ICloudDataflowGenerator
 {
     public string Name => "opcua";
 
@@ -32,6 +31,11 @@ public class OpcUaCloudDataflowGenerator(IInstanceInformationProvider instanceIn
                                                                             List<ProcessDataConfiguration> loggedProcessDataNodes,
                                                                             List<IDeviceTreeDataNode> loggedRawDataNodes)
     {
+        if (!OpcUaCloudFilter.IsOpcUaConnection(connection))
+        {
+            throw new ArgumentException("Invalid connection type", nameof(connection));
+        }
+
         var result = new Dictionary<string, AggregationFunctionCloudInputs>();
         var loggedNodeIds = loggedProcessDataNodes.Select(n => n.Node.Id).ToHashSet();
         var loggedTree = BuildLoggedTreeRecursively(deviceTreeMaster, loggedNodeIds, loggedProcessDataNodes);
@@ -39,11 +43,12 @@ public class OpcUaCloudDataflowGenerator(IInstanceInformationProvider instanceIn
         if (loggedTree is null)
             return result;
 
-        var opcUaConnection = connection.GetOpcUaServerConnection();
+        var opcUaConnection = connection.GetOpcUaServerConnection()
+            ?? throw new ArgumentException("Connection has no OPC UA server configuration", nameof(connection));
         var dataport = GenerateDataPort(connection, opcUaConnection, deviceTreeMaster, builder, dataflow);
         var deviceNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdFolder, dataport, GetSafeNodeName(deviceTreeMaster.Url.DnsSafeHost), null, DataPortTransferMode.None);
 
-        BuildDataportNodesRecursively(loggedTree!.Children, dataport, deviceNode, builder, result);
+        BuildDataportNodesRecursively(loggedTree.Children, dataport, deviceNode, builder, result);
 
         return result;
     }
@@ -56,13 +61,10 @@ public class OpcUaCloudDataflowGenerator(IInstanceInformationProvider instanceIn
         return sanitized.Length > MaxNodeNameLength ? sanitized[..MaxNodeNameLength.Value] : sanitized;
     }
 
-    private static DataPort GenerateDataPort(Connection connection, OpcUaServerConnection? opcUaConnection, IDeviceTreeMasterNode deviceTreeMaster, ClusterBuilder builder, Dataflow dataflow)
+    private static DataPort GenerateDataPort(Connection connection, OpcUaServerConnection opcUaConnection, IDeviceTreeMasterNode deviceTreeMaster, ClusterBuilder builder, Dataflow dataflow)
     {
-        ArgumentNullException.ThrowIfNull(opcUaConnection);
-
         var dataPort = builder.Editors.Dataflow.AddDataPort(dataflow, FunctionBlocks.OpcUaDataPort.DesignId,
                                     $"{connection.Name} - {deviceTreeMaster.Url}", DataPortDirection.Out, FunctionBlocks.OpcUaDataPort.Type);
-
 
         // ---- Connection ----
         builder.Editors.DataPort.AddProperty("ApplicationName", dataPort, null, opcUaConnection.ApplicationName);
