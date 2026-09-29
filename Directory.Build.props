@@ -8,7 +8,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Description>-</Description>
         <Product>ViciOne</Product>
-        <Company>ifm software gmbh</Company>
+        <Company>ViciOne open automation gmbh</Company>
         <Year>$([System.DateTime]::Now.Year)</Year>
         <Copyright>Copyright © $(Company) $(Year)</Copyright>
         <NeutralLanguage>en</NeutralLanguage>

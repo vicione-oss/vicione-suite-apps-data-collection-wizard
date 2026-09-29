@@ -3,6 +3,7 @@
 ## 2.2.0 - Unreleased
 
 - Required SVG icons from the MonochromeIcon repository are now provided at runtime through the ViciOne.Ui.MonochromeIcons.Assets package
+- Rename the company to `ViciOne open automation gmbh` in the license and the package metadata
 
 ### Dependencies
 
