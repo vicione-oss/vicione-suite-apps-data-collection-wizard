@@ -9,7 +9,7 @@ using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
-public sealed class OpcUaCloudDataflowGenerator :CloudDataflowTreeGenerator, ICloudDataflowGenerator
+public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService systemConfigurationService) : CloudDataflowTreeGenerator, ICloudDataflowGenerator
 {
     public string Name => "opcua";
 
@@ -45,7 +45,8 @@ public sealed class OpcUaCloudDataflowGenerator :CloudDataflowTreeGenerator, ICl
 
         var opcUaConnection = connection.GetOpcUaServerConnection()
             ?? throw new ArgumentException("Connection has no OPC UA server configuration", nameof(connection));
-        var dataport = GenerateDataPort(connection, opcUaConnection, deviceTreeMaster, builder, dataflow);
+        var serverAddress = GetServerAddress(connection, opcUaConnection);
+        var dataport = GenerateDataPort(connection, opcUaConnection, serverAddress, deviceTreeMaster, builder, dataflow);
         var deviceNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdFolder, dataport, GetSafeNodeName(deviceTreeMaster.Url.DnsSafeHost), null, DataPortTransferMode.None);
 
         BuildDataportNodesRecursively(loggedTree.Children, dataport, deviceNode, builder, result);
@@ -61,7 +62,20 @@ public sealed class OpcUaCloudDataflowGenerator :CloudDataflowTreeGenerator, ICl
         return sanitized.Length > MaxNodeNameLength ? sanitized[..MaxNodeNameLength.Value] : sanitized;
     }
 
-    private static DataPort GenerateDataPort(Connection connection, OpcUaServerConnection opcUaConnection, IDeviceTreeMasterNode deviceTreeMaster, ClusterBuilder builder, Dataflow dataflow)
+    // The connection only names the host interface the server binds to, while the DataPort needs an address,
+    // so the interface's current IPv4 address is looked up in the host's network configuration. Dataflow
+    // generation is synchronous, hence the blocking wait on the host management request.
+    private string GetServerAddress(Connection connection, OpcUaServerConnection opcUaConnection)
+    {
+        var hostNetworkInterfaces = systemConfigurationService.GetNetworkInterfacesAsync(CancellationToken.None).GetAwaiter().GetResult();
+        var networkInterface = hostNetworkInterfaces.FirstOrDefault(i => string.Equals(i.Name, opcUaConnection.NetworkInterface, StringComparison.Ordinal))
+            ?? throw new InvalidOperationException($"Network interface '{opcUaConnection.NetworkInterface}' of OPC UA connection '{connection.Name}' was not found on the host.");
+
+        return networkInterface.IPv4Address?.ToString()
+            ?? throw new InvalidOperationException($"Network interface '{opcUaConnection.NetworkInterface}' of OPC UA connection '{connection.Name}' has no IPv4 address.");
+    }
+
+    private static DataPort GenerateDataPort(Connection connection, OpcUaServerConnection opcUaConnection, string serverAddress, IDeviceTreeMasterNode deviceTreeMaster, ClusterBuilder builder, Dataflow dataflow)
     {
         var dataPort = builder.Editors.Dataflow.AddDataPort(dataflow, FunctionBlocks.OpcUaDataPort.DesignId,
                                     $"{connection.Name} - {deviceTreeMaster.Url}", DataPortDirection.Out, FunctionBlocks.OpcUaDataPort.Type);
@@ -70,7 +84,7 @@ public sealed class OpcUaCloudDataflowGenerator :CloudDataflowTreeGenerator, ICl
         builder.Editors.DataPort.AddProperty("ApplicationName", dataPort, null, opcUaConnection.ApplicationName);
         builder.Editors.DataPort.AddProperty("ApplicationUri", dataPort, null, opcUaConnection.ApplicationUri);
         builder.Editors.DataPort.AddProperty("Namespace", dataPort, null, opcUaConnection.Namespace);
-        builder.Editors.DataPort.AddProperty("Server", dataPort, null, opcUaConnection.Server);
+        builder.Editors.DataPort.AddProperty("Server", dataPort, null, serverAddress);
         builder.Editors.DataPort.AddProperty("Port", dataPort, null, opcUaConnection.Port);
         builder.Editors.DataPort.AddProperty("Endpoint", dataPort, null, opcUaConnection.Endpoint);
         builder.Editors.DataPort.AddProperty("SecurityPolicy", dataPort, null, (byte)opcUaConnection.SecurityPolicy);

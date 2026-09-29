@@ -1,4 +1,5 @@
-﻿using ClusterManagement.Public.Connections.Contracts;
+﻿using System.Net;
+using ClusterManagement.Public.Connections.Contracts;
 using ClusterManagement.Public.Connections.Extensions;
 using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services;
@@ -8,6 +9,7 @@ using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using DataCollectionWizard.Public;
 using Microsoft.Extensions.Logging;
 using Sdk.Connections.Contracts;
+using Sdk.SystemConfiguration.Contracts;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Builder.Abstractions;
 using ViciOne.Cluster.Model;
@@ -35,7 +37,7 @@ public class DataflowGeneratorTests
         var deviceGenerator = new FakeDeviceDataflowGenerator();
         using var builder = CreateBuilder(out var dataflow, out var engine);
         var generator = CreateDataflowGenerator(builder, deviceGenerator,
-            [new OpcUaCloudDataflowGenerator()], [new OpcUaCloudFilter()]);
+            [new OpcUaCloudDataflowGenerator(CreateSystemConfigurationService())], [new OpcUaCloudFilter()]);
 
         // Act
         var exception = Record.Exception(() => generator.Generate(master, [opcUaConnection], dataflow, engine, out _, out _, out _));
@@ -71,7 +73,7 @@ public class DataflowGeneratorTests
     private static Connection CreateOpcUaConnection()
     {
         var connection = new Connection { Id = Guid.NewGuid(), Name = "OPC/UA", Type = ConnectionType.OpcUaServer };
-        connection.SetOpcUaServerConnection(new OpcUaServerConnection { Port = 4840, Server = "0.0.0.0" });
+        connection.SetOpcUaServerConnection(new OpcUaServerConnection { Port = 4840, NetworkInterface = "lan1" });
         return connection;
     }
 
@@ -138,6 +140,14 @@ public class DataflowGeneratorTests
         engine = builder.Editors.EngineHost.AddEngine(engineHost, "Engine");
 
         return builder;
+    }
+
+    private static ISystemConfigurationService CreateSystemConfigurationService()
+    {
+        var systemConfigurationService = Substitute.For<ISystemConfigurationService>();
+        systemConfigurationService.GetNetworkInterfacesAsync(Arg.Any<CancellationToken>())
+            .Returns([new NetworkInterface { Name = "lan1", IPv4Address = IPAddress.Parse("10.0.0.5") }]);
+        return systemConfigurationService;
     }
 
     private static DataflowGenerator CreateDataflowGenerator(ClusterBuilder builder, FakeDeviceDataflowGenerator deviceGenerator,

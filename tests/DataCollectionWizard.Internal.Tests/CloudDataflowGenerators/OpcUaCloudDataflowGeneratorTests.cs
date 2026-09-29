@@ -1,9 +1,12 @@
+using System.Net;
 using ClusterManagement.Public.Connections.Contracts;
 using ClusterManagement.Public.Connections.Extensions;
 using DataCollectionWizard.Internal.Extensions;
+using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using Sdk.Connections.Contracts;
+using Sdk.SystemConfiguration.Contracts;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Builder.Abstractions;
 using ViciOne.Cluster.Model;
@@ -106,7 +109,7 @@ public class OpcUaCloudDataflowGeneratorTests
         }
 
         private static OpcUaCloudDataflowGenerator CreateGenerator()
-            => new();
+            => new(Substitute.For<ISystemConfigurationService>());
 
         [Fact]
         public void Creates_folder_node_and_only_strips_control_characters_from_name()
@@ -275,6 +278,19 @@ public class OpcUaCloudDataflowGeneratorTests
     /// </summary>
     public class GenerateCloudDataflowTests
     {
+        private static readonly IReadOnlyList<NetworkInterface> s_hostNetworkInterfaces =
+        [
+            new NetworkInterface { Name = "lan0", IPv4Address = IPAddress.Parse("192.168.0.1") },
+            new NetworkInterface { Name = "lan1", IPv4Address = IPAddress.Parse("10.0.0.5") },
+        ];
+
+        private static OpcUaCloudDataflowGenerator CreateGenerator(IReadOnlyList<NetworkInterface>? hostNetworkInterfaces = null)
+        {
+            var systemConfigurationService = Substitute.For<ISystemConfigurationService>();
+            systemConfigurationService.GetNetworkInterfacesAsync(Arg.Any<CancellationToken>()).Returns(hostNetworkInterfaces ?? s_hostNetworkInterfaces);
+            return new OpcUaCloudDataflowGenerator(systemConfigurationService);
+        }
+
         private static ClusterBuilder CreateBuilder(out Dataflow dataflow)
         {
             var resolver = Substitute.For<IDependencyResolver>();
@@ -291,7 +307,7 @@ public class OpcUaCloudDataflowGeneratorTests
         private static Connection CreateOpcUaConnection(string name = "MyServer")
         {
             var connection = new Connection { Id = Guid.NewGuid(), Name = name, Type = ConnectionType.OpcUaServer };
-            connection.SetOpcUaServerConnection(new OpcUaServerConnection { Port = 4840, Server = "0.0.0.0" });
+            connection.SetOpcUaServerConnection(new OpcUaServerConnection { Port = 4840, NetworkInterface = "lan1" });
             return connection;
         }
 
@@ -302,7 +318,7 @@ public class OpcUaCloudDataflowGeneratorTests
             using var builder = CreateBuilder(out var dataflow);
             var connection = CreateOpcUaConnection();
             var deviceTreeMaster = new DeviceTreeVseDevice { Alias = "Dev", Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
-            var generator = new OpcUaCloudDataflowGenerator();
+            var generator = CreateGenerator();
 
             // Act
             var result = generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
@@ -330,7 +346,7 @@ public class OpcUaCloudDataflowGeneratorTests
                 Name = "Dev",
                 Url = new Uri("http://my.server.local:4840"),
             };
-            var generator = new OpcUaCloudDataflowGenerator();
+            var generator = CreateGenerator();
 
             // Act
             var result = generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
@@ -352,11 +368,48 @@ public class OpcUaCloudDataflowGeneratorTests
             using var builder = CreateBuilder(out var dataflow);
             var connection = new Connection { Id = Guid.NewGuid(), Name = "Mqtt", Type = ConnectionType.Mqtt };
             var deviceTreeMaster = new DeviceTreeVseDevice { Alias = "Dev", Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
-            var generator = new OpcUaCloudDataflowGenerator();
+            var generator = CreateGenerator();
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
                 [], 1000, null!, [], [], []));
+        }
+
+        [Theory]
+        [InlineData("lan2")] // unknown interface
+        [InlineData("LAN1")] // interface names are case sensitive
+        public void Throws_when_the_connection_interface_does_not_exist_on_the_host(string networkInterface)
+        {
+            // Arrange
+            using var builder = CreateBuilder(out var dataflow);
+            var connection = new Connection { Id = Guid.NewGuid(), Name = "MyServer", Type = ConnectionType.OpcUaServer };
+            connection.SetOpcUaServerConnection(new OpcUaServerConnection { Port = 4840, NetworkInterface = networkInterface });
+            var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Value" };
+            var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
+            var deviceTreeMaster = new DeviceTreeVseDevice { Alias = "Dev", Children = [dataNode], Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
+            var generator = CreateGenerator();
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
+                [], 1000, null!, [], [config], []));
+            Assert.Contains(networkInterface, exception.Message);
+            Assert.Empty(dataflow.DataPorts);
+        }
+
+        [Fact]
+        public void Throws_when_the_connection_interface_has_no_ipv4_address()
+        {
+            // Arrange
+            using var builder = CreateBuilder(out var dataflow);
+            var connection = CreateOpcUaConnection();
+            var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Value" };
+            var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
+            var deviceTreeMaster = new DeviceTreeVseDevice { Alias = "Dev", Children = [dataNode], Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
+            var generator = CreateGenerator([new NetworkInterface { Name = "lan1" }]);
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() => generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
+                [], 1000, null!, [], [config], []));
         }
 
         [Fact]
@@ -381,7 +434,7 @@ public class OpcUaCloudDataflowGeneratorTests
                 Password = "secret",
                 Port = 4841,
                 SecurityPolicy = OpcUaSecurityPolicy.Basic256Sha256SignAndEncrypt,
-                Server = "10.0.0.5",
+                NetworkInterface = "lan1",
                 TrustedCertificatesStorePath = "trusted",
                 TrustedCertificatesStoreType = OpcUaCertificateStoreType.Directory,
                 TrustedIssuerCertificatesStorePath = "issuers",
@@ -401,7 +454,7 @@ public class OpcUaCloudDataflowGeneratorTests
                 Name = "Dev",
                 Url = new Uri("http://10.0.0.1"),
             };
-            var generator = new OpcUaCloudDataflowGenerator();
+            var generator = CreateGenerator();
 
             // Act
             generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
@@ -417,7 +470,7 @@ public class OpcUaCloudDataflowGeneratorTests
             Assert.Equal(opcUaConnection.ApplicationName, Prop("ApplicationName"));
             Assert.Equal(opcUaConnection.ApplicationUri, Prop("ApplicationUri"));
             Assert.Equal(opcUaConnection.Namespace, Prop("Namespace"));
-            Assert.Equal(opcUaConnection.Server, Prop("Server"));
+            Assert.Equal("10.0.0.5", Prop("Server")); // the address of the connection's interface on the host
             Assert.Equal(opcUaConnection.Port, Prop("Port"));
             Assert.Equal(opcUaConnection.Endpoint, Prop("Endpoint"));
             Assert.Equal((byte)opcUaConnection.SecurityPolicy, Prop("SecurityPolicy"));
