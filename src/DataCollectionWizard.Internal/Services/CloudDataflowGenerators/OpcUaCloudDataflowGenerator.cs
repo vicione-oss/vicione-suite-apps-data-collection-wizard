@@ -67,6 +67,9 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
     // generation is synchronous, hence the blocking wait on the host management request.
     private string GetServerAddress(Connection connection, OpcUaServerConnection opcUaConnection)
     {
+        if (opcUaConnection.NetworkInterface == "local")
+            return "127.0.0.1";
+
         var hostNetworkInterfaces = systemConfigurationService.GetNetworkInterfacesAsync(CancellationToken.None).GetAwaiter().GetResult();
         var networkInterface = hostNetworkInterfaces.FirstOrDefault(i => string.Equals(i.Name, opcUaConnection.NetworkInterface, StringComparison.Ordinal))
             ?? throw new InvalidOperationException($"Network interface '{opcUaConnection.NetworkInterface}' of OPC UA connection '{connection.Name}' was not found on the host.");
