@@ -1,8 +1,10 @@
-﻿using ClusterManagement.Public.Connections.Contracts;
+﻿using System.Diagnostics;
+using ClusterManagement.Public.Connections.Contracts;
 using ClusterManagement.Public.Connections.Extensions;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using Sdk.Connections.Contracts;
+using Sdk.SystemConfiguration.Contracts;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Model;
 using ViciOne.DeviceTree.Contracts;
@@ -11,6 +13,10 @@ namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
 public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService systemConfigurationService) : CloudDataflowTreeGenerator, ICloudDataflowGenerator
 {
+    private static readonly TimeSpan s_networkInterfacesCacheDuration = TimeSpan.FromSeconds(10);
+    private static readonly Lock s_networkInterfacesCacheLock = new();
+    private static volatile CachedNetworkInterfaces? s_networkInterfacesCache;
+
     public string Name => "opcua";
 
     private protected override int? MaxNodeNameLength => 256;
@@ -70,12 +76,31 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
         if (opcUaConnection.NetworkInterface == "local")
             return "127.0.0.1";
 
-        var hostNetworkInterfaces = systemConfigurationService.GetNetworkInterfacesAsync(CancellationToken.None).GetAwaiter().GetResult();
+        var hostNetworkInterfaces = GetHostNetworkInterfaces();
         var networkInterface = hostNetworkInterfaces.FirstOrDefault(i => string.Equals(i.Name, opcUaConnection.NetworkInterface, StringComparison.Ordinal))
             ?? throw new InvalidOperationException($"Network interface '{opcUaConnection.NetworkInterface}' of OPC UA connection '{connection.Name}' was not found on the host.");
 
         return networkInterface.IPv4Address?.ToString()
             ?? throw new InvalidOperationException($"Network interface '{opcUaConnection.NetworkInterface}' of OPC UA connection '{connection.Name}' has no IPv4 address.");
+    }
+
+    private IReadOnlyList<NetworkInterface> GetHostNetworkInterfaces()
+    {
+        var cached = s_networkInterfacesCache;
+        if (cached is not null && Stopwatch.GetElapsedTime(cached.Timestamp) < s_networkInterfacesCacheDuration)
+            return cached.NetworkInterfaces;
+
+        lock (s_networkInterfacesCacheLock)
+        {
+            cached = s_networkInterfacesCache;
+            
+            if (cached is not null && Stopwatch.GetElapsedTime(cached.Timestamp) < s_networkInterfacesCacheDuration)
+                return cached.NetworkInterfaces;
+
+            var networkInterfaces = systemConfigurationService.GetNetworkInterfacesAsync(CancellationToken.None).GetAwaiter().GetResult();
+            s_networkInterfacesCache = new CachedNetworkInterfaces(networkInterfaces, Stopwatch.GetTimestamp());
+            return networkInterfaces;
+        }
     }
 
     private static DataPort GenerateDataPort(Connection connection, OpcUaServerConnection opcUaConnection, string serverAddress, IDeviceTreeMasterNode deviceTreeMaster, ClusterBuilder builder, Dataflow dataflow)
@@ -112,4 +137,6 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
 
         return dataPort;
     }
+
+    private sealed record CachedNetworkInterfaces(IReadOnlyList<NetworkInterface> NetworkInterfaces, long Timestamp);
 }
