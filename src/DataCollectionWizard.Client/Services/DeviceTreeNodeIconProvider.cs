@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using DataCollectionWizard.Client.Resources;
+﻿using DataCollectionWizard.Client.Resources;
 using ViciOne.DeviceTree.Contracts;
 using ViciOne.Ui.MonochromeIcons.Assets.Services;
 using ViciOne.Ui.MonochromeIcons.Core.Enums;
@@ -10,22 +9,15 @@ namespace DataCollectionWizard.Client.Services;
 
 internal sealed class DeviceTreeNodeIconProvider(IMonochromeIconSvgMarkupProvider monochromeIconSvgMarkupProvider)
 {
-    private readonly ConcurrentDictionary<(MonochromeIconName Name, MonochromeIconSize Size), IIcon> _icons = new();
     private readonly IIcon _diagnosticsIcon = new SvgIcon(SvgIcons.diagnostics);
 
     internal IIcon GetOrCreateIcon(MonochromeIconName iconName, MonochromeIconSize iconSize)
     {
-        var key = (iconName, iconSize);
-        if (_icons.TryGetValue(key, out var icon))
-            return icon;
-
         var svgMarkup = monochromeIconSvgMarkupProvider.GetSvgMarkup(iconName, iconSize);
-        icon = string.IsNullOrEmpty(svgMarkup)
+
+        return string.IsNullOrEmpty(svgMarkup)
             ? new SvgIcon(string.Empty) { CssClasses = iconName.GetCssClasses(iconSize) }
             : new SvgIcon(svgMarkup);
-
-        _icons[key] = icon;
-        return icon;
     }
 
     private static IDeviceTreeBase? GetFirstNonStructureChildRecursively(IDeviceTreeBase nodeContext)
