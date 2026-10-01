@@ -673,17 +673,22 @@ public class MqttCloudDataflowGeneratorTests
             object? Prop(string designId) => dataPort.Properties.Single(p => p.DesignId == designId).Value;
 
             Assert.Equal(mqttConnection.ClientId, Prop("ClientId"));
+            Assert.Equal(true, Prop("LastWillEnabled"));
             Assert.Equal(mqttConnection.WillTopic, Prop("WillTopic"));
             Assert.Equal(mqttConnection.WillMessage, Prop("WillMessage"));
             Assert.Equal(mqttConnection.WillRetain, Prop("WillRetain"));
-            Assert.Equal((byte)mqttConnection.Protocol, Prop("Protocol"));
+            Assert.Equal(MqttDataPortProperties.ProtocolTcp, Prop("Protocol"));
             Assert.Equal(mqttConnection.Address, Prop("Host"));
             Assert.Equal((ushort?)mqttConnection.Port, Prop("Port"));
-            Assert.Equal((byte)1, Prop("ProtocolVersion"));
+            Assert.Equal(MqttDataPortProperties.TlsModeNone, Prop("TlsMode"));
+            Assert.Equal(MqttDataPortProperties.ProtocolVersionV500, Prop("ProtocolVersion"));
             Assert.Equal(mqttConnection.ClientCertificate, Prop("CertificateFile"));
+            Assert.Equal(mqttConnection.ClientCertificateKeyPassword, Prop("CertificateFilePassword"));
             Assert.Equal(mqttConnection.ClientCertificateKey, Prop("CertificatePrivateKeyFile"));
             Assert.Equal(mqttConnection.CleanSession, Prop("CleanSession"));
-            Assert.Equal(true, Prop("DisableCertificateValidation"));
+            Assert.Equal(false, Prop("ValidateCertificateChain"));
+            Assert.DoesNotContain(dataPort.Properties, p => p.DesignId == "DisableCertificateValidation");
+            Assert.DoesNotContain(dataPort.Properties, p => p.DesignId == "Url");
             Assert.Equal(true, Prop("Pooling"));
             Assert.Equal(10000, Prop("MaxPendingMessages"));
             Assert.Equal((byte)1, Prop("QualityOfService")); // hardcoded, independent of mqttConnection.QualityOfService

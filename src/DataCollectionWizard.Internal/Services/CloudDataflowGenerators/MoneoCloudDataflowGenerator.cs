@@ -133,28 +133,7 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
         deviceId = MoneoUtils.ConstructDeviceId(deviceTreeMaster.GetMacAddress(), MoneoUtils.GetFallbackIdentifier(deviceTreeMaster)).ToString();
         deviceIdNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdMqttFolder, processDataNode, deviceId, null, DataPortTransferMode.None);
 
-        var moneoConnection = connection.GetMqttConnection()!;
-
-        builder.Editors.DataPort.AddProperty("ClientId", dataPort, null, moneoConnection.ClientId);
-        builder.Editors.DataPort.AddProperty("WillTopic", dataPort, null, moneoConnection.WillTopic);
-        builder.Editors.DataPort.AddProperty("WillMessage", dataPort, null, moneoConnection.WillMessage);
-        builder.Editors.DataPort.AddProperty("WillRetain", dataPort, null, moneoConnection.WillRetain);
-        builder.Editors.DataPort.AddProperty("Protocol", dataPort, null, (byte)moneoConnection.Protocol);
-        builder.Editors.DataPort.AddProperty("Host", dataPort, null, moneoConnection.Address);
-        builder.Editors.DataPort.AddProperty("Port", dataPort, null, (ushort?)moneoConnection.Port);
-        builder.Editors.DataPort.AddProperty("ProtocolVersion", dataPort, null, (byte)1);
-        builder.Editors.DataPort.AddProperty("CertificateFile", dataPort, null, moneoConnection.ClientCertificate);
-        builder.Editors.DataPort.AddProperty("CertificatePrivateKeyFile", dataPort, null, moneoConnection.ClientCertificateKey);
-        builder.Editors.DataPort.AddProperty("CleanSession", dataPort, null, moneoConnection.CleanSession);
-        builder.Editors.DataPort.AddProperty("DisableCertificateValidation", dataPort, null, true);
-
-        builder.Editors.DataPort.AddProperty("Pooling", dataPort, null, true);
-        builder.Editors.DataPort.AddProperty("MaxPendingMessages", dataPort, null, 10000);
-        builder.Editors.DataPort.AddProperty("QualityOfService", dataPort, null, (byte)1);
-        builder.Editors.DataPort.AddProperty("BrokerReceiveMaximum", dataPort, null, (ushort)100);
-
-        builder.Editors.DataPort.AddProperty("Username", dataPort, null, moneoConnection.Username);
-        builder.Editors.DataPort.AddProperty("Password", dataPort, null, moneoConnection.Password);
+        MqttDataPortProperties.Add(builder, dataPort, connection.GetMqttConnection()!);
 
         return dataPort;
     }

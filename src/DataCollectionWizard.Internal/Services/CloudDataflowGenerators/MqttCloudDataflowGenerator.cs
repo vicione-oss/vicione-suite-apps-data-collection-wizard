@@ -192,28 +192,7 @@ public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInf
         var dataPort = builder.Editors.Dataflow.AddDataPort(dataflow, FunctionBlocks.MqttDataPort.DesignId,
                                     $"{connection.Name} - {deviceTreeMaster.Url}", DataPortDirection.Out, FunctionBlocks.MqttDataPort.Type);
 
-        var mqttConnection = connection.GetMqttConnection()!;
-
-        builder.Editors.DataPort.AddProperty("ClientId", dataPort, null, mqttConnection.ClientId);
-        builder.Editors.DataPort.AddProperty("WillTopic", dataPort, null, mqttConnection.WillTopic);
-        builder.Editors.DataPort.AddProperty("WillMessage", dataPort, null, mqttConnection.WillMessage);
-        builder.Editors.DataPort.AddProperty("WillRetain", dataPort, null, mqttConnection.WillRetain);
-        builder.Editors.DataPort.AddProperty("Protocol", dataPort, null, (byte)mqttConnection.Protocol);
-        builder.Editors.DataPort.AddProperty("Host", dataPort, null, mqttConnection.Address);
-        builder.Editors.DataPort.AddProperty("Port", dataPort, null, (ushort?)mqttConnection.Port);
-        builder.Editors.DataPort.AddProperty("ProtocolVersion", dataPort, null, (byte)1);
-        builder.Editors.DataPort.AddProperty("CertificateFile", dataPort, null, mqttConnection.ClientCertificate);
-        builder.Editors.DataPort.AddProperty("CertificatePrivateKeyFile", dataPort, null, mqttConnection.ClientCertificateKey);
-        builder.Editors.DataPort.AddProperty("CleanSession", dataPort, null, mqttConnection.CleanSession);
-        builder.Editors.DataPort.AddProperty("DisableCertificateValidation", dataPort, null, true);
-
-        builder.Editors.DataPort.AddProperty("Pooling", dataPort, null, true);
-        builder.Editors.DataPort.AddProperty("MaxPendingMessages", dataPort, null, 10000);
-        builder.Editors.DataPort.AddProperty("QualityOfService", dataPort, null, (byte)1);
-        builder.Editors.DataPort.AddProperty("BrokerReceiveMaximum", dataPort, null, (ushort)100);
-
-        builder.Editors.DataPort.AddProperty("Username", dataPort, null, mqttConnection.Username);
-        builder.Editors.DataPort.AddProperty("Password", dataPort, null, mqttConnection.Password);
+        MqttDataPortProperties.Add(builder, dataPort, connection.GetMqttConnection()!);
 
         return dataPort;
     }
