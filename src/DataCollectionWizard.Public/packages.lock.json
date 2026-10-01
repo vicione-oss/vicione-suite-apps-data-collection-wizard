@@ -10,17 +10,17 @@
       },
       "ViciOne.DeviceTree.Contracts": {
         "type": "Direct",
-        "requested": "[2.0.2-ci2764114507, )",
-        "resolved": "2.0.2-ci2764114507",
-        "contentHash": "ea0DOmdL0w5xJiCTMhYggTF3EOdVjVxcEn5hDFsN3n7L+/+/m/YcB3GiBagxcSuyufjhpBxW8F3Ygn4sXidOVQ=="
+        "requested": "[2.1.0, )",
+        "resolved": "2.1.0",
+        "contentHash": "GJTFbzjU7ztfyU5DZV2m7KDzz4Pg1VMOBUGlvI83ni2O7sI2GXOpTBsxsx5jhqUEYe8as76cmiPBdomUwuHCSQ=="
       },
       "ViciOne.Suite.Sdk": {
         "type": "Direct",
-        "requested": "[3.1.0, )",
-        "resolved": "3.1.0",
-        "contentHash": "mkl3CHl5hMGNWqjuYN2cWs+Uiv11UEw52qEOuA6l//fFiTy0emOpJy31VLsw3F79OP1gB4gX80qE31Puo87QOw==",
+        "requested": "[3.2.0, )",
+        "resolved": "3.2.0",
+        "contentHash": "WGfKrrak10PGyGRMbH8OmYiuWmLtQrPwf4IxQtBodb92tBmeTCYdq/TXLQ0vLT/REPiXvYpXPELOu7k5hHvKqw==",
         "dependencies": {
-          "MassTransit.Abstractions": "8.5.10",
+          "MassTransit.Abstractions": "8.5.11",
           "Microsoft.AspNetCore.Authorization": "10.0.12",
           "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions": "10.0.12",
           "ViciOne.CodeAnalysis.MustCallBase": "1.6.0"
@@ -28,8 +28,8 @@
       },
       "MassTransit.Abstractions": {
         "type": "Transitive",
-        "resolved": "8.5.10",
-        "contentHash": "nZnm2YNH+NcVwY6yC114sJy8J9LtKdFjfKUm/A5HfmzOlZ8ksjgHaPBg5XCG1VAqKDRDFnaudIcesVultKJD7g=="
+        "resolved": "8.5.11",
+        "contentHash": "NVPW88Ge9vFlPboZCDTDsXKUOJygD76HAA3JBIC68XVFWzJ4X2mxDx20jCoFeA3xU9dj3jnNAvHwvIcEuc6zRg=="
       },
       "Microsoft.AspNetCore.Authorization": {
         "type": "Transitive",
