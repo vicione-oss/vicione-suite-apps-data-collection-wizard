@@ -4,7 +4,7 @@
     "Description": "Use this module to onboard VSE, IoTCore and other devices to the Cluster",
     "Version": "__VERSION__",
     "MinSuiteSdkVersion": "3.1.0",
-    "Company": "ifm software",
+    "Company": "ViciOne open automation gmbh",
     "ProjectUrl": "https://gitlab.com/vicione-oss/vicione/suite-apps/data-collection-wizard",
     "ReadmeUrl": "https://gitlab.com/vicione-oss/vicione/suite-apps/data-collection-wizard/-/blob/master/README.md?ref_type=heads",
     "Published": "2026-06-23T10:30:00",
