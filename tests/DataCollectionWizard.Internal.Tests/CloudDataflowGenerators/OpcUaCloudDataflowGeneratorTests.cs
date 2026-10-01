@@ -288,6 +288,7 @@ public class OpcUaCloudDataflowGeneratorTests
         {
             var systemConfigurationService = Substitute.For<ISystemConfigurationService>();
             systemConfigurationService.GetNetworkInterfacesAsync(Arg.Any<CancellationToken>()).Returns(hostNetworkInterfaces ?? s_hostNetworkInterfaces);
+            OpcUaCloudDataflowGenerator.ResetNetworkInterfacesCache();
             return new OpcUaCloudDataflowGenerator(systemConfigurationService);
         }
 
@@ -420,8 +421,7 @@ public class OpcUaCloudDataflowGeneratorTests
             var connection = new Connection { Id = Guid.NewGuid(), Name = "MyServer", Type = ConnectionType.OpcUaServer };
             var opcUaConnection = new OpcUaServerConnection
             {
-                ApplicationCertificatesStorePath = "CurrentUser\\My",
-                ApplicationCertificatesStoreType = OpcUaCertificateStoreType.X509Store,
+                ApplicationCertificatesPath = "own",
                 ApplicationCertificateSubject = "CN=Test Server",
                 ApplicationName = "Test Server",
                 ApplicationUri = "urn:test:server",
@@ -435,10 +435,8 @@ public class OpcUaCloudDataflowGeneratorTests
                 Port = 4841,
                 SecurityPolicy = OpcUaSecurityPolicy.Basic256Sha256SignAndEncrypt,
                 NetworkInterface = "lan1",
-                TrustedCertificatesStorePath = "trusted",
-                TrustedCertificatesStoreType = OpcUaCertificateStoreType.Directory,
-                TrustedIssuerCertificatesStorePath = "issuers",
-                TrustedIssuerCertificatesStoreType = OpcUaCertificateStoreType.Directory,
+                TrustedCertificatesPath = "trusted",
+                TrustedIssuerCertificatesPath = "issuers",
                 UseCustomTransportQuotas = true,
                 Username = "user",
             };
@@ -481,13 +479,47 @@ public class OpcUaCloudDataflowGeneratorTests
             Assert.Equal(opcUaConnection.Username, Prop("User"));
             Assert.Equal(opcUaConnection.Password, Prop("Password"));
             Assert.Equal(opcUaConnection.ApplicationCertificateSubject, Prop("ApplicationCertificateSubject"));
-            Assert.Equal((byte)opcUaConnection.ApplicationCertificatesStoreType, Prop("ApplicationCertificatesStoreType"));
-            Assert.Equal(opcUaConnection.ApplicationCertificatesStorePath, Prop("ApplicationCertificatesStorePath"));
-            Assert.Equal((byte)opcUaConnection.TrustedCertificatesStoreType, Prop("TrustedCertificatesStoreType"));
-            Assert.Equal(opcUaConnection.TrustedCertificatesStorePath, Prop("TrustedCertificatesStorePath"));
-            Assert.Equal((byte)opcUaConnection.TrustedIssuerCertificatesStoreType, Prop("TrustedIssuerCertificatesStoreType"));
-            Assert.Equal(opcUaConnection.TrustedIssuerCertificatesStorePath, Prop("TrustedIssuerCertificatesStorePath"));
+            Assert.Equal((byte)OpcUaCertificateStoreType.Directory, Prop("ApplicationCertificatesStoreType"));
+            Assert.Equal(opcUaConnection.ApplicationCertificatesPath, Prop("ApplicationCertificatesStorePath"));
+            Assert.Equal((byte)OpcUaCertificateStoreType.Directory, Prop("TrustedCertificatesStoreType"));
+            Assert.Equal(opcUaConnection.TrustedCertificatesPath, Prop("TrustedCertificatesStorePath"));
+            Assert.Equal((byte)OpcUaCertificateStoreType.Directory, Prop("TrustedIssuerCertificatesStoreType"));
+            Assert.Equal(opcUaConnection.TrustedIssuerCertificatesPath, Prop("TrustedIssuerCertificatesStorePath"));
             Assert.Equal(opcUaConnection.AutoAcceptUntrustedCertificates, Prop("AutoAcceptUntrustedCertificates"));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void Sets_certificate_store_types_to_none_when_no_path_is_given(string? path)
+        {
+            // Arrange
+            using var builder = CreateBuilder(out var dataflow);
+            var connection = new Connection { Id = Guid.NewGuid(), Name = "MyServer", Type = ConnectionType.OpcUaServer };
+            connection.SetOpcUaServerConnection(new OpcUaServerConnection
+            {
+                ApplicationCertificatesPath = path ?? string.Empty,
+                NetworkInterface = "lan1",
+                TrustedCertificatesPath = path,
+                TrustedIssuerCertificatesPath = path,
+            });
+            var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Value" };
+            var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
+            var deviceTreeMaster = new DeviceTreeVseDevice { Alias = "Dev", Children = [dataNode], Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
+            var generator = CreateGenerator();
+
+            // Act
+            generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
+                [], 1000, null!, [], [config], []);
+
+            // Assert
+            var dataPort = Assert.Single(dataflow.DataPorts);
+
+            object? Prop(string designId) => dataPort.Properties.Single(p => p.DesignId == designId).Value;
+
+            Assert.Equal((byte)OpcUaCertificateStoreType.None, Prop("ApplicationCertificatesStoreType"));
+            Assert.Equal((byte)OpcUaCertificateStoreType.None, Prop("TrustedCertificatesStoreType"));
+            Assert.Equal((byte)OpcUaCertificateStoreType.None, Prop("TrustedIssuerCertificatesStoreType"));
         }
     }
 }

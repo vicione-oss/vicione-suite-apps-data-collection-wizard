@@ -103,6 +103,8 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
         }
     }
 
+    internal static void ResetNetworkInterfacesCache() => s_networkInterfacesCache = null;
+
     private static DataPort GenerateDataPort(Connection connection, OpcUaServerConnection opcUaConnection, string serverAddress, IDeviceTreeMasterNode deviceTreeMaster, ClusterBuilder builder, Dataflow dataflow)
     {
         var dataPort = builder.Editors.Dataflow.AddDataPort(dataflow, FunctionBlocks.OpcUaDataPort.DesignId,
@@ -127,16 +129,19 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
 
         // ---- Certificate ----
         builder.Editors.DataPort.AddProperty("ApplicationCertificateSubject", dataPort, null, opcUaConnection.ApplicationCertificateSubject);
-        builder.Editors.DataPort.AddProperty("ApplicationCertificatesStoreType", dataPort, null, (byte)opcUaConnection.ApplicationCertificatesStoreType);
-        builder.Editors.DataPort.AddProperty("ApplicationCertificatesStorePath", dataPort, null, opcUaConnection.ApplicationCertificatesStorePath);
-        builder.Editors.DataPort.AddProperty("TrustedCertificatesStoreType", dataPort, null, (byte)opcUaConnection.TrustedCertificatesStoreType);
-        builder.Editors.DataPort.AddProperty("TrustedCertificatesStorePath", dataPort, null, opcUaConnection.TrustedCertificatesStorePath);
-        builder.Editors.DataPort.AddProperty("TrustedIssuerCertificatesStoreType", dataPort, null, (byte)opcUaConnection.TrustedIssuerCertificatesStoreType);
-        builder.Editors.DataPort.AddProperty("TrustedIssuerCertificatesStorePath", dataPort, null, opcUaConnection.TrustedIssuerCertificatesStorePath);
+        builder.Editors.DataPort.AddProperty("ApplicationCertificatesStoreType", dataPort, null, GetCertificateStoreType(opcUaConnection.ApplicationCertificatesPath));
+        builder.Editors.DataPort.AddProperty("ApplicationCertificatesStorePath", dataPort, null, opcUaConnection.ApplicationCertificatesPath);
+        builder.Editors.DataPort.AddProperty("TrustedCertificatesStoreType", dataPort, null, GetCertificateStoreType(opcUaConnection.TrustedCertificatesPath));
+        builder.Editors.DataPort.AddProperty("TrustedCertificatesStorePath", dataPort, null, opcUaConnection.TrustedCertificatesPath);
+        builder.Editors.DataPort.AddProperty("TrustedIssuerCertificatesStoreType", dataPort, null, GetCertificateStoreType(opcUaConnection.TrustedIssuerCertificatesPath));
+        builder.Editors.DataPort.AddProperty("TrustedIssuerCertificatesStorePath", dataPort, null, opcUaConnection.TrustedIssuerCertificatesPath);
         builder.Editors.DataPort.AddProperty("AutoAcceptUntrustedCertificates", dataPort, null, opcUaConnection.AutoAcceptUntrustedCertificates);
 
         return dataPort;
     }
+
+    private static byte GetCertificateStoreType(string? path)
+        => (byte)(string.IsNullOrEmpty(path) ? OpcUaCertificateStoreType.None : OpcUaCertificateStoreType.Directory);
 
     private sealed record CachedNetworkInterfaces(IReadOnlyList<NetworkInterface> NetworkInterfaces, long Timestamp);
 }

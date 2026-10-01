@@ -4,6 +4,6 @@ namespace DataCollectionWizard.Internal.Services.DesignIds;
 // under Root.ChildNodes, Type is Root.Id, which cluster management resolves the ruleset by.
 public class OpcUaDataPort : IDataPort
 {
-    public string DesignId => "OPCUA-Server";
+    public string DesignId => "OpcUaServerInstance";
     public string Type => "OpcUaServerDataPort";
 }

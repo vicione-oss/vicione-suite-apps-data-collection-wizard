@@ -362,7 +362,7 @@
         "dependencies": {
           "ViciOne.Cluster.Builder": "[1.0.0, )",
           "ViciOne.DeviceTree.Contracts": "[2.0.2-ci2764114507, )",
-          "ViciOne.Suite.ClusterManagement.Public": "[3.0.0-ci2896714223, )",
+          "ViciOne.Suite.ClusterManagement.Public": "[3.0.0-ci2901552018, )",
           "ViciOne.Suite.DataCollectionWizard.Public": "[1.0.0, )",
           "ViciOne.Suite.Sdk": "[3.2.0, )"
         }
@@ -393,9 +393,9 @@
       },
       "ViciOne.Suite.ClusterManagement.Public": {
         "type": "CentralTransitive",
-        "requested": "[3.0.0-ci2896714223, )",
-        "resolved": "3.0.0-ci2896714223",
-        "contentHash": "mj5hF0ZPf2WTZ1I2yUrkm2i2J4UAmEHjbTmV/Zz9F4Hbk8UNkOZKvOwCvUXWQupDJ+dFhrCHZpoeyUGJUb/dBQ==",
+        "requested": "[3.0.0-ci2901552018, )",
+        "resolved": "3.0.0-ci2901552018",
+        "contentHash": "O4oIQVwRslpHMPjBh/96qqw9n0RI7QKwoLJBbQuNXvgf2fL1YkzjNpVINfcfA8JBMgA8nbewAvAgVsiUzogO8A==",
         "dependencies": {
           "ViciOne.Cluster.Builder": "1.0.0",
           "ViciOne.Suite.Sdk": "3.1.0"
