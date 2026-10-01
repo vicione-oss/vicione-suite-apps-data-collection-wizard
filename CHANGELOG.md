@@ -2,18 +2,72 @@
 
 ## 2.2.0 - Unreleased
 
+### Added
+
+- Scan for VSE devices from the wizard; the scanner dataflow `DCW-Device-Scanner` carries one scanner per device kind
+- Enter username and password for IO-Link masters that require authentication, when scanning or adding them manually
+- Lock icon next to scanned IO-Link devices that require authentication
+- Generate a master-diagnostic FunctionBlock from the IO-Link master's diagnostic nodes
+- Serial number of IO-Link devices in the device tree tooltip
+- Multi-select in the process data grid with row, group and select-all checkboxes, and grouping by container
+- Bulk bar to enable and disable the selection per cloud or for all clouds, with a settings panel for interval, function, recordings, raw data and event triggers
+- Bulk reset of the selection's settings to the defaults of a newly discovered data point
+- Sidebar panel "Information" with a throughput projection per period, per-cloud and per-device share bars and a list of unsaved changes
+- Datapoint usage meter under the title, replacing the datapoint-limit banner
+- Live View line stating how long it has been watching, how many values arrived and at what rate
+- Labelled save button with a "saved / not saved" status
+- Themed in-app dialog (Cancel / Discard / Save) when leaving the page with unsaved changes
+
+### Changed
+
+- Integrate with the driver's `IoTCoreConfiguration` connection model; every subscriber references a per-master identifier
+- Live View uses the layout of the configuration grid, with grouping, sticky header and virtualization
+- Path column removed; each row shows its origin as a second line under its name
+- Live View values are right-aligned, with the unit beside them
+- Redesigned device tree tooltip with grouped sections per node type
+- Alias dialog shows the device being renamed, counts against the 64-character limit and previews the resulting name
+- Aliased nodes are named the same way in breadcrumbs as in the tree
+- Add dialog for IO-Link masters names its two steps when credentials are required
+- Masters the scan cannot confirm online are shown offline, together with their children
+- Unfold the device tree to a value that goes offline without rebuilding it
+- Dataflow containers are created only when a FunctionBlock is placed in them
+- Scanners are named "IO-Link Scan" and "VSE Scan" and placed below each other in the dataflow
+- Devices already in the tree are no longer offered in the scan results
 - Required SVG icons from the MonochromeIcon repository are now provided at runtime through the ViciOne.Ui.MonochromeIcons.Assets package
+- `ResizableSidebar` and `SplitView` replaced by the components from `ViciOne.Ui.Blazor.Components`
+- `PoolingGrid` renamed to `AggregationInterval`, `PoolingMode` to `AggregationFunction`
+- `VseAddresses` moved from `DataCollectionWizard.Public` into the client
+- Tests run on Microsoft.Testing.Platform instead of Microsoft.NET.Test.Sdk
+- NuGet packages are pushed to the GitLab package registry
+- Renovate monitors dependencies and creates update merge requests
 - Rename the company to `ViciOne open automation gmbh` in the license and the package metadata
+
+### Fix
+
+- `DeviceTreeGuard` left nodes offline after repeated reconnects
+- `DeviceTreeGuard` raised no online event for a master last persisted online
+- `IsDeployInProgressAsync` returned true after the deployment had completed
+- Device scanner dataflow was removed when a device was deleted
+- Live grid did not repaint when a device went offline or came back
+- `VseDataflowGenerator` threw for assigned-name nodes
+- Search box and list styles were missing in the scan dialogs
+- Grammar and spelling in the resource files
 
 ### Dependencies
 
+- `ViciOne.Driver.IoTCore.Contracts` package, replaced by `ViciOne.DeviceTree.Contracts` version `2.1.0`
+- `ViciOne.Suite.DataPort.Anna.Contracts` package, removed
+- `ViciOne.Ui.Shared.Dx` package, removed
+- `ViciOne.Ui.MonochromeIcons.Assets` package, replaced by `ViciOne.Ui.MonochromeIcons.Components`
+- `xunit.v3`, `xunit.runner.visualstudio`, `Microsoft.NET.Test.Sdk` and `coverlet.collector` packages, replaced by `xunit.v3.mtp-v2` version `4.0.1` and `Microsoft.Testing.Extensions.CodeCoverage` version `18.11.2`
 - `.NET` packages, update to version `10.0.12`
-- `AspNetCore.SassCompiler` package, update version to `1.102.0`
+- `AspNetCore.SassCompiler` package, update version to `1.105.1`
 - `ViciOne.Ui.Design` package, update version to `2.5.0`
 - `ViciOne.Ui.MonochromeIcons.Components` package, update version to `4.18.0`
-- `ViciOne.Ui.Blazor.Components` package, update version to `6.1.1`
+- `ViciOne.Ui.Blazor.Components` package, update version to `6.2.0`
 - `ViciOne.Suite.ClusterManagement.Public` package, update version to `2.4.0-ci2729942661`
-- `ViciOne.Suite.Sdk` package, update version to `3.1.0`
+- `ViciOne.Suite.Sdk` package, update version to `3.2.0`
+- `NSubstitute` package, update version to `6.2.0`
 
 ## 2.1.2 - 2026-06-23
 
