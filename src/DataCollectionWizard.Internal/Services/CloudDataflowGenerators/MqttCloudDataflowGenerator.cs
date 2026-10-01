@@ -9,7 +9,7 @@ using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
-public class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInformationProvider) : ICloudDataflowGenerator
+public sealed class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInformationProvider) : ICloudDataflowGenerator
 {
     private const string PortDesignIdMqttDataPointFloat = "DataPointFloat";
     private const string PortDesignIdMqttDataPointString = "DataPointString";

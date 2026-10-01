@@ -5,7 +5,7 @@ using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
-public class MqttCloudFilter : ICloudFilter
+public sealed class MqttCloudFilter : ICloudFilter
 {
     public Type CloudDataflowGeneratorType => typeof(MqttCloudDataflowGenerator);
 
