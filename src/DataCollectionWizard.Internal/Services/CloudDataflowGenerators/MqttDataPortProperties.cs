@@ -67,6 +67,9 @@ internal static class MqttDataPortProperties
         builder.Editors.DataPort.AddProperty("WillMessage", dataPort, null, mqttConnection.WillMessage);
         builder.Editors.DataPort.AddProperty("WillRetain", dataPort, null, mqttConnection.WillRetain);
 
+        // The DataPort only uses CertificateFilePassword to open a PKCS#12 certificate file. A PEM certificate's private
+        // key (CertificatePrivateKeyFile) must be unencrypted, so a PEM certificate with an encrypted key, for which the
+        // connection's ClientCertificateKeyPassword is meant, fails when the DataPort starts.
         builder.Editors.DataPort.AddProperty("CertificateFile", dataPort, null, mqttConnection.ClientCertificate);
         builder.Editors.DataPort.AddProperty("CertificateFilePassword", dataPort, null, mqttConnection.ClientCertificateKeyPassword);
         builder.Editors.DataPort.AddProperty("CertificatePrivateKeyFile", dataPort, null, mqttConnection.ClientCertificateKey);
