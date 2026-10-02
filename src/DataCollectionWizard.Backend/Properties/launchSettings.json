@@ -2,8 +2,8 @@
     "profiles": {
         "DataCollectionWizard.SuiteDebug": {
             "commandName": "Executable",
-            "executablePath": "C:\\Users\\delissnp\\repos\\suite\\src\\Core.OS\\bin\\Debug\\net10.0\\ViciOne.Suite.Core.OS.exe",
-            "workingDirectory": "C:\\Users\\delissnp\\repos\\suite\\src\\Core.OS\\bin\\Debug\\net10.0",
+            "executablePath": "##SUITE_DIR##\\src\\Core.OS\\bin\\Debug\\net10.0\\ViciOne.Suite.Core.OS.exe",
+            "workingDirectory": "##SUITE_DIR##\\src\\Core.OS\\bin\\Debug\\net10.0",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "Instance__HomeDirectory": "AppData_Standalone",
