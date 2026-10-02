@@ -66,6 +66,20 @@ public class MqttDataPortPropertiesTests
         }
     }
 
+    public class GetQualityOfServiceTests
+    {
+        [Theory]
+        [InlineData(MqttQualityOfServiceLevel.AtMostOnce, MqttDataPortProperties.QualityOfServiceAtMostOnce)]
+        [InlineData(MqttQualityOfServiceLevel.AtLeastOnce, MqttDataPortProperties.QualityOfServiceAtLeastOnce)]
+        [InlineData(MqttQualityOfServiceLevel.ExactlyOnce, MqttDataPortProperties.QualityOfServiceExactlyOnce)]
+        public void Maps_the_quality_of_service_level_to_the_matching_data_port_value(MqttQualityOfServiceLevel qualityOfService, byte expected)
+            => Assert.Equal(expected, MqttDataPortProperties.GetQualityOfService(qualityOfService));
+
+        [Fact]
+        public void Throws_for_an_unknown_quality_of_service_level()
+            => Assert.Throws<NotSupportedException>(() => MqttDataPortProperties.GetQualityOfService((MqttQualityOfServiceLevel)42));
+    }
+
     public class GetWebSocketUrlTests
     {
         [Theory]

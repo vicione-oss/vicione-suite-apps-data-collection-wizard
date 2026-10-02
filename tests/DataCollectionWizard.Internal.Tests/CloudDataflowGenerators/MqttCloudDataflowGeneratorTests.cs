@@ -641,6 +641,7 @@ public class MqttCloudDataflowGeneratorTests
                 Port = 8883,
                 Protocol = MqttConnectionType.TCP,
                 ProtocolVersion = MqttProtocolVersion.V311,
+                QualityOfService = MqttQualityOfServiceLevel.ExactlyOnce,
                 Username = "user",
                 WillMessage = "bye",
                 WillRetain = true,
@@ -692,7 +693,7 @@ public class MqttCloudDataflowGeneratorTests
             Assert.DoesNotContain(dataPort.Properties, p => p.DesignId == "Url");
             Assert.Equal(true, Prop("Pooling"));
             Assert.Equal(10000, Prop("MaxPendingMessages"));
-            Assert.Equal((byte)1, Prop("QualityOfService")); // hardcoded, independent of mqttConnection.QualityOfService
+            Assert.Equal(MqttDataPortProperties.QualityOfServiceExactlyOnce, Prop("QualityOfService"));
             Assert.Equal((ushort)100, Prop("BrokerReceiveMaximum"));
             Assert.Equal(mqttConnection.Username, Prop("Username"));
             Assert.Equal(mqttConnection.Password, Prop("Password"));

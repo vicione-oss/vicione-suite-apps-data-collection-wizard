@@ -24,6 +24,11 @@ internal static class MqttDataPortProperties
     internal const byte ProtocolVersionV311 = 0;
     internal const byte ProtocolVersionV500 = 1;
 
+    // Element values of the DataPort's QualityOfService property.
+    internal const byte QualityOfServiceAtMostOnce = 0;
+    internal const byte QualityOfServiceAtLeastOnce = 1;
+    internal const byte QualityOfServiceExactlyOnce = 2;
+
     /// <param name="validateCertificateChain">
     /// Overrides whether the broker's certificate chain is validated. By default it is validated unless the connection
     /// allows untrusted certificates.
@@ -67,7 +72,7 @@ internal static class MqttDataPortProperties
         builder.Editors.DataPort.AddProperty("CertificatePrivateKeyFile", dataPort, null, mqttConnection.ClientCertificateKey);
         builder.Editors.DataPort.AddProperty("ValidateCertificateChain", dataPort, null, validateCertificateChain ?? !mqttConnection.AllowUntrustedCertificates);
 
-        builder.Editors.DataPort.AddProperty("QualityOfService", dataPort, null, (byte)1);
+        builder.Editors.DataPort.AddProperty("QualityOfService", dataPort, null, GetQualityOfService(mqttConnection.QualityOfService));
     }
 
     /// <summary>
@@ -93,6 +98,18 @@ internal static class MqttDataPortProperties
             MqttProtocolVersion.V311 => ProtocolVersionV311,
             MqttProtocolVersion.V500 => ProtocolVersionV500,
             var protocolVersion => throw new NotSupportedException($"MQTT protocol version {protocolVersion} is not supported by the DataPort."),
+        };
+
+    /// <summary>
+    /// Maps a quality of service level to the DataPort's <c>QualityOfService</c>.
+    /// </summary>
+    internal static byte GetQualityOfService(MqttQualityOfServiceLevel qualityOfService)
+        => qualityOfService switch
+        {
+            MqttQualityOfServiceLevel.AtMostOnce => QualityOfServiceAtMostOnce,
+            MqttQualityOfServiceLevel.AtLeastOnce => QualityOfServiceAtLeastOnce,
+            MqttQualityOfServiceLevel.ExactlyOnce => QualityOfServiceExactlyOnce,
+            _ => throw new NotSupportedException($"MQTT quality of service level {qualityOfService} is not supported by the DataPort."),
         };
 
     /// <summary>
