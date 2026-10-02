@@ -20,7 +20,8 @@ internal static class MqttDataPortProperties
     internal const byte TlsModeTls12 = 2;
     internal const byte TlsModeTls13 = 3;
 
-    // Element value of the DataPort's ProtocolVersion property for MQTT v5.0.
+    // Element values of the DataPort's ProtocolVersion property.
+    internal const byte ProtocolVersionV311 = 0;
     internal const byte ProtocolVersionV500 = 1;
 
     /// <param name="validateCertificateChain">
@@ -46,7 +47,7 @@ internal static class MqttDataPortProperties
             builder.Editors.DataPort.AddProperty("TlsMode", dataPort, null, tlsMode);
         }
 
-        builder.Editors.DataPort.AddProperty("ProtocolVersion", dataPort, null, ProtocolVersionV500);
+        builder.Editors.DataPort.AddProperty("ProtocolVersion", dataPort, null, GetProtocolVersion(mqttConnection));
         builder.Editors.DataPort.AddProperty("Pooling", dataPort, null, true);
         builder.Editors.DataPort.AddProperty("Username", dataPort, null, mqttConnection.Username);
         builder.Editors.DataPort.AddProperty("Password", dataPort, null, mqttConnection.Password);
@@ -81,6 +82,17 @@ internal static class MqttDataPortProperties
 #pragma warning disable CS0618 // TCPWithTLS is obsolete, but existing connections may still use it
             _ => mqttConnection.Protocol == MqttConnectionType.TCPWithTLS ? TlsModeAutomatic : TlsModeNone,
 #pragma warning restore CS0618
+        };
+
+    /// <summary>
+    /// Maps the connection's MQTT protocol version to the DataPort's <c>ProtocolVersion</c>.
+    /// </summary>
+    internal static byte GetProtocolVersion(MqttConnection mqttConnection)
+        => mqttConnection.ProtocolVersion switch
+        {
+            MqttProtocolVersion.V311 => ProtocolVersionV311,
+            MqttProtocolVersion.V500 => ProtocolVersionV500,
+            var protocolVersion => throw new NotSupportedException($"MQTT protocol version {protocolVersion} is not supported by the DataPort."),
         };
 
     /// <summary>

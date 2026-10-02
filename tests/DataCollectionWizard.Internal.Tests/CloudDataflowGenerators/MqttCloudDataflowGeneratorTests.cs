@@ -640,6 +640,7 @@ public class MqttCloudDataflowGeneratorTests
                 Password = "secret",
                 Port = 8883,
                 Protocol = MqttConnectionType.TCP,
+                ProtocolVersion = MqttProtocolVersion.V311,
                 Username = "user",
                 WillMessage = "bye",
                 WillRetain = true,
@@ -681,7 +682,7 @@ public class MqttCloudDataflowGeneratorTests
             Assert.Equal(mqttConnection.Address, Prop("Host"));
             Assert.Equal((ushort?)mqttConnection.Port, Prop("Port"));
             Assert.Equal(MqttDataPortProperties.TlsModeNone, Prop("TlsMode"));
-            Assert.Equal(MqttDataPortProperties.ProtocolVersionV500, Prop("ProtocolVersion"));
+            Assert.Equal(MqttDataPortProperties.ProtocolVersionV311, Prop("ProtocolVersion"));
             Assert.Equal(mqttConnection.ClientCertificate, Prop("CertificateFile"));
             Assert.Equal(mqttConnection.ClientCertificateKeyPassword, Prop("CertificateFilePassword"));
             Assert.Equal(mqttConnection.ClientCertificateKey, Prop("CertificatePrivateKeyFile"));

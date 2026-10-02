@@ -45,6 +45,27 @@ public class MqttDataPortPropertiesTests
         }
     }
 
+    public class GetProtocolVersionTests
+    {
+        [Theory]
+        [InlineData(MqttProtocolVersion.V311, MqttDataPortProperties.ProtocolVersionV311)]
+        [InlineData(MqttProtocolVersion.V500, MqttDataPortProperties.ProtocolVersionV500)]
+        public void Maps_the_protocol_version_to_the_matching_data_port_value(MqttProtocolVersion protocolVersion, byte expected)
+        {
+            var connection = new MqttConnection { ProtocolVersion = protocolVersion };
+
+            Assert.Equal(expected, MqttDataPortProperties.GetProtocolVersion(connection));
+        }
+
+        [Fact]
+        public void Throws_for_an_unknown_protocol_version()
+        {
+            var connection = new MqttConnection { ProtocolVersion = (MqttProtocolVersion)42 };
+
+            Assert.Throws<NotSupportedException>(() => MqttDataPortProperties.GetProtocolVersion(connection));
+        }
+    }
+
     public class GetWebSocketUrlTests
     {
         [Theory]
