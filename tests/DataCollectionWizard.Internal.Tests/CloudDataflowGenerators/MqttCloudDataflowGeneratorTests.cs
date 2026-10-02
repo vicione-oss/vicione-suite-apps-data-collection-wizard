@@ -686,7 +686,7 @@ public class MqttCloudDataflowGeneratorTests
             Assert.Equal(mqttConnection.ClientCertificateKeyPassword, Prop("CertificateFilePassword"));
             Assert.Equal(mqttConnection.ClientCertificateKey, Prop("CertificatePrivateKeyFile"));
             Assert.Equal(mqttConnection.CleanSession, Prop("CleanSession"));
-            Assert.Equal(false, Prop("ValidateCertificateChain"));
+            Assert.Equal(true, Prop("ValidateCertificateChain"));
             Assert.DoesNotContain(dataPort.Properties, p => p.DesignId == "DisableCertificateValidation");
             Assert.DoesNotContain(dataPort.Properties, p => p.DesignId == "Url");
             Assert.Equal(true, Prop("Pooling"));

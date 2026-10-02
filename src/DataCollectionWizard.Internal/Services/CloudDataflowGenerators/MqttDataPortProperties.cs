@@ -23,7 +23,11 @@ internal static class MqttDataPortProperties
     // Element value of the DataPort's ProtocolVersion property for MQTT v5.0.
     internal const byte ProtocolVersionV500 = 1;
 
-    public static void Add(ClusterBuilder builder, DataPort dataPort, MqttConnection mqttConnection)
+    /// <param name="validateCertificateChain">
+    /// Overrides whether the broker's certificate chain is validated. By default it is validated unless the connection
+    /// allows untrusted certificates.
+    /// </param>
+    public static void Add(ClusterBuilder builder, DataPort dataPort, MqttConnection mqttConnection, bool? validateCertificateChain = null)
     {
         var isWebSocket = mqttConnection.Protocol == MqttConnectionType.WebSocket;
         var tlsMode = GetTlsMode(mqttConnection);
@@ -60,7 +64,7 @@ internal static class MqttDataPortProperties
         builder.Editors.DataPort.AddProperty("CertificateFile", dataPort, null, mqttConnection.ClientCertificate);
         builder.Editors.DataPort.AddProperty("CertificateFilePassword", dataPort, null, mqttConnection.ClientCertificateKeyPassword);
         builder.Editors.DataPort.AddProperty("CertificatePrivateKeyFile", dataPort, null, mqttConnection.ClientCertificateKey);
-        builder.Editors.DataPort.AddProperty("ValidateCertificateChain", dataPort, null, false);
+        builder.Editors.DataPort.AddProperty("ValidateCertificateChain", dataPort, null, validateCertificateChain ?? !mqttConnection.AllowUntrustedCertificates);
 
         builder.Editors.DataPort.AddProperty("QualityOfService", dataPort, null, (byte)1);
     }

@@ -1,5 +1,10 @@
-﻿using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
+﻿using DataCollectionWizard.Internal.Extensions;
+using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
+using DataCollectionWizard.Internal.Services.DesignIds;
 using Sdk.Connections.Contracts;
+using ViciOne.Cluster.Builder;
+using ViciOne.Cluster.Builder.Abstractions;
+using ViciOne.Cluster.Model;
 
 namespace DataCollectionWizard.Internal.Tests.CloudDataflowGenerators;
 
@@ -60,6 +65,45 @@ public class MqttDataPortPropertiesTests
             var connection = new MqttConnection { Address = "broker", Port = 8080, Protocol = MqttConnectionType.WebSocket };
 
             Assert.Equal(new Uri(expected), MqttDataPortProperties.GetWebSocketUrl(connection, useTls));
+        }
+    }
+
+    public class AddTests
+    {
+        private static object? GetValidateCertificateChain(MqttConnection connection, bool? validateCertificateChain = null)
+        {
+            var resolver = Substitute.For<IDependencyResolver>();
+            resolver.ResolveDataPortDesignDependency(Arg.Any<string>())
+                .Returns(new ClusterDependency { Name = "Dataport", Version = "0.0.1" });
+
+            using var builder = new ClusterBuilder(resolver);
+            builder.AddDataPortDesign(FunctionBlocks.MqttDataPort.DesignId);
+            var dataflow = builder.Editors.Cluster.AddDataflow("Test", new Version(0, 1));
+            var dataPort = builder.Editors.Dataflow.AddDataPort(dataflow, FunctionBlocks.MqttDataPort.DesignId, "port",
+                DataPortDirection.Out, FunctionBlocks.MqttDataPort.Type);
+
+            MqttDataPortProperties.Add(builder, dataPort, connection, validateCertificateChain);
+
+            return dataPort.Properties.Single(p => p.DesignId == "ValidateCertificateChain").Value;
+        }
+
+        [Theory]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        public void Validates_the_certificate_chain_unless_the_connection_allows_untrusted_certificates(bool allowUntrustedCertificates, bool expected)
+        {
+            var connection = new MqttConnection { Address = "broker", AllowUntrustedCertificates = allowUntrustedCertificates };
+
+            Assert.Equal(expected, GetValidateCertificateChain(connection));
+        }
+
+        [Fact]
+        public void Lets_the_caller_override_certificate_chain_validation()
+        {
+            // Used by Moneo, whose broker is connected to without validation regardless of the connection settings.
+            var connection = new MqttConnection { Address = "broker", AllowUntrustedCertificates = false };
+
+            Assert.Equal(false, GetValidateCertificateChain(connection, validateCertificateChain: false));
         }
     }
 }

@@ -133,7 +133,8 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
         deviceId = MoneoUtils.ConstructDeviceId(deviceTreeMaster.GetMacAddress(), MoneoUtils.GetFallbackIdentifier(deviceTreeMaster)).ToString();
         deviceIdNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdMqttFolder, processDataNode, deviceId, null, DataPortTransferMode.None);
 
-        MqttDataPortProperties.Add(builder, dataPort, connection.GetMqttConnection()!);
+        // The Moneo broker has always been connected to without certificate validation.
+        MqttDataPortProperties.Add(builder, dataPort, connection.GetMqttConnection()!, validateCertificateChain: false);
 
         return dataPort;
     }
