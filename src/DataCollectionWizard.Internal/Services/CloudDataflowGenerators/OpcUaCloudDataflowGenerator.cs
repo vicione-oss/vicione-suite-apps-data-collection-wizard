@@ -57,10 +57,12 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
     }
 
     // The OPC-UA Server DataPort's Folder/DataPoint name validation only rejects control characters and
-    // caps length at 256, so unlike MQTT's topic-safe replacement this just strips what's disallowed.
+    // caps length at 256. Dots are allowed there, but the DataPort joins the names of a node's path with dots
+    // to build its NodeId, so a data point "Temp.1" and a data point "1" in a folder "Temp" would get the same
+    // NodeId and the server would fail to start. Replacing them keeps every path, and so every NodeId, unique.
     private protected override string GetSafeNodeName(string name)
     {
-        var sanitized = new string([.. name.Where(c => !char.IsControl(c))]);
+        var sanitized = new string([.. name.Where(c => !char.IsControl(c)).Select(c => c == '.' ? '_' : c)]);
         return sanitized.Length > MaxNodeNameLength ? sanitized[..MaxNodeNameLength.Value] : sanitized;
     }
 

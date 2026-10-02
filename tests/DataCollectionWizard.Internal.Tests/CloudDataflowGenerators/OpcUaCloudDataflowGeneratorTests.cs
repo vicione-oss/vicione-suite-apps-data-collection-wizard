@@ -112,7 +112,7 @@ public class OpcUaCloudDataflowGeneratorTests
             => new(Substitute.For<ISystemConfigurationService>());
 
         [Fact]
-        public void Creates_folder_node_and_only_strips_control_characters_from_name()
+        public void Creates_folder_node_and_keeps_characters_other_than_control_characters_and_dots()
         {
             // Arrange
             var (builder, dataPort) = CreateDataPort();
@@ -126,7 +126,7 @@ public class OpcUaCloudDataflowGeneratorTests
             // Assert
             var node = Assert.Single(dataPort.TreeNodes);
             Assert.Equal("Folder", node.DesignId);
-            Assert.Equal("My Folder!", node.Name); // unlike MQTT topics, OPC UA node names only forbid control characters
+            Assert.Equal("My Folder!", node.Name); // unlike MQTT topics, OPC UA node names allow spaces and punctuation
             Assert.Null(node.ValueType);
             Assert.Equal(DataPortTransferMode.None, node.TransferMode);
             Assert.Empty(result); // folders never get an entry in the cloud input dictionary
@@ -218,6 +218,42 @@ public class OpcUaCloudDataflowGeneratorTests
             Assert.Same(createdNode, input.Max!.InputTreeNode);
             Assert.Same(createdNode, input.Min!.InputTreeNode);
             Assert.Same(createdNode, input.Value!.InputTreeNode);
+        }
+
+        [Fact]
+        public void Gives_a_dotted_data_point_and_a_folder_with_a_child_of_the_same_dotted_path_different_node_ids()
+        {
+            // Arrange: "Temp.1" next to a folder "Temp" holding "1", which the DataPort would both address as "Temp.1".
+            var (builder, dataPort) = CreateDataPort();
+            var generator = CreateGenerator();
+            var result = new Dictionary<string, AggregationFunctionCloudInputs>();
+            var dottedNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "dotted", Name = "Temp.1" };
+            var nestedNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "nested", Name = "1" };
+            var children = new List<TreeModel>
+            {
+                new() { DataConfig = new(dottedNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() }), Id = "dotted", Name = "Temp.1" },
+                new() { Children = [new() { DataConfig = new(nestedNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() }), Id = "nested", Name = "1" }], Id = "folder", Name = "Temp" },
+            };
+
+            // Act
+            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
+
+            // Assert: the NodeIds the DataPort derives from the dotted paths (NodeManager.CreateFolder/CreateVariable) differ.
+            var nodeIds = GetNodeIds(dataPort.TreeNodes, null).ToList();
+            Assert.Equal(["Temp_1", "Temp", "Temp.1"], nodeIds);
+            Assert.Equal(nodeIds.Count, nodeIds.Distinct().Count());
+
+            static IEnumerable<string> GetNodeIds(IEnumerable<DataPortTreeNode> nodes, string? parentNodeId)
+            {
+                foreach (var node in nodes)
+                {
+                    var nodeId = parentNodeId is null ? node.Name : $"{parentNodeId}.{node.Name}";
+                    yield return nodeId;
+
+                    foreach (var childNodeId in GetNodeIds(node.Children, nodeId))
+                        yield return childNodeId;
+                }
+            }
         }
 
         [Fact]
@@ -357,7 +393,7 @@ public class OpcUaCloudDataflowGeneratorTests
             // Assert
             var dataPort = Assert.Single(dataflow.DataPorts);
             var deviceNode = Assert.Single(dataPort.TreeNodes);
-            Assert.Equal("my.server.local", deviceNode.Name); // dots are allowed for OPC UA node names, only control characters are stripped
+            Assert.Equal("my_server_local", deviceNode.Name); // the DataPort joins NodeIds with dots, so they are replaced
             var dataPointNode = Assert.Single(deviceNode.Children);
             Assert.Equal("DataPointFloat", dataPointNode.DesignId);
             Assert.Equal("n1", Assert.Single(result.Keys));
