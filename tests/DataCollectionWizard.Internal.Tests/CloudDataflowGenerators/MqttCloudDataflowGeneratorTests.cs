@@ -317,7 +317,7 @@ public class MqttCloudDataflowGeneratorTests
             var children = new List<TreeModel> { new() { DataConfig = null, Id = "folder1", Name = "My Folder!" } };
 
             // Act
-            MqttCloudDataflowGenerator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
+            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
 
             // Assert
             var node = Assert.Single(dataPort.TreeNodes);
@@ -344,11 +344,11 @@ public class MqttCloudDataflowGeneratorTests
             var children = new List<TreeModel> { new() { DataConfig = config, Id = "n1", Name = "Value" } };
 
             // Act
-            MqttCloudDataflowGenerator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
+            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
 
             // Assert
             var node = Assert.Single(dataPort.TreeNodes);
-            Assert.Equal("DataPointDouble", node.DesignId);
+            Assert.Equal("DataPointFloat", node.DesignId);
             Assert.Equal(typeof(double), node.ValueType);
             Assert.Equal(DataPortTransferMode.OnChange, node.TransferMode);
         }
@@ -366,7 +366,7 @@ public class MqttCloudDataflowGeneratorTests
             var children = new List<TreeModel> { new() { DataConfig = config, Id = "n1", Name = "Value" } };
 
             // Act
-            MqttCloudDataflowGenerator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
+            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
 
             // Assert
             var node = Assert.Single(dataPort.TreeNodes);
@@ -390,7 +390,7 @@ public class MqttCloudDataflowGeneratorTests
             var children = new List<TreeModel> { new() { DataConfig = config, Id = "n1", Name = "Value" } };
 
             // Act & Assert
-            Assert.Throws<NotSupportedException>(() => MqttCloudDataflowGenerator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result));
+            Assert.Throws<NotSupportedException>(() => generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result));
         }
 
         [Fact]
@@ -405,7 +405,7 @@ public class MqttCloudDataflowGeneratorTests
             var children = new List<TreeModel> { new() { DataConfig = config, Id = "n1", Name = "Value" } };
 
             // Act
-            MqttCloudDataflowGenerator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
+            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
 
             // Assert
             var input = Assert.Contains("n1", result);
@@ -427,7 +427,7 @@ public class MqttCloudDataflowGeneratorTests
             var children = new List<TreeModel> { new() { DataConfig = null, Id = "folder1", Name = "Root" } };
 
             // Act
-            MqttCloudDataflowGenerator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
+            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
 
             // Assert
             Assert.Single(dataPort.TreeNodes);
@@ -453,7 +453,7 @@ public class MqttCloudDataflowGeneratorTests
             };
 
             // Act
-            MqttCloudDataflowGenerator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
+            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
 
             // Assert
             var folderNode = Assert.Single(dataPort.TreeNodes); // only the root folder sits directly under the data port
@@ -468,6 +468,7 @@ public class MqttCloudDataflowGeneratorTests
         {
             // Arrange
             var (builder, dataPort) = CreateDataPort();
+            var generator = CreateGenerator();
             var result = new Dictionary<string, AggregationFunctionCloudInputs>();
             var children = new List<TreeModel>
             {
@@ -478,7 +479,7 @@ public class MqttCloudDataflowGeneratorTests
             };
 
             // Act
-            MqttCloudDataflowGenerator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
+            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
 
             // Assert
             Assert.Equal(["Temp_1", "Temp_1_2", "Temp_1_2_2", "Temp_1_3"], dataPort.TreeNodes.Select(n => n.Name));
@@ -489,6 +490,7 @@ public class MqttCloudDataflowGeneratorTests
         {
             // Arrange
             var (builder, dataPort) = CreateDataPort();
+            var generator = CreateGenerator();
             var result = new Dictionary<string, AggregationFunctionCloudInputs>();
             var children = new List<TreeModel>
             {
@@ -497,7 +499,7 @@ public class MqttCloudDataflowGeneratorTests
             };
 
             // Act
-            MqttCloudDataflowGenerator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
+            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
 
             // Assert
             Assert.All(dataPort.TreeNodes, n => Assert.Equal("Value", Assert.Single(n.Children).Name));
@@ -580,7 +582,7 @@ public class MqttCloudDataflowGeneratorTests
             var deviceNode = Assert.Single(edgeNode.Children);
             Assert.Equal("my_broker_local", deviceNode.Name); // dots are not MQTT-safe, port is stripped by DnsSafeHost
             var dataPointNode = Assert.Single(deviceNode.Children);
-            Assert.Equal("DataPointDouble", dataPointNode.DesignId);
+            Assert.Equal("DataPointFloat", dataPointNode.DesignId);
             Assert.Equal("n1", Assert.Single(result.Keys));
         }
 

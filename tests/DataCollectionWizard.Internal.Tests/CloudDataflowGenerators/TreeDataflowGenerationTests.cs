@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+using System.Drawing;
+using ClusterManagement.Public.Connections.Contracts;
+using ClusterManagement.Public.Connections.Extensions;
 using DataCollectionWizard.Internal.Contracts;
 using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services;
@@ -19,29 +21,45 @@ using ViciOne.DeviceTree.Contracts;
 namespace DataCollectionWizard.Internal.Tests.CloudDataflowGenerators;
 
 /// <summary>
-/// Runs the full <see cref="DataflowGenerator"/> against an MQTT target, so the MQTT tree nodes are actually
-/// wired to the device outputs and cluster-builder's type conversion rules are enforced.
+/// Runs the full <see cref="DataflowGenerator"/> against the tree based targets (MQTT and OPC UA), so their tree
+/// nodes are actually wired to the device outputs and cluster-builder's type conversion rules are enforced.
 /// </summary>
-public class MqttDataflowGenerationTests
+public class TreeDataflowGenerationTests
 {
+    public enum Target
+    {
+        Mqtt,
+        OpcUa,
+    }
+
     private static readonly Guid s_subscriberDesignId = Guid.NewGuid();
     private static readonly Guid s_subscriberValueOutputId = Guid.NewGuid();
     private static readonly Guid s_subscriberAvailableOutputId = Guid.NewGuid();
 
+    public static TheoryData<Target, DataType, Type, string> OnChangeCases()
+    {
+        var data = new TheoryData<Target, DataType, Type, string>();
+
+        foreach (var target in Enum.GetValues<Target>())
+        {
+            data.Add(target, DataType.Flag, typeof(double), "DataPointFloat"); // VSE / IO-Link flag subscribers log their numeric value (NV) output
+            data.Add(target, DataType.Flag, typeof(bool), "DataPointBool");
+            data.Add(target, DataType.Whole, typeof(long), "DataPointInteger");
+            data.Add(target, DataType.Whole, typeof(double), "DataPointFloat"); // IO-Link delivers Whole as double
+            data.Add(target, DataType.Real, typeof(double), "DataPointFloat");
+            data.Add(target, DataType.Real, typeof(float), "DataPointFloat");
+        }
+
+        return data;
+    }
+
     [Theory]
-    [InlineData(DataType.Flag, typeof(double), "DataPointFloat")] // VSE / IO-Link flag subscribers log their numeric value (NV) output
-    [InlineData(DataType.Flag, typeof(bool), "DataPointBool")]
-    [InlineData(DataType.Whole, typeof(long), "DataPointInteger")]
-    [InlineData(DataType.Whole, typeof(double), "DataPointFloat")] // IO-Link delivers Whole as double
-    [InlineData(DataType.Real, typeof(double), "DataPointFloat")]
-    [InlineData(DataType.Real, typeof(float), "DataPointFloat")]
-    public void Connects_on_change_data_point_to_mqtt_node_matching_the_output_type(DataType dataType, Type outputType, string expectedDesignId)
+    [MemberData(nameof(OnChangeCases))]
+    public void Connects_on_change_data_point_to_node_matching_the_output_type(Target target, DataType dataType, Type outputType, string expectedDesignId)
     {
         // Arrange
         using var builder = CreateBuilder(outputType);
-        var connection = new Connection { Id = Guid.NewGuid(), Name = "MyBroker", Type = ConnectionType.Mqtt };
-        connection.SetMqttConnection(new MqttConnection { Address = "broker.example.com", Port = 1883 });
-
+        var connection = CreateConnection(target);
         var master = new DeviceTreeVseDevice { Alias = "Dev", Children = { CreateOnChangeNode(connection, dataType, "n1") }, Id = "dev", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
         var generator = CreateGenerator(builder);
         var dataflow = builder.Editors.Cluster.AddDataflow("Dev", new Version(0, 1));
@@ -51,24 +69,24 @@ public class MqttDataflowGenerationTests
         generator.Generate(master, [connection], dataflow, engine, out _, out _, out _);
 
         // Assert
-        var dataPort = Assert.Single(dataflow.DataPorts);
-        var dataPointNode = Assert.Single(dataPort.TreeNodes.Single().Children.Single().Children); // edge -> device -> data point
+        var dataPointNode = Assert.Single(GetDataPointNodes(Assert.Single(dataflow.DataPorts)));
         Assert.Equal(expectedDesignId, dataPointNode.DesignId);
         Assert.Equal(outputType == typeof(float) ? typeof(double) : outputType, dataPointNode.ValueType);
         Assert.Single(dataPointNode.IncomingLinks); // the subscriber output is assigned directly, without a compressor in between
     }
 
     [Theory]
-    [InlineData(DataType.Text)]
-    [InlineData(DataType.Octets)]
-    [InlineData(DataType.Unknown)]
-    public void Skips_enabled_nodes_whose_data_type_does_not_support_process_data_logging(DataType unsupportedDataType)
+    [InlineData(Target.Mqtt, DataType.Text)]
+    [InlineData(Target.Mqtt, DataType.Octets)]
+    [InlineData(Target.Mqtt, DataType.Unknown)]
+    [InlineData(Target.OpcUa, DataType.Text)]
+    [InlineData(Target.OpcUa, DataType.Octets)]
+    [InlineData(Target.OpcUa, DataType.Unknown)]
+    public void Skips_enabled_nodes_whose_data_type_does_not_support_process_data_logging(Target target, DataType unsupportedDataType)
     {
         // Arrange
         using var builder = CreateBuilder(typeof(double));
-        var connection = new Connection { Id = Guid.NewGuid(), Name = "MyBroker", Type = ConnectionType.Mqtt };
-        connection.SetMqttConnection(new MqttConnection { Address = "broker.example.com", Port = 1883 });
-
+        var connection = CreateConnection(target);
         var master = new DeviceTreeVseDevice
         {
             Alias = "Dev",
@@ -86,9 +104,43 @@ public class MqttDataflowGenerationTests
         generator.Generate(master, [connection], dataflow, engine, out _, out _, out _);
 
         // Assert
-        var dataPort = Assert.Single(dataflow.DataPorts);
-        var dataPointNode = Assert.Single(dataPort.TreeNodes.Single().Children.Single().Children); // only the supported node is published
+        var dataPointNode = Assert.Single(GetDataPointNodes(Assert.Single(dataflow.DataPorts))); // only the supported node is published
         Assert.Equal("supported", dataPointNode.Name);
+    }
+
+    private static Connection CreateConnection(Target target)
+    {
+        switch (target)
+        {
+            case Target.Mqtt:
+                var mqttConnection = new Connection { Id = Guid.NewGuid(), Name = "MyBroker", Type = ConnectionType.Mqtt };
+                mqttConnection.SetMqttConnection(new MqttConnection { Address = "broker.example.com", Port = 1883 });
+                return mqttConnection;
+
+            case Target.OpcUa:
+                var opcUaConnection = new Connection { Id = Guid.NewGuid(), Name = "MyServer", Type = ConnectionType.OpcUaServer };
+                // The local interface needs no host lookup, so the system configuration service stays unused.
+                opcUaConnection.SetOpcUaServerConnection(new OpcUaServerConnection { NetworkInterface = OpcUaServerConnection.LocalNetworkInterface, Port = 4840 });
+                return opcUaConnection;
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(target));
+        }
+    }
+
+    // The data points are the nodes below the target specific folder scaffold (edge/device for MQTT, device for OPC UA).
+    private static IEnumerable<DataPortTreeNode> GetDataPointNodes(DataPort dataPort)
+    {
+        var pending = new Stack<DataPortTreeNode>(dataPort.TreeNodes);
+
+        while (pending.TryPop(out var node))
+        {
+            if (node.DesignId != "Folder")
+                yield return node;
+
+            foreach (var child in node.Children)
+                pending.Push(child);
+        }
     }
 
     private static DeviceTreeProcessData CreateOnChangeNode(Connection connection, DataType dataType, string id)
@@ -114,8 +166,9 @@ public class MqttDataflowGenerationTests
         var instanceInfo = Substitute.For<IInstanceInformationProvider>();
         instanceInfo.Local.Name.Returns("Edge");
 
-        return new DataflowGenerator(builder, Substitute.For<ILogger>(), "mid",
-            [new FakeDeviceDataflowGenerator()], [new MqttCloudDataflowGenerator(instanceInfo)], [new MqttCloudFilter()]);
+        return new DataflowGenerator(builder, Substitute.For<ILogger>(), "mid", [new FakeDeviceDataflowGenerator()],
+            [new MqttCloudDataflowGenerator(instanceInfo), new OpcUaCloudDataflowGenerator(Substitute.For<ISystemConfigurationService>())],
+            [new MqttCloudFilter(), new OpcUaCloudFilter()]);
     }
 
     private static ClusterBuilder CreateBuilder(Type outputType)
@@ -133,7 +186,7 @@ public class MqttDataflowGenerationTests
 
         var resolver = Substitute.For<IDependencyResolver>();
         resolver.ResolveDataPortDesignDependency(Arg.Any<string>())
-            .Returns(new ClusterDependency { Name = "Dataport", Version = "0.0.1" });
+            .Returns(ci => new ClusterDependency { Name = ci.Arg<string>(), Version = "0.0.1" });
         resolver.ResolveFunctionBlockDesignDependency(Arg.Any<Guid>())
             .Returns(ci => new ClusterDependency { Name = ci.Arg<Guid>().ToString(), Version = "0.0.1" });
         resolver.ResolveFunctionBlockDesign(Arg.Any<Guid>())
@@ -141,6 +194,7 @@ public class MqttDataflowGenerationTests
 
         var builder = new ClusterBuilder(resolver);
         builder.AddDataPortDesign(FunctionBlocks.MqttDataPort.DesignId);
+        builder.AddDataPortDesign(FunctionBlocks.OpcUaDataPort.DesignId);
 
         return builder;
     }

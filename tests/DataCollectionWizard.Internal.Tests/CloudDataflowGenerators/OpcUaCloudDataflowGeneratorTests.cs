@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using ClusterManagement.Public.Connections.Contracts;
 using ClusterManagement.Public.Connections.Extensions;
 using DataCollectionWizard.Internal.Extensions;
@@ -121,7 +121,7 @@ public class OpcUaCloudDataflowGeneratorTests
             var children = new List<TreeModel> { new() { DataConfig = null, Id = "folder1", Name = "My Folder!" } };
 
             // Act
-            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, result);
+            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
 
             // Assert
             var node = Assert.Single(dataPort.TreeNodes);
@@ -148,7 +148,7 @@ public class OpcUaCloudDataflowGeneratorTests
             var children = new List<TreeModel> { new() { DataConfig = config, Id = "n1", Name = "Value" } };
 
             // Act
-            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, result);
+            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
 
             // Assert
             var node = Assert.Single(dataPort.TreeNodes);
@@ -169,7 +169,7 @@ public class OpcUaCloudDataflowGeneratorTests
             var children = new List<TreeModel> { new() { DataConfig = config, Id = "n1", Name = "Value" } };
 
             // Act
-            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, result);
+            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
 
             // Assert
             var node = Assert.Single(dataPort.TreeNodes);
@@ -193,7 +193,7 @@ public class OpcUaCloudDataflowGeneratorTests
             var children = new List<TreeModel> { new() { DataConfig = config, Id = "n1", Name = "Value" } };
 
             // Act & Assert
-            Assert.Throws<NotSupportedException>(() => generator.BuildDataportNodesRecursively(children, dataPort, null, builder, result));
+            Assert.Throws<NotSupportedException>(() => generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result));
         }
 
         [Fact]
@@ -208,7 +208,7 @@ public class OpcUaCloudDataflowGeneratorTests
             var children = new List<TreeModel> { new() { DataConfig = config, Id = "n1", Name = "Value" } };
 
             // Act
-            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, result);
+            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
 
             // Assert
             var input = Assert.Contains("n1", result);
@@ -235,7 +235,7 @@ public class OpcUaCloudDataflowGeneratorTests
             };
 
             // Act
-            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, result);
+            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
 
             // Assert
             Assert.Equal([longName, longName[..254] + "_2"], dataPort.TreeNodes.Select(n => n.Name));
@@ -261,7 +261,7 @@ public class OpcUaCloudDataflowGeneratorTests
             };
 
             // Act
-            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, result);
+            generator.BuildDataportNodesRecursively(children, dataPort, null, builder, [], result);
 
             // Assert
             var folderNode = Assert.Single(dataPort.TreeNodes); // only the root folder sits directly under the data port
@@ -276,6 +276,7 @@ public class OpcUaCloudDataflowGeneratorTests
     /// Tests for the public GenerateCloudDataflow entry point, covering the folder scaffold
     /// (root/edge/device) and the empty-result short-circuit when nothing is logged.
     /// </summary>
+    [Collection(NetworkInterfacesCacheCollection.Name)]
     public class GenerateCloudDataflowTests
     {
         private static readonly IReadOnlyList<NetworkInterface> s_hostNetworkInterfaces =
@@ -491,7 +492,7 @@ public class OpcUaCloudDataflowGeneratorTests
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void Sets_certificate_store_types_to_none_when_no_path_is_given(string? path)
+        public void Sets_trusted_certificate_store_types_to_none_when_no_path_is_given(string? path)
         {
             // Arrange
             using var builder = CreateBuilder(out var dataflow);
@@ -517,7 +518,7 @@ public class OpcUaCloudDataflowGeneratorTests
 
             object? Prop(string designId) => dataPort.Properties.Single(p => p.DesignId == designId).Value;
 
-            Assert.Equal((byte)OpcUaCertificateStoreType.None, Prop("ApplicationCertificatesStoreType"));
+            Assert.Equal((byte)OpcUaCertificateStoreType.Directory, Prop("ApplicationCertificatesStoreType")); // required, never None
             Assert.Equal((byte)OpcUaCertificateStoreType.None, Prop("TrustedCertificatesStoreType"));
             Assert.Equal((byte)OpcUaCertificateStoreType.None, Prop("TrustedIssuerCertificatesStoreType"));
         }

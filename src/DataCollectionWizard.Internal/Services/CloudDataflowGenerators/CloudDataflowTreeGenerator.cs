@@ -1,4 +1,7 @@
-﻿using ViciOne.Cluster.Builder;
+﻿using DataCollectionWizard.Internal.Contracts;
+using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
+using ViciOne.Cluster.Builder;
+using ViciOne.Cluster.Builder.Extensions;
 using ViciOne.Cluster.Model;
 using ViciOne.DeviceTree.Contracts;
 
@@ -11,9 +14,12 @@ namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 /// </summary>
 public abstract class CloudDataflowTreeGenerator
 {
-    protected abstract string PortDesignIdFolder { get; }
-    protected abstract string PortDesignIdDataPointDouble { get; }
-    protected abstract string PortDesignIdDataPointString { get; }
+    // Tree node design ids, which the MQTT (Mqtt.yaml) and OPC-UA Server (OpcUaServer.yaml) DataPorts share.
+    protected const string PortDesignIdFolder = "Folder";
+    private const string PortDesignIdDataPointBool = "DataPointBool";
+    private const string PortDesignIdDataPointFloat = "DataPointFloat";
+    private const string PortDesignIdDataPointInteger = "DataPointInteger";
+    private const string PortDesignIdDataPointString = "DataPointString";
 
     /// <summary>
     /// Sanitizes a device tree node name so it is valid as a DataPort tree node name for the target protocol.
@@ -86,13 +92,14 @@ public abstract class CloudDataflowTreeGenerator
         return null;
     }
 
-    internal void BuildDataportNodesRecursively(List<TreeModel> children, DataPort dataPort, DataPortTreeNode? parent, ClusterBuilder builder, Dictionary<string, AggregationFunctionCloudInputs> result)
+    internal void BuildDataportNodesRecursively(List<TreeModel> children, DataPort dataPort, DataPortTreeNode? parent, ClusterBuilder builder,
+                                                Dictionary<string, DataOutputInfo> dataOutputs, Dictionary<string, AggregationFunctionCloudInputs> result)
     {
         var siblingNames = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var child in children)
         {
-            var (dataportNodeDesignId, dataportNodeValueType, dataportNodeTransferMode) = GetDataPortNodeKind(child);
+            var (dataportNodeDesignId, dataportNodeValueType, dataportNodeTransferMode) = GetDataPortNodeKind(child, builder, dataOutputs);
             var dataportNodeName = GetUniqueSiblingName(GetSafeNodeName(child.Name), siblingNames);
             DataPortTreeNode childNode;
 
@@ -117,25 +124,55 @@ public abstract class CloudDataflowTreeGenerator
                 };
             }
 
-            BuildDataportNodesRecursively(child.Children, dataPort, childNode, builder, result);
+            BuildDataportNodesRecursively(child.Children, dataPort, childNode, builder, dataOutputs, result);
         }
     }
 
-    // Numeric types (Flag/Whole/UnsignedWhole/Real) are published as double data points and Text as string
-    // data points. The DataPorts also define DataPointBool/Integer/DateTime/Binary node types, so this can be
-    // extended once those DataType values are confirmed and their mapping to CLR types is settled.
-    private (string DesignId, Type? ValueType, DataPortTransferMode TransferMode) GetDataPortNodeKind(TreeModel child)
+    private static (string DesignId, Type? ValueType, DataPortTransferMode TransferMode) GetDataPortNodeKind(TreeModel child, ClusterBuilder builder,
+                                                                                                               Dictionary<string, DataOutputInfo> dataOutputs)
     {
         if (child.DataConfig is null)
         {
             return (PortDesignIdFolder, null, DataPortTransferMode.None);
         }
 
-        return child.DataConfig.Node.DataType switch
+        var dataType = child.DataConfig.Node.DataType;
+
+        if (dataType == DataType.Text)
         {
-            DataType.Flag or DataType.UnsignedWhole or DataType.Whole or DataType.Real => (PortDesignIdDataPointDouble, typeof(double), DataPortTransferMode.OnChange),
-            DataType.Text => (PortDesignIdDataPointString, typeof(string), DataPortTransferMode.OnChange),
-            _ => throw new NotSupportedException($"Data type {child.DataConfig.Node.DataType} is not supported."),
-        };
+            return (PortDesignIdDataPointString, typeof(string), DataPortTransferMode.OnChange);
+        }
+
+        if (dataType is not (DataType.UnsignedWhole or DataType.Whole or DataType.Real or DataType.Flag))
+        {
+            throw new NotSupportedException($"Data type {dataType} is not supported.");
+        }
+
+        // Compressed values leave the compressor as double. OnChange values are connected straight from the
+        // device output without conversion, so the node has to match the output's own type (bool, long, ...).
+        if (child.DataConfig.Configuration.CompressionTime != (int)AggregationInterval.OnChange
+            || !dataOutputs.TryGetValue(child.DataConfig.Node.Id, out var dataOutput))
+        {
+            return (PortDesignIdDataPointFloat, typeof(double), DataPortTransferMode.OnChange);
+        }
+
+        var outputType = builder.DetermineValueType(dataOutput.Output);
+
+        if (outputType == typeof(bool))
+        {
+            return (PortDesignIdDataPointBool, typeof(bool), DataPortTransferMode.OnChange);
+        }
+
+        if (outputType == typeof(long))
+        {
+            return (PortDesignIdDataPointInteger, typeof(long), DataPortTransferMode.OnChange);
+        }
+
+        if (outputType == typeof(double) || outputType == typeof(float))
+        {
+            return (PortDesignIdDataPointFloat, typeof(double), DataPortTransferMode.OnChange);
+        }
+
+        throw new NotSupportedException($"Output type {outputType} of {child.DataConfig.Node.Id} is not supported for on change transfer.");
     }
 }

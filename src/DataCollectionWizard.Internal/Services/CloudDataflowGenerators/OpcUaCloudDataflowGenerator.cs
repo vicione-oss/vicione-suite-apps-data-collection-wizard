@@ -21,10 +21,6 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
 
     private protected override int? MaxNodeNameLength => 256;
 
-    protected override string PortDesignIdFolder => "Folder";
-    protected override string PortDesignIdDataPointDouble => "DataPointFloat";
-    protected override string PortDesignIdDataPointString => "DataPointString";
-
     public Dictionary<string, AggregationFunctionCloudInputs> GenerateCloudDataflow(Connection connection,
                                                                             IDeviceTreeMasterNode deviceTreeMaster,
                                                                             ClusterBuilder builder,
@@ -55,7 +51,7 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
         var dataport = GenerateDataPort(connection, opcUaConnection, serverAddress, deviceTreeMaster, builder, dataflow);
         var deviceNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdFolder, dataport, GetSafeNodeName(deviceTreeMaster.Url.DnsSafeHost), null, DataPortTransferMode.None);
 
-        BuildDataportNodesRecursively(loggedTree.Children, dataport, deviceNode, builder, result);
+        BuildDataportNodesRecursively(loggedTree.Children, dataport, deviceNode, builder, dataOutputs, result);
 
         return result;
     }
@@ -129,7 +125,8 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
 
         // ---- Certificate ----
         builder.Editors.DataPort.AddProperty("ApplicationCertificateSubject", dataPort, null, opcUaConnection.ApplicationCertificateSubject);
-        builder.Editors.DataPort.AddProperty("ApplicationCertificatesStoreType", dataPort, null, GetCertificateStoreType(opcUaConnection.ApplicationCertificatesPath));
+        // The server cannot start without its own certificate, so its store is always a directory (the DataPort rejects None here).
+        builder.Editors.DataPort.AddProperty("ApplicationCertificatesStoreType", dataPort, null, (byte)OpcUaCertificateStoreType.Directory);
         builder.Editors.DataPort.AddProperty("ApplicationCertificatesStorePath", dataPort, null, opcUaConnection.ApplicationCertificatesPath);
         builder.Editors.DataPort.AddProperty("TrustedCertificatesStoreType", dataPort, null, GetCertificateStoreType(opcUaConnection.TrustedCertificatesPath));
         builder.Editors.DataPort.AddProperty("TrustedCertificatesStorePath", dataPort, null, opcUaConnection.TrustedCertificatesPath);
