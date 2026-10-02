@@ -13,4 +13,9 @@ public class DataOutputInfo
     /// </summary>
     public required string Suffix { get; set; }
     public ConnectorOutput? ValidOutput { get; set; }
+
+    /// <summary>
+    /// The output carrying the unit of <see cref="Output"/>, or null if the device reports none for it.
+    /// </summary>
+    public ConnectorOutput? UnitOutput { get; set; }
 }

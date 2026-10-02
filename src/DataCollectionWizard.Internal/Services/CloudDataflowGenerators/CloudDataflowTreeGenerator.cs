@@ -92,8 +92,12 @@ public abstract class CloudDataflowTreeGenerator
         return null;
     }
 
+    /// <param name="addDataPointChildren">
+    /// Adds protocol-specific children below each created data point node, given the device output the data point is fed from.
+    /// </param>
     internal void BuildDataportNodesRecursively(List<TreeModel> children, DataPort dataPort, DataPortTreeNode? parent, ClusterBuilder builder,
-                                                Dictionary<string, DataOutputInfo> dataOutputs, Dictionary<string, AggregationFunctionCloudInputs> result)
+                                                Dictionary<string, DataOutputInfo> dataOutputs, Dictionary<string, AggregationFunctionCloudInputs> result,
+                                                Action<DataPortTreeNode, DataOutputInfo?>? addDataPointChildren = null)
     {
         var siblingNames = new HashSet<string>(StringComparer.Ordinal);
 
@@ -122,9 +126,11 @@ public abstract class CloudDataflowTreeGenerator
                     Min = new CloudInput() { InputTreeNode = childNode },
                     Value = new CloudInput() { InputTreeNode = childNode },
                 };
+
+                addDataPointChildren?.Invoke(childNode, dataOutputs.GetValueOrDefault(child.DataConfig.Node.Id));
             }
 
-            BuildDataportNodesRecursively(child.Children, dataPort, childNode, builder, dataOutputs, result);
+            BuildDataportNodesRecursively(child.Children, dataPort, childNode, builder, dataOutputs, result, addDataPointChildren);
         }
     }
 

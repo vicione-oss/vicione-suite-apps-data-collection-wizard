@@ -178,6 +178,7 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
                 AvailableOutput = availableOutput,
                 Output = valueOutput,
                 Suffix = $"{ioLinkMaster.Name} Diagnostics {node.Name}",
+                UnitOutput = unitOutput,
             };
 
             if (node is IDeviceTreeCompressableDataNode compressableDataNode)
@@ -259,7 +260,13 @@ public class IoLinkDataflowGenerator(IIoddStore ioddStore) : IDeviceDataflowGene
             return;
         }
 
-        var outputInfo = new DataOutputInfo { AvailableOutput = availableOutput, Output = valueOutputLogging, Suffix = $"{ioLinkPort.Name} {device.Name} {processData.Name}" };
+        var outputInfo = new DataOutputInfo
+        {
+            AvailableOutput = availableOutput,
+            Output = valueOutputLogging,
+            Suffix = $"{ioLinkPort.Name} {device.Name} {processData.Name}",
+            UnitOutput = unitOutput,
+        };
 
         if (node is IDeviceTreeCompressableDataNode compressableDataNode)
         {

@@ -128,7 +128,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
                 }
 
                 builder.Editors.Connector.SetEventEnabled(true, uiOutput);
-                result.DataOutputs[child.Id] = GetOutputInfo(child, alarm.Name, output, null, availableOutput, (aggregationFunction, compressionGrid) => IdentifierHelper.GetVseAlarmIdentifier(vseDevice, alarm, child, aggregationFunction, compressionGrid));
+                result.DataOutputs[child.Id] = GetOutputInfo(child, alarm.Name, output, null, availableOutput, null, (aggregationFunction, compressionGrid) => IdentifierHelper.GetVseAlarmIdentifier(vseDevice, alarm, child, aggregationFunction, compressionGrid));
 
                 result.OutputMapping.Add(new ValueMappingEntry
                 {
@@ -168,12 +168,14 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
                     continue;
                 }
 
-                result.DataOutputs[child.Id] = GetOutputInfo(child, counter.Name, output, null, availableOutput, (aggregationFunction, compressionGrid) => IdentifierHelper.GetVseCounterIdentifier(vseDevice, counter, child, aggregationFunction, compressionGrid));
+                var unitOutput = child.Name == "Value" ? counterFb.GetOutputByDesignId(FunctionBlocks.VseCounterSubscriber.Outputs.Unit) : null;
+
+                result.DataOutputs[child.Id] = GetOutputInfo(child, counter.Name, output, null, availableOutput, unitOutput, (aggregationFunction, compressionGrid) => IdentifierHelper.GetVseCounterIdentifier(vseDevice, counter, child, aggregationFunction, compressionGrid));
 
                 result.OutputMapping.Add(new ValueMappingEntry
                 {
                     ProcessDataId = child.Id,
-                    UnitOutputId = child.Name == "Value" ? counterFb.GetOutputByDesignId(FunctionBlocks.VseCounterSubscriber.Outputs.Unit).Id : null,
+                    UnitOutputId = unitOutput?.Id,
                     ValueOutputIdLogging = output.Id,
                     ValueOutputIdUI = output.Id,
                 });
@@ -243,12 +245,14 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
                         builder.Editors.Connector.SetEventEnabled(true, inputInput);
                 }
 
-                result.DataOutputs[child.Id] = GetOutputInfo(child, input.Name, output, null, availableOutput, (aggregationFunction, compressionGrid) => IdentifierHelper.GetVseInputIdentifier(vseDevice, input, child, aggregationFunction, compressionGrid, "External"));
+                var unitOutput = child.Name == "Value" ? inputFb.GetOutputByDesignId(FunctionBlocks.VseInputSubscriber.Outputs.Unit) : null;
+
+                result.DataOutputs[child.Id] = GetOutputInfo(child, input.Name, output, null, availableOutput, unitOutput, (aggregationFunction, compressionGrid) => IdentifierHelper.GetVseInputIdentifier(vseDevice, input, child, aggregationFunction, compressionGrid, "External"));
 
                 result.OutputMapping.Add(new ValueMappingEntry
                 {
                     ProcessDataId = child.Id,
-                    UnitOutputId = child.Name == "Value" ? inputFb.GetOutputByDesignId(FunctionBlocks.VseInputSubscriber.Outputs.Unit).Id : null,
+                    UnitOutputId = unitOutput?.Id,
                     ValueOutputIdLogging = output.Id,
                     ValueOutputIdUI = output.Id,
                 });
@@ -309,15 +313,14 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
                     continue;
                 }
 
-                Guid? unitOutputId = null;
-
-                if (child.Name is "Average" or "Maximum" or "Minimum" or "Damage" or "Warning")
-                    unitOutputId = objectFb.GetOutputByDesignId(FunctionBlocks.VseObjectSubscriber.Outputs.Unit).Id;
+                var unitOutput = child.Name is "Average" or "Maximum" or "Minimum" or "Damage" or "Warning"
+                    ? objectFb.GetOutputByDesignId(FunctionBlocks.VseObjectSubscriber.Outputs.Unit)
+                    : null;
 
                 result.OutputMapping.Add(new ValueMappingEntry
                 {
                     ProcessDataId = child.Id,
-                    UnitOutputId = unitOutputId,
+                    UnitOutputId = unitOutput?.Id,
                     ValueOutputIdLogging = output.Id,
                     ValueOutputIdUI = output.Id,
                 });
@@ -327,6 +330,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
                                                              output,
                                                              validOutput,
                                                              availableOutput,
+                                                             unitOutput,
                                                              (aggregationFunction, compressionGrid) => IdentifierHelper.GetVseObjectIdentifier(vseDevice, obj, child, aggregationFunction, compressionGrid));
             }
 
@@ -407,7 +411,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
                     builder.Editors.Connector.SetEventEnabled(true, inputInput);
             }
 
-            result.DataOutputs[child.Id] = GetOutputInfo(child, "Variant", output, null, availableOutput, (aggregationFunction, compressionGrid) => IdentifierHelper.GetVseVariantIdentifier(vseDevice, aggregationFunction, compressionGrid));
+            result.DataOutputs[child.Id] = GetOutputInfo(child, "Variant", output, null, availableOutput, null, (aggregationFunction, compressionGrid) => IdentifierHelper.GetVseVariantIdentifier(vseDevice, aggregationFunction, compressionGrid));
 
             result.OutputMapping.Add(new ValueMappingEntry
             {
@@ -419,7 +423,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
     }
 
     private static DataOutputInfo GetOutputInfo(IDeviceTreeCompressableDataNode child, string parentName, ConnectorOutput output, ConnectorOutput? validOutput, ConnectorOutput availableOutput,
-                                                Func<AggregationFunction, int, string> getDatapointIdentifier)
+                                                ConnectorOutput? unitOutput, Func<AggregationFunction, int, string> getDatapointIdentifier)
     {
         var outputInfo = new DataOutputInfo
         {
@@ -427,6 +431,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
             Output = output,
             Suffix = $"{parentName} {child.Name}",
             ValidOutput = validOutput,
+            UnitOutput = unitOutput,
         };
 
         foreach (var compressorConfig in child.CompressorConfigurations)
