@@ -1,4 +1,4 @@
-﻿using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
+﻿namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
 internal class TreeModel
 {
