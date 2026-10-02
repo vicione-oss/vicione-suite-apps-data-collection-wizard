@@ -1,9 +1,11 @@
-﻿using DataCollectionWizard.Internal.Services.DesignIds;
+﻿using DataCollectionWizard.Internal.Contracts;
+using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using Sdk.Connections.Contracts;
 using Sdk.Connections.Extensions;
 using Sdk.Instance;
 using ViciOne.Cluster.Builder;
+using ViciOne.Cluster.Builder.Extensions;
 using ViciOne.Cluster.Model;
 using ViciOne.DeviceTree.Contracts;
 
@@ -11,7 +13,9 @@ namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
 public sealed class MqttCloudDataflowGenerator(IInstanceInformationProvider instanceInformationProvider) : ICloudDataflowGenerator
 {
+    private const string PortDesignIdMqttDataPointBool = "DataPointBool";
     private const string PortDesignIdMqttDataPointFloat = "DataPointFloat";
+    private const string PortDesignIdMqttDataPointInteger = "DataPointInteger";
     private const string PortDesignIdMqttDataPointString = "DataPointString";
     private const string PortDesignIdMqttFolder = "Folder";
 
@@ -46,7 +50,7 @@ public sealed class MqttCloudDataflowGenerator(IInstanceInformationProvider inst
         var edgeNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdMqttFolder, dataport, GetMqttSafeTopicName(instanceInformationProvider.Local.Name ?? instanceInformationProvider.Local.SerialNumber), null, DataPortTransferMode.None);
         var deviceNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdMqttFolder, edgeNode, GetMqttSafeTopicName(deviceTreeMaster.Url.DnsSafeHost), null, DataPortTransferMode.None);
 
-        BuildDataportNodesRecursively(loggedTree!.Children, dataport, deviceNode, builder, result);
+        BuildDataportNodesRecursively(loggedTree!.Children, dataport, deviceNode, builder, dataOutputs, result);
 
         return result;
     }
@@ -72,15 +76,15 @@ public sealed class MqttCloudDataflowGenerator(IInstanceInformationProvider inst
         return uniqueName;
     }
 
-    internal static void BuildDataportNodesRecursively(List<TreeModel> children, DataPort dataPort, DataPortTreeNode? parent, ClusterBuilder builder, Dictionary<string, AggregationFunctionCloudInputs> result)
+    internal static void BuildDataportNodesRecursively(List<TreeModel> children, DataPort dataPort, DataPortTreeNode? parent, ClusterBuilder builder,
+                                                       Dictionary<string, DataOutputInfo> dataOutputs, Dictionary<string, AggregationFunctionCloudInputs> result)
     {
         var siblingNames = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var child in children)
         {
-            var dataportNodeDesignId = GetDataPortNodeDesignId(child);
+            var (dataportNodeDesignId, dataportNodeValueType) = GetDataPortNodeDesign(child, builder, dataOutputs);
             var dataportNodeTransferMode = GetDataPortNodeTransferMode(child);
-            var dataportNodeValueType = GetDataportNodeValueType(child);
             var dataportNodeName = GetUniqueSiblingName(GetMqttSafeTopicName(child.Name), siblingNames);
             DataPortTreeNode childNode;
 
@@ -105,23 +109,8 @@ public sealed class MqttCloudDataflowGenerator(IInstanceInformationProvider inst
                 };
             }
 
-            BuildDataportNodesRecursively(child.Children, dataPort, childNode, builder, result);
+            BuildDataportNodesRecursively(child.Children, dataPort, childNode, builder, dataOutputs, result);
         }
-    }
-
-    private static Type? GetDataportNodeValueType(TreeModel child)
-    {
-        if (child.DataConfig is null)
-        {
-            return null;
-        }
-
-        return child.DataConfig.Node.DataType switch
-        {
-            DataType.UnsignedWhole or DataType.Whole or DataType.Real or DataType.Flag => typeof(double),
-            DataType.Text => typeof(string),
-            _ => throw new NotSupportedException($"Data type {child.DataConfig.Node.DataType} is not supported."),
-        };
     }
 
     private static DataPortTransferMode GetDataPortNodeTransferMode(TreeModel child)
@@ -134,19 +123,51 @@ public sealed class MqttCloudDataflowGenerator(IInstanceInformationProvider inst
         return DataPortTransferMode.OnChange;
     }
 
-    private static string GetDataPortNodeDesignId(TreeModel child)
+    private static (string DesignId, Type? ValueType) GetDataPortNodeDesign(TreeModel child, ClusterBuilder builder, Dictionary<string, DataOutputInfo> dataOutputs)
     {
         if (child.DataConfig is null)
         {
-            return PortDesignIdMqttFolder;
+            return (PortDesignIdMqttFolder, null);
         }
 
-        return child.DataConfig.Node.DataType switch
+        var dataType = child.DataConfig.Node.DataType;
+
+        if (dataType == DataType.Text)
         {
-            DataType.UnsignedWhole or DataType.Whole or DataType.Real or DataType.Flag => PortDesignIdMqttDataPointFloat,
-            DataType.Text => PortDesignIdMqttDataPointString,
-            _ => throw new NotSupportedException($"Data type {child.DataConfig.Node.DataType} is not supported."),
-        };
+            return (PortDesignIdMqttDataPointString, typeof(string));
+        }
+
+        if (dataType is not (DataType.UnsignedWhole or DataType.Whole or DataType.Real or DataType.Flag))
+        {
+            throw new NotSupportedException($"Data type {dataType} is not supported.");
+        }
+
+        // Compressed values leave the compressor as double. OnChange values are connected straight from the
+        // device output without conversion, so the node has to match the output's own type (bool, long, ...).
+        if (child.DataConfig.Configuration.CompressionTime != (int)AggregationInterval.OnChange
+            || !dataOutputs.TryGetValue(child.DataConfig.Node.Id, out var dataOutput))
+        {
+            return (PortDesignIdMqttDataPointFloat, typeof(double));
+        }
+
+        var outputType = builder.DetermineValueType(dataOutput.Output);
+
+        if (outputType == typeof(bool))
+        {
+            return (PortDesignIdMqttDataPointBool, typeof(bool));
+        }
+
+        if (outputType == typeof(long))
+        {
+            return (PortDesignIdMqttDataPointInteger, typeof(long));
+        }
+
+        if (outputType == typeof(double) || outputType == typeof(float))
+        {
+            return (PortDesignIdMqttDataPointFloat, typeof(double));
+        }
+
+        throw new NotSupportedException($"Output type {outputType} of {child.DataConfig.Node.Id} is not supported for on change transfer.");
     }
 
     internal static TreeModel? BuildLoggedTreeRecursively(IDeviceTreeBase node, IEnumerable<string> loggedNodeIds, List<ProcessDataConfiguration> loggedProcessDataNodes)
