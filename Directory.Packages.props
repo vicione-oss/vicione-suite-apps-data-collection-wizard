@@ -12,7 +12,7 @@
     <PackageVersion Include="ViciOne.Core.Dataflow.DataModel.Generation" Version="1.0.0" />
     <PackageVersion Include="ViciOne.Cluster.Builder" Version="1.0.0" />
     <PackageVersion Include="ViciOne.DeviceTree.Contracts" Version="2.1.0" />
-    <PackageVersion Include="ViciOne.Suite.ClusterManagement.Public" Version="3.0.0-ci2901552018" />
+    <PackageVersion Include="ViciOne.Suite.ClusterManagement.Public" Version="3.0.0-beta1" />
     <PackageVersion Include="ViciOne.Suite.Sdk" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="ViciOne.Suite.Sdk.Backend" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="ViciOne.Suite.Sdk.Deployment" Version="$(ViciOneSuiteSdkVersion)" />

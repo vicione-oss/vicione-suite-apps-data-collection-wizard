@@ -13,6 +13,11 @@ namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
 public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService systemConfigurationService) : CloudDataflowTreeGenerator, ICloudDataflowGenerator
 {
+    // Values of the DataPort's *CertificatesStoreType properties (0 = none, 1 = X509 store, 2 = directory). The
+    // connection contract no longer exposes a store type: a configured path means a directory store, none means none.
+    private const byte CertificateStoreTypeNone = 0;
+    private const byte CertificateStoreTypeDirectory = 2;
+
     private static readonly TimeSpan s_networkInterfacesCacheDuration = TimeSpan.FromSeconds(10);
     private static readonly Lock s_networkInterfacesCacheLock = new();
     private static volatile CachedNetworkInterfaces? s_networkInterfacesCache;
@@ -133,7 +138,7 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
 
         // ---- Certificate ----
         builder.Editors.DataPort.AddProperty("ApplicationCertificateSubject", dataPort, null, opcUaConnection.ApplicationCertificateSubject);
-        builder.Editors.DataPort.AddProperty("ApplicationCertificatesStoreType", dataPort, null, (byte)OpcUaCertificateStoreType.Directory);
+        builder.Editors.DataPort.AddProperty("ApplicationCertificatesStoreType", dataPort, null, CertificateStoreTypeDirectory);
         builder.Editors.DataPort.AddProperty("ApplicationCertificatesStorePath", dataPort, null, opcUaConnection.ApplicationCertificatesPath);
         builder.Editors.DataPort.AddProperty("TrustedCertificatesStoreType", dataPort, null, GetCertificateStoreType(opcUaConnection.TrustedCertificatesPath));
         builder.Editors.DataPort.AddProperty("TrustedCertificatesStorePath", dataPort, null, opcUaConnection.TrustedCertificatesPath);
@@ -145,7 +150,7 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
     }
 
     private static byte GetCertificateStoreType(string? path)
-        => (byte)(string.IsNullOrEmpty(path) ? OpcUaCertificateStoreType.None : OpcUaCertificateStoreType.Directory);
+        => string.IsNullOrEmpty(path) ? CertificateStoreTypeNone : CertificateStoreTypeDirectory;
 
     private sealed record CachedNetworkInterfaces(IReadOnlyList<NetworkInterface> NetworkInterfaces, long Timestamp);
 }

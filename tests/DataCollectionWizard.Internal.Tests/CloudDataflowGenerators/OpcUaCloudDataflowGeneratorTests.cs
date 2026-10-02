@@ -516,11 +516,12 @@ public class OpcUaCloudDataflowGeneratorTests
             Assert.Equal(opcUaConnection.Username, Prop("User"));
             Assert.Equal(opcUaConnection.Password, Prop("Password"));
             Assert.Equal(opcUaConnection.ApplicationCertificateSubject, Prop("ApplicationCertificateSubject"));
-            Assert.Equal((byte)OpcUaCertificateStoreType.Directory, Prop("ApplicationCertificatesStoreType"));
+            // The DataPort's store type values: 0 = none, 2 = directory.
+            Assert.Equal((byte)2, Prop("ApplicationCertificatesStoreType"));
             Assert.Equal(opcUaConnection.ApplicationCertificatesPath, Prop("ApplicationCertificatesStorePath"));
-            Assert.Equal((byte)OpcUaCertificateStoreType.Directory, Prop("TrustedCertificatesStoreType"));
+            Assert.Equal((byte)2, Prop("TrustedCertificatesStoreType"));
             Assert.Equal(opcUaConnection.TrustedCertificatesPath, Prop("TrustedCertificatesStorePath"));
-            Assert.Equal((byte)OpcUaCertificateStoreType.Directory, Prop("TrustedIssuerCertificatesStoreType"));
+            Assert.Equal((byte)2, Prop("TrustedIssuerCertificatesStoreType"));
             Assert.Equal(opcUaConnection.TrustedIssuerCertificatesPath, Prop("TrustedIssuerCertificatesStorePath"));
             Assert.Equal(opcUaConnection.AutoAcceptUntrustedCertificates, Prop("AutoAcceptUntrustedCertificates"));
         }
@@ -554,8 +555,9 @@ public class OpcUaCloudDataflowGeneratorTests
 
             object? Prop(string designId) => dataPort.Properties.Single(p => p.DesignId == designId).Value;
 
-            Assert.Equal((byte)OpcUaCertificateStoreType.None, Prop("TrustedCertificatesStoreType"));
-            Assert.Equal((byte)OpcUaCertificateStoreType.None, Prop("TrustedIssuerCertificatesStoreType"));
+            // 0 is the DataPort's "no store" value.
+            Assert.Equal((byte)0, Prop("TrustedCertificatesStoreType"));
+            Assert.Equal((byte)0, Prop("TrustedIssuerCertificatesStoreType"));
         }
 
         [Theory]
