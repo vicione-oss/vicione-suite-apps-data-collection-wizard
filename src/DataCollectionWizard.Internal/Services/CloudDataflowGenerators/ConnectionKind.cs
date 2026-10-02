@@ -2,7 +2,8 @@
 
 public enum ConnectionKind
 {
+    Unsupported,
     Anna,
     Moneo,
-    Unsupported,
+    Mqtt,
 }

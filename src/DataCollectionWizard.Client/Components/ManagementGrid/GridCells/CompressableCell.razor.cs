@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using DataCollectionWizard.Client.Components.ManagementGrid.Models;
 using DataCollectionWizard.Client.Components.ManagementGrid.Services;
 using DataCollectionWizard.Client.Extensions;
 using DataCollectionWizard.Client.Models;
@@ -13,21 +12,6 @@ namespace DataCollectionWizard.Client.Components.ManagementGrid.GridCells;
 
 public sealed partial class CompressableCell : ComponentBase
 {
-    // Which options exist per connection kind lives in AggregationOptions, shared with the bulk panel; this only
-    // wraps them for the ComboBox.
-    private static readonly Dictionary<ConnectionKind, ComboBoxOption<AggregationInterval>[]> s_aggregationIntervals =
-        Enum.GetValues<ConnectionKind>().ToDictionary(
-            kind => kind,
-            kind => AggregationOptions.IntervalsFor(kind)
-                .Select(interval => new ComboBoxOption<AggregationInterval> { Text = interval.AggregationIntervalToString(), Value = interval, })
-                .ToArray());
-
-    private static readonly Dictionary<ConnectionKind, ComboBoxOption<AggregationFunction>[]> s_aggregationFunctions =
-        Enum.GetValues<ConnectionKind>().ToDictionary(
-            kind => kind,
-            kind => AggregationOptions.FunctionsFor(kind)
-                .Select(function => new ComboBoxOption<AggregationFunction> { Text = function.AggregationFunctionToString(), Value = function, })
-                .ToArray());
     private static readonly Expression<Func<ComboBoxOption<AggregationInterval>, string>> s_aggregationIntervalTextSelector = e => e.Text;
     private static readonly Expression<Func<ComboBoxOption<AggregationInterval>, AggregationInterval>> s_aggregationIntervalValueSelector = e => e.Value;
     private static readonly Expression<Func<ComboBoxOption<AggregationFunction>, string>> s_aggregationFunctionTextSelector = e => e.Text;
@@ -66,11 +50,15 @@ public sealed partial class CompressableCell : ComponentBase
         => _cachedConfig ??= CompressableDataNode.CompressorConfigurations
             .Single(cc => cc.DataGroupIdentifier == Configuration.Connection.Id);
 
+    // Which options this row's cloud offers comes straight from its ICloudFilter, via Configuration
+    // (PublishTargetInfo) - this only wraps them for the ComboBox.
     private ComboBoxOption<AggregationInterval>[] AggregationIntervals
-        => s_aggregationIntervals.TryGetValue(Configuration.Kind, out var intervals) ? intervals : [];
+        => [.. Configuration.SupportedAggregationIntervals
+            .Select(interval => new ComboBoxOption<AggregationInterval> { Text = interval.AggregationIntervalToString(), Value = interval, })];
 
     private ComboBoxOption<AggregationFunction>[] AggregationFunctions
-        => s_aggregationFunctions.TryGetValue(Configuration.Kind, out var functions) ? functions : [];
+        => [.. Configuration.SupportedAggregationFunctions
+            .Select(function => new ComboBoxOption<AggregationFunction> { Text = function.AggregationFunctionToString(), Value = function, })];
 
     protected override void OnParametersSet()
     {

@@ -367,15 +367,20 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         _publishTargets.Clear();
         _publishTargets.AddRange(PublishTargetsFilter.GetPublishTargets(ConnectionService.Connections, CloudFilters));
 
-        _publishTargetInfos = [.. _publishTargets.Select(c =>
+        _publishTargetInfos = [.. _publishTargets.Select(connection =>
         {
-            var cloudFilter = CloudFilters.FirstOrDefault(f => f.GetCloudConnections([c]).Any());
+            var cloudFilter = CloudFilters.FirstOrDefault(cloudFilter => cloudFilter.GetCloudConnections([connection]).Any());
             if (cloudFilter is null)
             {
-                return new PublishTargetInfo(c, ConnectionKind.Unsupported, []);
+                return new PublishTargetInfo(connection, ConnectionKind.Unsupported, [], [], []);
             }
 
-            return new PublishTargetInfo(c, cloudFilter.ConnectionKind, cloudFilter.TreeNodesSupportedForConfiguration);
+            return new PublishTargetInfo(
+                connection,
+                cloudFilter.ConnectionKind,
+                cloudFilter.TreeNodesSupportedForConfiguration,
+                cloudFilter.SupportedAggregationIntervals,
+                cloudFilter.SupportedAggregationFunctions);
         })];
 
         // Share the clouds with the service so the sidebar info panel can project the throughput per cloud, and

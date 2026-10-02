@@ -157,8 +157,11 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
     private static List<ProcessDataConfiguration> GetLoggedProcessDataNodes(IDeviceTreeBase[] allDeviceTreeNodes, Connection connection)
         => [.. allDeviceTreeNodes.OfType<IDeviceTreeCompressableDataNode>()
-                             .Where(n => n.CompressorConfigurations.FirstOrDefault(cc => cc.DataGroupIdentifier == connection.Id)?.Enabled ?? false)
-                             .Select(n => new ProcessDataConfiguration(n, n.CompressorConfigurations.First(c => c.DataGroupIdentifier == connection.Id)))];
+                             .Where(n => n.DataType.SupportsLogging && n.DataType.SupportsCompression)
+                             .Select(n => n.CompressorConfigurations.FirstOrDefault(cc => cc.DataGroupIdentifier == connection.Id) is { Enabled: true } configuration
+                                              ? new ProcessDataConfiguration(n, configuration)
+                                              : null)
+                             .OfType<ProcessDataConfiguration>()];
 
     private static string GetObjectTriggerGuardName(string vseObjectIdentifier, EventTrigger eventTriggerConfiguration)
         => $"Guard-{vseObjectIdentifier}-{(eventTriggerConfiguration.OnDamage ? "Damage" : string.Empty)}{(eventTriggerConfiguration.OnWarning ? "Warning" : string.Empty)}-{eventTriggerConfiguration.Delay}h";
@@ -402,7 +405,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         var blobLoggingConfigurations = GetBlobLoggingConfigurations(nodeAndDescendants, enabledConfigs).ToArray();
         var generateDataflowResult = deviceDataflowGenerator.GenerateDeviceFunctionBlocks(builder, dataflow, master, enabledDataIds, connectionNames, blobLoggingConfigurations, connectionIdentifier);
 
-        var cloudInputs = GenerateClouds(master, engine, dataflow, activePublishTargets, generateDataflowResult);
+        var cloudInputs = GenerateClouds(master, nodeAndDescendants, engine, dataflow, activePublishTargets, generateDataflowResult);
 
         GenerateProcessDataLogging(dataflow, nodeAndDescendants, master, () => builder.Editors.Container.AddContainer(dataflow.Root, ContainerNameCompressors, null, new Point { X = FunctionBlocks.DefaultHorizontalSeparation }),
             parents, compressorFbs, enabledConfigs, generateDataflowResult, cloudInputs, connectionNames);
@@ -434,7 +437,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         clusterBuilder.Editors.FunctionBlockDesign.AddFunctionBlockDesign(s_designIdSystemDataPort);
     }
 
-    private Dictionary<Guid, Dictionary<string, AggregationFunctionCloudInputs>> GenerateClouds(IDeviceTreeMasterNode master, Engine engine, Dataflow dataflow, Connection[] activePublishTargets, DeviceDataflowGeneratorResult generateDataflowResult)
+    private Dictionary<Guid, Dictionary<string, AggregationFunctionCloudInputs>> GenerateClouds(IDeviceTreeMasterNode master, IDeviceTreeBase[] nodeAndDescendants, Engine engine, Dataflow dataflow, Connection[] activePublishTargets, DeviceDataflowGeneratorResult generateDataflowResult)
     {
         var cloudInputs = new Dictionary<Guid, Dictionary<string, AggregationFunctionCloudInputs>>();
         Container? cloudsContainer = null;
@@ -449,11 +452,10 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
             foreach (var cloudConnection in cloudConnections)
             {
                 cloudsContainer ??= builder.Editors.Container.AddSubContainer(dataflow, "Clouds", dataflow.Root, FunctionBlocks.DefaultHorizontalSeparation * 2, 0);
-                var allNodes = master.GetNodeAndDescendants().ToArray();
                 var container = builder.Editors.Container.AddSubContainer(dataflow, $"{cloudConnection.Name ?? cloudConnection.Id.ToString()}", cloudsContainer, 0, FunctionBlocks.DefaultVerticalSeparation);
 
-                var loggedRawDataNodes = GetLoggedRawDataNodes(allNodes, cloudConnection);
-                var loggedProcessDataNodes = GetLoggedProcessDataNodes(allNodes, cloudConnection);
+                var loggedRawDataNodes = GetLoggedRawDataNodes(nodeAndDescendants, cloudConnection);
+                var loggedProcessDataNodes = GetLoggedProcessDataNodes(nodeAndDescendants, cloudConnection);
 
                 cloudInputs[cloudConnection.Id] = cloudDataflowGenerator.GenerateCloudDataflow(cloudConnection, master, builder, dataflow, machineIdentifier, generateDataflowResult.DataOutputs,
                                                                                                engine.MinCycleTime, container, generateDataflowResult.RotationalFrequencyOutputs,

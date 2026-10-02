@@ -330,7 +330,7 @@ internal static class FakeDeviceTreeFactory
                                                 }
                                             },
                                             DataType = DataType.Real,
-                                            Id = "vse@127.0.0.1//Counters/Counter02__!__OB01_ObjectState_02/Value",
+                                            Id = "vse@127.0.0.1//Counters/Counter02__!__OB01_ObjectState_03/Value",
                                             Name = "Value",
                                         }
                                     },

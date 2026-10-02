@@ -52,6 +52,11 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
                                                                             List<ProcessDataConfiguration> loggedProcessDataNodes,
                                                                             List<IDeviceTreeDataNode> loggedRawDataNodes)
     {
+        if (!MoneoCloudFilter.IsMoneoConnection(connection))
+        {
+            throw new ArgumentException("Invalid connection type", nameof(connection));
+        }
+
         var result = new Dictionary<string, AggregationFunctionCloudInputs>();
 
         var deviceContainerManager = new DeviceContainerManager(deviceTreeMaster, () => cloudContainer, dataflow, builder);
@@ -87,13 +92,15 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
                 throw new InvalidOperationException($"Did not find ProcessDataInfo for id {currentProcessDataNode.Node.Id}");
             }
 
+            var valueInput = dataFormatterFb.GetInputByDesignId(FunctionBlocks.DataFormatter.Inputs.Value);
+
             result[currentProcessDataNode.Node.Id] = new AggregationFunctionCloudInputs()
             {
-                Avg = new CloudInput() { InputConnector = dataFormatterFb.GetInputByDesignId(FunctionBlocks.DataFormatter.Inputs.Value) },
-                Last = new CloudInput() { InputConnector = dataFormatterFb.GetInputByDesignId(FunctionBlocks.DataFormatter.Inputs.Value) },
-                Max = new CloudInput() { InputConnector = dataFormatterFb.GetInputByDesignId(FunctionBlocks.DataFormatter.Inputs.Value) },
-                Min = new CloudInput() { InputConnector = dataFormatterFb.GetInputByDesignId(FunctionBlocks.DataFormatter.Inputs.Value) },
-                Value = new CloudInput() { InputConnector = dataFormatterFb.GetInputByDesignId(FunctionBlocks.DataFormatter.Inputs.Value) },
+                Avg = new CloudInput() { InputConnector = valueInput },
+                Last = new CloudInput() { InputConnector = valueInput },
+                Max = new CloudInput() { InputConnector = valueInput },
+                Min = new CloudInput() { InputConnector = valueInput },
+                Value = new CloudInput() { InputConnector = valueInput },
             };
         }
     }
@@ -126,28 +133,8 @@ public sealed class MoneoCloudDataflowGenerator : ICloudDataflowGenerator
         deviceId = MoneoUtils.ConstructDeviceId(deviceTreeMaster.GetMacAddress(), MoneoUtils.GetFallbackIdentifier(deviceTreeMaster)).ToString();
         deviceIdNode = builder.Editors.DataPortTreeNode.AddTreeNode(PortDesignIdMqttFolder, processDataNode, deviceId, null, DataPortTransferMode.None);
 
-        var moneoConnection = connection.GetMqttConnection()!;
-
-        builder.Editors.DataPort.AddProperty("ClientId", dataPort, null, moneoConnection.ClientId);
-        builder.Editors.DataPort.AddProperty("WillTopic", dataPort, null, moneoConnection.WillTopic);
-        builder.Editors.DataPort.AddProperty("WillMessage", dataPort, null, moneoConnection.WillMessage);
-        builder.Editors.DataPort.AddProperty("WillRetain", dataPort, null, moneoConnection.WillRetain);
-        builder.Editors.DataPort.AddProperty("Protocol", dataPort, null, (byte)moneoConnection.Protocol);
-        builder.Editors.DataPort.AddProperty("Host", dataPort, null, moneoConnection.Address);
-        builder.Editors.DataPort.AddProperty("Port", dataPort, null, (ushort?)moneoConnection.Port);
-        builder.Editors.DataPort.AddProperty("ProtocolVersion", dataPort, null, (byte)1);
-        builder.Editors.DataPort.AddProperty("CertificateFile", dataPort, null, moneoConnection.ClientCertificate);
-        builder.Editors.DataPort.AddProperty("CertificatePrivateKeyFile", dataPort, null, moneoConnection.ClientCertificateKey);
-        builder.Editors.DataPort.AddProperty("CleanSession", dataPort, null, moneoConnection.CleanSession);
-        builder.Editors.DataPort.AddProperty("DisableCertificateValidation", dataPort, null, true);
-
-        builder.Editors.DataPort.AddProperty("Pooling", dataPort, null, true);
-        builder.Editors.DataPort.AddProperty("MaxPendingMessages", dataPort, null, 10000);
-        builder.Editors.DataPort.AddProperty("QualityOfService", dataPort, null, (byte)1);
-        builder.Editors.DataPort.AddProperty("BrokerReceiveMaximum", dataPort, null, (ushort)100);
-
-        builder.Editors.DataPort.AddProperty("Username", dataPort, null, moneoConnection.Username);
-        builder.Editors.DataPort.AddProperty("Password", dataPort, null, moneoConnection.Password);
+        // The Moneo broker has always been connected to without certificate validation.
+        MqttDataPortProperties.Add(builder, dataPort, connection.GetMqttConnection()!, validateCertificateChain: false);
 
         return dataPort;
     }
