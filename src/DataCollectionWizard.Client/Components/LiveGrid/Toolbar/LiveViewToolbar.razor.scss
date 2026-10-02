@@ -27,6 +27,10 @@
     height: 30px;
 
     > button {
+        // Set explicitly: the host no longer resets buttons globally, so the browser's default look would show.
+        background-color: transparent;
+        border: none;
+        color: col.$font;
         // Centre the icon inside the button exactly like DataCollectionWizardToolbar; without this the icon sat at a
         // different vertical position, so the shared icons (Refresh) appeared to jump when switching between the views.
         display: grid;

@@ -1,22 +1,17 @@
-﻿using DataCollectionWizard.Internal.Contracts;
-using DataCollectionWizard.Public;
+﻿using ClusterManagement.Public.Connections.Extensions;
+using DataCollectionWizard.Internal.Contracts;
 using Sdk.Connections.Contracts;
 using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
-public sealed class AnnaCloudFilter : ICloudFilter
+public sealed class OpcUaCloudFilter : ICloudFilter
 {
-    public Type CloudDataflowGeneratorType => typeof(AnnaCloudDataflowGenerator);
+    public Type CloudDataflowGeneratorType => typeof(OpcUaCloudDataflowGenerator);
 
-    public IReadOnlyCollection<Type> TreeNodesSupportedForConfiguration { get; } = [
-        typeof(IDeviceTreeCompressableDataNode),
-        typeof(IDeviceTreeConfigurableRawDataNode),
-        typeof(IDeviceTreeEventTriggerDataNode),
-        typeof(IDeviceTreeSchedulableDataNode),
-        ];
+    public IReadOnlyCollection<Type> TreeNodesSupportedForConfiguration { get; } = [typeof(IDeviceTreeCompressableDataNode),];
 
-    public ConnectionKind ConnectionKind => ConnectionKind.Anna;
+    public ConnectionKind ConnectionKind => ConnectionKind.OpcUa;
 
     public IReadOnlyCollection<AggregationInterval> SupportedAggregationIntervals { get; } = [
         AggregationInterval.OnChange,
@@ -33,15 +28,15 @@ public sealed class AnnaCloudFilter : ICloudFilter
         ];
 
     public IReadOnlyCollection<AggregationFunction> SupportedAggregationFunctions { get; } = [
-        AggregationFunction.MinMaxAvg,
         AggregationFunction.Avg,
         AggregationFunction.Min,
         AggregationFunction.Max,
+        AggregationFunction.Last,
         ];
 
     public IEnumerable<Connection> GetCloudConnections(IEnumerable<Connection> connections)
-        => [.. connections.Where(IsAnnaConnection)];
+        => [.. connections.Where(IsOpcUaConnection)];
 
-    public static bool IsAnnaConnection(Connection connection)
-        => connection.Tags.Contains(Constants.AnnaCloud) && connection.Type == ConnectionType.Http;
+    public static bool IsOpcUaConnection(Connection connection)
+        => connection.Type == ConnectionType.OpcUaServer;
 }

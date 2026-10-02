@@ -7,6 +7,7 @@ using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using DataCollectionWizard.Public.Extensions;
 using Microsoft.Extensions.Logging;
 using Sdk.Connections.Contracts;
+using Sdk.SystemConfiguration.Contracts;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Builder.Extensions;
 using ViciOne.Cluster.Model;
@@ -16,7 +17,7 @@ using ViciOne.DeviceTree.Contracts.Extensions;
 
 namespace DataCollectionWizard.Internal.Services;
 
-public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger logger, string machineIdentifier, List<IDeviceDataflowGenerator> deviceDataflowGenerators, List<ICloudDataflowGenerator> cloudDataflowGenerators, List<ICloudFilter> cloudFilters) : IDataflowGenerator
+public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger logger, string machineIdentifier, IReadOnlyList<NetworkInterface> hostNetworkInterfaces, List<IDeviceDataflowGenerator> deviceDataflowGenerators, List<ICloudDataflowGenerator> cloudDataflowGenerators, List<ICloudFilter> cloudFilters) : IDataflowGenerator
 {
     private const string ChildContainerNamePrefixFormatter = "Formatter";
     private const string ContainerNameCompressors = "Compressors";
@@ -54,13 +55,14 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
                 .Select(t => t.DataGroupIdentifier))
             .Distinct()];
 
-    private static IEnumerable<BlobLoggingConfiguration> GetBlobLoggingConfigurations(IEnumerable<IDeviceTreeBase> nodeAndDescendants, IEnumerable<Guid> enabledConfigs)
+    private static IEnumerable<BlobLoggingConfiguration> GetBlobLoggingConfigurations(IEnumerable<IDeviceTreeBase> nodeAndDescendants,
+        IEnumerable<Guid> schedulerEnabledConfigs, IEnumerable<Guid> eventTriggerEnabledConfigs)
     {
         foreach (var schedulableDataNode in nodeAndDescendants.OfType<IDeviceTreeSchedulableDataNode>())
         {
-            foreach (var schedulerConfig in schedulableDataNode.SchedulerConfigurations.Where(c => enabledConfigs.Contains(c.DataGroupIdentifier)))
+            foreach (var schedulerConfig in schedulableDataNode.SchedulerConfigurations.Where(c => schedulerEnabledConfigs.Contains(c.DataGroupIdentifier)))
             {
-                if (schedulerConfig.Enabled && enabledConfigs.Contains(schedulerConfig.DataGroupIdentifier))
+                if (schedulerConfig.Enabled)
                 {
                     yield return new BlobLoggingConfiguration()
                     {
@@ -78,7 +80,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
             {
                 foreach (var eventTrigger in eventTriggerConfiguration.Triggers.Where(t => t.Enabled && (t.OnWarning || t.OnDamage)))
                 {
-                    if (enabledConfigs.Contains(eventTrigger.DataGroupIdentifier))
+                    if (eventTriggerEnabledConfigs.Contains(eventTrigger.DataGroupIdentifier))
                     {
                         yield return new BlobLoggingConfiguration()
                         {
@@ -386,6 +388,10 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
         var enabledConfigs = activePublishTargets.Select(c => c.Id).ToArray();
 
+        var schedulerEnabledConfigs = GetConfigsSupporting<IDeviceTreeSchedulableDataNode>(activePublishTargets);
+        var eventTriggerEnabledConfigs = GetConfigsSupporting<IDeviceTreeEventTriggerDataNode>(activePublishTargets);
+        var rawDataEnabledConfigs = GetConfigsSupporting<IDeviceTreeConfigurableRawDataNode>(activePublishTargets);
+
         InitContainerSizeManagers(dataflow, out var dataFormatterContainerManager);
 
         // A fresh identifier per master, under which the IoTCoreConfiguration function block registers the
@@ -401,8 +407,8 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         deviceTreeTrigger = deviceTreeFunctionBlockResult.DeviceTreeTrigger;
         deviceTreeOutput = deviceTreeFunctionBlockResult.DeviceTreeOutput;
 
-        var enabledDataIds = GetEnabledDataIds(master, enabledConfigs);
-        var blobLoggingConfigurations = GetBlobLoggingConfigurations(nodeAndDescendants, enabledConfigs).ToArray();
+        var enabledDataIds = GetEnabledDataIds(master, enabledConfigs, schedulerEnabledConfigs, eventTriggerEnabledConfigs, rawDataEnabledConfigs);
+        var blobLoggingConfigurations = GetBlobLoggingConfigurations(nodeAndDescendants, schedulerEnabledConfigs, eventTriggerEnabledConfigs).ToArray();
         var generateDataflowResult = deviceDataflowGenerator.GenerateDeviceFunctionBlocks(builder, dataflow, master, enabledDataIds, connectionNames, blobLoggingConfigurations, connectionIdentifier);
 
         var cloudInputs = GenerateClouds(master, nodeAndDescendants, engine, dataflow, activePublishTargets, generateDataflowResult);
@@ -410,8 +416,8 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         GenerateProcessDataLogging(dataflow, nodeAndDescendants, master, () => builder.Editors.Container.AddContainer(dataflow.Root, ContainerNameCompressors, null, new Point { X = FunctionBlocks.DefaultHorizontalSeparation }),
             parents, compressorFbs, enabledConfigs, generateDataflowResult, cloudInputs, connectionNames);
 
-        GenerateSchedulableBlobLogging(dataflow, nodeAndDescendants, schedulerFbs, enabledConfigs, cloudInputs, connectionNames, generateDataflowResult);
-        GenerateEventTriggerBlobLogging(dataflow, nodeAndDescendants, enabledConfigs, cloudInputs, connectionNames, generateDataflowResult);
+        GenerateSchedulableBlobLogging(dataflow, nodeAndDescendants, schedulerFbs, schedulerEnabledConfigs, cloudInputs, connectionNames, generateDataflowResult);
+        GenerateEventTriggerBlobLogging(dataflow, nodeAndDescendants, eventTriggerEnabledConfigs, cloudInputs, connectionNames, generateDataflowResult);
 
         outputMapping = generateDataflowResult.OutputMapping;
 
@@ -434,8 +440,16 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         clusterBuilder.Editors.FunctionBlockDesign.AddFunctionBlockDesign(FunctionBlocks.Scheduler.DesignId);
         clusterBuilder.AddDataPortDesign(FunctionBlocks.MqttDataPort.DesignId);
         clusterBuilder.AddDataPortDesign(FunctionBlocks.AnnaDataPort.DesignId);
+        clusterBuilder.AddDataPortDesign(FunctionBlocks.OpcUaDataPort.DesignId);
         clusterBuilder.Editors.FunctionBlockDesign.AddFunctionBlockDesign(s_designIdSystemDataPort);
     }
+
+    private Guid[] GetConfigsSupporting<TNode>(IEnumerable<Connection> publishTargets) where TNode : IDeviceTreeBase
+        => [.. cloudFilters
+            .Where(f => f.TreeNodesSupportedForConfiguration.Contains(typeof(TNode)))
+            .SelectMany(f => f.GetCloudConnections(publishTargets))
+            .Select(c => c.Id)
+            .Distinct()];
 
     private Dictionary<Guid, Dictionary<string, AggregationFunctionCloudInputs>> GenerateClouds(IDeviceTreeMasterNode master, IDeviceTreeBase[] nodeAndDescendants, Engine engine, Dataflow dataflow, Connection[] activePublishTargets, DeviceDataflowGeneratorResult generateDataflowResult)
     {
@@ -459,7 +473,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
                 cloudInputs[cloudConnection.Id] = cloudDataflowGenerator.GenerateCloudDataflow(cloudConnection, master, builder, dataflow, machineIdentifier, generateDataflowResult.DataOutputs,
                                                                                                engine.MinCycleTime, container, generateDataflowResult.RotationalFrequencyOutputs,
-                                                                                               loggedProcessDataNodes, loggedRawDataNodes);
+                                                                                               loggedProcessDataNodes, loggedRawDataNodes, hostNetworkInterfaces);
             }
         }
 
@@ -634,7 +648,8 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
         }
     }
 
-    private static Dictionary<string, bool> GetEnabledDataIds(IDeviceTreeMasterNode master, Guid[] enabledConfigs)
+    private static Dictionary<string, bool> GetEnabledDataIds(IDeviceTreeMasterNode master, Guid[] enabledConfigs,
+        Guid[] schedulerEnabledConfigs, Guid[] eventTriggerEnabledConfigs, Guid[] rawDataEnabledConfigs)
         => master.GetNodeAndDescendants().OfType<IDeviceTreeDataNode>().ToDictionary(n => n.Id, n =>
         {
             var result = n is IDeviceTreeLiveDataNode;
@@ -645,13 +660,13 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
                     result |= compressableNode.CompressorConfigurations.Any(c => enabledConfigs.Contains(c.DataGroupIdentifier) && c.Enabled);
                     break;
                 case IDeviceTreeConfigurableRawDataNode configurableRawDataNode:
-                    result |= configurableRawDataNode.RawDataConfigurations.Any(c => enabledConfigs.Contains(c.Key) && c.Value.Duration > 0);
+                    result |= configurableRawDataNode.RawDataConfigurations.Any(c => rawDataEnabledConfigs.Contains(c.Key) && c.Value.Duration > 0);
                     break;
                 case IDeviceTreeEventTriggerDataNode eventTriggerNode:
-                    result |= eventTriggerNode.EventTriggerConfigurations.Any(c => c.Triggers.Any(t => enabledConfigs.Contains(t.DataGroupIdentifier) && t.Enabled && (t.OnDamage || t.OnWarning)));
+                    result |= eventTriggerNode.EventTriggerConfigurations.Any(c => c.Triggers.Any(t => eventTriggerEnabledConfigs.Contains(t.DataGroupIdentifier) && t.Enabled && (t.OnDamage || t.OnWarning)));
                     break;
                 case IDeviceTreeSchedulableDataNode schedulableNode:
-                    result |= schedulableNode.SchedulerConfigurations.Any(c => enabledConfigs.Contains(c.DataGroupIdentifier) && c is { Enabled: true, Times.Count: > 0 });
+                    result |= schedulableNode.SchedulerConfigurations.Any(c => schedulerEnabledConfigs.Contains(c.DataGroupIdentifier) && c is { Enabled: true, Times.Count: > 0 });
                     break;
             }
             return result;

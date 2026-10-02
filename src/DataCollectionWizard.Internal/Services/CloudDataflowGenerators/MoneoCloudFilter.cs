@@ -9,17 +9,17 @@ public sealed class MoneoCloudFilter : ICloudFilter
 {
     public Type CloudDataflowGeneratorType => typeof(MoneoCloudDataflowGenerator);
 
-    public IReadOnlyCollection<Type> TreeNodesSupportedForConfiguration => [];
+    public IReadOnlyCollection<Type> TreeNodesSupportedForConfiguration { get; } = [];
 
     public ConnectionKind ConnectionKind => ConnectionKind.Moneo;
 
-    public IReadOnlyCollection<AggregationInterval> SupportedAggregationIntervals => [
+    public IReadOnlyCollection<AggregationInterval> SupportedAggregationIntervals { get; } = [
         AggregationInterval.SecondsOne,
         AggregationInterval.SecondsTen,
         AggregationInterval.MinutesOne,
         ];
 
-    public IReadOnlyCollection<AggregationFunction> SupportedAggregationFunctions => [
+    public IReadOnlyCollection<AggregationFunction> SupportedAggregationFunctions { get; } = [
         AggregationFunction.Avg,
         AggregationFunction.Min,
         AggregationFunction.Max,

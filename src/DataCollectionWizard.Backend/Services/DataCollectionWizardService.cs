@@ -1,4 +1,6 @@
 ﻿using System.Text.Json;
+using ClusterManagement.Public.Connections.Contracts;
+using ClusterManagement.Public.Connections.Extensions;
 using DataCollectionWizard.Backend.DbContext;
 using DataCollectionWizard.Internal;
 using DataCollectionWizard.Internal.Commands;
@@ -15,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using Sdk.Backend.Messaging;
 using Sdk.Connections.Contracts;
 using Sdk.Instance;
+using Sdk.SystemConfiguration.Contracts;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Model;
 using ViciOne.Cluster.Model.Extensions;
@@ -32,7 +35,8 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
     IEnumerable<IDeviceDataflowGenerator> deviceDataflowGenerators,
     IEnumerable<ICloudDataflowGenerator> cloudDataflowGenerators,
     IEnumerable<ICloudFilter> cloudFilters,
-    IConnectionService connectionService)
+    IConnectionService connectionService,
+    ISystemConfigurationService systemConfigurationService)
     : IDataCollectionWizardService
 {
     private const string EngineHostName = "DCW-Host";
@@ -139,7 +143,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
             _ => throw new ArgumentException($"Invalid device type encountered, {type} is not currently supported", type.Name),
         };
 
-        ModifyCluster(clusterBuilder, device, [], out var deviceTreeTrigger, out var deviceTreeOutput, out _, logLevel);
+        ModifyCluster(clusterBuilder, device, [], [], out var deviceTreeTrigger, out var deviceTreeOutput, out _, logLevel);
 
         var deviceConnectorIds = new DeviceConnectorIds
         {
@@ -239,7 +243,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
     }
 
     private async Task AddOrUpdateDeviceEngines(ClusterBuilder clusterBuilder, IEnumerable<string> masterNodesToUpdate, IDeviceTreeBase[] deletedNodes,
-        IReadOnlyCollection<Connection> publishTargets, IDeviceTreeMasterNode[] allMasters, LogLevel? logLevel)
+        IReadOnlyCollection<Connection> publishTargets, IReadOnlyList<NetworkInterface> hostNetworkInterfaces, IDeviceTreeMasterNode[] allMasters, LogLevel? logLevel)
     {
         var nodesToUpdate = allMasters.IntersectBy(masterNodesToUpdate, n => n.Id);
 
@@ -254,7 +258,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
 
         foreach (var deviceTreeMasterDevice in relevantMasterNodes)
         {
-            ModifyCluster(clusterBuilder, deviceTreeMasterDevice, publishTargets, out var deviceTreeTrigger, out var deviceTreeOutput, out var outputMapping, logLevel);
+            ModifyCluster(clusterBuilder, deviceTreeMasterDevice, publishTargets, hostNetworkInterfaces, out var deviceTreeTrigger, out var deviceTreeOutput, out var outputMapping, logLevel);
             var uri = new UriBuilder(deviceTreeMasterDevice.Url).Uri;
 
             dataCollectionWizardState.DeviceTreeConnectors[uri] = new DeviceConnectorIds
@@ -277,6 +281,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
     {
         var connections = await connectionService.GetConnectionsAsync(cancellationToken);
         var publishTargets = PublishTargetsFilter.GetPublishTargets(connections, cloudFilters);
+        var hostNetworkInterfaces = await GetHostNetworkInterfacesAsync(publishTargets, cancellationToken);
         await LoadLatestClusterAsync();
 
         var allMasters = deviceTree.GetNodeAndDescendants().OfType<IDeviceTreeMasterNode>().ToArray();
@@ -284,9 +289,20 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
         RemoveVacantEngines(dataCollectionWizardState, allMasters);
 
         await RemoveDeletedDeviceEngines(deletedNodes);
-        await AddOrUpdateDeviceEngines(dataCollectionWizardState.ClusterBuilder!, masterNodesToUpdate, deletedNodes, publishTargets, allMasters, logLevel);
+        await AddOrUpdateDeviceEngines(dataCollectionWizardState.ClusterBuilder!, masterNodesToUpdate, deletedNodes, publishTargets, hostNetworkInterfaces, allMasters, logLevel);
 
         return dataCollectionWizardState.ClusterBuilder!.Cluster;
+    }
+
+    // Only an OPC UA server bound to one of the host's interfaces needs the host's network configuration (to look
+    // up that interface's address), so the host management is not asked when no publish target binds to one.
+    private async Task<IReadOnlyList<NetworkInterface>> GetHostNetworkInterfacesAsync(IEnumerable<Connection> publishTargets, CancellationToken cancellationToken)
+    {
+        var bindsToHostInterface = publishTargets
+            .Where(OpcUaCloudFilter.IsOpcUaConnection)
+            .Any(c => c.GetOpcUaServerConnection()?.NetworkInterface != OpcUaServerConnection.LocalNetworkInterface);
+
+        return bindsToHostInterface ? await systemConfigurationService.GetNetworkInterfacesAsync(cancellationToken) : [];
     }
 
     private async Task<(bool engineExists, DeviceConnectorIds deviceTreeConnectors)> DoesEngineAlreadyExistAsync(string engineName, Uri deviceAddress)
@@ -364,7 +380,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
         LogLoadedCluster(logger, nameof(LoadLatestClusterAsync), dataCollectionWizardState.ClusterBuilder.Cluster.Version);
     }
 
-    private void ModifyCluster(ClusterBuilder clusterBuilder, IDeviceTreeMasterNode deviceTreeMasterNode, IReadOnlyCollection<Connection> publishTargets, out Guid deviceTreeTrigger, out Guid deviceTreeOutput, out List<ValueMappingEntry> outputMapping, LogLevel? logLevel)
+    private void ModifyCluster(ClusterBuilder clusterBuilder, IDeviceTreeMasterNode deviceTreeMasterNode, IReadOnlyCollection<Connection> publishTargets, IReadOnlyList<NetworkInterface> hostNetworkInterfaces, out Guid deviceTreeTrigger, out Guid deviceTreeOutput, out List<ValueMappingEntry> outputMapping, LogLevel? logLevel)
     {
         deviceTreeTrigger = Guid.Empty;
         deviceTreeOutput = Guid.Empty;
@@ -388,7 +404,7 @@ public sealed partial class DataCollectionWizardService(ILogger<DataCollectionWi
 
         dataflow = clusterBuilder.Editors.Cluster.AddDataflow(engineName, new Version(0, 1));
 
-        var dataflowGenerator = new DataflowGenerator(clusterBuilder, logger, dataCollectionWizardState.MachineIdentifier!, [.. deviceDataflowGenerators], [.. cloudDataflowGenerators], [.. cloudFilters]);
+        var dataflowGenerator = new DataflowGenerator(clusterBuilder, logger, dataCollectionWizardState.MachineIdentifier!, hostNetworkInterfaces, [.. deviceDataflowGenerators], [.. cloudDataflowGenerators], [.. cloudFilters]);
 
         dataflowGenerator.Generate(deviceTreeMasterNode, publishTargets, dataflow, engine, out deviceTreeTrigger, out deviceTreeOutput, out outputMapping);
 

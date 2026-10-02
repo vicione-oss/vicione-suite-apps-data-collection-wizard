@@ -1,5 +1,6 @@
 ﻿using DataCollectionWizard.Backend.DbContext;
 using DataCollectionWizard.Backend.Services;
+using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using DataCollectionWizard.Public.Services;
@@ -22,6 +23,7 @@ public sealed class DataCollectionWizardBackendModule : BackendModule
         services.AddSingleton<ClusterServiceState>();
         services.AddScoped<IClusterService, ClusterService>();
         services.AddScoped<IConnectionService, ConnectionService>();
+        services.AddScoped<ISystemConfigurationService, SystemConfigurationService>();
 
         services.AddTransient<IDeviceDataflowGenerator, VseDataflowGenerator>();
         services.AddTransient<IDeviceDataflowGenerator, IoLinkDataflowGenerator>();
@@ -29,10 +31,12 @@ public sealed class DataCollectionWizardBackendModule : BackendModule
         services.AddTransient<ICloudDataflowGenerator, AnnaCloudDataflowGenerator>();
         services.AddTransient<ICloudDataflowGenerator, MoneoCloudDataflowGenerator>();
         services.AddTransient<ICloudDataflowGenerator, MqttCloudDataflowGenerator>();
+        services.AddTransient<ICloudDataflowGenerator, OpcUaCloudDataflowGenerator>();
 
         services.AddTransient<ICloudFilter, AnnaCloudFilter>();
         services.AddTransient<ICloudFilter, MoneoCloudFilter>();
         services.AddTransient<ICloudFilter, MqttCloudFilter>();
+        services.AddTransient<ICloudFilter, OpcUaCloudFilter>();
 
         services.AddSingleton<DataCollectionWizardState>();
 

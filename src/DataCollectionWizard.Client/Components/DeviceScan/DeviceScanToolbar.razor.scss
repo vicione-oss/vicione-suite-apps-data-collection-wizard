@@ -6,12 +6,33 @@
     display: grid;
     grid-auto-flow: column;
     grid-template-columns: 250px 22px auto;
+    align-items: center;
 
-    button {
+    // Same icon button as DataCollectionWizardToolbar / LiveViewToolbar. Background, border and colour are set
+    // explicitly: the host no longer resets buttons globally, so the browser's default button look would show.
+    > button {
+        background-color: transparent;
+        border: none;
+        color: col.$font;
+        display: grid;
+        place-items: center;
+        border-radius: 4px;
+        height: 28px;
+        width: 28px;
         padding: 0;
 
-        ::deep svg {
-            height: 24px;
+        &:disabled {
+            ::deep .monochrome-icon::before {
+                background-color: col.$content-dark-disabled;
+            }
+
+            &:hover {
+                background-color: transparent;
+            }
+        }
+
+        &:hover {
+            background-color: col.$background-hover;
         }
     }
 
@@ -24,5 +45,6 @@
         justify-self: end;
         margin: 0px 8px;
         width: 1px;
+        height: 20px;
     }
 }
