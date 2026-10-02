@@ -166,8 +166,8 @@ public class TreeDataflowGenerationTests
         var instanceInfo = Substitute.For<IInstanceInformationProvider>();
         instanceInfo.Local.Name.Returns("Edge");
 
-        return new DataflowGenerator(builder, Substitute.For<ILogger>(), "mid", [new FakeDeviceDataflowGenerator()],
-            [new MqttCloudDataflowGenerator(instanceInfo), new OpcUaCloudDataflowGenerator(Substitute.For<ISystemConfigurationService>())],
+        return new DataflowGenerator(builder, Substitute.For<ILogger>(), "mid", [], [new FakeDeviceDataflowGenerator()],
+            [new MqttCloudDataflowGenerator(instanceInfo), new OpcUaCloudDataflowGenerator()],
             [new MqttCloudFilter(), new OpcUaCloudFilter()]);
     }
 

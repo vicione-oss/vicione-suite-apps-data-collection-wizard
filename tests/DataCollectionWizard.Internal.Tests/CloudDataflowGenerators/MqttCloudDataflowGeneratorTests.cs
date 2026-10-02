@@ -543,7 +543,7 @@ public class MqttCloudDataflowGeneratorTests
 
             // Act
             var result = generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
-                [], 1000, null!, [], [], []);
+                [], 1000, null!, [], [], [], []);
 
             // Assert
             Assert.Empty(result);
@@ -573,7 +573,7 @@ public class MqttCloudDataflowGeneratorTests
 
             // Act
             var result = generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
-                [], 1000, null!, [], [config], []);
+                [], 1000, null!, [], [config], [], []);
 
             // Assert
             var dataPort = Assert.Single(dataflow.DataPorts);
@@ -597,7 +597,7 @@ public class MqttCloudDataflowGeneratorTests
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
-                [], 1000, null!, [], [], []));
+                [], 1000, null!, [], [], [], []));
         }
 
         public static TheoryData<Connection> NonMqttConnections() => new()
@@ -631,7 +631,7 @@ public class MqttCloudDataflowGeneratorTests
 
             // Act
             generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
-                [], 1000, null!, [], [config], []);
+                [], 1000, null!, [], [config], [], []);
 
             // Assert
             var dataPort = Assert.Single(dataflow.DataPorts);
@@ -680,7 +680,7 @@ public class MqttCloudDataflowGeneratorTests
 
             // Act
             generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
-                [], 1000, null!, [], [config], []);
+                [], 1000, null!, [], [config], [], []);
 
             // Assert
             var dataPort = Assert.Single(dataflow.DataPorts);

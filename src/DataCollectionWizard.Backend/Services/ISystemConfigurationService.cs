@@ -1,6 +1,6 @@
 using Sdk.SystemConfiguration.Contracts;
 
-namespace DataCollectionWizard.Internal.Services;
+namespace DataCollectionWizard.Backend.Services;
 
 public interface ISystemConfigurationService
 {

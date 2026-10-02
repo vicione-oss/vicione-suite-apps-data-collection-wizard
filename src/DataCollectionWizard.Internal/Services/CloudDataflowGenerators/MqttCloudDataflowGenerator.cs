@@ -3,6 +3,7 @@ using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using Sdk.Connections.Contracts;
 using Sdk.Connections.Extensions;
 using Sdk.Instance;
+using Sdk.SystemConfiguration.Contracts;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Model;
 using ViciOne.DeviceTree.Contracts;
@@ -23,7 +24,8 @@ public sealed class MqttCloudDataflowGenerator(IInstanceInformationProvider inst
                                                                             ChildContainer cloudContainer,
                                                                             Dictionary<string, RotationalFrequencyOutputs> rotationalFrequencyOutputs,
                                                                             List<ProcessDataConfiguration> loggedProcessDataNodes,
-                                                                            List<IDeviceTreeDataNode> loggedRawDataNodes)
+                                                                            List<IDeviceTreeDataNode> loggedRawDataNodes,
+                                                                            IReadOnlyList<NetworkInterface> hostNetworkInterfaces)
     {
         if (!MqttCloudFilter.IsMqttConnection(connection))
         {

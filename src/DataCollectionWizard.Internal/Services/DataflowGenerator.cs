@@ -7,6 +7,7 @@ using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using DataCollectionWizard.Public.Extensions;
 using Microsoft.Extensions.Logging;
 using Sdk.Connections.Contracts;
+using Sdk.SystemConfiguration.Contracts;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Builder.Extensions;
 using ViciOne.Cluster.Model;
@@ -16,7 +17,7 @@ using ViciOne.DeviceTree.Contracts.Extensions;
 
 namespace DataCollectionWizard.Internal.Services;
 
-public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger logger, string machineIdentifier, List<IDeviceDataflowGenerator> deviceDataflowGenerators, List<ICloudDataflowGenerator> cloudDataflowGenerators, List<ICloudFilter> cloudFilters) : IDataflowGenerator
+public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger logger, string machineIdentifier, IReadOnlyList<NetworkInterface> hostNetworkInterfaces, List<IDeviceDataflowGenerator> deviceDataflowGenerators, List<ICloudDataflowGenerator> cloudDataflowGenerators, List<ICloudFilter> cloudFilters) : IDataflowGenerator
 {
     private const string ChildContainerNamePrefixFormatter = "Formatter";
     private const string ContainerNameCompressors = "Compressors";
@@ -472,7 +473,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
                 cloudInputs[cloudConnection.Id] = cloudDataflowGenerator.GenerateCloudDataflow(cloudConnection, master, builder, dataflow, machineIdentifier, generateDataflowResult.DataOutputs,
                                                                                                engine.MinCycleTime, container, generateDataflowResult.RotationalFrequencyOutputs,
-                                                                                               loggedProcessDataNodes, loggedRawDataNodes);
+                                                                                               loggedProcessDataNodes, loggedRawDataNodes, hostNetworkInterfaces);
             }
         }
 

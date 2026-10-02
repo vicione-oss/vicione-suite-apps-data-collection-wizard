@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using ClusterManagement.Public.Connections.Contracts;
+﻿using ClusterManagement.Public.Connections.Contracts;
 using ClusterManagement.Public.Connections.Extensions;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
@@ -11,16 +10,12 @@ using ViciOne.DeviceTree.Contracts;
 
 namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
-public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService systemConfigurationService) : CloudDataflowTreeGenerator, ICloudDataflowGenerator
+public sealed class OpcUaCloudDataflowGenerator : CloudDataflowTreeGenerator, ICloudDataflowGenerator
 {
     // Values of the DataPort's *CertificatesStoreType properties (0 = none, 1 = X509 store, 2 = directory). The
     // connection contract no longer exposes a store type: a configured path means a directory store, none means none.
     private const byte CertificateStoreTypeNone = 0;
     private const byte CertificateStoreTypeDirectory = 2;
-
-    private static readonly TimeSpan s_networkInterfacesCacheDuration = TimeSpan.FromSeconds(10);
-    private static readonly Lock s_networkInterfacesCacheLock = new();
-    private static volatile CachedNetworkInterfaces? s_networkInterfacesCache;
 
     public string Name => "opcua";
 
@@ -36,7 +31,8 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
                                                                             ChildContainer cloudContainer,
                                                                             Dictionary<string, RotationalFrequencyOutputs> rotationalFrequencyOutputs,
                                                                             List<ProcessDataConfiguration> loggedProcessDataNodes,
-                                                                            List<IDeviceTreeDataNode> loggedRawDataNodes)
+                                                                            List<IDeviceTreeDataNode> loggedRawDataNodes,
+                                                                            IReadOnlyList<NetworkInterface> hostNetworkInterfaces)
     {
         if (!OpcUaCloudFilter.IsOpcUaConnection(connection))
         {
@@ -58,7 +54,7 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
         if (string.IsNullOrWhiteSpace(opcUaConnection.ApplicationCertificatesPath))
             throw new InvalidOperationException($"OPC UA connection '{connection.Name}' has no application certificates path.");
 
-        var serverAddress = GetServerAddress(connection, opcUaConnection);
+        var serverAddress = GetServerAddress(connection, opcUaConnection, hostNetworkInterfaces);
         var dataport = GenerateDataPort(connection, opcUaConnection, serverAddress, deviceTreeMaster, builder, dataflow);
         var deviceNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdFolder, dataport, GetSafeNodeName(deviceTreeMaster.Url.DnsSafeHost), null, DataPortTransferMode.None);
 
@@ -78,41 +74,18 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
     }
 
     // The connection only names the host interface the server binds to, while the DataPort needs an address,
-    // so the interface's current IPv4 address is looked up in the host's network configuration. Dataflow
-    // generation is synchronous, hence the blocking wait on the host management request.
-    private string GetServerAddress(Connection connection, OpcUaServerConnection opcUaConnection)
+    // so the interface's current IPv4 address is looked up in the host's network configuration.
+    private static string GetServerAddress(Connection connection, OpcUaServerConnection opcUaConnection, IReadOnlyList<NetworkInterface> hostNetworkInterfaces)
     {
         if (opcUaConnection.NetworkInterface == OpcUaServerConnection.LocalNetworkInterface)
             return "127.0.0.1";
 
-        var hostNetworkInterfaces = GetHostNetworkInterfaces();
         var networkInterface = hostNetworkInterfaces.FirstOrDefault(i => string.Equals(i.Name, opcUaConnection.NetworkInterface, StringComparison.Ordinal))
             ?? throw new InvalidOperationException($"Network interface '{opcUaConnection.NetworkInterface}' of OPC UA connection '{connection.Name}' was not found on the host.");
 
         return networkInterface.IPv4Address?.ToString()
             ?? throw new InvalidOperationException($"Network interface '{opcUaConnection.NetworkInterface}' of OPC UA connection '{connection.Name}' has no IPv4 address.");
     }
-
-    private IReadOnlyList<NetworkInterface> GetHostNetworkInterfaces()
-    {
-        var cached = s_networkInterfacesCache;
-        if (cached is not null && Stopwatch.GetElapsedTime(cached.Timestamp) < s_networkInterfacesCacheDuration)
-            return cached.NetworkInterfaces;
-
-        lock (s_networkInterfacesCacheLock)
-        {
-            cached = s_networkInterfacesCache;
-            
-            if (cached is not null && Stopwatch.GetElapsedTime(cached.Timestamp) < s_networkInterfacesCacheDuration)
-                return cached.NetworkInterfaces;
-
-            var networkInterfaces = systemConfigurationService.GetNetworkInterfacesAsync(CancellationToken.None).GetAwaiter().GetResult();
-            s_networkInterfacesCache = new CachedNetworkInterfaces(networkInterfaces, Stopwatch.GetTimestamp());
-            return networkInterfaces;
-        }
-    }
-
-    internal static void ResetNetworkInterfacesCache() => s_networkInterfacesCache = null;
 
     private static DataPort GenerateDataPort(Connection connection, OpcUaServerConnection opcUaConnection, string serverAddress, IDeviceTreeMasterNode deviceTreeMaster, ClusterBuilder builder, Dataflow dataflow)
     {
@@ -151,6 +124,4 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
 
     private static byte GetCertificateStoreType(string? path)
         => string.IsNullOrEmpty(path) ? CertificateStoreTypeNone : CertificateStoreTypeDirectory;
-
-    private sealed record CachedNetworkInterfaces(IReadOnlyList<NetworkInterface> NetworkInterfaces, long Timestamp);
 }

@@ -109,7 +109,7 @@ public class OpcUaCloudDataflowGeneratorTests
         }
 
         private static OpcUaCloudDataflowGenerator CreateGenerator()
-            => new(Substitute.For<ISystemConfigurationService>());
+            => new();
 
         [Fact]
         public void Creates_folder_node_and_keeps_characters_other_than_control_characters_and_dots()
@@ -312,7 +312,6 @@ public class OpcUaCloudDataflowGeneratorTests
     /// Tests for the public GenerateCloudDataflow entry point, covering the folder scaffold
     /// (root/edge/device) and the empty-result short-circuit when nothing is logged.
     /// </summary>
-    [Collection(NetworkInterfacesCacheCollection.Name)]
     public class GenerateCloudDataflowTests
     {
         private static readonly IReadOnlyList<NetworkInterface> s_hostNetworkInterfaces =
@@ -321,13 +320,8 @@ public class OpcUaCloudDataflowGeneratorTests
             new NetworkInterface { Name = "lan1", IPv4Address = IPAddress.Parse("10.0.0.5") },
         ];
 
-        private static OpcUaCloudDataflowGenerator CreateGenerator(IReadOnlyList<NetworkInterface>? hostNetworkInterfaces = null)
-        {
-            var systemConfigurationService = Substitute.For<ISystemConfigurationService>();
-            systemConfigurationService.GetNetworkInterfacesAsync(Arg.Any<CancellationToken>()).Returns(hostNetworkInterfaces ?? s_hostNetworkInterfaces);
-            OpcUaCloudDataflowGenerator.ResetNetworkInterfacesCache();
-            return new OpcUaCloudDataflowGenerator(systemConfigurationService);
-        }
+        private static OpcUaCloudDataflowGenerator CreateGenerator()
+            => new();
 
         private static ClusterBuilder CreateBuilder(out Dataflow dataflow)
         {
@@ -360,7 +354,7 @@ public class OpcUaCloudDataflowGeneratorTests
 
             // Act
             var result = generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
-                [], 1000, null!, [], [], []);
+                [], 1000, null!, [], [], [], s_hostNetworkInterfaces);
 
             // Assert
             Assert.Empty(result);
@@ -388,7 +382,7 @@ public class OpcUaCloudDataflowGeneratorTests
 
             // Act
             var result = generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
-                [], 1000, null!, [], [config], []);
+                [], 1000, null!, [], [config], [], s_hostNetworkInterfaces);
 
             // Assert
             var dataPort = Assert.Single(dataflow.DataPorts);
@@ -410,7 +404,7 @@ public class OpcUaCloudDataflowGeneratorTests
 
             // Act & Assert
             Assert.Throws<ArgumentException>(() => generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
-                [], 1000, null!, [], [], []));
+                [], 1000, null!, [], [], [], s_hostNetworkInterfaces));
         }
 
         [Theory]
@@ -429,7 +423,7 @@ public class OpcUaCloudDataflowGeneratorTests
 
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(() => generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
-                [], 1000, null!, [], [config], []));
+                [], 1000, null!, [], [config], [], s_hostNetworkInterfaces));
             Assert.Contains(networkInterface, exception.Message);
             Assert.Empty(dataflow.DataPorts);
         }
@@ -443,11 +437,11 @@ public class OpcUaCloudDataflowGeneratorTests
             var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Value" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
             var deviceTreeMaster = new DeviceTreeVseDevice { Alias = "Dev", Children = [dataNode], Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
-            var generator = CreateGenerator([new NetworkInterface { Name = "lan1" }]);
+            var generator = CreateGenerator();
 
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() => generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
-                [], 1000, null!, [], [config], []));
+                [], 1000, null!, [], [config], [], [new NetworkInterface { Name = "lan1" }]));
         }
 
         [Fact]
@@ -493,7 +487,7 @@ public class OpcUaCloudDataflowGeneratorTests
 
             // Act
             generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
-                [], 1000, null!, [], [config], []);
+                [], 1000, null!, [], [config], [], s_hostNetworkInterfaces);
 
             // Assert
             var dataPort = Assert.Single(dataflow.DataPorts);
@@ -548,7 +542,7 @@ public class OpcUaCloudDataflowGeneratorTests
 
             // Act
             generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
-                [], 1000, null!, [], [config], []);
+                [], 1000, null!, [], [config], [], s_hostNetworkInterfaces);
 
             // Assert
             var dataPort = Assert.Single(dataflow.DataPorts);
@@ -576,7 +570,7 @@ public class OpcUaCloudDataflowGeneratorTests
 
             // Act & Assert: the server cannot start without its own certificate, and the DataPort rejects a store type of None.
             var exception = Assert.Throws<InvalidOperationException>(() => generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
-                [], 1000, null!, [], [config], []));
+                [], 1000, null!, [], [config], [], s_hostNetworkInterfaces));
             Assert.Contains("'MyServer'", exception.Message);
             Assert.Empty(dataflow.DataPorts);
         }

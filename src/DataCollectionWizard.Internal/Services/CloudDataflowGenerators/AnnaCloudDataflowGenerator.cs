@@ -3,6 +3,7 @@ using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using Sdk.Connections.Contracts;
 using Sdk.Connections.Extensions;
+using Sdk.SystemConfiguration.Contracts;
 using ViciOne.Cluster.Builder;
 using ViciOne.Cluster.Model;
 using ViciOne.DeviceTree.Contracts;
@@ -75,7 +76,8 @@ public sealed partial class AnnaCloudDataflowGenerator : ICloudDataflowGenerator
     public Dictionary<string, AggregationFunctionCloudInputs> GenerateCloudDataflow(Connection connection, IDeviceTreeMasterNode deviceTreeMaster, ClusterBuilder builder,
                                                                             Dataflow dataflow, string machineIdentifier, Dictionary<string, DataOutputInfo> dataOutputs, uint engineCycleInterval,
                                                                             ChildContainer cloudContainer, Dictionary<string, RotationalFrequencyOutputs> rotationalFrequencyOutputs,
-                                                                            List<ProcessDataConfiguration> loggedProcessDataNodes, List<IDeviceTreeDataNode> loggedRawDataNodes)
+                                                                            List<ProcessDataConfiguration> loggedProcessDataNodes, List<IDeviceTreeDataNode> loggedRawDataNodes,
+                                                                            IReadOnlyList<NetworkInterface> hostNetworkInterfaces)
     {
         var result = new Dictionary<string, AggregationFunctionCloudInputs>();
 

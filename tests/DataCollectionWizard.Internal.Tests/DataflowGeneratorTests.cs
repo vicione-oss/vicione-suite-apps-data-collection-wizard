@@ -23,7 +23,6 @@ namespace DataCollectionWizard.Internal.Tests;
 /// passed on for clouds whose cloud filter supports configuring them. Settings left enabled for any other
 /// cloud (MQTT, OPC UA) are ignored instead of failing the whole generation.
 /// </summary>
-[Collection(NetworkInterfacesCacheCollection.Name)]
 public class DataflowGeneratorTests
 {
     private const string RawDataNodeId = "vse@127.0.0.1//RawData/Sensor 1";
@@ -38,7 +37,7 @@ public class DataflowGeneratorTests
         var deviceGenerator = new FakeDeviceDataflowGenerator();
         using var builder = CreateBuilder(out var dataflow, out var engine);
         var generator = CreateDataflowGenerator(builder, deviceGenerator,
-            [new OpcUaCloudDataflowGenerator(CreateSystemConfigurationService())], [new OpcUaCloudFilter()]);
+            [new OpcUaCloudDataflowGenerator()], [new OpcUaCloudFilter()]);
 
         // Act
         var exception = Record.Exception(() => generator.Generate(master, [opcUaConnection], dataflow, engine, out _, out _, out _));
@@ -143,18 +142,10 @@ public class DataflowGeneratorTests
         return builder;
     }
 
-    private static ISystemConfigurationService CreateSystemConfigurationService()
-    {
-        var systemConfigurationService = Substitute.For<ISystemConfigurationService>();
-        systemConfigurationService.GetNetworkInterfacesAsync(Arg.Any<CancellationToken>())
-            .Returns([new NetworkInterface { Name = "lan1", IPv4Address = IPAddress.Parse("10.0.0.5") }]);
-        OpcUaCloudDataflowGenerator.ResetNetworkInterfacesCache();
-        return systemConfigurationService;
-    }
-
     private static DataflowGenerator CreateDataflowGenerator(ClusterBuilder builder, FakeDeviceDataflowGenerator deviceGenerator,
         List<ICloudDataflowGenerator> cloudGenerators, List<ICloudFilter> cloudFilters)
-        => new(builder, Substitute.For<ILogger>(), "mid", [deviceGenerator], cloudGenerators, cloudFilters);
+        => new(builder, Substitute.For<ILogger>(), "mid", [new NetworkInterface { Name = "lan1", IPv4Address = IPAddress.Parse("10.0.0.5") }],
+            [deviceGenerator], cloudGenerators, cloudFilters);
 
     /// <summary>
     /// Records what the DataflowGenerator asks the device to generate. It returns no raw data, so no blob
