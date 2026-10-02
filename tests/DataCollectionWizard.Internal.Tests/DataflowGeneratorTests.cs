@@ -74,7 +74,7 @@ public class DataflowGeneratorTests
     private static Connection CreateOpcUaConnection()
     {
         var connection = new Connection { Id = Guid.NewGuid(), Name = "OPC/UA", Type = ConnectionType.OpcUaServer };
-        connection.SetOpcUaServerConnection(new OpcUaServerConnection { Port = 4840, NetworkInterface = "lan1" });
+        connection.SetOpcUaServerConnection(new OpcUaServerConnection { ApplicationCertificatesPath = "own", Port = 4840, NetworkInterface = "lan1" });
         return connection;
     }
 

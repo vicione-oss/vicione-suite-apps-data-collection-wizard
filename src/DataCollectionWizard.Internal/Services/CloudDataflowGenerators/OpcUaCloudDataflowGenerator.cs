@@ -47,6 +47,12 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
 
         var opcUaConnection = connection.GetOpcUaServerConnection()
             ?? throw new ArgumentException("Connection has no OPC UA server configuration", nameof(connection));
+
+        // The server cannot start without its own application instance certificate, which the DataPort only
+        // loads from a configured store (required in its ruleset, but so far only enforced by the editor).
+        if (string.IsNullOrWhiteSpace(opcUaConnection.ApplicationCertificatesPath))
+            throw new InvalidOperationException($"OPC UA connection '{connection.Name}' has no application certificates path.");
+
         var serverAddress = GetServerAddress(connection, opcUaConnection);
         var dataport = GenerateDataPort(connection, opcUaConnection, serverAddress, deviceTreeMaster, builder, dataflow);
         var deviceNode = builder.Editors.DataPort.AddTreeNode(PortDesignIdFolder, dataport, GetSafeNodeName(deviceTreeMaster.Url.DnsSafeHost), null, DataPortTransferMode.None);
@@ -127,7 +133,6 @@ public sealed class OpcUaCloudDataflowGenerator(ISystemConfigurationService syst
 
         // ---- Certificate ----
         builder.Editors.DataPort.AddProperty("ApplicationCertificateSubject", dataPort, null, opcUaConnection.ApplicationCertificateSubject);
-        // The server cannot start without its own certificate, so its store is always a directory (the DataPort rejects None here).
         builder.Editors.DataPort.AddProperty("ApplicationCertificatesStoreType", dataPort, null, (byte)OpcUaCertificateStoreType.Directory);
         builder.Editors.DataPort.AddProperty("ApplicationCertificatesStorePath", dataPort, null, opcUaConnection.ApplicationCertificatesPath);
         builder.Editors.DataPort.AddProperty("TrustedCertificatesStoreType", dataPort, null, GetCertificateStoreType(opcUaConnection.TrustedCertificatesPath));

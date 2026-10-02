@@ -345,7 +345,7 @@ public class OpcUaCloudDataflowGeneratorTests
         private static Connection CreateOpcUaConnection(string name = "MyServer")
         {
             var connection = new Connection { Id = Guid.NewGuid(), Name = name, Type = ConnectionType.OpcUaServer };
-            connection.SetOpcUaServerConnection(new OpcUaServerConnection { Port = 4840, NetworkInterface = "lan1" });
+            connection.SetOpcUaServerConnection(new OpcUaServerConnection { ApplicationCertificatesPath = "own", Port = 4840, NetworkInterface = "lan1" });
             return connection;
         }
 
@@ -421,7 +421,7 @@ public class OpcUaCloudDataflowGeneratorTests
             // Arrange
             using var builder = CreateBuilder(out var dataflow);
             var connection = new Connection { Id = Guid.NewGuid(), Name = "MyServer", Type = ConnectionType.OpcUaServer };
-            connection.SetOpcUaServerConnection(new OpcUaServerConnection { Port = 4840, NetworkInterface = networkInterface });
+            connection.SetOpcUaServerConnection(new OpcUaServerConnection { ApplicationCertificatesPath = "own", Port = 4840, NetworkInterface = networkInterface });
             var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Value" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
             var deviceTreeMaster = new DeviceTreeVseDevice { Alias = "Dev", Children = [dataNode], Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
@@ -535,7 +535,7 @@ public class OpcUaCloudDataflowGeneratorTests
             var connection = new Connection { Id = Guid.NewGuid(), Name = "MyServer", Type = ConnectionType.OpcUaServer };
             connection.SetOpcUaServerConnection(new OpcUaServerConnection
             {
-                ApplicationCertificatesPath = path ?? string.Empty,
+                ApplicationCertificatesPath = "own",
                 NetworkInterface = "lan1",
                 TrustedCertificatesPath = path,
                 TrustedIssuerCertificatesPath = path,
@@ -554,9 +554,29 @@ public class OpcUaCloudDataflowGeneratorTests
 
             object? Prop(string designId) => dataPort.Properties.Single(p => p.DesignId == designId).Value;
 
-            Assert.Equal((byte)OpcUaCertificateStoreType.Directory, Prop("ApplicationCertificatesStoreType")); // required, never None
             Assert.Equal((byte)OpcUaCertificateStoreType.None, Prop("TrustedCertificatesStoreType"));
             Assert.Equal((byte)OpcUaCertificateStoreType.None, Prop("TrustedIssuerCertificatesStoreType"));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("  ")]
+        public void Throws_when_the_connection_has_no_application_certificates_path(string path)
+        {
+            // Arrange
+            using var builder = CreateBuilder(out var dataflow);
+            var connection = new Connection { Id = Guid.NewGuid(), Name = "MyServer", Type = ConnectionType.OpcUaServer };
+            connection.SetOpcUaServerConnection(new OpcUaServerConnection { ApplicationCertificatesPath = path, NetworkInterface = "lan1" });
+            var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Value" };
+            var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
+            var deviceTreeMaster = new DeviceTreeVseDevice { Alias = "Dev", Children = [dataNode], Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
+            var generator = CreateGenerator();
+
+            // Act & Assert: the server cannot start without its own certificate, and the DataPort rejects a store type of None.
+            var exception = Assert.Throws<InvalidOperationException>(() => generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
+                [], 1000, null!, [], [config], []));
+            Assert.Contains("'MyServer'", exception.Message);
+            Assert.Empty(dataflow.DataPorts);
         }
     }
 }

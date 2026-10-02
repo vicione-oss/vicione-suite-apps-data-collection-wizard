@@ -1,4 +1,4 @@
-using System.Drawing;
+﻿using System.Drawing;
 using ClusterManagement.Public.Connections.Contracts;
 using ClusterManagement.Public.Connections.Extensions;
 using DataCollectionWizard.Internal.Contracts;
@@ -120,7 +120,7 @@ public class TreeDataflowGenerationTests
             case Target.OpcUa:
                 var opcUaConnection = new Connection { Id = Guid.NewGuid(), Name = "MyServer", Type = ConnectionType.OpcUaServer };
                 // The local interface needs no host lookup, so the system configuration service stays unused.
-                opcUaConnection.SetOpcUaServerConnection(new OpcUaServerConnection { NetworkInterface = OpcUaServerConnection.LocalNetworkInterface, Port = 4840 });
+                opcUaConnection.SetOpcUaServerConnection(new OpcUaServerConnection { ApplicationCertificatesPath = "own", NetworkInterface = OpcUaServerConnection.LocalNetworkInterface, Port = 4840 });
                 return opcUaConnection;
 
             default:
