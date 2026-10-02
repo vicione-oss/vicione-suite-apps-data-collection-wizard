@@ -1,4 +1,4 @@
-using System.Drawing;
+﻿using System.Drawing;
 using DataCollectionWizard.Internal.Contracts;
 using DataCollectionWizard.Internal.Extensions;
 using DataCollectionWizard.Internal.Services;
@@ -42,30 +42,8 @@ public class MqttDataflowGenerationTests
         var connection = new Connection { Id = Guid.NewGuid(), Name = "MyBroker", Type = ConnectionType.Mqtt };
         connection.SetMqttConnection(new MqttConnection { Address = "broker.example.com", Port = 1883 });
 
-        var dataNode = new DeviceTreeProcessData
-        {
-            CompressorConfigurations =
-            {
-                new CompressorConfiguration
-                {
-                    Aggregation = AggregationFunction.Last,
-                    CompressionTime = (int)AggregationInterval.OnChange,
-                    DataGroupIdentifier = connection.Id,
-                    Enabled = true,
-                },
-            },
-            DataType = dataType,
-            Id = "n1",
-            Name = "Value",
-        };
-        var master = new DeviceTreeVseDevice { Alias = "Dev", Children = { dataNode }, Id = "dev", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
-
-        var instanceInfo = Substitute.For<IInstanceInformationProvider>();
-        instanceInfo.Local.Name.Returns("Edge");
-
-        var generator = new DataflowGenerator(builder, Substitute.For<ILogger>(), "mid",
-            [new FakeDeviceDataflowGenerator()], [new MqttCloudDataflowGenerator(instanceInfo)], [new MqttCloudFilter()]);
-
+        var master = new DeviceTreeVseDevice { Alias = "Dev", Children = { CreateOnChangeNode(connection, dataType, "n1") }, Id = "dev", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
+        var generator = CreateGenerator(builder);
         var dataflow = builder.Editors.Cluster.AddDataflow("Dev", new Version(0, 1));
         var engine = AddEngine(builder);
 
@@ -78,6 +56,66 @@ public class MqttDataflowGenerationTests
         Assert.Equal(expectedDesignId, dataPointNode.DesignId);
         Assert.Equal(outputType == typeof(float) ? typeof(double) : outputType, dataPointNode.ValueType);
         Assert.Single(dataPointNode.IncomingLinks); // the subscriber output is assigned directly, without a compressor in between
+    }
+
+    [Theory]
+    [InlineData(DataType.Text)]
+    [InlineData(DataType.Octets)]
+    [InlineData(DataType.Unknown)]
+    public void Skips_enabled_nodes_whose_data_type_does_not_support_process_data_logging(DataType unsupportedDataType)
+    {
+        // Arrange
+        using var builder = CreateBuilder(typeof(double));
+        var connection = new Connection { Id = Guid.NewGuid(), Name = "MyBroker", Type = ConnectionType.Mqtt };
+        connection.SetMqttConnection(new MqttConnection { Address = "broker.example.com", Port = 1883 });
+
+        var master = new DeviceTreeVseDevice
+        {
+            Alias = "Dev",
+            Children = { CreateOnChangeNode(connection, DataType.Real, "supported"), CreateOnChangeNode(connection, unsupportedDataType, "unsupported") },
+            Id = "dev",
+            MacAddress = "aa:bb",
+            Name = "Dev",
+            Url = new Uri("http://10.0.0.1"),
+        };
+        var generator = CreateGenerator(builder);
+        var dataflow = builder.Editors.Cluster.AddDataflow("Dev", new Version(0, 1));
+        var engine = AddEngine(builder);
+
+        // Act
+        generator.Generate(master, [connection], dataflow, engine, out _, out _, out _);
+
+        // Assert
+        var dataPort = Assert.Single(dataflow.DataPorts);
+        var dataPointNode = Assert.Single(dataPort.TreeNodes.Single().Children.Single().Children); // only the supported node is published
+        Assert.Equal("supported", dataPointNode.Name);
+    }
+
+    private static DeviceTreeProcessData CreateOnChangeNode(Connection connection, DataType dataType, string id)
+        => new()
+        {
+            CompressorConfigurations =
+            {
+                new CompressorConfiguration
+                {
+                    Aggregation = AggregationFunction.Last,
+                    CompressionTime = (int)AggregationInterval.OnChange,
+                    DataGroupIdentifier = connection.Id,
+                    Enabled = true,
+                },
+            },
+            DataType = dataType,
+            Id = id,
+            Name = id,
+        };
+
+    private static DataflowGenerator CreateGenerator(ClusterBuilder builder)
+    {
+        var instanceInfo = Substitute.For<IInstanceInformationProvider>();
+        instanceInfo.Local.Name.Returns("Edge");
+
+        return new DataflowGenerator(builder, Substitute.For<ILogger>(), "mid",
+            [new FakeDeviceDataflowGenerator()], [new MqttCloudDataflowGenerator(instanceInfo)], [new MqttCloudFilter()]);
     }
 
     private static ClusterBuilder CreateBuilder(Type outputType)

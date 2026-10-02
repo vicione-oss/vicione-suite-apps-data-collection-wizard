@@ -157,6 +157,7 @@ public sealed partial class DataflowGenerator(ClusterBuilder builder, ILogger lo
 
     private static List<ProcessDataConfiguration> GetLoggedProcessDataNodes(IDeviceTreeBase[] allDeviceTreeNodes, Connection connection)
         => [.. allDeviceTreeNodes.OfType<IDeviceTreeCompressableDataNode>()
+                             .Where(n => n.DataType.SupportsLogging && n.DataType.SupportsCompression)
                              .Select(n => n.CompressorConfigurations.FirstOrDefault(cc => cc.DataGroupIdentifier == connection.Id) is { Enabled: true } configuration
                                               ? new ProcessDataConfiguration(n, configuration)
                                               : null)
