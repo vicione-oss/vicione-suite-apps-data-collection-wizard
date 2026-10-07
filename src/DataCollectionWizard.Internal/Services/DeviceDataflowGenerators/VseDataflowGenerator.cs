@@ -73,9 +73,7 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
 
     public DeviceTreeFunctionBlockResult GenerateDeviceTreeSourceFunctionBlock(ClusterBuilder builder, Dataflow dataflow, IDeviceTreeMasterNode master, string connectionIdentifier)
     {
-        var uri = new UriBuilder(master.Url).Uri;
-        var address = $"{uri.DnsSafeHost}:{uri.Port}";
-        AddVseDeviceTreeSubscriber(builder, dataflow, address, out var deviceTreeTrigger, out var deviceTreeOutput);
+        AddVseDeviceTreeSubscriber(builder, dataflow, master.Url, out var deviceTreeTrigger, out var deviceTreeOutput);
 
         return new DeviceTreeFunctionBlockResult
         {
@@ -183,9 +181,10 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
         }
     }
 
-    private static void AddVseDeviceTreeSubscriber(ClusterBuilder builder, Dataflow dataflow, string address, out Guid deviceTreeTrigger, out Guid deviceTreeOutput)
+    // Takes the device's Uri rather than a "host:port" string: UriBuilder parses "host:port" as scheme "host" with
+    // path "port", so a hostname address like "localhost:3321" would lose its host.
+    private static void AddVseDeviceTreeSubscriber(ClusterBuilder builder, Dataflow dataflow, Uri uri, out Guid deviceTreeTrigger, out Guid deviceTreeOutput)
     {
-        var uri = new UriBuilder(address).Uri;
         var addressFormatted = uri.GetVseAddress();
 
         var subscriber = builder.Editors.Container.AddFunctionBlock(dataflow, FunctionBlocks.VseDeviceTreeSubscriber.DesignId,

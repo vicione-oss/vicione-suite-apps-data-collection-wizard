@@ -920,7 +920,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
                     MacAddress = "ff:ff:ff:ff:ff",
                     Name = "VSE Device",
                     Status = ConnectionStatus.Offline,
-                    Url = VseAddresses.GetVseAddressWithPort(vseAddress.DnsSafeHost),
+                    Url = vseAddress!,
                 };
             }
 
