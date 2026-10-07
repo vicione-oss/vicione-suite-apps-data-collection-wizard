@@ -748,13 +748,14 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
         if (_ioLinkMasterTabIndex == 0)
         {
             Uri? newIoLinkUri = null;
+            var newIoLinkMasterAddress = WithDefaultScheme(_newIoLinkMasterAddress);
 
             try
             {
                 _isIoLinkMasterUriValid = IsValidHost(ExtractHost(_newIoLinkMasterAddress));
                 if (_isIoLinkMasterUriValid)
                 {
-                    var uriBuilder = new UriBuilder(_newIoLinkMasterAddress);
+                    var uriBuilder = new UriBuilder(newIoLinkMasterAddress);
                     _isIoLinkMasterUriValid = uriBuilder.Uri.Port > 0;
                     newIoLinkUri = uriBuilder.Uri;
                 }
@@ -779,9 +780,9 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             }
 
             _selectedIoLinkDevices.Clear();
-            _selectedIoLinkDevices.Add(_newIoLinkMasterAddress);
+            _selectedIoLinkDevices.Add(newIoLinkMasterAddress);
             if (!string.IsNullOrEmpty(_newIoLinkMasterUser))
-                _ioLinkCredentials[_newIoLinkMasterAddress] = (_newIoLinkMasterUser, _newIoLinkMasterPassword);
+                _ioLinkCredentials[newIoLinkMasterAddress] = (_newIoLinkMasterUser, _newIoLinkMasterPassword);
         }
 
         // Resolve the entered credentials to the normalized address the node callback receives, so each created
@@ -876,7 +877,7 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
             _isVSEUriValid = IsValidHost(ExtractHost(_newVSEAddress));
             if (_isVSEUriValid)
             {
-                var uriBuilder = new UriBuilder(_newVSEAddress);
+                var uriBuilder = new UriBuilder(WithDefaultScheme(_newVSEAddress));
                 _isVSEUriValid = uriBuilder.Uri.Port > 0;
                 vseAddress = uriBuilder.Uri.SetVsePort();
             }
@@ -1938,6 +1939,11 @@ public sealed partial class DataCollectionWizardPage : ModulePageBase<DataCollec
 
         return Uri.CheckHostName(host) == UriHostNameType.Dns;
     }
+
+    // UriBuilder parses "host:port" as scheme "host" with path "port", so a hostname without an explicit scheme
+    // (e.g. "localhost:41114") would lose its port. IP addresses are unaffected, as a scheme cannot start with a digit.
+    private static string WithDefaultScheme(string address)
+        => address.Contains("://", StringComparison.Ordinal) ? address : $"{Uri.UriSchemeHttp}://{address}";
 
     private static string ExtractHost(string input)
     {
