@@ -120,7 +120,7 @@ $save-ring-clearance: $save-ring-reach + 4px;
         }
     }
 
-    // Background, border and colour are set explicitly: the host no longer resets buttons globally, so the
+    // Background, border and colour are set explicitly: the host does not reset buttons globally, so the
     // browser's default button look would show through.
     > button {
         background-color: transparent;

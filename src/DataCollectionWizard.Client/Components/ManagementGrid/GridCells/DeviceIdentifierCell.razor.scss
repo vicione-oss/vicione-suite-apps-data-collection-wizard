@@ -39,7 +39,14 @@
             }
         }
 
+        // Background, border, padding and font are set explicitly: the host does not reset buttons globally, so
+        // the browser's default button look would show through.
         button {
+            background-color: transparent;
+            border: none;
+            padding: 0;
+            font-family: inherit;
+            cursor: pointer;
             color: col.$font-dark;
 
             &:hover {
