@@ -27,7 +27,7 @@
     height: 30px;
 
     > button {
-        // Set explicitly: the host no longer resets buttons globally, so the browser's default look would show.
+        // Set explicitly: the host does not reset buttons globally, so the browser's default look would show.
         background-color: transparent;
         border: none;
         color: col.$font;

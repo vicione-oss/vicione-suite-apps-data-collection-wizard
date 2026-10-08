@@ -99,7 +99,7 @@
                 width: var(--button-size);
                 // The tree editor colours its icons through --icon-svg-color-override, which only reaches SVG icons.
                 // MonochromeIcons paint in currentcolor instead, so without this they take the browser's default
-                // (black) button text colour now that the host no longer resets buttons globally.
+                // (black) button text colour, as the host does not reset buttons globally.
                 color: col.$font;
 
                 &:disabled {

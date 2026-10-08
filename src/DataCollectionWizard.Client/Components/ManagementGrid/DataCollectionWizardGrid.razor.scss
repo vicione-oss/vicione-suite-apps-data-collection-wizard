@@ -543,8 +543,8 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
         overflow-y: auto;
     }
 
-    // The groups side by side rather than stacked: with the controls no longer stretched across the bar there is
-    // room for two, and four groups then fit without scrolling. One group keeps one column - two would leave
+    // The groups side by side rather than stacked: the controls take only the width they need, which leaves room
+    // for two, and four groups then fit without scrolling. One group keeps one column - two would leave
     // half the bar empty.
     .bulk-groups {
         display: grid;
@@ -631,8 +631,8 @@ $chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' widt
     .bulk-field,
     ::deep .bulk-field {
         display: grid;
-        // The value column no longer stretches to the bar's width - "1s" does not need 860px, and the height
-        // that was wasted on is what made the panel scroll.
+        // The value column takes its content's width rather than the bar's - "1s" does not need 860px, and a
+        // stretched column costs the width the groups need to sit side by side, so the panel would scroll.
         grid-template-columns: 104px max-content;
         align-items: center;
         gap: 10px;
