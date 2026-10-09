@@ -3,7 +3,7 @@
     "Title": "Data Collection Wizard",
     "Description": "Use this module to onboard VSE, IoTCore and other devices to the Cluster",
     "Version": "__VERSION__",
-    "MinSuiteSdkVersion": "3.2.0",
+    "MinSuiteSdkVersion": "3.4.0",
     "Company": "ViciOne open automation gmbh",
     "ProjectUrl": "https://gitlab.com/vicione-oss/vicione/suite-apps/data-collection-wizard",
     "ReadmeUrl": "https://gitlab.com/vicione-oss/vicione/suite-apps/data-collection-wizard/-/blob/master/README.md?ref_type=heads",
