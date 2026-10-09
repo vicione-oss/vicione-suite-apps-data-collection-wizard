@@ -17,6 +17,7 @@
 - Live View line stating how long it has been watching, how many values arrived and at what rate
 - Labelled save button with a "saved / not saved" status
 - Themed in-app dialog (Cancel / Discard / Save) when leaving the page with unsaved changes
+- MQTT 5.0 messages carry the value's timestamp as user property `Timestamp` and, where the device reports one, its unit as user property `unit`
 
 ### Changed
 

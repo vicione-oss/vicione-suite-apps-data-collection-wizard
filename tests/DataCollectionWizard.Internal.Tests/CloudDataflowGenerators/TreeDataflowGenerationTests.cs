@@ -35,6 +35,7 @@ public class TreeDataflowGenerationTests
     private static readonly Guid s_subscriberDesignId = Guid.NewGuid();
     private static readonly Guid s_subscriberValueOutputId = Guid.NewGuid();
     private static readonly Guid s_subscriberAvailableOutputId = Guid.NewGuid();
+    private static readonly Guid s_subscriberUnitOutputId = Guid.NewGuid();
 
     public static TheoryData<Target, DataType, Type, string> OnChangeCases()
     {
@@ -108,6 +109,104 @@ public class TreeDataflowGenerationTests
         Assert.Equal("supported", dataPointNode.Name);
     }
 
+    [Fact]
+    public void Puts_timestamp_and_unit_on_the_message_of_an_mqtt_5_data_point()
+    {
+        // Arrange
+        using var builder = CreateBuilder(typeof(double));
+        var connection = CreateMqttConnection(MqttProtocolVersion.V500);
+        var master = new DeviceTreeVseDevice { Alias = "Dev", Children = { CreateOnChangeNode(connection, DataType.Real, "n1") }, Id = "dev", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
+        var generator = CreateGenerator(builder);
+        var dataflow = builder.Editors.Cluster.AddDataflow("Dev", new Version(0, 1));
+        var engine = AddEngine(builder);
+
+        // Act
+        generator.Generate(master, [connection], dataflow, engine, out _, out _, out _);
+
+        // Assert
+        var dataPointNode = Assert.Single(GetDataPointNodes(Assert.Single(dataflow.DataPorts)));
+        Assert.Collection(dataPointNode.Children,
+            timestamp =>
+            {
+                Assert.Equal("Timestamp", timestamp.DesignId);
+                Assert.Equal(typeof(DateTime), timestamp.ValueType);
+                Assert.Equal(DataPortTransferMode.None, timestamp.TransferMode);
+                Assert.Empty(timestamp.IncomingLinks); // the DataPort fills in the timestamp of the published value itself
+            },
+            unit =>
+            {
+                Assert.Equal("UserProperty", unit.DesignId);
+                Assert.Equal(MqttCloudDataflowGenerator.UnitUserPropertyKey, unit.Name);
+                Assert.Equal(typeof(string), unit.ValueType);
+                Assert.Equal(DataPortTransferMode.None, unit.TransferMode);
+                Assert.Single(unit.IncomingLinks);
+            });
+    }
+
+    [Fact]
+    public void Puts_only_the_timestamp_on_the_message_when_the_device_reports_no_unit()
+    {
+        // Arrange
+        using var builder = CreateBuilder(typeof(double));
+        var connection = CreateMqttConnection(MqttProtocolVersion.V500);
+        var master = new DeviceTreeVseDevice { Alias = "Dev", Children = { CreateOnChangeNode(connection, DataType.Real, "n1") }, Id = "dev", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
+        var generator = CreateGenerator(builder, reportsUnit: false);
+        var dataflow = builder.Editors.Cluster.AddDataflow("Dev", new Version(0, 1));
+        var engine = AddEngine(builder);
+
+        // Act
+        generator.Generate(master, [connection], dataflow, engine, out _, out _, out _);
+
+        // Assert
+        var dataPointNode = Assert.Single(GetDataPointNodes(Assert.Single(dataflow.DataPorts)));
+        Assert.Equal("Timestamp", Assert.Single(dataPointNode.Children).DesignId);
+    }
+
+    [Fact]
+    public void Adds_no_envelope_children_to_an_mqtt_3_1_1_data_point()
+    {
+        // Arrange
+        using var builder = CreateBuilder(typeof(double));
+        var connection = CreateMqttConnection(MqttProtocolVersion.V311);
+        var master = new DeviceTreeVseDevice { Alias = "Dev", Children = { CreateOnChangeNode(connection, DataType.Real, "n1") }, Id = "dev", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
+        var generator = CreateGenerator(builder);
+        var dataflow = builder.Editors.Cluster.AddDataflow("Dev", new Version(0, 1));
+        var engine = AddEngine(builder);
+
+        // Act
+        generator.Generate(master, [connection], dataflow, engine, out _, out _, out _);
+
+        // Assert
+        var dataPointNode = Assert.Single(GetDataPointNodes(Assert.Single(dataflow.DataPorts)));
+        Assert.Empty(dataPointNode.Children); // the DataPort refuses to start with envelope children on MQTT 3.1.1
+    }
+
+    [Fact]
+    public void Adds_no_envelope_children_to_an_opc_ua_data_point()
+    {
+        // Arrange
+        using var builder = CreateBuilder(typeof(double));
+        var connection = CreateConnection(Target.OpcUa);
+        var master = new DeviceTreeVseDevice { Alias = "Dev", Children = { CreateOnChangeNode(connection, DataType.Real, "n1") }, Id = "dev", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
+        var generator = CreateGenerator(builder);
+        var dataflow = builder.Editors.Cluster.AddDataflow("Dev", new Version(0, 1));
+        var engine = AddEngine(builder);
+
+        // Act
+        generator.Generate(master, [connection], dataflow, engine, out _, out _, out _);
+
+        // Assert
+        var dataPointNode = Assert.Single(GetDataPointNodes(Assert.Single(dataflow.DataPorts)));
+        Assert.Empty(dataPointNode.Children);
+    }
+
+    private static Connection CreateMqttConnection(MqttProtocolVersion protocolVersion)
+    {
+        var connection = new Connection { Id = Guid.NewGuid(), Name = "MyBroker", Type = ConnectionType.Mqtt };
+        connection.SetMqttConnection(new MqttConnection { Address = "broker.example.com", Port = 1883, ProtocolVersion = protocolVersion });
+        return connection;
+    }
+
     private static Connection CreateConnection(Target target)
     {
         switch (target)
@@ -128,14 +227,15 @@ public class TreeDataflowGenerationTests
         }
     }
 
-    // The data points are the nodes below the target specific folder scaffold (edge/device for MQTT, device for OPC UA).
+    // The data points are the nodes below the target specific folder scaffold (edge/device for MQTT, device for OPC UA),
+    // without the envelope children an MQTT data point carries.
     private static IEnumerable<DataPortTreeNode> GetDataPointNodes(DataPort dataPort)
     {
         var pending = new Stack<DataPortTreeNode>(dataPort.TreeNodes);
 
         while (pending.TryPop(out var node))
         {
-            if (node.DesignId != "Folder")
+            if (node.DesignId.StartsWith("DataPoint", StringComparison.Ordinal))
                 yield return node;
 
             foreach (var child in node.Children)
@@ -161,12 +261,12 @@ public class TreeDataflowGenerationTests
             Name = id,
         };
 
-    private static DataflowGenerator CreateGenerator(ClusterBuilder builder)
+    private static DataflowGenerator CreateGenerator(ClusterBuilder builder, bool reportsUnit = true)
     {
         var instanceInfo = Substitute.For<IInstanceInformationProvider>();
         instanceInfo.Local.Name.Returns("Edge");
 
-        return new DataflowGenerator(builder, Substitute.For<ILogger>(), "mid", [], [new FakeDeviceDataflowGenerator()],
+        return new DataflowGenerator(builder, Substitute.For<ILogger>(), "mid", [], [new FakeDeviceDataflowGenerator(reportsUnit)],
             [new MqttCloudDataflowGenerator(instanceInfo), new OpcUaCloudDataflowGenerator()],
             [new MqttCloudFilter(), new OpcUaCloudFilter()]);
     }
@@ -181,6 +281,7 @@ public class TreeDataflowGenerationTests
             [
                 CreateOutputDesign(outputType, s_subscriberValueOutputId, "Value"),
                 new ViciOne.Core.Dataflow.DataModel.ConnectorDesignOutput<bool> { Id = s_subscriberAvailableOutputId, Name = "Available" },
+                new ViciOne.Core.Dataflow.DataModel.ConnectorDesignOutput<string> { Id = s_subscriberUnitOutputId, Name = "Unit" },
             ],
         };
 
@@ -221,7 +322,7 @@ public class TreeDataflowGenerationTests
     /// Creates one subscriber function block per data node, whose value output has the type given by the builder's
     /// subscriber design. Stands in for the VSE / IO-Link generators, which need a live device.
     /// </summary>
-    private sealed class FakeDeviceDataflowGenerator : IDeviceDataflowGenerator
+    private sealed class FakeDeviceDataflowGenerator(bool reportsUnit) : IDeviceDataflowGenerator
     {
         public Type DeviceType => typeof(DeviceTreeVseDevice);
 
@@ -242,6 +343,7 @@ public class TreeDataflowGenerationTests
                     AvailableOutput = subscriber.GetOutputByDesignId(s_subscriberAvailableOutputId),
                     Output = subscriber.GetOutputByDesignId(s_subscriberValueOutputId),
                     Suffix = id,
+                    UnitOutput = reportsUnit ? subscriber.GetOutputByDesignId(s_subscriberUnitOutputId) : null,
                 };
             }
 
