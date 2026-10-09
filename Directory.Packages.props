@@ -1,7 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <ViciOneSuiteSdkVersion>3.2.0</ViciOneSuiteSdkVersion>
+    <ViciOneSuiteSdkVersion>3.4.0</ViciOneSuiteSdkVersion>
   </PropertyGroup>
   <ItemGroup>
     <GlobalPackageReference Include="ViciOne.CodeAnalysis" Version="1.6.0" />
@@ -12,18 +12,18 @@
     <PackageVersion Include="ViciOne.Core.Dataflow.DataModel.Generation" Version="1.0.0" />
     <PackageVersion Include="ViciOne.Cluster.Builder" Version="1.0.0" />
     <PackageVersion Include="ViciOne.DeviceTree.Contracts" Version="2.1.0" />
-    <PackageVersion Include="ViciOne.Suite.ClusterManagement.Public" Version="3.0.0-beta1" />
+    <PackageVersion Include="ViciOne.Suite.ClusterManagement.Public" Version="3.0.0-beta2" />
     <PackageVersion Include="ViciOne.Suite.Sdk" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="ViciOne.Suite.Sdk.Backend" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="ViciOne.Suite.Sdk.Deployment" Version="$(ViciOneSuiteSdkVersion)" />
     <PackageVersion Include="ViciOne.Suite.Sdk.Client" Version="$(ViciOneSuiteSdkVersion)" />
-    <PackageVersion Include="ViciOne.Ui.Blazor.Components" Version="6.2.0" />
+    <PackageVersion Include="ViciOne.Ui.Blazor.Components" Version="6.5.0" />
     <PackageVersion Include="ViciOne.Ui.MonochromeIcons.Components" Version="4.18.0" />
     <PackageVersion Include="ViciOne.Ui.Design" Version="2.5.0" />
     <PackageVersion Include="ViciOne.Ui.TreeEditor" Version="2.0.1" />
     <!--Used for tests only:-->
     <PackageVersion Include="ViciOne.Suite.Sdk.Testing" Version="$(ViciOneSuiteSdkVersion)" />
-    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.11.2" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.12.0" />
     <PackageVersion Include="Extensions.Logging.NSubstitute" Version="1.0.0" />
     <PackageVersion Include="NSubstitute" Version="6.2.0" />
     <PackageVersion Include="NSubstitute.Analyzers.CSharp" Version="1.0.17" />

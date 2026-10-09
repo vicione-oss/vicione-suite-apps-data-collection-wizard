@@ -60,14 +60,14 @@
 - `ViciOne.Suite.DataPort.Anna.Contracts` package, removed
 - `ViciOne.Ui.Shared.Dx` package, removed
 - `ViciOne.Ui.MonochromeIcons.Assets` package, replaced by `ViciOne.Ui.MonochromeIcons.Components`
-- `xunit.v3`, `xunit.runner.visualstudio`, `Microsoft.NET.Test.Sdk` and `coverlet.collector` packages, replaced by `xunit.v3.mtp-v2` version `4.0.1` and `Microsoft.Testing.Extensions.CodeCoverage` version `18.11.2`
+- `xunit.v3`, `xunit.runner.visualstudio`, `Microsoft.NET.Test.Sdk` and `coverlet.collector` packages, replaced by `xunit.v3.mtp-v2` version `4.0.1` and `Microsoft.Testing.Extensions.CodeCoverage` version `18.12.0`
 - `.NET` packages, update to version `10.0.12`
 - `AspNetCore.SassCompiler` package, update version to `1.105.1`
 - `ViciOne.Ui.Design` package, update version to `2.5.0`
 - `ViciOne.Ui.MonochromeIcons.Components` package, update version to `4.18.0`
-- `ViciOne.Ui.Blazor.Components` package, update version to `6.2.0`
-- `ViciOne.Suite.ClusterManagement.Public` package, update version to `2.4.0-ci2729942661`
-- `ViciOne.Suite.Sdk` package, update version to `3.2.0`
+- `ViciOne.Ui.Blazor.Components` package, update version to `6.5.0`
+- `ViciOne.Suite.ClusterManagement.Public` package, update version to `3.0.0-beta2`
+- `ViciOne.Suite.Sdk` package, update version to `3.4.0`
 - `NSubstitute` package, update version to `6.2.0`
 
 ## 2.1.2 - 2026-06-23
