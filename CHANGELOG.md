@@ -42,6 +42,7 @@
 - NuGet packages are pushed to the GitLab package registry
 - Renovate monitors dependencies and creates update merge requests
 - Rename the company to `ViciOne open automation gmbh` in the license and the package metadata
+- OPC UA DataPort takes its certificate store types and paths from `ClusterManagement.Public` instead of deriving them from the connection
 
 ### Fix
 
@@ -66,7 +67,7 @@
 - `ViciOne.Ui.Design` package, update version to `2.5.0`
 - `ViciOne.Ui.MonochromeIcons.Components` package, update version to `4.18.0`
 - `ViciOne.Ui.Blazor.Components` package, update version to `6.5.0`
-- `ViciOne.Suite.ClusterManagement.Public` package, update version to `3.0.0-beta2`
+- `ViciOne.Suite.ClusterManagement.Public` package, update version to `3.0.0-beta2-ci2939268046`
 - `ViciOne.Suite.Sdk` package, update version to `3.4.0`
 - `NSubstitute` package, update version to `6.2.0`
 

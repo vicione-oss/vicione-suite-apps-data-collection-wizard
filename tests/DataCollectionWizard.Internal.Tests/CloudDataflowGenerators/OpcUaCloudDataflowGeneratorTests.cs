@@ -510,48 +510,13 @@ public class OpcUaCloudDataflowGeneratorTests
             Assert.Equal(opcUaConnection.Username, Prop("User"));
             Assert.Equal(opcUaConnection.Password, Prop("Password"));
             Assert.Equal(opcUaConnection.ApplicationCertificateSubject, Prop("ApplicationCertificateSubject"));
-            // The DataPort's store type values: 0 = none, 2 = directory.
-            Assert.Equal((byte)2, Prop("ApplicationCertificatesStoreType"));
-            Assert.Equal(opcUaConnection.ApplicationCertificatesPath, Prop("ApplicationCertificatesStorePath"));
-            Assert.Equal((byte)2, Prop("TrustedCertificatesStoreType"));
-            Assert.Equal(opcUaConnection.TrustedCertificatesPath, Prop("TrustedCertificatesStorePath"));
-            Assert.Equal((byte)2, Prop("TrustedIssuerCertificatesStoreType"));
-            Assert.Equal(opcUaConnection.TrustedIssuerCertificatesPath, Prop("TrustedIssuerCertificatesStorePath"));
             Assert.Equal(opcUaConnection.AutoAcceptUntrustedCertificates, Prop("AutoAcceptUntrustedCertificates"));
-        }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void Sets_trusted_certificate_store_types_to_none_when_no_path_is_given(string? path)
-        {
-            // Arrange
-            using var builder = CreateBuilder(out var dataflow);
-            var connection = new Connection { Id = Guid.NewGuid(), Name = "MyServer", Type = ConnectionType.OpcUaServer };
-            connection.SetOpcUaServerConnection(new OpcUaServerConnection
-            {
-                ApplicationCertificatesPath = "own",
-                NetworkInterface = "lan1",
-                TrustedCertificatesPath = path,
-                TrustedIssuerCertificatesPath = path,
-            });
-            var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Value" };
-            var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
-            var deviceTreeMaster = new DeviceTreeVseDevice { Alias = "Dev", Children = [dataNode], Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
-            var generator = CreateGenerator();
-
-            // Act
-            generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
-                [], 1000, null!, [], [config], [], s_hostNetworkInterfaces);
-
-            // Assert
-            var dataPort = Assert.Single(dataflow.DataPorts);
-
-            object? Prop(string designId) => dataPort.Properties.Single(p => p.DesignId == designId).Value;
-
-            // 0 is the DataPort's "no store" value.
-            Assert.Equal((byte)0, Prop("TrustedCertificatesStoreType"));
-            Assert.Equal((byte)0, Prop("TrustedIssuerCertificatesStoreType"));
+            // Cluster management decides the certificate store properties, the DataPort only has to get them unchanged.
+            var certificateStoreProperties = opcUaConnection.GetCertificateStoreProperties();
+            Assert.NotEmpty(certificateStoreProperties);
+            foreach (var (propertyId, value) in certificateStoreProperties)
+                Assert.Equal(value, Prop(propertyId));
         }
 
         [Theory]
@@ -568,7 +533,7 @@ public class OpcUaCloudDataflowGeneratorTests
             var deviceTreeMaster = new DeviceTreeVseDevice { Alias = "Dev", Children = [dataNode], Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
             var generator = CreateGenerator();
 
-            // Act & Assert: the server cannot start without its own certificate, and the DataPort rejects a store type of None.
+            // Act & Assert: the server cannot start without its own certificate, and the DataPort's ruleset does not allow a store type of None.
             var exception = Assert.Throws<InvalidOperationException>(() => generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
                 [], 1000, null!, [], [config], [], s_hostNetworkInterfaces));
             Assert.Contains("'MyServer'", exception.Message);
