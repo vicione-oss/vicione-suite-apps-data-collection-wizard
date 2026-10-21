@@ -12,11 +12,6 @@ namespace DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 
 public sealed class OpcUaCloudDataflowGenerator : CloudDataflowTreeGenerator, ICloudDataflowGenerator
 {
-    // Values of the DataPort's *CertificatesStoreType properties (0 = none, 1 = X509 store, 2 = directory). The
-    // connection contract no longer exposes a store type: a configured path means a directory store, none means none.
-    private const byte CertificateStoreTypeNone = 0;
-    private const byte CertificateStoreTypeDirectory = 2;
-
     public string Name => "opcua";
 
     private protected override int? MaxNodeNameLength => 256;
@@ -50,7 +45,8 @@ public sealed class OpcUaCloudDataflowGenerator : CloudDataflowTreeGenerator, IC
             ?? throw new ArgumentException("Connection has no OPC UA server configuration", nameof(connection));
 
         // The server cannot start without its own application instance certificate, which the DataPort only
-        // loads from a configured store (required in its ruleset, but so far only enforced by the editor).
+        // loads from a configured store. Without a path the application store would get the store type None,
+        // which the DataPort's ruleset does not allow, but so far only the editor enforces that.
         if (string.IsNullOrWhiteSpace(opcUaConnection.ApplicationCertificatesPath))
             throw new InvalidOperationException($"OPC UA connection '{connection.Name}' has no application certificates path.");
 
@@ -111,17 +107,13 @@ public sealed class OpcUaCloudDataflowGenerator : CloudDataflowTreeGenerator, IC
 
         // ---- Certificate ----
         builder.Editors.DataPort.AddProperty("ApplicationCertificateSubject", dataPort, null, opcUaConnection.ApplicationCertificateSubject);
-        builder.Editors.DataPort.AddProperty("ApplicationCertificatesStoreType", dataPort, null, CertificateStoreTypeDirectory);
-        builder.Editors.DataPort.AddProperty("ApplicationCertificatesStorePath", dataPort, null, opcUaConnection.ApplicationCertificatesPath);
-        builder.Editors.DataPort.AddProperty("TrustedCertificatesStoreType", dataPort, null, GetCertificateStoreType(opcUaConnection.TrustedCertificatesPath));
-        builder.Editors.DataPort.AddProperty("TrustedCertificatesStorePath", dataPort, null, opcUaConnection.TrustedCertificatesPath);
-        builder.Editors.DataPort.AddProperty("TrustedIssuerCertificatesStoreType", dataPort, null, GetCertificateStoreType(opcUaConnection.TrustedIssuerCertificatesPath));
-        builder.Editors.DataPort.AddProperty("TrustedIssuerCertificatesStorePath", dataPort, null, opcUaConnection.TrustedIssuerCertificatesPath);
         builder.Editors.DataPort.AddProperty("AutoAcceptUntrustedCertificates", dataPort, null, opcUaConnection.AutoAcceptUntrustedCertificates);
+
+        // Cluster management owns the certificate stores: it decides the store types and the path format, and makes
+        // the paths absolute when it deploys the DataPort, so its properties are added unchanged.
+        foreach (var (propertyId, value) in opcUaConnection.GetCertificateStoreProperties())
+            builder.Editors.DataPort.AddProperty(propertyId, dataPort, null, value);
 
         return dataPort;
     }
-
-    private static byte GetCertificateStoreType(string? path)
-        => string.IsNullOrEmpty(path) ? CertificateStoreTypeNone : CertificateStoreTypeDirectory;
 }
