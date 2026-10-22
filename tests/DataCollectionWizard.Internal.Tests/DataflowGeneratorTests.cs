@@ -73,7 +73,7 @@ public class DataflowGeneratorTests
     private static Connection CreateOpcUaConnection()
     {
         var connection = new Connection { Id = Guid.NewGuid(), Name = "OPC/UA", Type = ConnectionType.OpcUaServer };
-        connection.SetOpcUaServerConnection(new OpcUaServerConnection { ApplicationCertificatesPath = "own", Port = 4840, NetworkInterface = "lan1" });
+        connection.SetOpcUaServerConnection(new OpcUaServerConnection { ApplicationCertificatesPath = "own", NetworkInterface = "lan1", Port = 4840 });
         return connection;
     }
 
@@ -144,7 +144,7 @@ public class DataflowGeneratorTests
 
     private static DataflowGenerator CreateDataflowGenerator(ClusterBuilder builder, FakeDeviceDataflowGenerator deviceGenerator,
         List<ICloudDataflowGenerator> cloudGenerators, List<ICloudFilter> cloudFilters)
-        => new(builder, Substitute.For<ILogger>(), "mid", [new NetworkInterface { Name = "lan1", IPv4Address = IPAddress.Parse("10.0.0.5") }],
+        => new(builder, Substitute.For<ILogger>(), "mid", [new NetworkInterface { IPv4Address = IPAddress.Parse("10.0.0.5"), Name = "lan1" }],
             [deviceGenerator], cloudGenerators, cloudFilters);
 
     /// <summary>

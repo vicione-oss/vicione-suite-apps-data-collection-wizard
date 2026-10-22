@@ -22,14 +22,14 @@ public abstract class CloudDataflowTreeGenerator
     private const string PortDesignIdDataPointString = "DataPointString";
 
     /// <summary>
-    /// Sanitizes a device tree node name so it is valid as a DataPort tree node name for the target protocol.
-    /// </summary>
-    private protected abstract string GetSafeNodeName(string name);
-
-    /// <summary>
     /// The longest DataPort tree node name the target protocol accepts, or null if it has no limit.
     /// </summary>
     private protected virtual int? MaxNodeNameLength => null;
+
+    /// <summary>
+    /// Sanitizes a device tree node name so it is valid as a DataPort tree node name for the target protocol.
+    /// </summary>
+    private protected abstract string GetSafeNodeName(string name);
 
     /// <summary>
     /// Returns <paramref name="name"/>, or <paramref name="name"/> with a "_2", "_3", ... suffix if a sibling
