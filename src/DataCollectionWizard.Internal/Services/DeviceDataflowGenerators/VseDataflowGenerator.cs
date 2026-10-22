@@ -430,8 +430,8 @@ public sealed partial class VseDataflowGenerator(ILogger<VseDataflowGenerator> l
             AvailableOutput = availableOutput,
             Output = output,
             Suffix = $"{parentName} {child.Name}",
-            ValidOutput = validOutput,
             UnitOutput = unitOutput,
+            ValidOutput = validOutput,
         };
 
         foreach (var compressorConfig in child.CompressorConfigurations)

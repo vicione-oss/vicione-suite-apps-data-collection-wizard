@@ -2,7 +2,6 @@
 using ClusterManagement.Public.Connections.Contracts;
 using ClusterManagement.Public.Connections.Extensions;
 using DataCollectionWizard.Internal.Extensions;
-using DataCollectionWizard.Internal.Services;
 using DataCollectionWizard.Internal.Services.CloudDataflowGenerators;
 using DataCollectionWizard.Internal.Services.DesignIds;
 using Sdk.Connections.Contracts;
@@ -80,8 +79,8 @@ public class OpcUaCloudDataflowGeneratorTests
             Assert.NotNull(result); // Parent should be included because child is logged
             Assert.Equal(parentNodeId, result.Id);
             var children = result.Children;
-            Assert.Single(children);
-            Assert.Equal(childNodeId, children[0].Id);
+            var item = Assert.Single(children);
+            Assert.Equal(childNodeId, item.Id);
         }
     }
 
@@ -316,8 +315,8 @@ public class OpcUaCloudDataflowGeneratorTests
     {
         private static readonly IReadOnlyList<NetworkInterface> s_hostNetworkInterfaces =
         [
-            new NetworkInterface { Name = "lan0", IPv4Address = IPAddress.Parse("192.168.0.1") },
-            new NetworkInterface { Name = "lan1", IPv4Address = IPAddress.Parse("10.0.0.5") },
+            new NetworkInterface { IPv4Address = IPAddress.Parse("192.168.0.1"), Name = "lan0" },
+            new NetworkInterface { IPv4Address = IPAddress.Parse("10.0.0.5"), Name = "lan1" },
         ];
 
         private static OpcUaCloudDataflowGenerator CreateGenerator()
@@ -339,7 +338,7 @@ public class OpcUaCloudDataflowGeneratorTests
         private static Connection CreateOpcUaConnection(string name = "MyServer")
         {
             var connection = new Connection { Id = Guid.NewGuid(), Name = name, Type = ConnectionType.OpcUaServer };
-            connection.SetOpcUaServerConnection(new OpcUaServerConnection { ApplicationCertificatesPath = "own", Port = 4840, NetworkInterface = "lan1" });
+            connection.SetOpcUaServerConnection(new OpcUaServerConnection { ApplicationCertificatesPath = "own", NetworkInterface = "lan1", Port = 4840 });
             return connection;
         }
 
@@ -415,7 +414,7 @@ public class OpcUaCloudDataflowGeneratorTests
             // Arrange
             using var builder = CreateBuilder(out var dataflow);
             var connection = new Connection { Id = Guid.NewGuid(), Name = "MyServer", Type = ConnectionType.OpcUaServer };
-            connection.SetOpcUaServerConnection(new OpcUaServerConnection { ApplicationCertificatesPath = "own", Port = 4840, NetworkInterface = networkInterface });
+            connection.SetOpcUaServerConnection(new OpcUaServerConnection { ApplicationCertificatesPath = "own", NetworkInterface = networkInterface, Port = 4840 });
             var dataNode = new DeviceTreeProcessData { DataType = DataType.Real, Id = "n1", Name = "Value" };
             var config = new ProcessDataConfiguration(dataNode, new CompressorConfiguration { DataGroupIdentifier = Guid.NewGuid() });
             var deviceTreeMaster = new DeviceTreeVseDevice { Alias = "Dev", Children = [dataNode], Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri("http://10.0.0.1") };
@@ -424,7 +423,7 @@ public class OpcUaCloudDataflowGeneratorTests
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(() => generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
                 [], 1000, null!, [], [config], [], s_hostNetworkInterfaces));
-            Assert.Contains(networkInterface, exception.Message);
+            Assert.Contains(networkInterface, exception.Message, StringComparison.Ordinal);
             Assert.Empty(dataflow.DataPorts);
         }
 
@@ -462,10 +461,10 @@ public class OpcUaCloudDataflowGeneratorTests
                 MaxPublishingIntervalMilliseconds = 2000,
                 MinPublishingIntervalMilliseconds = 250,
                 Namespace = "http://example.com/test",
+                NetworkInterface = "lan1",
                 Password = "secret",
                 Port = 4841,
                 SecurityPolicy = OpcUaSecurityPolicy.Basic256Sha256SignAndEncrypt,
-                NetworkInterface = "lan1",
                 TrustedCertificatesPath = "trusted",
                 TrustedIssuerCertificatesPath = "issuers",
                 UseCustomTransportQuotas = true,
@@ -536,7 +535,7 @@ public class OpcUaCloudDataflowGeneratorTests
             // Act & Assert: the server cannot start without its own certificate, and the DataPort's ruleset does not allow a store type of None.
             var exception = Assert.Throws<InvalidOperationException>(() => generator.GenerateCloudDataflow(connection, deviceTreeMaster, builder, dataflow, "mid",
                 [], 1000, null!, [], [config], [], s_hostNetworkInterfaces));
-            Assert.Contains("'MyServer'", exception.Message);
+            Assert.Contains("'MyServer'", exception.Message, StringComparison.Ordinal);
             Assert.Empty(dataflow.DataPorts);
         }
     }

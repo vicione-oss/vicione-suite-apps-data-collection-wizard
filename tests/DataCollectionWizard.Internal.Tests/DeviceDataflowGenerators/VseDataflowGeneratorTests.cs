@@ -1,4 +1,4 @@
-using DataCollectionWizard.Internal.Services.DesignIds;
+﻿using DataCollectionWizard.Internal.Services.DesignIds;
 using DataCollectionWizard.Internal.Services.DeviceDataflowGenerators;
 using Microsoft.Extensions.Logging;
 using ViciOne.Cluster.Builder;
@@ -20,11 +20,11 @@ public class VseDataflowGeneratorTests
     [InlineData("http://127.0.0.1", "127.0.0.1:3321")]
     [InlineData("http://localhost:3321", "localhost:3321")]
     [InlineData("http://vse-sim:4000", "vse-sim:4000")]
-    public void GenerateDeviceTreeSourceFunctionBlock_KeepsHostAndPort(string url, string expectedAddress)
+    public void GenerateDeviceTreeSourceFunctionBlock_KeepsHostAndPort(string address, string expectedAddress)
     {
         // Arrange
         using var builder = CreateBuilder(out var dataflow);
-        var master = new DeviceTreeVseDevice { Alias = "Dev", Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri(url) };
+        var master = new DeviceTreeVseDevice { Alias = "Dev", Id = "id", MacAddress = "aa:bb", Name = "Dev", Url = new Uri(address) };
         var generator = new VseDataflowGenerator(Substitute.For<ILogger<VseDataflowGenerator>>());
 
         // Act
